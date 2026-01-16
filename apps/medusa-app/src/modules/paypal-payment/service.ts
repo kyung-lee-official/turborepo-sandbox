@@ -329,6 +329,7 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
 
       return {
         id: response.id,
+        // things in `data` automatically get stored in the payment session
         data: {
           ...response,
           approval_url: approvalLink,
