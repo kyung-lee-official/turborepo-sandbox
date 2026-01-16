@@ -47,8 +47,6 @@ export async function initializePaymentSession(
       },
     },
   );
-  console.log(data);
-
   return data;
 }
 
