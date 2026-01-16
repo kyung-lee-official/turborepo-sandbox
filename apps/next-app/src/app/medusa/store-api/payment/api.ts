@@ -21,12 +21,25 @@ export async function listPaymentProviders(regionId: string) {
   return data;
 }
 
-export async function initializePaymentSession(
+export async function initializeDefaultPaymentSession(
   paymentCollectionId: string,
   providerId: string,
 ) {
   const data = await api.post<StorePaymentCollectionResponse>(
     `/store/payment-collections/${paymentCollectionId}/payment-sessions`,
+    {
+      provider_id: providerId,
+    },
+  );
+  return data;
+}
+
+export async function initializePaymentSession(
+  paymentCollectionId: string,
+  providerId: string,
+) {
+  const data = await api.post<StorePaymentCollectionResponse>(
+    `/store-api/payment/initialize-payment-session/${paymentCollectionId}`,
     {
       provider_id: providerId,
     },

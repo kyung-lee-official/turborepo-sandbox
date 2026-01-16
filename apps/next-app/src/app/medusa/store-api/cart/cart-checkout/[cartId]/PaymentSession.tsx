@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
-  initializePaymentSession,
+  initializeDefaultPaymentSession,
   listPaymentProviders,
 } from "../../../payment/api";
 import { QK_CART } from "../../api";
@@ -37,7 +37,7 @@ export const PaymentSession = ({
     }: {
       paymentCollectionId: string;
       providerId: string;
-    }) => initializePaymentSession(paymentCollectionId, providerId),
+    }) => initializeDefaultPaymentSession(paymentCollectionId, providerId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],
