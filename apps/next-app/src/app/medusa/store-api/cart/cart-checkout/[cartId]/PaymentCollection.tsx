@@ -8,6 +8,7 @@ import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { formatCurrency } from "@/utils/currency";
 import { authorizePaymentSession } from "../../../payment/api";
 import { createCart, getCart, QK_CART } from "../../api";
+import { shouldShowAuthorizeButton } from "./PaymentProviderService";
 import { PaymentSession } from "./PaymentSession";
 
 const PaymentCollection = ({ cartId }: { cartId: string }) => {
@@ -324,8 +325,8 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
                     </div>
                   </div>
 
-                  {/* Authorization button for pp_system_default provider */}
-                  {session.provider_id === "pp_system_default" &&
+                  {/* Authorization button - only for providers that support it */}
+                  {shouldShowAuthorizeButton(session.provider_id) &&
                     session.id && (
                       <div className="mt-3 border-gray-200 border-t pt-3">
                         <div className="flex items-center justify-between">
