@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   initializeDefaultPaymentSession,
+  initializePaymentSession,
   listPaymentProviders,
 } from "../../../payment/api";
 import { QK_CART } from "../../api";
@@ -37,11 +38,40 @@ export const PaymentSession = ({
     }: {
       paymentCollectionId: string;
       providerId: string;
-    }) => initializeDefaultPaymentSession(paymentCollectionId, providerId),
-    onSuccess: () => {
+    }) => {
+      // Use different API functions based on provider type
+      if (providerId === "pp_system_default") {
+        return initializeDefaultPaymentSession(paymentCollectionId, providerId);
+      } else {
+        return initializePaymentSession(paymentCollectionId, providerId);
+      }
+    },
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],
       });
+
+      // Handle PayPal redirect
+      if (variables.providerId === "pp_paypal_payment_paypal_payment") {
+        const paymentSession = data.payment_sessions?.[0] || data;
+
+        // Try to get approval URL from multiple possible locations
+        const approvalUrl =
+          paymentSession.data?.approval_url ||
+          paymentSession.data?.links?.find(
+            (link: any) => link.rel === "payer-action",
+          )?.href;
+
+        if (approvalUrl) {
+          // Redirect to PayPal for user approval
+          window.location.href = approvalUrl;
+        } else {
+          console.error(
+            "PayPal approval URL not found in response:",
+            paymentSession,
+          );
+        }
+      }
     },
   });
 
@@ -103,10 +133,7 @@ export const PaymentSession = ({
           >
             {initializeSessionMutation.isPending ? (
               <span className="flex items-center">
-                <svg
-                  className="mr-2 h-4 w-4 animate-spin"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -124,8 +151,10 @@ export const PaymentSession = ({
                 </svg>
                 Initializing...
               </span>
-            ) : (
+            ) : selectedProvider === "pp_system_default" ? (
               "Initialize Payment Session"
+            ) : (
+              "Create Payment Session"
             )}
           </button>
 
@@ -140,7 +169,9 @@ export const PaymentSession = ({
           {initializeSessionMutation.isSuccess && (
             <div className="rounded-lg border border-green-200 bg-green-50 p-3">
               <p className="text-green-700 text-sm">
-                Payment session initialized successfully!
+                {selectedProvider === "pp_system_default"
+                  ? "Payment session initialized successfully! You can now authorize it."
+                  : "Payment session created successfully! You can now proceed with payment."}
               </p>
             </div>
           )}
