@@ -42,8 +42,13 @@ export async function initializePaymentSession(
     `/store-api/payment/initialize-payment-session/${paymentCollectionId}`,
     {
       provider_id: providerId,
+      data: {
+        intent: "CAPTURE",
+      },
     },
   );
+  console.log(data);
+
   return data;
 }
 
