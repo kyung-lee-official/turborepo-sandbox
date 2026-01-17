@@ -28,7 +28,9 @@ export const Content = () => {
     mutationFn: (regionId: string) => createCart(regionId),
     onSuccess: (data) => {
       setCartId(data.cart.id);
-      queryClient.invalidateQueries({ queryKey: [QK_CART.GET_CART] });
+      queryClient.invalidateQueries({
+        queryKey: [QK_CART.GET_CART, data.cart.id, regionId],
+      });
     },
   });
 
@@ -149,6 +151,13 @@ export const Content = () => {
           {JSON.stringify(cart, null, 2)}
         </pre>
       </details>
+
+      <CartCreation
+        cartId={cartId}
+        regionId={regionId}
+        onCreateCart={handleCreateCart}
+        createCartMutation={createCartMutation}
+      />
 
       <div className="border-b pb-4">
         <h1 className="font-bold text-3xl">Shopping Cart</h1>
