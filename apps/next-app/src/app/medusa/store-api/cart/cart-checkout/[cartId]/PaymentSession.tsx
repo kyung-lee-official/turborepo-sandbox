@@ -34,13 +34,13 @@ export const PaymentSession = ({
   });
 
   const initializeSessionMutation = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       paymentCollectionId,
       providerId,
     }: {
       paymentCollectionId: string;
       providerId: string;
-    }) => initializeSession(paymentCollectionId, providerId),
+    }) => await initializeSession(paymentCollectionId, providerId),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],

@@ -24,7 +24,7 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
       "Payment session initialized successfully! You can now authorize it.",
     showAuthorizeButton: true,
   },
-  pp_paypal_payment_paypal_payment: {
+  "pp_paypal-payment_paypal-payment": {
     type: "external",
     buttonText: "Create Payment Session",
     successMessage:
@@ -52,14 +52,20 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
 
 // Provider service functions
 export function getProviderConfig(providerId: string): PaymentProviderConfig {
-  return (
-    PROVIDER_CONFIGS[providerId] || {
-      type: "external",
-      buttonText: "Create Payment Session",
-      successMessage: "Payment session created successfully!",
-      showAuthorizeButton: false,
-    }
-  );
+  const providerConfig = PROVIDER_CONFIGS[providerId];
+  if (!providerConfig) {
+    console.warn(
+      `No configuration found for provider ID: ${providerId}. Using default configuration.`,
+    );
+    return {
+      type: "system_default",
+      buttonText: "Initialize Payment Session",
+      successMessage:
+        "Payment session initialized successfully! You can now authorize it.",
+      showAuthorizeButton: true,
+    };
+  }
+  return providerConfig;
 }
 
 export function isSystemDefault(providerId: string): boolean {
@@ -72,14 +78,21 @@ export async function initializeSession(
 ): Promise<any> {
   const config = getProviderConfig(providerId);
 
-  if (config.type === "system_default") {
-    return initializeDefaultPaymentSession(paymentCollectionId, providerId);
-  } else {
-    return initializePaymentSession(paymentCollectionId, providerId);
+  switch (config.type) {
+    case "system_default":
+      return await initializeDefaultPaymentSession(
+        paymentCollectionId,
+        providerId,
+      );
+    case "external":
+      return await initializePaymentSession(paymentCollectionId, providerId);
+    default:
+      throw new Error(`No provider type found for provider ID: ${providerId}`);
   }
 }
 
 export function handlePostInitialization(data: any, providerId: string): void {
+  console.log(providerId);
   const config = getProviderConfig(providerId);
 
   if (config.handleRedirect) {
