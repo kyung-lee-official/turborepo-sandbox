@@ -1,15 +1,5 @@
 # localtunnel
 
-To install dependencies:
+Any request sent to `https://<SUBDOMAIN>.loca.lt` will be forwarded to your local development server.
 
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.3.4. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+For example, `GET https://<SUBDOMAIN>.loca.lt/anything` will be forwarded to `GET http://localhost:PORT/anything`.

@@ -22,8 +22,11 @@ try {
   console.log("Tunnel is live! 🌐");
   console.log("Public URL →", tunnel.url);
   console.log(
-    "Use this for PayPal webhook →",
-    `${tunnel.url}/paypal-order-v2/webhooks`,
+    `Anything sent to ${tunnel.url} will be forwarded to http://localhost:` +
+      port,
+  );
+  console.log(
+    `For example, GET ${tunnel.url}/anything will be forwarded to GET http://localhost:${port}/anything`,
   );
 
   tunnel.on("close", () => {
