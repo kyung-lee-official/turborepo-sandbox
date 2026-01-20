@@ -33,7 +33,6 @@
     "@medusajs/medusa": "2.12.1",
     "@medusajs/types": "^2.12.1",
     "@medusajs/ui": "^4.0.29",
-    "@paypal/paypal-js": "^9.2.0",
     "@react-email/components": "^1.0.1",
     "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.13.2",
