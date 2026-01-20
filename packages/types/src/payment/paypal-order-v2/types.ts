@@ -1,5 +1,5 @@
 import type z from "zod";
-import type { intentEnum } from "../..";
+import type { intentEnum, payPalWebhookEventSchema } from "../..";
 
 export enum PayPalOrderQK {
   GET_ORDER_BY_ID = "get_order_by_id",
@@ -118,3 +118,5 @@ export interface PayPalCaptureResponse {
     };
   }>;
 }
+
+export type PayPalWebhookEvent = z.infer<typeof payPalWebhookEventSchema>;
