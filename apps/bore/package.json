@@ -4,13 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-	"dev": "bore local 9000 --to payment-webhook-dev.mathub.xyz --secret supersecret --port 4000",
-	"medusa:next": "bore local 9000 --to payment-webhook-dev.mathub.xyz --secret supersecret --port 4000"
+    "dev": "bore local 9000 --to payment-webhook-dev.mathub.xyz --secret supersecret --port 4000",
+    "medusa:next": "bore local 9000 --to payment-webhook-dev.mathub.xyz --secret supersecret --port 4000"
   },
   "devDependencies": {
     "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
   }
 }
