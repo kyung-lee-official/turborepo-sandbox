@@ -1,0 +1,1 @@
+Bore should be installed and added to system environment variables (Path). This allows the `bore` command to be run from any terminal or command prompt without specifying the full path to the executable.
