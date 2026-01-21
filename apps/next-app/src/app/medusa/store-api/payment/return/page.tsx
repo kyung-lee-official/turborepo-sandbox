@@ -1,3 +1,5 @@
+import PayPal from "./PayPal";
+
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
@@ -8,13 +10,7 @@ const Page = async ({ searchParams }: Props) => {
 
   if (token && PayerID) {
     /* PayPal */
-    return (
-      <div>
-        <p>
-          Payment successful! Token: {token}, PayerID: {PayerID}
-        </p>
-      </div>
-    );
+    return <PayPal token={token as string} PayerID={PayerID as string} />;
   }
 
   return <div>Unknown payment status</div>;

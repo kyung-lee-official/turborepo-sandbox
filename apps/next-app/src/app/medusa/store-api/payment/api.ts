@@ -50,6 +50,14 @@ export async function initializePaymentSession(
   return data;
 }
 
+export async function retrievePayment(data: unknown) {
+  const response = await api.post<any>(
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store-api/payment/retrieve-payment`,
+    data,
+  );
+  return response.data;
+}
+
 export async function authorizePaymentSession(paymentSessionId: string) {
   const data = await api.post(
     `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/commerce-modules/payment/payment-session/authorize-payment-session/${paymentSessionId}`,

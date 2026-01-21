@@ -63,11 +63,29 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
   async authorizePayment(
     input: AuthorizePaymentInput,
   ): Promise<AuthorizePaymentOutput> {
-    // the actual authorization is done on PayPal's side by customers approving the payment
     try {
+      const { data, context } = input;
+      if (!data) {
+        throw new HttpError(
+          "PAYMENT.PAYPAL_MISSING_CONTEXT",
+          "Missing payment data, cannot authorize PayPal payment",
+        );
+      }
+      if (!context || !context.idempotency_key) {
+        throw new HttpError(
+          "PAYMENT.PAYPAL_MISSING_CONTEXT",
+          "Missing payment context or idempotency key (payment session id), cannot authorize PayPal payment",
+        );
+      }
+      const { id: paypalOrderId } = data;
+      const { idempotency_key: paymentSessionId } = context;
+      const authorizedPayment = await this.client.authorizePayment(
+        paypalOrderId as string,
+      );
+
       return {
         status: "authorized",
-        data: input.data,
+        data: authorizedPayment,
       };
     } catch (error) {
       this.logger_.error("PayPal authorize payment failed:", error);
