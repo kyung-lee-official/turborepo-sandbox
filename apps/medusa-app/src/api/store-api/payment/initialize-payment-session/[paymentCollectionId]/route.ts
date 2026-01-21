@@ -17,12 +17,6 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       "Payment provider ID is required",
     );
   }
-  if (!data?.intent) {
-    throw new HttpError(
-      "PAYMENT.PAYPAL_MISSING_CONTEXT",
-      "Payment intent is required in data",
-    );
-  }
 
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
   const { data: paymentCollections } = await query.graph({
@@ -37,7 +31,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const cart = paymentCollection.cart;
   if (!cart) {
     throw new HttpError(
-      "PAYMENT.PAYPAL_MISSING_CONTEXT",
+      "PAYMENT.RESOURCE_NOT_FOUND",
       "Cart associated with the payment collection is required",
     );
   }
@@ -45,10 +39,11 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   const { result } = await createPaymentSessionsWorkflow(req.scope).run({
     input: {
+      // provider_id determines which payment provider to use
       provider_id: provider_id,
       payment_collection_id: paymentCollectionId,
-      data: {
-        intent: data.intent,
+      data: data,
+      context: {
         payment_collection_id: paymentCollectionId,
         shipping_address: shippingAddress,
       },
