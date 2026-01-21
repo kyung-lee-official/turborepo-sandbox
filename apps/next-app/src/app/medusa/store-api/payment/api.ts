@@ -6,7 +6,7 @@ import api from "../../axios-error-handling-for-medusa/axios-client";
 
 export async function createPaymentCollection(cartId: string) {
   const data = await api.post<StorePaymentCollectionResponse>(
-    `/store/payment-collections`,
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/payment-collections`,
     {
       cart_id: cartId,
     },
@@ -16,7 +16,7 @@ export async function createPaymentCollection(cartId: string) {
 
 export async function listPaymentProviders(regionId: string) {
   const data = await api.get<StorePaymentProviderListResponse>(
-    `/store/payment-providers?region_id=${regionId}`,
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/payment-providers?region_id=${regionId}`,
   );
   return data;
 }
@@ -26,7 +26,7 @@ export async function initializeDefaultPaymentSession(
   providerId: string,
 ) {
   const data = await api.post<StorePaymentCollectionResponse>(
-    `/store/payment-collections/${paymentCollectionId}/payment-sessions`,
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/payment-collections/${paymentCollectionId}/payment-sessions`,
     {
       provider_id: providerId,
     },
@@ -34,12 +34,12 @@ export async function initializeDefaultPaymentSession(
   return data;
 }
 
-export async function initializePaymentSession(
+export async function createPayPalOrder(
   paymentCollectionId: string,
   providerId: string,
 ) {
   const data = await api.post<StorePaymentCollectionResponse>(
-    `/store-api/payment/initialize-payment-session/${paymentCollectionId}`,
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store-api/payment/initialize-payment-session/${paymentCollectionId}`,
     {
       provider_id: providerId,
       data: {
@@ -52,7 +52,7 @@ export async function initializePaymentSession(
 
 export async function authorizePaymentSession(paymentSessionId: string) {
   const data = await api.post(
-    `/commerce-modules/payment/payment-session/authorize-payment-session/${paymentSessionId}`,
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/commerce-modules/payment/payment-session/authorize-payment-session/${paymentSessionId}`,
   );
   return data;
 }
