@@ -56,10 +56,9 @@ export const PaymentProviders = (props: PaymentProvidersProps) => {
             );
             return (
               <div
-                className={`flex items-center px-2 gap-2 ${
+                className={`flex items-center gap-2 px-2 ${
                   selected ? "text-blue-500" : ""
-                } ${hovered ? "bg-neutral-700" : ""}
-								rounded truncate`}
+                } ${hovered ? "bg-neutral-700" : ""}rounded truncate`}
               >
                 <span>{found.id}</span>
               </div>
