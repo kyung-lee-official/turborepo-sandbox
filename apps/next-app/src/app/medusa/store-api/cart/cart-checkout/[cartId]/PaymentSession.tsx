@@ -51,9 +51,8 @@ export const PaymentSession = ({
     },
   });
 
-  const handleProviderSelect = async () => {
+  const handleCreatePaymentSession = async () => {
     if (!paymentCollectionId || !selectedProvider) return;
-
     try {
       await initializeSessionMutation.mutateAsync({
         paymentCollectionId,
@@ -99,7 +98,7 @@ export const PaymentSession = ({
           </div>
 
           <button
-            onClick={handleProviderSelect}
+            onClick={handleCreatePaymentSession}
             disabled={
               !selectedProvider ||
               initializeSessionMutation.isPending ||
