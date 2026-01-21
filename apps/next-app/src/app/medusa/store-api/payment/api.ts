@@ -34,7 +34,7 @@ export async function initializeDefaultPaymentSession(
   return data;
 }
 
-export async function createPayPalOrder(
+export async function initializePaymentSession(
   paymentCollectionId: string,
   providerId: string,
 ) {
