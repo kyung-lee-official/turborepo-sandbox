@@ -63,16 +63,11 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
   async authorizePayment(
     input: AuthorizePaymentInput,
   ): Promise<AuthorizePaymentOutput> {
-    const externalId = input.data?.id;
-
+    // the actual authorization is done on PayPal's side by customers approving the payment
     try {
-      const paymentData = await this.client.authorizePayment(
-        externalId as string,
-      );
-
       return {
-        data: paymentData,
         status: "authorized",
+        data: input.data,
       };
     } catch (error) {
       this.logger_.error("PayPal authorize payment failed:", error);
@@ -267,6 +262,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     input: InitiatePaymentInput & {
       data: {
         intent: IntentType;
+      };
+      context: {
         payment_collection_id: string;
         shipping_address: StoreCartAddress;
       };
@@ -279,13 +276,20 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
       );
     }
 
-    const { amount, currency_code, data } = input;
+    const { amount, currency_code, data, context } = input;
+
+    if (!data.intent) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_MISSING_CONTEXT",
+        "Payment intent is required in data",
+      );
+    }
 
     const orderPayload: CreateOrderRequest = {
       intent: data.intent,
       purchase_units: [
         {
-          reference_id: data.payment_collection_id,
+          reference_id: context.payment_collection_id,
           amount: {
             currency_code: currency_code,
             value: amount as string,
@@ -295,12 +299,12 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
       payment_source: {
         paypal: {
           address: {
-            address_line_1: data.shipping_address.address_1 || "",
-            address_line_2: data.shipping_address.address_2 || "",
-            admin_area_1: data.shipping_address.city || "",
-            admin_area_2: data.shipping_address.province || "",
-            postal_code: data.shipping_address.postal_code || "",
-            country_code: data.shipping_address.country_code || "",
+            address_line_1: context.shipping_address.address_1 || "",
+            address_line_2: context.shipping_address.address_2 || "",
+            admin_area_1: context.shipping_address.city || "",
+            admin_area_2: context.shipping_address.province || "",
+            postal_code: context.shipping_address.postal_code || "",
+            country_code: context.shipping_address.country_code || "",
           },
           email_address: "",
           payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED",
