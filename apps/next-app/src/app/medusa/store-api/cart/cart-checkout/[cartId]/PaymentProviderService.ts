@@ -24,7 +24,7 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
       "Payment session initialized successfully! You can now authorize it.",
     showAuthorizeButton: true,
   },
-  "pp_paypal-payment_paypal-payment": {
+  pp_paypal_paypal: {
     type: "external",
     buttonText: "Create Payment Session",
     successMessage:
