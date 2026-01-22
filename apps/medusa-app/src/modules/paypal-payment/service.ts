@@ -39,7 +39,7 @@ import { PayPalClient } from "./client";
 
 type Options = {
   clientId: string;
-  clientSecret: string;	
+  clientSecret: string;
 };
 
 type InjectedDependencies = {
