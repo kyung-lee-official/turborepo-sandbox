@@ -38,9 +38,9 @@ export class PayPalClient {
   /**
    * Capture a PayPal order
    */
-  async captureOrder(orderId: string): Promise<any> {
+  async captureOrder(authId: string): Promise<any> {
     const response = await this.axiosInstance.post(
-      `/v2/checkout/orders/${orderId}/capture`,
+      `/v2/payments/authorizations/${authId}/capture`,
     );
     return response.data;
   }
@@ -69,10 +69,11 @@ export class PayPalClient {
    * Cancel/void an authorized payment
    */
   async cancelPayment(authorizationId: string): Promise<any> {
-    const response = await this.axiosInstance.post(
-      `/v2/payments/authorizations/${authorizationId}/void`,
-    );
-    return response.data;
+    // const response = await this.axiosInstance.post(
+    //   `/v2/payments/authorizations/${authorizationId}/void`,
+    // );
+    // return response.data;
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  cancelPayment ");
   }
 
   /**

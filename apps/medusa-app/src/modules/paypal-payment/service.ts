@@ -33,6 +33,7 @@ import {
   type CreateOrderRequest,
   HttpError,
   type IntentType,
+  type PayPalAuthorizePaymentResponse,
 } from "@repo/types";
 import { PayPalClient } from "./client";
 
@@ -79,9 +80,9 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
       }
       const { id: paypalOrderId } = data;
       const { idempotency_key: paymentSessionId } = context;
-      const authorizedPayment = await this.client.authorizePayment(
+      const authorizedPayment = (await this.client.authorizePayment(
         paypalOrderId as string,
-      );
+      )) as PayPalAuthorizePaymentResponse;
 
       return {
         status: "authorized",
@@ -114,14 +115,31 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
   async capturePayment(
     input: CapturePaymentInput,
   ): Promise<CapturePaymentOutput> {
-    const externalId = input.data?.id;
+    const data = input.data as PayPalAuthorizePaymentResponse;
+    const context = input.context as {
+      idempotency_key: string;
+    };
+    if (
+      !data.purchase_units?.[0]?.payments?.authorizations?.[0]?.id ||
+      !context
+    ) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_MISSING_CONTEXT",
+        "Missing payment data or context, cannot capture PayPal payment",
+      );
+    }
 
     try {
-      const newData = await this.client.captureOrder(externalId as string);
+      const captureOrderData = await this.client.captureOrder(
+        data.purchase_units[0].payments.authorizations[0].id as string,
+      );
       return {
         data: {
-          ...newData,
-          id: externalId,
+          ...data,
+          context: {
+            ...context,
+            captureOrderData: captureOrderData,
+          },
         },
       };
     } catch (error) {
