@@ -5,6 +5,7 @@ import type {
   payPalCaptureWebhookEventSchema,
   payPalCheckoutOrderApprovedEventSchema,
 } from "../..";
+import type { payPalAuthorizePaymentResponseSchema } from "./schemas/authorize-payment-response.schemas";
 
 export enum PayPalOrderQK {
   GET_ORDER_BY_ID = "get_order_by_id",
@@ -133,7 +134,12 @@ export type PayPalAuthorizationEvent = z.infer<
 export type PayPalCaptureCompletedEvent = z.infer<
   typeof payPalCaptureWebhookEventSchema
 >;
+
 export type PayPalWebhookEvent =
   | PayPalCheckoutOrderApprovedEvent
   | PayPalAuthorizationEvent
   | PayPalCaptureCompletedEvent;
+
+export type PayPalAuthorizePaymentResponse = z.infer<
+  typeof payPalAuthorizePaymentResponseSchema
+>;
