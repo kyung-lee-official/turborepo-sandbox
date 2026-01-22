@@ -1,14 +1,12 @@
-# PayPal Order API README
+# PayPal Order API V2
 
-## API-Only Recommended Payment Flow (Gemini 2.5 Flash)
-
-Since you are avoiding the PayPal SDK, you will be performing a classic "**Create Order and Capture**" flow using the PayPal REST API, typically involving a redirect for the user to authorize the payment.
+## API-Only Payment Flow
 
 1.  **Frontend: Initiate Order**
 
     The user clicks a "Pay with PayPal" button on your Next.js client component.
 
-    The frontend makes a `POST` request to your custom Next.js API route, for example, `/api/paypal/create-order`.
+    The frontend makes a `POST` request to your custom backend API route, for example, `/api/paypal/create-order`.
 
 1.  **Backend: Create PayPal Order**
 
@@ -16,7 +14,11 @@ Since you are avoiding the PayPal SDK, you will be performing a classic "**Creat
 
     -   Get Access Token: Use your stored Client ID and Client Secret to call the PayPal Generate Access Token API.
 
-    -   Create Order: Call the PayPal Create Order API (`/v2/checkout/orders`) using the generated Access Token.
+    -   Create Order: Call the PayPal Create Order API using the generated Access Token.
+        
+		```
+		POST https://api-m.paypal.com/v2/checkout/orders
+		```
 
     -   Return Response: Return the PayPal-generated `orderID` and the relevant PayPal `approve` link (from the `links` array in the response) back to the frontend. Example
 
@@ -37,43 +39,43 @@ Since you are avoiding the PayPal SDK, you will be performing a classic "**Creat
 
     Here the `self` link is used by the backend to retrieve order details if needed, and the `payer-action` link is used to redirect the user for approval.
 
-1.  Frontend: User Approval (Redirection)
+	The `/api/paypal/create-order` route responds with the `orderID` and the `approve` link to the frontend.
 
-    The frontend receives the `orderID` and the `approve` link.
+2.  Frontend: User Approval (Redirection)
 
-    It redirects the user to the PayPal `approve` link. This is where the user logs into PayPal and authorizes the payment.
+    The frontend receives the `approve` link, automatically (onSuccess) redirects the user to the PayPal `approve` link. This is where the user logs into PayPal and authorizes the payment.
 
-    After approval (or cancellation), PayPal redirects the user back to your site using the `return_url` (or `cancel_url`) you specified in the Create Order API call.
+    After approval (or cancellation), PayPal redirects the user back to your site using the `return_url` (or `cancel_url`) you specified in the Create Order API call. On page `return_url` (e.g. `/checkout/success?token=...&PayerID=...`), poll requests (or SSE) to your backend to check the payment status, let the user wait for the final confirmation.
 
-1.  Backend: Capture Payment
+3.  Backend: Authorize/Capture Payment
 
-    The user is redirected back to a page/route on your Next.js app (e.g., `/checkout/success?token=...&PayerID=...`).
+	For security reasons, the payment flow is designed to be 'two-legged' to prevent fraudulent activities. It requires a server-side call to ensure the request comes from a trusted source (your backend, authenticated with your API keys).
 
-    This success page/route extracts the necessary data (like the `token` or `orderID` if available) and makes a final `POST` request to your _Capture Payment_ API route, e.g., /api/paypal/capture-payment.
+	After the user approves the payment on PayPal's site, PayPal sends webhook events to your backend. 
 
-    The `/api/paypal/capture-payment` route performs the final steps securely on the server:
+	There are two different webhook routines depending on the payment intent `AUTHORIZE` or `CAPTURE`.
 
-    -   **Get Access Token**: If the current token is expired, generate a new Access Token.
+	`AUTHORIZE`
 
-    -   **Capture Order**: Call the PayPal **Capture Order API** (`/v2/checkout/orders/{order_id}/capture`) using the Access Token.
+	* `CHECKOUT.ORDER.APPROVED`, which indicates that the user has approved the PayPal order and the payment can now be authorized.
 
-    -   **Fulfill Order**: Once the capture response is received and the status is `COMPLETED`, **update your database** to fulfill the order and mark the transaction as paid.
+    	Upon receiving this webhook event, your backend can call the PayPal Authorize API to authorize the payment.
+		
+		```
+		POST https://api-m.paypal.com/v2/checkout/orders/{order_id}/authorize
+		```
 
-    -   **Return Confirmation**: Return a final success/failure response to the frontend.
+		PayPal returns an authorization ID in the response. This authorization ID can then be used to capture the funds by calling the PayPal Capture API later. Once the payment is authorized, PayPal sends a `PAYMENT.AUTHORIZATION.CREATED` webhook event to notify your backend that the authorization was successful.
+	
+	* `PAYMENT.AUTHORIZATION.CREATED`, which indicates that the payment authorization was successfully created. Your backend can now capture the funds using the authorization ID by calling the PayPal Capture API.
+		
+		```
+		POST https://api-m.paypal.com/v2/payments/authorizations/{authorization_id}/capture
+		```
 
-1.  Frontend: Final Confirmation
+		Once the funds are captured, PayPal sends a `PAYMENT.CAPTURE.COMPLETED` webhook event to notify your backend that the payment has been successfully captured.
 
-    The frontend displays a final confirmation page to the user based on the response from the _Capture Payment_ route.
-
-**Sources**:
-
-https://dev.to/husnain/how-to-integrate-paypal-with-nextjs-2oil
-
-https://developer.paypal.com/studio/checkout/standard/integrate
-
-https://www.niftylittleme.com/articles/integrating-paypal-checkout-into-your-nextjs-project
-
-https://medium.com/@justinbartlettjob/simple-paypal-next-js-15-integration-7adc8929aa17
+	* `PAYMENT.CAPTURE.COMPLETED`, which indicates that the payment has been successfully captured, the funds have been transferred to the merchant's account. Your backend can now update the order status to "COMPLETED" and fulfill the order accordingly.
 
 ## PayPal AUTHORIZE vs CAPTURE
 
@@ -84,25 +86,19 @@ PayPal offers two different payment intents:
 
 The Two-Step Process:
 
-Step 1: AUTHORIZE (Customer Action)
+Step 1: AUTHORIZE
 
 -   The customer approves the payment on PayPal's site.
 -   PayPal reserves the funds but does not transfer them yet.
 -   Money is held for a limited time (usually 29 days).
 -   The order status becomes "APPROVED".
 
-Step 2: CAPTURE (Merchant Action)
+Step 2: CAPTURE
 
 -   The merchant decides when to capture the funds.
 -   PayPal transfers the reserved funds to the merchant's account.
 -   The order status becomes "COMPLETED".
 
-Who Performs What?
-
-| Action    | Performed By          | When                                                    |
-| --------- | --------------------- | ------------------------------------------------------- |
-| AUTHORIZE | Customer (via PayPal) | During checkout (PayPal redirect)                       |
-| CAPTURE   | Merchant (via API)    | After customer approval, and order fulfillment/shipping |
 
 Business Use Cases:
 
