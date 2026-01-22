@@ -61,236 +61,12 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     this.client = new PayPalClient();
   }
 
-  async authorizePayment(
-    input: AuthorizePaymentInput,
-  ): Promise<AuthorizePaymentOutput> {
-    try {
-      const { data, context } = input;
-      if (!data) {
-        throw new HttpError(
-          "PAYMENT.PAYPAL_MISSING_CONTEXT",
-          "Missing payment data, cannot authorize PayPal payment",
-        );
-      }
-      if (!context || !context.idempotency_key) {
-        throw new HttpError(
-          "PAYMENT.PAYPAL_MISSING_CONTEXT",
-          "Missing payment context or idempotency key (payment session id), cannot authorize PayPal payment",
-        );
-      }
-      const { id: paypalOrderId } = data;
-      const { idempotency_key: paymentSessionId } = context;
-      const authorizedPayment = (await this.client.authorizePayment(
-        paypalOrderId as string,
-      )) as PayPalAuthorizePaymentResponse;
-
-      return {
-        status: "authorized",
-        data: authorizedPayment,
-      };
-    } catch (error) {
-      this.logger_.error("PayPal authorize payment failed:", error);
+  static validateOptions(options: Options) {
+    if (!options.clientSecret) {
       throw new HttpError(
-        "PAYMENT.PAYPAL_AUTHORIZATION_FAILED",
-        "Failed to authorize PayPal payment",
+        "PAYMENT.PAYPAL_MISSING_CLIENT_SECRET",
+        "API key is required in the provider's options.",
       );
-    }
-  }
-
-  async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
-    const externalId = input.data?.id;
-
-    try {
-      const paymentData = await this.client.cancelPayment(externalId as string);
-      return { data: paymentData };
-    } catch (error) {
-      this.logger_.error("PayPal cancel payment failed:", error);
-      throw new HttpError(
-        "PAYMENT.PAYPAL_CANCEL_FAILED",
-        "Failed to cancel PayPal payment",
-      );
-    }
-  }
-
-  async capturePayment(
-    input: CapturePaymentInput,
-  ): Promise<CapturePaymentOutput> {
-    const data = input.data as PayPalAuthorizePaymentResponse;
-    const context = input.context as {
-      idempotency_key: string;
-    };
-    if (
-      !data.purchase_units?.[0]?.payments?.authorizations?.[0]?.id ||
-      !context
-    ) {
-      throw new HttpError(
-        "PAYMENT.PAYPAL_MISSING_CONTEXT",
-        "Missing payment data or context, cannot capture PayPal payment",
-      );
-    }
-
-    try {
-      const captureOrderData = await this.client.captureOrder(
-        data.purchase_units[0].payments.authorizations[0].id as string,
-      );
-      return {
-        data: {
-          ...data,
-          context: {
-            ...context,
-            captureOrderData: captureOrderData,
-          },
-        },
-      };
-    } catch (error) {
-      this.logger_.error("PayPal capture payment failed:", error);
-      throw new HttpError(
-        "PAYMENT.PAYPAL_ORDER_CANNOT_BE_CAPTURED",
-        "Failed to capture PayPal payment",
-      );
-    }
-  }
-
-  async createAccountHolder({ context, data }: CreateAccountHolderInput) {
-    const { account_holder, customer } = context;
-
-    if (account_holder?.data?.id) {
-      return { id: account_holder.data.id as string };
-    }
-
-    if (!customer) {
-      throw new HttpError(
-        "CUSTOMER.MISSING_CUSTOMER_DATA",
-        "Missing customer data.",
-      );
-    }
-
-    // assuming you have a client that creates the account holder
-    // const providerAccountHolder = await this.client.createAccountHolder({
-    //   email: customer.email,
-    //   ...data,
-    // });
-
-    // return {
-    //   id: providerAccountHolder.id,
-    //   data: providerAccountHolder as unknown as Record<string, unknown>,
-    // };
-    return {};
-  }
-
-  async deleteAccountHolder({ context }: DeleteAccountHolderInput) {
-    const { account_holder } = context;
-    const accountHolderId = account_holder?.data?.id as string | undefined;
-    if (!accountHolderId) {
-      throw new HttpError(
-        "PAYMENT.PAYPAL_MISSING_ACCOUNT_HOLDER",
-        "Missing account holder ID.",
-      );
-    }
-
-    // assuming you have a client that deletes the account holder
-    // await this.client.deleteAccountHolder({
-    //   id: accountHolderId,
-    // });
-
-    return {};
-  }
-
-  async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
-    const externalId = input.data?.id;
-
-    try {
-      await this.client.cancelPayment(externalId as string);
-      return {
-        data: input.data,
-      };
-    } catch (error) {
-      this.logger_.error("PayPal delete payment failed:", error);
-      throw new HttpError(
-        "PAYMENT.PAYPAL_DELETE_FAILED",
-        "Failed to delete PayPal payment",
-      );
-    }
-  }
-
-  async getPaymentStatus(
-    input: GetPaymentStatusInput,
-  ): Promise<GetPaymentStatusOutput> {
-    const externalId = input.data?.id;
-
-    try {
-      const status = await this.client.getPaymentStatus(externalId as string);
-
-      switch (status) {
-        case "requires_capture":
-        case "AUTHORIZED":
-          return { status: "authorized" };
-        case "success":
-        case "CAPTURED":
-        case "COMPLETED":
-          return { status: "captured" };
-        case "canceled":
-        case "CANCELLED":
-        case "VOIDED":
-          return { status: "canceled" };
-        default:
-          return { status: "pending" };
-      }
-    } catch (error) {
-      this.logger_.error("PayPal get payment status failed:", error);
-      throw new HttpError(
-        "PAYMENT.PAYPAL_STATUS_CHECK_FAILED",
-        "Failed to check PayPal payment status",
-      );
-    }
-  }
-
-  async getWebhookActionAndData(
-    payload: ProviderWebhookPayload["payload"],
-  ): Promise<WebhookActionResult> {
-    const { data, rawData, headers } = payload;
-
-    try {
-      switch (data.event_type) {
-        case "authorized_amount":
-          return {
-            action: "authorized",
-            data: {
-              // assuming the session_id is stored in the metadata of the payment
-              // in the third-party provider
-              session_id: (data.metadata as Record<string, any>).session_id,
-              amount: new BigNumber(data.amount as number),
-            },
-          };
-        case "success":
-          return {
-            action: "captured",
-            data: {
-              // assuming the session_id is stored in the metadata of the payment
-              // in the third-party provider
-              session_id: (data.metadata as Record<string, any>).session_id,
-              amount: new BigNumber(data.amount as number),
-            },
-          };
-        default:
-          return {
-            action: "not_supported",
-            data: {
-              session_id: "",
-              amount: new BigNumber(0),
-            },
-          };
-      }
-    } catch (e) {
-      return {
-        action: "failed",
-        data: {
-          // assuming the session_id is stored in the metadata of the payment
-          // in the third-party provider
-          session_id: (data.metadata as Record<string, any>).session_id,
-          amount: new BigNumber(data.amount as number),
-        },
-      };
     }
   }
 
@@ -384,6 +160,81 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     }
   }
 
+  async authorizePayment(
+    input: AuthorizePaymentInput,
+  ): Promise<AuthorizePaymentOutput> {
+    try {
+      const { data, context } = input;
+      if (!data) {
+        throw new HttpError(
+          "PAYMENT.PAYPAL_MISSING_CONTEXT",
+          "Missing payment data, cannot authorize PayPal payment",
+        );
+      }
+      if (!context || !context.idempotency_key) {
+        throw new HttpError(
+          "PAYMENT.PAYPAL_MISSING_CONTEXT",
+          "Missing payment context or idempotency key (payment session id), cannot authorize PayPal payment",
+        );
+      }
+      const { id: paypalOrderId } = data;
+      const { idempotency_key: paymentSessionId } = context;
+      const authorizedPayment = (await this.client.authorizePayment(
+        paypalOrderId as string,
+      )) as PayPalAuthorizePaymentResponse;
+
+      return {
+        status: "authorized",
+        data: authorizedPayment,
+      };
+    } catch (error) {
+      this.logger_.error("PayPal authorize payment failed:", error);
+      throw new HttpError(
+        "PAYMENT.PAYPAL_AUTHORIZATION_FAILED",
+        "Failed to authorize PayPal payment",
+      );
+    }
+  }
+
+  async capturePayment(
+    input: CapturePaymentInput,
+  ): Promise<CapturePaymentOutput> {
+    const data = input.data as PayPalAuthorizePaymentResponse;
+    const context = input.context as {
+      idempotency_key: string;
+    };
+    if (
+      !data.purchase_units?.[0]?.payments?.authorizations?.[0]?.id ||
+      !context
+    ) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_MISSING_CONTEXT",
+        "Missing payment data or context, cannot capture PayPal payment",
+      );
+    }
+
+    try {
+      const captureOrderData = await this.client.captureOrder(
+        data.purchase_units[0].payments.authorizations[0].id as string,
+      );
+      return {
+        data: {
+          ...data,
+          context: {
+            ...context,
+            captureOrderData: captureOrderData,
+          },
+        },
+      };
+    } catch (error) {
+      this.logger_.error("PayPal capture payment failed:", error);
+      throw new HttpError(
+        "PAYMENT.PAYPAL_ORDER_CANNOT_BE_CAPTURED",
+        "Failed to capture PayPal payment",
+      );
+    }
+  }
+
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const externalId = input.data?.id;
 
@@ -407,17 +258,46 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     }
   }
 
-  async retrieveAccountHolder({ id }: RetrieveAccountHolderInput) {
-    // assuming you have a client that retrieves the account holder
-    // const providerAccountHolder = await this.client.retrieveAccountHolder({
-    //   id,
+  async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
+    const { amount, currency_code, context } = input;
+    const externalId = input.data?.id;
+
+    // Validate context.customer
+    if (!context || !context.customer) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_MISSING_CUSTOMER",
+        "Context must include a valid customer.",
+      );
+    }
+
+    // assuming you have a client that updates the payment
+    // const response = await this.client.update(externalId, {
+    //   amount,
+    //   currency_code,
+    //   customer: context.customer,
     // });
 
-    // return {
-    //   id: providerAccountHolder.id,
-    //   data: providerAccountHolder as unknown as Record<string, unknown>,
-    // };
-    return {};
+    // return response;
+    return {
+      data: input.data,
+    };
+  }
+
+  async deletePayment(input: DeletePaymentInput): Promise<DeletePaymentOutput> {
+    const externalId = input.data?.id;
+
+    try {
+      await this.client.cancelPayment(externalId as string);
+      return {
+        data: input.data,
+      };
+    } catch (error) {
+      this.logger_.error("PayPal delete payment failed:", error);
+      throw new HttpError(
+        "PAYMENT.PAYPAL_DELETE_FAILED",
+        "Failed to delete PayPal payment",
+      );
+    }
   }
 
   /**
@@ -445,6 +325,160 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
         "Failed to retrieve PayPal payment",
       );
     }
+  }
+
+  async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
+    const externalId = input.data?.id;
+
+    try {
+      const paymentData = await this.client.cancelPayment(externalId as string);
+      return { data: paymentData };
+    } catch (error) {
+      this.logger_.error("PayPal cancel payment failed:", error);
+      throw new HttpError(
+        "PAYMENT.PAYPAL_CANCEL_FAILED",
+        "Failed to cancel PayPal payment",
+      );
+    }
+  }
+
+  async getPaymentStatus(
+    input: GetPaymentStatusInput,
+  ): Promise<GetPaymentStatusOutput> {
+    const externalId = input.data?.id;
+
+    try {
+      const status = await this.client.getPaymentStatus(externalId as string);
+
+      switch (status) {
+        case "requires_capture":
+        case "AUTHORIZED":
+          return { status: "authorized" };
+        case "success":
+        case "CAPTURED":
+        case "COMPLETED":
+          return { status: "captured" };
+        case "canceled":
+        case "CANCELLED":
+        case "VOIDED":
+          return { status: "canceled" };
+        default:
+          return { status: "pending" };
+      }
+    } catch (error) {
+      this.logger_.error("PayPal get payment status failed:", error);
+      throw new HttpError(
+        "PAYMENT.PAYPAL_STATUS_CHECK_FAILED",
+        "Failed to check PayPal payment status",
+      );
+    }
+  }
+
+  async getWebhookActionAndData(
+    payload: ProviderWebhookPayload["payload"],
+  ): Promise<WebhookActionResult> {
+    const { data, rawData, headers } = payload;
+
+    try {
+      switch (data.event_type) {
+        case "authorized_amount":
+          return {
+            action: "authorized",
+            data: {
+              // assuming the session_id is stored in the metadata of the payment
+              // in the third-party provider
+              session_id: (data.metadata as Record<string, any>).session_id,
+              amount: new BigNumber(data.amount as number),
+            },
+          };
+        case "success":
+          return {
+            action: "captured",
+            data: {
+              // assuming the session_id is stored in the metadata of the payment
+              // in the third-party provider
+              session_id: (data.metadata as Record<string, any>).session_id,
+              amount: new BigNumber(data.amount as number),
+            },
+          };
+        default:
+          return {
+            action: "not_supported",
+            data: {
+              session_id: "",
+              amount: new BigNumber(0),
+            },
+          };
+      }
+    } catch (e) {
+      return {
+        action: "failed",
+        data: {
+          // assuming the session_id is stored in the metadata of the payment
+          // in the third-party provider
+          session_id: (data.metadata as Record<string, any>).session_id,
+          amount: new BigNumber(data.amount as number),
+        },
+      };
+    }
+  }
+
+  async createAccountHolder({ context, data }: CreateAccountHolderInput) {
+    const { account_holder, customer } = context;
+
+    if (account_holder?.data?.id) {
+      return { id: account_holder.data.id as string };
+    }
+
+    if (!customer) {
+      throw new HttpError(
+        "CUSTOMER.MISSING_CUSTOMER_DATA",
+        "Missing customer data.",
+      );
+    }
+
+    // assuming you have a client that creates the account holder
+    // const providerAccountHolder = await this.client.createAccountHolder({
+    //   email: customer.email,
+    //   ...data,
+    // });
+
+    // return {
+    //   id: providerAccountHolder.id,
+    //   data: providerAccountHolder as unknown as Record<string, unknown>,
+    // };
+    return {};
+  }
+
+  async deleteAccountHolder({ context }: DeleteAccountHolderInput) {
+    const { account_holder } = context;
+    const accountHolderId = account_holder?.data?.id as string | undefined;
+    if (!accountHolderId) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_MISSING_ACCOUNT_HOLDER",
+        "Missing account holder ID.",
+      );
+    }
+
+    // assuming you have a client that deletes the account holder
+    // await this.client.deleteAccountHolder({
+    //   id: accountHolderId,
+    // });
+
+    return {};
+  }
+
+  async retrieveAccountHolder({ id }: RetrieveAccountHolderInput) {
+    // assuming you have a client that retrieves the account holder
+    // const providerAccountHolder = await this.client.retrieveAccountHolder({
+    //   id,
+    // });
+
+    // return {
+    //   id: providerAccountHolder.id,
+    //   data: providerAccountHolder as unknown as Record<string, unknown>,
+    // };
+    return {};
   }
 
   async savePaymentMethod({ context, data }: SavePaymentMethodInput) {
@@ -493,40 +527,6 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     //   data: providerAccountHolder as unknown as Record<string, unknown>,
     // };
     return {};
-  }
-
-  async updatePayment(input: UpdatePaymentInput): Promise<UpdatePaymentOutput> {
-    const { amount, currency_code, context } = input;
-    const externalId = input.data?.id;
-
-    // Validate context.customer
-    if (!context || !context.customer) {
-      throw new HttpError(
-        "PAYMENT.PAYPAL_MISSING_CUSTOMER",
-        "Context must include a valid customer.",
-      );
-    }
-
-    // assuming you have a client that updates the payment
-    // const response = await this.client.update(externalId, {
-    //   amount,
-    //   currency_code,
-    //   customer: context.customer,
-    // });
-
-    // return response;
-    return {
-      data: input.data,
-    };
-  }
-
-  static validateOptions(options: Options) {
-    if (!options.clientSecret) {
-      throw new HttpError(
-        "PAYMENT.PAYPAL_MISSING_CLIENT_SECRET",
-        "API key is required in the provider's options.",
-      );
-    }
   }
 }
 
