@@ -1,5 +1,10 @@
 import type z from "zod";
-import type { intentEnum, payPalWebhookEventSchema } from "../..";
+import type {
+  intentEnum,
+  payPalAuthorizationWebhookEventSchema,
+  payPalCaptureWebhookEventSchema,
+  payPalCheckoutOrderApprovedEventSchema,
+} from "../..";
 
 export enum PayPalOrderQK {
   GET_ORDER_BY_ID = "get_order_by_id",
@@ -119,4 +124,16 @@ export interface PayPalCaptureResponse {
   }>;
 }
 
-export type PayPalWebhookEvent = z.infer<typeof payPalWebhookEventSchema>;
+export type PayPalCheckoutOrderApprovedEvent = z.infer<
+  typeof payPalCheckoutOrderApprovedEventSchema
+>;
+export type PayPalAuthorizationEvent = z.infer<
+  typeof payPalAuthorizationWebhookEventSchema
+>;
+export type PayPalCaptureCompletedEvent = z.infer<
+  typeof payPalCaptureWebhookEventSchema
+>;
+export type PayPalWebhookEvent =
+  | PayPalCheckoutOrderApprovedEvent
+  | PayPalAuthorizationEvent
+  | PayPalCaptureCompletedEvent;
