@@ -26,7 +26,8 @@
     "rules": {
       "recommended": true,
       "correctness": {
-        "noUnusedVariables": "off"
+        "noUnusedVariables": "off",
+        "noUnusedFunctionParameters": "off"
       }
     }
   },
