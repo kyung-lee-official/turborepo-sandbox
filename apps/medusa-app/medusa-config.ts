@@ -69,7 +69,7 @@ module.exports = defineConfig({
           {
             // if module provider is in a plugin, use `plugin-name/providers/paypal-payment`
             resolve: "./src/modules/paypal-payment",
-            id: "paypal-payment",
+            id: "paypal",
             options: {
               // provider options...
               clientId: process.env.PAYPAL_CLIENT_ID,

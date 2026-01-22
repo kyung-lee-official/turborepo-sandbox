@@ -39,7 +39,7 @@ import { PayPalClient } from "./client";
 
 type Options = {
   clientId: string;
-  clientSecret: string;
+  clientSecret: string;	
 };
 
 type InjectedDependencies = {
@@ -47,7 +47,7 @@ type InjectedDependencies = {
 };
 
 class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
-  static identifier = "paypal-payment";
+  static identifier = "paypal";
 
   protected logger_: Logger;
   protected options_: Options;
