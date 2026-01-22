@@ -402,13 +402,24 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     return {};
   }
 
+  /**
+   * This method is used internally in this service to retrieve raw order data from PayPal,
+   * it doesn't automatically called by any other method
+   * @returns raw order data from PayPal
+   */
   async retrievePayment(
     input: RetrievePaymentInput,
   ): Promise<RetrievePaymentOutput> {
-    const externalId = input.data?.id;
+    if (!input.data?.id) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_ORDER_ID_NOT_FOUND",
+        "PayPal order ID is required in input.data",
+      );
+    }
+    const { id: paypalOrderId } = input.data;
 
     try {
-      return await this.client.getOrder(externalId as string);
+      return await this.client.getOrder(paypalOrderId as string);
     } catch (error) {
       this.logger_.error("PayPal retrieve payment failed:", error);
       throw new HttpError(
