@@ -22,8 +22,28 @@ export const payPalAuthorizationSchema = z.object({
   update_time: z.string(), // ISO datetime string
 });
 
+export const payPalSellerReceivableBreakdownSchema = z.object({
+  gross_amount: payPalAmountSchema,
+  paypal_fee: payPalAmountSchema,
+  net_amount: payPalAmountSchema,
+});
+
+export const payPalCaptureSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  amount: payPalAmountSchema,
+  final_capture: z.boolean(),
+  seller_protection: payPalSellerProtectionSchema,
+  seller_receivable_breakdown: payPalSellerReceivableBreakdownSchema,
+  custom_id: z.string().optional(),
+  links: z.array(payPalLinkSchema),
+  create_time: z.string(), // ISO datetime string
+  update_time: z.string(), // ISO datetime string
+});
+
 export const payPalPaymentsSchema = z.object({
-  authorizations: z.array(payPalAuthorizationSchema),
+  authorizations: z.array(payPalAuthorizationSchema).optional(),
+  captures: z.array(payPalCaptureSchema).optional(),
 });
 
 export const payPalShippingSchema = z.object({
