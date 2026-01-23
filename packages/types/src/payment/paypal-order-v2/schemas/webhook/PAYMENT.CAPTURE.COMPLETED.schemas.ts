@@ -32,6 +32,7 @@ export const payPalCaptureResourceSchema = z.object({
   disbursement_mode: z.string(),
   payee: payPalCapturePayeeSchema,
   amount: payPalAmountSchema,
+  custom_id: z.string().optional(), // used to store cart_id
   seller_protection: payPalSellerProtectionSchema,
   supplementary_data: payPalCaptureSupplementaryDataSchema,
   update_time: z.string(), // ISO datetime string
