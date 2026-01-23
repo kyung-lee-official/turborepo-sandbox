@@ -4,7 +4,10 @@ import type {
   AdminPaymentSession,
 } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
-import { capturePaymentWorkflow } from "@medusajs/medusa/core-flows";
+import {
+  capturePaymentWorkflow,
+  completeCartWorkflow,
+} from "@medusajs/medusa/core-flows";
 import {
   HttpError,
   type PayPalAuthorizationEvent,
@@ -102,11 +105,25 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             payment_id: payment.id,
           },
         });
-        res.send(result);
+        res.status(200).send(result);
         break;
       }
       case "PAYMENT.CAPTURE.COMPLETED": {
+        /* Complete the cart */
         const event = body as PayPalCaptureCompletedEvent;
+        const cartId = event.resource.custom_id;
+        if (!cartId) {
+          throw new HttpError(
+            "PAYMENT.PAYPAL_MISSING_CONTEXT",
+            "No cart ID found in the PayPal capture completed event",
+          );
+        }
+        const { result } = await completeCartWorkflow(req.scope).run({
+          input: {
+            id: cartId,
+          },
+        });
+        res.status(200).send(result);
         break;
       }
       default:
