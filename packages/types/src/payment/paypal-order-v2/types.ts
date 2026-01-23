@@ -37,7 +37,7 @@ interface PayPalAmount {
 interface PayPalPurchaseUnit {
   reference_id: string;
   amount: PayPalAmount;
-  cart_id?: string; // Optional custom `cart_id` associated with the purchase unit, used to complete the cart when `PAYMENT.CAPTURE.COMPLETED` webhook is received.
+  custom_id?: string; // Optional, assign `cart_id` to this field, can be used to complete the cart later when `PAYMENT.CAPTURE.COMPLETED` webhook is received.
 }
 
 interface PayPalExperienceContext {
