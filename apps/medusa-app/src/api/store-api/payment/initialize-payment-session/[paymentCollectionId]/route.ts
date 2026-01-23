@@ -46,6 +46,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
       context: {
         payment_collection_id: paymentCollectionId,
         shipping_address: shippingAddress,
+        cart_id: cart.id,
       },
     } as CreatePaymentSessionsWorkflowInput,
   });

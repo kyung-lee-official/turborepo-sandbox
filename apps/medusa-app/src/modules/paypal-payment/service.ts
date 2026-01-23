@@ -78,6 +78,7 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
       context: {
         payment_collection_id: string;
         shipping_address: StoreCartAddress;
+        cart_id: string;
       };
     },
   ): Promise<InitiatePaymentOutput> {
@@ -106,6 +107,7 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
             currency_code: currency_code,
             value: amount as string,
           },
+          cart_id: context.cart_id,
         },
       ],
       payment_source: {
