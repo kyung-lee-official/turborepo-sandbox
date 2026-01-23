@@ -45,7 +45,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
               fields: ["*"],
               filters: {
                 data: {
-                  id: body.resource.id,
+                  id: event.resource.id,
                 },
               },
             })) as { data: AdminPaymentSession[] };
