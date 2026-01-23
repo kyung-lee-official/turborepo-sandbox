@@ -76,6 +76,18 @@
 		Once the funds are captured, PayPal sends a `PAYMENT.CAPTURE.COMPLETED` webhook event to notify your backend that the payment has been successfully captured.
 
 	* `PAYMENT.CAPTURE.COMPLETED`, which indicates that the payment has been successfully captured, the funds have been transferred to the merchant's account. Your backend can now update the order status to "COMPLETED" and fulfill the order accordingly.
+  
+	`CAPTURE`
+
+	* `CHECKOUT.ORDER.APPROVED`, which indicates that the user has approved the PayPal order and the payment can now be captured.
+
+		Upon receiving this webhook event, your backend can call the PayPal Capture API to capture the payment.
+		
+		```
+		POST https://api-m.paypal.com/v2/checkout/orders/{order_id}/capture
+		```
+
+		Once the funds are captured, PayPal sends a `PAYMENT.CAPTURE.COMPLETED` webhook event to notify your backend that the payment has been successfully captured.
 
 ## PayPal AUTHORIZE vs CAPTURE
 
