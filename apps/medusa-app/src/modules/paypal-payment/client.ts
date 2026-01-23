@@ -1,4 +1,8 @@
-import type { CreateOrderRequest, PayPalOrderResponse } from "@repo/types";
+import type {
+  CreateOrderRequest,
+  IntentType,
+  PayPalOrderResponse,
+} from "@repo/types";
 import axios, { type AxiosInstance } from "axios";
 import { PayPalConfig } from "./config";
 import { paypalTokenManager } from "./token-manager";
@@ -58,11 +62,24 @@ export class PayPalClient {
   /**
    * Authorize payment for an order
    */
-  async authorizePayment(orderId: string): Promise<any> {
-    const response = await this.axiosInstance.post(
-      `/v2/checkout/orders/${orderId}/authorize`,
-    );
-    return response.data;
+  async authorizePayment(orderId: string, intent: IntentType): Promise<any> {
+    switch (intent) {
+      /* customer has approved the PayPal checkout order, now authorize/capture the payment from backend */
+      case "AUTHORIZE": {
+        const response = await this.axiosInstance.post(
+          `/v2/checkout/orders/${orderId}/authorize`,
+        );
+        return response.data;
+      }
+      case "CAPTURE": {
+        const response = await this.axiosInstance.post(
+          `/v2/checkout/orders/${orderId}/capture`,
+        );
+        return response.data;
+      }
+      default:
+        break;
+    }
   }
 
   /**

@@ -180,15 +180,28 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
         );
       }
       const { id: paypalOrderId } = data;
+      const intent = data.intent as IntentType;
       const { idempotency_key: paymentSessionId } = context;
       const authorizedPayment = (await this.client.authorizePayment(
         paypalOrderId as string,
+        intent,
       )) as PayPalAuthorizePaymentResponse;
-
-      return {
-        status: "authorized",
-        data: authorizedPayment,
-      };
+      if (authorizedPayment.purchase_units[0].payments.authorizations) {
+        return {
+          status: "authorized",
+          data: authorizedPayment,
+        };
+      } else if (authorizedPayment.purchase_units[0].payments.captures) {
+        return {
+          status: "captured",
+          data: authorizedPayment,
+        };
+      } else {
+        throw new HttpError(
+          "PAYMENT.PAYPAL_INVALID_PAYMENT_STATE",
+          "PayPal payment is neither authorized nor captured",
+        );
+      }
     } catch (error) {
       this.logger_.error("PayPal authorize payment failed:", error);
       throw new HttpError(

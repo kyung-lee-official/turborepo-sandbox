@@ -36,45 +36,36 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     switch (body.event_type) {
       case "CHECKOUT.ORDER.APPROVED": {
         const event = body as PayPalCheckoutOrderApprovedEvent;
-        switch (event.resource.intent) {
-          /* customer has approved the PayPal checkout order, now authorize/capture the payment from backend */
-          case "AUTHORIZE": {
-            const query = req.scope.resolve("query") as Query;
-            const paymentSessions = (await query.graph({
-              entity: "payment_session",
-              fields: ["*"],
-              filters: {
-                data: {
-                  id: event.resource.id,
-                },
-              },
-            })) as { data: AdminPaymentSession[] };
-            if (paymentSessions.data.length === 0) {
-              throw new HttpError(
-                "PAYMENT.PAYPAL_ORDER_ID_NOT_FOUND",
-                "No payment session found for the provided token",
-              );
-            }
-            const paymentSession = paymentSessions.data[0];
-            const { id, context, data } = paymentSession;
-            if (!context) {
-              throw new HttpError(
-                "PAYMENT.PAYPAL_MISSING_CONTEXT",
-                "No context found for the payment session",
-              );
-            }
-            const paymentModuleService = req.scope.resolve(Modules.PAYMENT);
-            const payment = await paymentModuleService.authorizePaymentSession(
-              id,
-              { ...context, data },
-            );
-            break;
-          }
-          case "CAPTURE":
-            break;
-          default:
-            break;
+        const query = req.scope.resolve("query") as Query;
+        const paymentSessions = (await query.graph({
+          entity: "payment_session",
+          fields: ["*"],
+          filters: {
+            data: {
+              id: event.resource.id,
+            },
+          },
+        })) as { data: AdminPaymentSession[] };
+        if (paymentSessions.data.length === 0) {
+          throw new HttpError(
+            "PAYMENT.PAYPAL_ORDER_ID_NOT_FOUND",
+            "No payment session found for the provided token",
+          );
         }
+        const paymentSession = paymentSessions.data[0];
+
+        const { id, context, data } = paymentSession;
+        if (!context) {
+          throw new HttpError(
+            "PAYMENT.PAYPAL_MISSING_CONTEXT",
+            "No context found for the payment session",
+          );
+        }
+        const paymentModuleService = req.scope.resolve(Modules.PAYMENT);
+        const payment = await paymentModuleService.authorizePaymentSession(id, {
+          ...context,
+          data,
+        });
         break;
       }
       case "PAYMENT.AUTHORIZATION.CREATED": {
