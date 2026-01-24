@@ -7,9 +7,7 @@
  * @returns PayPal API base URL (production or sandbox)
  */
 export function getPayPalBaseURL(): string {
-  const isProduction =
-    process.env.PAYPAL_ENV === "production" ||
-    process.env.PAYPAL_ENV === "live";
+  const isProduction = process.env.NODE_ENV === "production";
 
   return isProduction
     ? "https://api-m.paypal.com" // Production
@@ -28,9 +26,7 @@ export const PayPalConfig = {
   /**
    * Check if running in production mode
    */
-  isProduction: () =>
-    process.env.PAYPAL_ENV === "production" ||
-    process.env.PAYPAL_ENV === "live",
+  isProduction: () => process.env.NODE_ENV === "production",
 
   /**
    * Get environment name for logging/debugging
