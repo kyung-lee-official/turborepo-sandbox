@@ -35,6 +35,10 @@ module.exports = defineConfig({
       jwtExpiresIn: process.env.JWT_EXPIRES_IN || "1d",
     },
   },
+  admin: {
+    backendUrl: process.env.MEDUSA_BACKEND_URL,
+    path: "/app",
+  },
   modules: [
     {
       resolve: "@medusajs/medusa/notification",
