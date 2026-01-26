@@ -22,12 +22,28 @@ interface JwtContext {
   exp?: number;
 }
 
+type Requester = {
+  id: string;
+  actor_id: string;
+  actor_type: "user" | "customer";
+  auth_identity_id: string;
+};
+
+export type MedusaRequestWithRequester = MedusaRequest & {
+  requester?: Requester;
+};
+
+/**
+ * An alternative to the built-in `authenticate` middleware that uses JWT tokens stored in cookies
+ * @param actorType the `actor_type` to authenticate, can be a string
+ * @param authType the authentication type, currently only "bearer" is supported
+ */
 export const authenticateJwt = (
   actorType: string | string[],
   authType: "bearer" | ["bearer"] = "bearer",
 ): RequestHandler => {
   const authenticateMiddleware = async (
-    req: MedusaRequest,
+    req: MedusaRequestWithRequester,
     res: MedusaResponse,
     next: NextFunction,
   ): Promise<void> => {
@@ -99,8 +115,12 @@ export const authenticateJwt = (
         // If JWT_SECRET is not set, token validation will fail
         throw new HttpError("AUTH.INVALID_TOKEN", "JWT_SECRET is not set");
       }
-      const _payload = jwt.verify(token, secret);
-    } catch (_error) {
+      const payload = jwt.verify(token, secret) as JwtContext;
+      if (!payload) {
+        throw new HttpError("AUTH.INVALID_TOKEN", "Token verification failed");
+      }
+      req.requester = getRequesterFromPayload(payload);
+    } catch (error) {
       throw new HttpError("AUTH.INVALID_TOKEN");
     }
 
@@ -144,4 +164,46 @@ const isActorTypePermitted = (
   currentActorType: string,
 ) => {
   return actorTypes.includes("*") || actorTypes.includes(currentActorType);
+};
+
+const getRequesterFromPayload = (payload: JwtContext): Requester => {
+  if (!payload.auth_identity_id) {
+    throw new HttpError(
+      "AUTH.AUTH_IDENTITY_ID_MISSING",
+      "auth_identity_id is missing in the token payload",
+    );
+  }
+  switch (payload.actor_type) {
+    case "user":
+      if (!payload.app_metadata || !payload.app_metadata.user_id) {
+        throw new HttpError(
+          "AUTH.INVALID_TOKEN",
+          "user_id is missing in app_metadata",
+        );
+      }
+      return {
+        id: payload.app_metadata.user_id as string,
+        actor_id: payload.actor_id as string,
+        actor_type: "user",
+        auth_identity_id: payload.auth_identity_id as string,
+      };
+    case "customer":
+      if (!payload.app_metadata || !payload.app_metadata.customer_id) {
+        throw new HttpError(
+          "AUTH.INVALID_TOKEN",
+          "customer_id is missing in user_metadata",
+        );
+      }
+      return {
+        id: payload.app_metadata.customer_id as string,
+        actor_id: payload.actor_id as string,
+        actor_type: "customer",
+        auth_identity_id: payload.auth_identity_id as string,
+      };
+    default:
+      throw new HttpError(
+        "AUTH.INVALID_TOKEN",
+        `Unsupported actor_type: ${payload.actor_type}`,
+      );
+  }
 };

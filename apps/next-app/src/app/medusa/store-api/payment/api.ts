@@ -6,7 +6,7 @@ import api from "../../axios-error-handling-for-medusa/axios-client";
 
 export async function createPaymentCollection(cartId: string) {
   const data = await api.post<StorePaymentCollectionResponse>(
-    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store/payment-collections`,
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store-api/payment/create-payment-collection`,
     {
       cart_id: cartId,
     },

@@ -78,6 +78,10 @@ export default defineMiddlewares({
       middlewares: [authenticateJwt("customer", ["bearer"])],
     },
     {
+      matcher: "/store-api/payment*",
+      middlewares: [authenticateJwt("customer", ["bearer"])],
+    },
+    {
       matcher: "/store/payment-collections*",
       middlewares: [authenticateJwt("customer", ["bearer"])],
     },
