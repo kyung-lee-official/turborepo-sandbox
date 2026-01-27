@@ -17,7 +17,7 @@ export const medusaAuthBlocker: RequestHandler = (
   next: NextFunction,
 ) => {
   // special case for Medusa auth default authentication route
-  const medusaAuthPattern = /^\/auth\/([^\/]+)\/([^\/]+)\/?$/;
+  const medusaAuthPattern = /^\/auth\/([^/]+)\/([^/]+)\/?$/;
   if (medusaAuthPattern.test(req.originalUrl)) {
     /* allow user authentication routes, otherwise admin dashboard auth will be blocked */
     if (req.originalUrl === "/auth/user/emailpass") {
