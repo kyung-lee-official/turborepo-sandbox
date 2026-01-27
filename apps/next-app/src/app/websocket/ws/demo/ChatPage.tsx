@@ -12,7 +12,8 @@ export default function ChatPage() {
 
   // Connect to WebSocket when component mounts
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:5000");
+    // const socket = new WebSocket("ws://localhost:5000"); // for local Bun server
+    const socket = new WebSocket("wss://bun.localhost");
 
     socket.onopen = () => {
       console.log("Connected to Bun WebSocket server!");
@@ -82,9 +83,10 @@ export default function ChatPage() {
         fontFamily: "system-ui",
       }}
     >
-      <h1>Simple WebSocket Chat Demo</h1>
+      <h1>Simple WebSocket (TLS) Chat Demo</h1>
       <p>Backend: Bun | Frontend: Next.js</p>
-
+      <p>Using Caddy for TLS termination and reverse proxy</p>
+      <p>WebSocket URL: "wss://bun.localhost"</p>
       <div
         style={{
           border: "1px solid #ccc",
