@@ -733,6 +733,10 @@ export default function Home() {
         title="WebSocket"
         list={[
           {
+            link: "/websocket/ws/demo",
+            text: "Bun websocket + Browser Native WebSocket demo",
+          },
+          {
             link: "/websocket/socket.io/chat",
             text: "socket.io - chat",
           },
