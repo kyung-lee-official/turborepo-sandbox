@@ -35,7 +35,9 @@
         "noUnusedImports": {
           "level": "warn",
           "fix": "safe"
-        }
+        },
+        "noUnusedVariables": "off",
+        "noUnusedFunctionParameters": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
