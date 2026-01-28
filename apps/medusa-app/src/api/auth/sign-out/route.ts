@@ -4,7 +4,7 @@ export async function DELETE(req: MedusaRequest, res: MedusaResponse) {
   /* clear the medusa_token cookie */
   res
     .setHeader("Set-Cookie", [
-      `medusa_token=; HttpOnly;${process.env.NODE_ENV === "production" ? "Secure;" : ""} Path=/; Max-Age=0; SameSite=Lax`,
+      `medusa_token=; HttpOnly; Secure; Path=/; Max-Age=0; SameSite=None`,
     ])
     .status(200)
     .json({ message: "Signed out successfully." });

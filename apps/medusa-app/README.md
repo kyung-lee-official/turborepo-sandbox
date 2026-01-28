@@ -1,6 +1,8 @@
 # HTTPS for Medusa Development
 
-The auth JWT was stored in cookies with `Secure` flag enabled and SameSite set to `Lax`, which requires same domain for frontend and backend.
+Modern browsers enforce stricter cookie policies for cross-site requests, even subdomains are considered cross-site (for example, `app.sandbox.localhost` and `api.sandbox.localhost` are different sites).
+
+The auth JWT was stored in cookies with `SameSite` flag set to `None` (requires the `Secure` flag enabled), which allows the frontend and backend to be on different subdomains.
 
 - Apply a certificate for HTTPS in development:
   1. Install [scoop](https://scoop.sh/) (Windows only)
@@ -90,7 +92,7 @@ The auth JWT was stored in cookies with `Secure` flag enabled and SameSite set t
 
 # Authentication
 
-Authentication is handled using a single JWT. The JWT is issued by Medusa and stored via HttpOnly Cookie (cookie key `medusa_token`), with SameSite set to `Lax`.
+Authentication is handled using a single JWT. The JWT is issued by Medusa and stored via HttpOnly Cookie (cookie key `medusa_token`), with SameSite set to `None` to allow cross-site requests between subdomains (this requires implementing origin whitelist code in the backend).
 
 A custom backend middleware validates the JWT before requests reach the Store API/Admin API, extracting the token from cookies and copying it to the `headers.authorization` field for downstream processing.
 
