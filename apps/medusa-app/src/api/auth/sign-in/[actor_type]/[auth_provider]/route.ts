@@ -37,6 +37,12 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
 
   if (success && authIdentity) {
     const { http } = config.projectConfig;
+    if (!http.jwtSecret) {
+      throw new HttpError(
+        "SYSTEM.MISCONFIGURED",
+        "JWT secret is not configured",
+      );
+    }
 
     const token = generateJwtTokenForAuthIdentity(
       {
@@ -45,7 +51,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         authProvider: auth_provider,
       },
       {
-        secret: http.jwtSecret!,
+        secret: http.jwtSecret,
         expiresIn: http.jwtExpiresIn,
         options: http.jwtOptions,
       },
