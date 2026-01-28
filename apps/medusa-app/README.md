@@ -1,6 +1,96 @@
+# HTTPS for Medusa Development
+
+The auth JWT was stored in cookies with `Secure` flag enabled and SameSite set to `Lax`, which requires same domain for frontend and backend.
+
+- Apply a certificate for HTTPS in development:
+  1. Install [scoop](https://scoop.sh/) (Windows only)
+
+  1. Install [mkcert](https://github.com/FiloSottile/mkcert)
+
+     ```bash
+     scoop bucket add extras
+     scoop install mkcert
+     ```
+
+  1. Generate a wildcard certificate for `*.sandbox.localhost`:
+
+     ```bash
+     mkcert -install # install the local root CA
+     mkcert "*.sandbox.localhost" # generate a wildcard certificate for sandbox.localhost, reminder: X.509 wildcards only go one level deep, so this won't match a.b.sandbox.localhost ℹ️
+     ```
+
+- Download [Caddy](https://github.com/caddyserver/caddy)
+
+  Caddyfile:
+
+  ```bash
+  next.sandbox.localhost {
+  	tls "path/to/certificates/_wildcard.sandbox.localhost.pem" "path/to/certificates/_wildcard.sandbox.localhost-key.pem"
+
+  	reverse_proxy localhost:4000
+
+  	log {
+  		output file ./caddy.log
+  	}
+  }
+
+  medusa.sandbox.localhost {
+  	tls "path/to/certificates/_wildcard.sandbox.localhost.pem" "path/to/certificates/_wildcard.sandbox.localhost-key.pem"
+
+  	reverse_proxy localhost:9000
+
+  	log {
+  		output file ./caddy.log
+  	}
+  }
+  # HMR
+  medusa.sandbox.localhost:5174 {
+  	tls "path/to/certificates/_wildcard.sandbox.localhost.pem" "path/to/certificates/_wildcard.sandbox.localhost-key.pem"
+
+  	reverse_proxy localhost:5173
+
+  	log {
+  		output file ./caddy.log
+  	}
+  }
+  ```
+
+* Configure Medusa backend to use HTTPS and the correct domain:
+
+  In `medusa-config.ts`:
+
+  ```ts
+  module.exports = defineConfig({
+    projectConfig: {
+      // other configs...
+      admin: {
+        backendUrl: process.env.MEDUSA_BACKEND_URL,
+        path: "/app",
+        vite: (viteConfig) => {
+          return {
+            ...viteConfig,
+            server: {
+              ...viteConfig.server,
+              allowedHosts: [".sandbox.localhost", "localhost"],
+              host: true,
+              port: parseInt(process.env.PORT as string, 10) || 9000,
+              strictPort: true,
+              hmr: {
+                protocol: "wss",
+                port: 5173,
+                clientPort: 5174,
+              },
+            },
+          };
+        },
+      },
+    },
+  });
+  ```
+
 # Authentication
 
-Authentication is handled using a single JWT. The JWT is issued by Medusa and stored via HttpOnly Cookie (cookie key `medusa_token`), with SameSite set to Lax.
+Authentication is handled using a single JWT. The JWT is issued by Medusa and stored via HttpOnly Cookie (cookie key `medusa_token`), with SameSite set to `Lax`.
 
 A custom backend middleware validates the JWT before requests reach the Store API/Admin API, extracting the token from cookies and copying it to the `headers.authorization` field for downstream processing.
 
