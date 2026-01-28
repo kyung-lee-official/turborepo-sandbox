@@ -1,13 +1,34 @@
-# 鉴权
+# Authentication
 
-使用单个 jwt 完成鉴权。jwt 由 medusa 签发，通过 HttpOnly Cookie 存储 (cookie key `medusa_token`), SameSite 设置为 Lax
+Authentication is handled using a single JWT. The JWT is issued by Medusa and stored via HttpOnly Cookie (cookie key `medusa_token`), with SameSite set to Lax.
 
-后端自定义 middleware 在请求到达 Store API/Admin API 之前验证 jwt, 将 token 从 cookie 中提取并复制到 headers.authorization 字段，向下传递
+A custom backend middleware validates the JWT before requests reach the Store API/Admin API, extracting the token from cookies and copying it to the `headers.authorization` field for downstream processing.
 
-前端通过:
+Frontend implementation:
 
-* 由于 medusa 内置鉴权接口 ~~`POST /auth/{actor_type}/{auth_provider}`~~ 会将 token 以 json 格式返回，且不会设置 HttpOnly Cookie，因此弃用该接口，改为使用自定义 API `POST /auth/sign-in/{actor_type}/{auth_provider}` 完成登录，登录成功后，后端设置 HttpOnly Cookie 存储 jwt
-* `GET /store/customers/me` 获取当前登录用户信息，存储在 zustand store 中（浏览器内存，非持久化）
-* 自定义 API `DELETE /auth/sign-out` 清空 cookies， 并清空 zustand store 完成登出
+- Since Medusa's built-in authentication endpoint
 
-Jwt 刷新由后端中间件 decode 后查验剩余时间自动完成，无需前端参与
+  ~~`POST /auth/{actor_type}/{auth_provider}`~~
+
+  returns the token in JSON format and does not set HttpOnly Cookies, this endpoint is deprecated.
+  Instead, we use a custom API
+
+  ```
+  POST /auth/sign-in/{actor_type}/{auth_provider}
+  ```
+
+  for login. After successful login, the backend sets an HttpOnly Cookie to store the JWT
+
+- ```
+  GET /store/customers/me
+  ```
+
+  retrieves current logged-in user information, stored in zustand store (browser memory, non-persistent)
+
+- Custom API
+  ```
+  DELETE /auth/sign-out
+  ```
+  clears cookies and zustand store to complete logout
+
+JWT refresh is automatically handled by the backend middleware after decoding and checking remaining time, with no frontend involvement required
