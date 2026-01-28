@@ -22,6 +22,13 @@ if (!process.env.AUTH_CORS) {
   throw new Error("AUTH_CORS is not defined in environment variables");
 }
 
+if (!process.env.PORT) {
+  throw new Error("PORT is not defined in environment variables");
+}
+if (Number.isNaN(parseInt(process.env.PORT, 10))) {
+  throw new Error("PORT must be a valid number");
+}
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -38,6 +45,23 @@ module.exports = defineConfig({
   admin: {
     backendUrl: process.env.MEDUSA_BACKEND_URL,
     path: "/app",
+    vite: (viteConfig) => {
+      return {
+        ...viteConfig,
+        server: {
+          ...viteConfig.server,
+          allowedHosts: [".sandbox.localhost", "localhost"],
+          host: true,
+          port: parseInt(process.env.PORT as string, 10) || 9000,
+          strictPort: true,
+          hmr: {
+            protocol: "wss",
+            port: 5173,
+            clientPort: 5174,
+          },
+        },
+      };
+    },
   },
   modules: [
     {
