@@ -1,14 +1,18 @@
 import {
   authenticate,
   type ConfigModule,
+  container,
   defineMiddlewares,
   errorHandler,
-  logger,
   type MedusaNextFunction,
   type MedusaRequest,
   type MedusaResponse,
 } from "@medusajs/framework";
-import { MedusaError, parseCorsOrigins } from "@medusajs/framework/utils";
+import {
+  ContainerRegistrationKeys,
+  MedusaError,
+  parseCorsOrigins,
+} from "@medusajs/framework/utils";
 import {
   ERROR_CODES,
   type HttpError,
@@ -129,7 +133,10 @@ export default defineMiddlewares({
     res: MedusaResponse<HttpErrorData>,
     next: MedusaNextFunction,
   ) => {
+    const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
+
     if (MedusaError.isMedusaError(error)) {
+      logger.error(error);
       const medusaError = error as MedusaError;
       const map: Record<MedusaErrorCodes, number> =
         MedusaErrorTypes[medusaError.type];
@@ -141,6 +148,7 @@ export default defineMiddlewares({
       });
       return;
     }
+    logger.error(error);
     res.status(error.status || 500).json({
       code: error.code || ERROR_CODES["SYSTEM.UNKNOWN_ERROR"],
       message: error.message || "",
