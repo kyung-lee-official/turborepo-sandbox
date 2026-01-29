@@ -50,7 +50,7 @@ module.exports = defineConfig({
         ...viteConfig,
         server: {
           ...viteConfig.server,
-          allowedHosts: [".sandbox.localhost", "localhost"],
+          allowedHosts: [".sandbox.local", "local"],
           host: true,
           port: parseInt(process.env.PORT as string, 10) || 9000,
           strictPort: true,
