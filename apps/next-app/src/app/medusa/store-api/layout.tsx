@@ -27,7 +27,7 @@ const layout = async (props: LayoutProps) => {
   const customerFPToken = cookieStore.get(CookieKey.CUSTOMER_TOKEN)?.value;
 
   if (!customerFPToken) {
-    return <div>{children}</div>
+    return <div>{children}</div>;
   }
   /* decode token with base64 */
   const decoded = jwtDecode(customerFPToken) as DecodedToken;
