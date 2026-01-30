@@ -1,4 +1,5 @@
 import { BullModule } from "@nestjs/bullmq";
+import { ConfigModule } from "@nestjs/config";
 import {
   type MiddlewareConsumer,
   Module,
@@ -21,6 +22,10 @@ import { WebsocketsModule } from "./websockets/websockets.module";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     OverviewModule,
     TechniquesModule,
     TencentCosObjectsModule,
