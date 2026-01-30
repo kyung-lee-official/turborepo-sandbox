@@ -11,6 +11,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
+import type { ConfigService } from "@nestjs/config";
 import { mockAssessments } from "../mock-data/assessments";
 import {
   checkIsPrincipalSuperRole,
@@ -18,11 +19,19 @@ import {
   getResOwnerRoles,
 } from "../mock-data/roles";
 
-const cerbos = new Cerbos(process.env.CERBOS as string, { tls: false });
-
 @Injectable()
 export class GetAssessmentByIdGuard implements CanActivate {
-  constructor() {}
+  private cerbos: Cerbos;
+
+  constructor(private configService: ConfigService) {
+    const cerbosUrl = this.configService.get<string>("CERBOS");
+
+    if (!cerbosUrl) {
+      throw new Error("CERBOS environment variable is not defined");
+    }
+
+    this.cerbos = new Cerbos(cerbosUrl, { tls: false });
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
@@ -69,7 +78,7 @@ export class GetAssessmentByIdGuard implements CanActivate {
       principal: principal,
       resources: resources,
     };
-    const decision = await cerbos.checkResources(checkResourcesRequest);
+    const decision = await this.cerbos.checkResources(checkResourcesRequest);
     console.log(decision.results);
 
     const result = decision.results.every(
