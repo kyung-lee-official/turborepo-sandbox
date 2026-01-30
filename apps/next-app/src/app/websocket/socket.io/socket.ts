@@ -6,7 +6,7 @@ let dashboardSocket: Socket | null = null;
 export const getChatSocket = (): Socket => {
   if (!chatSocket) {
     /* initialize the chatSocket instance if it doesn't exist */
-    chatSocket = io(`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/chat` || "", {
+    chatSocket = io(`${process.env.NEXT_PUBLIC_NESTJS}/chat` || "", {
       autoConnect: false /* prevent auto-connect */,
     });
   }
@@ -17,7 +17,7 @@ export const getDashboardSocket = (): Socket => {
   if (!dashboardSocket) {
     /* initialize the dashboardSocket instance if it doesn't exist */
     dashboardSocket = io(
-      `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/dashboard` || "",
+      `${process.env.NEXT_PUBLIC_NESTJS}/dashboard` || "",
       {
         autoConnect: true,
       },

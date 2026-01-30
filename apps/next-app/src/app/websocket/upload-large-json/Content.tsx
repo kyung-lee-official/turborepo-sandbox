@@ -21,7 +21,7 @@ export const Content = () => {
 
   const socket = useMemo(() => {
     const socket = io(
-      `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/upload-large-json-progress`,
+      `${process.env.NEXT_PUBLIC_NESTJS}/upload-large-json-progress`,
       {
         autoConnect: false,
       },
@@ -34,11 +34,11 @@ export const Content = () => {
       console.log("Disconnected from server");
       setIsConnected(false);
     });
-    socket.on("message", (data: any) => {
+    socket.on("message", (data: { message: string }) => {
       const { message } = data;
       console.log(message);
     });
-    socket.on("saving-progress", (data: any) => {
+    socket.on("saving-progress", (data: { progress: number }) => {
       const { progress } = data;
       setProgress(progress);
     });
@@ -49,7 +49,7 @@ export const Content = () => {
     /* read the file as text */
     const fileContent = await file.text();
     /* parse the JSON content */
-    let parsedData;
+    let parsedData: unknown;
     try {
       parsedData = JSON.parse(fileContent);
     } catch (error) {
@@ -99,17 +99,13 @@ export const Content = () => {
   });
 
   return (
-    <div
-      className="flex flex-col justify-start items-start min-h-[70vh] my-10 p-10 gap-4
-            bg-gray-200"
-    >
+    <div className="my-10 flex min-h-[70vh] flex-col items-start justify-start gap-4 bg-gray-200 p-10">
       <div>
         Test data:
         https://github.com/kyung-lee-official/typescript-sandbox/tree/main/src/mock-data-generator/generate-users
       </div>
       <input
-        className="w-96 p-2
-                bg-neutral-50"
+        className="w-96 bg-neutral-50 p-2"
         type="file"
         accept=".json"
         onChange={(e) => {
@@ -120,9 +116,7 @@ export const Content = () => {
         }}
       />
       <button
-        className="px-4 py-2 mt-4
-                text-white bg-blue-500 hover:bg-blue-600
-                rounded"
+        className="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
         onClick={() => {
           if (selectedFile) {
             mutation.mutate(selectedFile); // Send the file when the button is clicked
@@ -134,12 +128,10 @@ export const Content = () => {
       >
         Send File
       </button>
-      <div className="flex items-center gap-6 mt-4">
+      <div className="mt-4 flex items-center gap-6">
         <div
-          className={`w-3 h-3 
-                    ${isConnected ? "bg-green-500" : "bg-gray-500"}
-                    ${isConnected ? "shadow-[0_0_10px_#00ff00]" : ""}
-                    rounded-full duration-700`}
+          className={`h-3 w-3 ${isConnected ? "bg-green-500" : "bg-gray-500"}
+                    ${isConnected ? "shadow-[0_0_10px_#00ff00]" : ""}rounded-full duration-700`}
         ></div>
       </div>
       <div>Progress: {progress}</div>

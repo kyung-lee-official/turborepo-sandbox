@@ -2,17 +2,17 @@
 
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import axios from "axios";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
-const { NEXT_PUBLIC_SERVER_HOST } = process.env;
+const { NEXT_PUBLIC_NESTJS } = process.env;
 
 const Content = () => {
   const [amount, setAmount] = useState<string>("1.00");
-  const [arbStatus, setArbStatus] = useState<"Paid" | null>();
+  const [arbStatus, setArbStatus] = useState<"Paid" | null>(null);
   const [fixedId, setFixedId] = useState<string | null>();
   const [fixedStatus, setFixedStatus] = useState<string | null>();
 
-  function onAmountChange(e: any) {
+  function onAmountChange(e: ChangeEvent<HTMLInputElement>) {
     setAmount(e.target.value);
   }
 
@@ -27,13 +27,11 @@ const Content = () => {
 
   return (
     <PayPalScriptProvider options={initialPayPalOptions}>
-      <div className="flex flex-col justify-center items-center gap-6 m-4">
-        <div className="flex flex-col justify-center items-center gap-4 m-4">
+      <div className="m-4 flex flex-col items-center justify-center gap-6">
+        <div className="m-4 flex flex-col items-center justify-center gap-4">
           <h1 className="text-2xl">Arbitrary amount</h1>
           <input
-            className="shadow appearance-none border rounded
-						text-gray-700
-						focus:outline-none focus:shadow-outline"
+            className="appearance-none rounded border text-gray-700 shadow focus:shadow-outline focus:outline-none"
             type="number"
             min={"0.01"}
             value={amount}
@@ -63,7 +61,10 @@ const Content = () => {
             }}
             onApprove={(data, actions) => {
               console.log("Approved by payer");
-              return actions.order!.capture().then((details) => {
+              if (!actions.order) {
+                throw new Error("Order action is undefined");
+              }
+              return actions.order.capture().then((details) => {
                 console.log("Payment captured");
                 setArbStatus("Paid");
               });
@@ -76,8 +77,8 @@ const Content = () => {
             USD {amount} {arbStatus ? arbStatus : null}
           </div>
         </div>
-        <div className=" h-1 w-full bg-slate-600"></div>
-        <div className="flex flex-col justify-center items-center gap-4 m-4">
+        <div className="h-1 w-full bg-slate-600"></div>
+        <div className="m-4 flex flex-col items-center justify-center gap-4">
           <h1 className="text-2xl">Fixed amount (Server Side)</h1>
           <h1 className="text-lg">USD 0.03</h1>
           <PayPalButtons
@@ -95,7 +96,7 @@ const Content = () => {
                   productId: 1,
                 },
                 {
-                  baseURL: NEXT_PUBLIC_SERVER_HOST,
+                  baseURL: NEXT_PUBLIC_NESTJS,
                   headers: {
                     "Content-Type": "application/json",
                   },
@@ -113,7 +114,7 @@ const Content = () => {
                   orderId: data.orderID,
                 },
                 {
-                  baseURL: NEXT_PUBLIC_SERVER_HOST,
+                  baseURL: NEXT_PUBLIC_NESTJS,
                   headers: {
                     "Content-Type": "application/json",
                   },
