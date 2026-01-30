@@ -10,7 +10,9 @@ async function bootstrap() {
       whitelist: true,
     }),
   );
-  app.enableCors();
+  app.enableCors({
+    origin: process.env.CORS_ORIGINS?.split(",") || [],
+  });
 
   setupSwagger(app);
 
