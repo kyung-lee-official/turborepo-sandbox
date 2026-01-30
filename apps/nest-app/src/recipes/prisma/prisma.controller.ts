@@ -18,8 +18,8 @@ import type {
   User,
 } from "@repo/database";
 import Decimal from "decimal.js";
-import type { BigIntService } from "./bigint.service";
-import type { CategoriesService } from "./categories.service";
+import { BigIntService } from "./bigint.service";
+import { CategoriesService } from "./categories.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import type { CreateDecimalDto } from "./dto/create-decimal.dto";
 import { CreateEventDto } from "./dto/create-event.dto";
@@ -29,13 +29,13 @@ import { FindPostDto } from "./dto/find-posts.dto";
 import { JsonFieldFilterDto } from "./dto/json-field-filter";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import type { EventsService } from "./events.service";
-import type { GroupsService } from "./groups.service";
-import type { OrderService } from "./order.service";
-import type { PostsService } from "./posts.service";
-import type { PrismaService } from "./prisma.service";
+import { EventsService } from "./events.service";
+import { GroupsService } from "./groups.service";
+import { OrderService } from "./order.service";
+import { PostsService } from "./posts.service";
+import { PrismaService } from "./prisma.service";
 import { createDecimalApiBody } from "./swagger/create-decimal.swagger";
-import type { UsersService } from "./users.service";
+import { UsersService } from "./users.service";
 
 @Controller("prisma")
 export class PrismaController {

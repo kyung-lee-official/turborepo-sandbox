@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import type { Post } from "@repo/database";
 import type { CreatePostDto } from "./dto/create-post.dto";
 import type { FindPostDto } from "./dto/find-posts.dto";
-import type { PrismaService } from "./prisma.service";
+import { PrismaService } from "./prisma.service";
 
 @Injectable()
 export class PostsService {

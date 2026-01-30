@@ -6,14 +6,26 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import type { PrismaService } from "@/recipes/prisma/prisma.service";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "@/recipes/prisma/prisma.service";
 import { getCerbosPrincipal } from "@/utils/data";
-
-const cerbos = new Cerbos(process.env.CERBOS as string, { tls: false });
 
 @Injectable()
 export class GetCerbosGuard implements CanActivate {
-  constructor(private readonly prismaService: PrismaService) {}
+  private cerbos: Cerbos;
+
+  constructor(
+    private readonly prismaService: PrismaService,
+    private configService: ConfigService,
+  ) {
+    const cerbosUrl = this.configService.get<string>("CERBOS");
+
+    if (!cerbosUrl) {
+      throw new Error("CERBOS environment variable is not defined");
+    }
+
+    this.cerbos = new Cerbos(cerbosUrl, { tls: false });
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
@@ -56,7 +68,7 @@ export class GetCerbosGuard implements CanActivate {
       principal: principal,
       resources: resources,
     };
-    const decision = await cerbos.checkResources(checkResourcesRequest);
+    const decision = await this.cerbos.checkResources(checkResourcesRequest);
 
     const result = decision.results.every(
       (result) => result.actions.get === "EFFECT_ALLOW",

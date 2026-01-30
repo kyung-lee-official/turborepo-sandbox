@@ -1,10 +1,10 @@
 import { BullModule } from "@nestjs/bullmq";
-import { ConfigModule } from "@nestjs/config";
 import {
   type MiddlewareConsumer,
   Module,
   type NestModule,
 } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ApplicationsModule } from "./applications/applications.module";
@@ -24,7 +24,7 @@ import { WebsocketsModule } from "./websockets/websockets.module";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ".env",
     }),
     OverviewModule,
     TechniquesModule,
@@ -37,11 +37,15 @@ import { WebsocketsModule } from "./websockets/websockets.module";
     PerformancesModule,
     AssessmentsModule,
     ApplicationsModule,
-    BullModule.forRoot({
-      connection: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT),
-      },
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>("REDIS_HOST"),
+          port: Number(configService.get<string>("REDIS_PORT")),
+        },
+      }),
     }),
   ],
   controllers: [AppController],

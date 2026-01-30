@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { Job } from "bull";
-import type { PrismaService } from "../../../recipes/prisma/prisma.service";
+import { PrismaService } from "../../../recipes/prisma/prisma.service";
 import { RedisProgressStatusSchema } from "../types";
-import type { UploadLargeXlsxGateway } from "../upload-large-xlsx.gateway";
+import { UploadLargeXlsxGateway } from "../upload-large-xlsx.gateway";
 
 @Injectable()
 export class SavingProcessor {

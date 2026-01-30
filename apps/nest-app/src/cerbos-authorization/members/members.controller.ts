@@ -11,7 +11,7 @@ import {
 import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { type CreateMemberDto, createMemberSchema } from "./dto/create-member.dto";
 import type { UpdateMemberDto } from "./dto/update-member.dto";
-import type { MembersService } from "./members.service";
+import { MembersService } from "./members.service";
 import { CreateMemberPipe } from "./pipes/create-member.pipe";
 import {
 	createMemberBodyOptions,

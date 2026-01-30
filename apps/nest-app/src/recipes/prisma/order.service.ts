@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import dayjs from "dayjs";
-import type { PrismaService } from "./prisma.service";
+import { PrismaService } from "./prisma.service";
 
 @Injectable()
 export class OrderService {

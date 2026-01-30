@@ -1,7 +1,7 @@
 import { OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
 import type { Job } from "bullmq";
-import type { MockDatabaseService } from "./mock-database.service";
-import type { UploadLargeJsonGateway } from "./upload-large-json.gateway";
+import { MockDatabaseService } from "./mock-database.service";
+import { UploadLargeJsonGateway } from "./upload-large-json.gateway";
 
 @Processor("upload-large-json")
 export class UploadLargeJsonWorkerService extends WorkerHost {

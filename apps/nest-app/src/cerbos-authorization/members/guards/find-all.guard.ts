@@ -4,13 +4,25 @@ import {
   type ExecutionContext,
   Injectable,
 } from "@nestjs/common";
-import type { PrismaService } from "@/recipes/prisma/prisma.service";
-
-const cerbos = new Cerbos(process.env.CERBOS as string, { tls: false });
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "@/recipes/prisma/prisma.service";
 
 @Injectable()
 export class FindAllCerbosGuard implements CanActivate {
-  constructor(private readonly prismaService: PrismaService) {}
+  private cerbos: Cerbos;
+
+  constructor(
+    private readonly prismaService: PrismaService,
+    private configService: ConfigService,
+  ) {
+    const cerbosUrl = this.configService.get<string>('CERBOS');
+    
+    if (!cerbosUrl) {
+      throw new Error('CERBOS environment variable is not defined');
+    }
+    
+    this.cerbos = new Cerbos(cerbosUrl, { tls: false });
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();

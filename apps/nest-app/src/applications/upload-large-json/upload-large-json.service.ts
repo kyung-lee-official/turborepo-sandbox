@@ -4,8 +4,8 @@ import {
   InternalServerErrorException,
 } from "@nestjs/common";
 import * as zlib from "zlib";
-import type { MockDatabaseService } from "./mock-database.service";
-import type { UploadLargeJsonQueueService } from "./upload-large-json-queue.service";
+import { MockDatabaseService } from "./mock-database.service";
+import { UploadLargeJsonQueueService } from "./upload-large-json-queue.service";
 
 @Injectable()
 export class UploadLargeJsonService {

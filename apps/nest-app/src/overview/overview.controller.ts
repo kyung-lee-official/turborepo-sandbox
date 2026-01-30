@@ -16,7 +16,7 @@ import { ApiBody, ApiOperation, ApiParam, ApiQuery } from "@nestjs/swagger";
 import { type TestPipeDto, testPipeSchema } from "./dto/test-pipe.dto";
 import { TestGuard } from "./guards/test.guard";
 import { TestInterceptor } from "./interceptors/test.interceptor";
-import type { OverviewService } from "./overview.service";
+import { OverviewService } from "./overview.service";
 import { MethodPipe } from "./pipes/method.pipe";
 import { ParamPipe } from "./pipes/param.pipe";
 import { QueryPipe } from "./pipes/query.pipe";

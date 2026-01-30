@@ -29,7 +29,7 @@ import {
   uploadFileApiOperationOptions,
 } from "./swagger/upload-file.swagger";
 import { uploadFilesApiOperationOptions } from "./swagger/upload-files.swagger";
-import type { TechniquesService } from "./techniques.service";
+import { TechniquesService } from "./techniques.service";
 
 @Controller("techniques")
 export class TechniquesController {

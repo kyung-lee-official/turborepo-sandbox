@@ -10,7 +10,7 @@ import {
 	WebSocketServer,
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
-import type { ChatService, MsgBody } from "./websockets.service";
+import { ChatService, type MsgBody } from "./websockets.service";
 
 /* without specifying the port, it will use the default app port set in main.ts */
 @Injectable()

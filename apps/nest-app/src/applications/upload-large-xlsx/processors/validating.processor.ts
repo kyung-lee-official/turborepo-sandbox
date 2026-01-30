@@ -6,7 +6,7 @@ import {
   UploadLargeXlsxRowDataSchema,
   type ValidationError,
 } from "../types";
-import type { UploadLargeXlsxGateway } from "../upload-large-xlsx.gateway";
+import { UploadLargeXlsxGateway } from "../upload-large-xlsx.gateway";
 import { excelHeadersSchema } from "./file-processing.processor";
 
 @Injectable()

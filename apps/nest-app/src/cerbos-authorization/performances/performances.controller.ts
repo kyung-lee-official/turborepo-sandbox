@@ -18,7 +18,7 @@ import {
 } from "./dto/create-performance.dto";
 import { DeleteCerbosGuard } from "./guards/delete.guard";
 import { GetCerbosGuard } from "./guards/get.guard";
-import type { PerformancesService } from "./performances.service";
+import { PerformancesService } from "./performances.service";
 import { CreatePerformancePipe } from "./pipes/create-performance.pipe";
 import {
   createPerformanceBodyOptions,

@@ -31,7 +31,7 @@ import {
   uploadXlsxApiBody,
   uploadXlsxApiOperation,
 } from "./swagger/upload-large-xlsx.swagger";
-import type { UploadLargeXlsxService } from "./upload-large-xlsx.service";
+import { UploadLargeXlsxService } from "./upload-large-xlsx.service";
 
 @ApiTags("Upload Large Xlsx")
 @Controller("applications/upload-large-xlsx")

@@ -1,27 +1,45 @@
 import { statSync } from "node:fs";
 import { open } from "node:fs/promises";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import * as COS from "cos-nodejs-sdk-v5";
 import { type CredentialData, getCredential } from "qcloud-cos-sts";
 import type { UpdateTencentCosObjectDto } from "./dto/update-tencent-cos-object.dto";
 
 @Injectable()
 export class TencentCosObjectsService {
-  private cos: COS = new COS({
-    SecretId: process.env.SECRET_ID,
-    SecretKey: process.env.SECRET_KEY,
-  });
-  constructor() {}
+  private cos: COS;
+
+  constructor(private configService: ConfigService) {
+    const secretId = this.configService.get<string>("SECRET_ID");
+    const secretKey = this.configService.get<string>("SECRET_KEY");
+
+    if (!secretId || !secretKey) {
+      throw new Error(
+        "SECRET_ID and SECRET_KEY environment variables are required",
+      );
+    }
+
+    this.cos = new COS({
+      SecretId: secretId,
+      SecretKey: secretKey,
+    });
+  }
 
   async getTemporaryCredential(): Promise<CredentialData> {
+    const secretId = this.configService.get<string>("SECRET_ID");
+    const secretKey = this.configService.get<string>("SECRET_KEY");
+    const bucket = this.configService.get<string>("BUCKET");
+    const region = this.configService.get<string>("REGION");
+
     const config = {
-      secretId: process.env.SECRET_ID,
-      secretKey: process.env.SECRET_KEY,
+      secretId,
+      secretKey,
       proxy: "",
       host: "sts.tencentcloudapi.com",
       durationSeconds: 300,
-      bucket: process.env.BUCKET,
-      region: process.env.REGION,
+      bucket,
+      region,
       allowPrefix: "*",
     };
     if (!config.bucket) {
@@ -100,9 +118,18 @@ export class TencentCosObjectsService {
       const length = statSync("uploads/SampleVideo_1280x720_10mb.mp4").size;
 
       const key = await import("nanoid");
+      const bucket = this.configService.get<string>("BUCKET");
+      const region = this.configService.get<string>("REGION");
+
+      if (!bucket || !region) {
+        throw new InternalServerErrorException(
+          "BUCKET and REGION environment variables are required",
+        );
+      }
+
       const res = await this.cos.putObject({
-        Bucket: process.env.BUCKET as string,
-        Region: process.env.REGION as string,
+        Bucket: bucket,
+        Region: region,
         Key: key + ".mp4",
         Body: stream as COS.UploadBody,
         ContentLength: length,

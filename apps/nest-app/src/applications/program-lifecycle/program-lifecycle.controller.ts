@@ -1,6 +1,6 @@
 import { Controller, Get, Post } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
-import type { ProgramLifecycleService } from "./program-lifecycle.service";
+import { ProgramLifecycleService } from "./program-lifecycle.service";
 
 @ApiTags("Program Lifecycle")
 @Controller("program-lifecycle")

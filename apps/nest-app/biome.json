@@ -25,6 +25,9 @@
       },
       "a11y": {
         "noSvgWithoutTitle": "off"
+      },
+      "style": {
+        "useImportType": "off"
       }
     }
   },

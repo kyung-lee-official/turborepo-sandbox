@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { Group } from "@repo/database";
-import type { PrismaService } from "./prisma.service";
+import { PrismaService } from "./prisma.service";
 
 @Injectable()
 export class GroupsService {

@@ -1,12 +1,13 @@
 import { Controller, Post } from "@nestjs/common";
-import type { ResendService } from "./resend.service";
+import { CreateEmailResponseSuccess } from "resend";
+import { ResendService } from "./resend.service";
 
 @Controller("resend")
 export class ResendController {
   constructor(private readonly resendService: ResendService) {}
 
   @Post()
-  sendEmail() {
-    return this.resendService.sendEmail();
+  async sendEmail(): Promise<CreateEmailResponseSuccess> {
+    return await this.resendService.sendEmail();
   }
 }

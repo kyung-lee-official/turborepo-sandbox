@@ -7,8 +7,8 @@ import {
 
 import Bull = require("bull");
 
-import type { RedisService } from "../../../redis/redis.service";
-import type { FileProcessingProcessor } from "../processors/file-processing.processor";
+import { RedisService } from "../../../redis/redis.service";
+import { FileProcessingProcessor } from "../processors/file-processing.processor";
 import type { ProcessFileJobData } from "../types";
 
 @Injectable()

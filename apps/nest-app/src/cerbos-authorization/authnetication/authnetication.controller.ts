@@ -9,7 +9,7 @@ import {
 	UsePipes,
 } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
-import type { AuthneticationService } from "./authnetication.service";
+import { AuthneticationService } from "./authnetication.service";
 import { type SignInDto, signInSchema } from "./dto/signin.dto";
 import { type SignUpDto, signUpSchema } from "./dto/signup.dto";
 import { SignInPipe } from "./pipes/signin.pipe";

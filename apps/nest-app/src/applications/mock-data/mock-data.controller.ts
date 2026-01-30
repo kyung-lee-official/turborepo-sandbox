@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import type { MockDataService } from "./mock-data.service";
+import { MockDataService } from "./mock-data.service";
 
 @ApiTags("Mock Data")
 @Controller("mock-data")

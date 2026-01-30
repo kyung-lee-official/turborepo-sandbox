@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ZodValidationPipe } from "@/overview/pipes/zod-validation.pipe";
-import type { AssessmentsService } from "./assessments.service";
+import { AssessmentsService } from "./assessments.service";
 import {
   type GetAssessmentByIdDto,
   getAssessmentByIdSchema,

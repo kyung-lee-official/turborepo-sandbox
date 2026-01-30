@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { Job } from "bull";
 import * as ExcelJS from "exceljs";
-import type { PrismaService } from "../../../recipes/prisma/prisma.service";
-import type { RedisStorageService } from "../services/redis-storage.service";
+import { PrismaService } from "../../../recipes/prisma/prisma.service";
+import { RedisStorageService } from "../services/redis-storage.service";
 import {
   ActiveStatusesSchema,
   type ProcessFileJobData,
@@ -12,9 +12,9 @@ import {
   TerminalStatusesSchema,
   type ValidationError,
 } from "../types";
-import type { UploadLargeXlsxGateway } from "../upload-large-xlsx.gateway";
-import type { SavingProcessor } from "./saving.processor";
-import type { ValidatingProcessor } from "./validating.processor";
+import { UploadLargeXlsxGateway } from "../upload-large-xlsx.gateway";
+import { SavingProcessor } from "./saving.processor";
+import { ValidatingProcessor } from "./validating.processor";
 
 import dayjs = require("dayjs");
 

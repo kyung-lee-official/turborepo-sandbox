@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiTags } from "@nestjs/swagger";
-import type { UploadLargeJsonService } from "./upload-large-json.service";
+import { UploadLargeJsonService } from "./upload-large-json.service";
 
 @ApiTags("Upload Large Json")
 @Controller("applications/upload-large-json")

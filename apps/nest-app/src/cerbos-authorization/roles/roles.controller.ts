@@ -13,7 +13,7 @@ import { type CreateRoleDto, createRoleSchema } from "./dto/create-role.dto";
 import { type UpdateRoleDto, updateRoleSchema } from "./dto/update-role.dto";
 import { CreateRolePipe } from "./pipes/create-role.pipe";
 import { UpdateRolePipe } from "./pipes/update-role.pipe";
-import type { RolesService } from "./roles.service";
+import { RolesService } from "./roles.service";
 import {
 	createRoleBodyOptions,
 	createRoleOperationOptions,

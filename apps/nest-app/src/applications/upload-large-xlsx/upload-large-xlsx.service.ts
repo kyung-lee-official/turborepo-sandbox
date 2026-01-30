@@ -2,9 +2,9 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import type { UploadLargeXlsxTask } from "@repo/database";
 import * as ExcelJS from "exceljs";
 import type { Response } from "express";
-import type { PrismaService } from "../../recipes/prisma/prisma.service";
-import type { BullQueueService } from "./services/bull-queue.service";
-import type { RedisStorageService } from "./services/redis-storage.service";
+import { PrismaService } from "../../recipes/prisma/prisma.service";
+import { BullQueueService } from "./services/bull-queue.service";
+import { RedisStorageService } from "./services/redis-storage.service";
 import {
   ActiveStatusesSchema,
   type ProcessFileJobData,

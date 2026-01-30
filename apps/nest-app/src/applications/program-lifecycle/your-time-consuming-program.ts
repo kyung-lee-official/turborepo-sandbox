@@ -1,4 +1,4 @@
-import type { PrismaService } from "@/recipes/prisma/prisma.service";
+import { PrismaService } from "@/recipes/prisma/prisma.service";
 
 type TaskState = {
   shouldAbort: boolean;

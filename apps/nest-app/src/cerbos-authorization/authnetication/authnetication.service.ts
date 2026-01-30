@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import type { JwtService } from "@nestjs/jwt";
-import type { PrismaService } from "@/recipes/prisma/prisma.service";
+import { JwtService } from "@nestjs/jwt";
+import { PrismaService } from "@/recipes/prisma/prisma.service";
 import type { SignInDto } from "./dto/signin.dto";
 import type { SignUpDto } from "./dto/signup.dto";
 
