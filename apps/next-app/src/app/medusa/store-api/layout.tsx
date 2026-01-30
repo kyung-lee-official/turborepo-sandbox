@@ -11,11 +11,11 @@ type LayoutProps = {
 type DecodedToken = {
   actor_id: string;
   actor_type: string;
-  app_metadata: Record<string, any>;
+  app_metadata: Record<string, unknown>;
   auth_identity_id: string;
   iat: number;
   exp: number;
-  user_metadata: Record<string, any>;
+  user_metadata: Record<string, unknown>;
 };
 
 const layout = async (props: LayoutProps) => {
