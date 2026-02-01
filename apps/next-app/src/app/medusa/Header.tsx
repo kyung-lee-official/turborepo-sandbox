@@ -10,18 +10,15 @@ type HeaderProps = {
   customerId: string | undefined;
 };
 
-export const Header = (props: HeaderProps) => {
+const Header = (props: HeaderProps) => {
   const { regionId, salesChannelId, customerId } = props;
 
   return (
-    <div
-      className="flex justify-between items-center h-14 px-4
-			border-b border-dashed border-neutral-700"
-    >
-      <div className="flex items-center w-3/5 gap-2">
+    <div className="flex h-14 items-center justify-between border-neutral-700 border-b border-dashed px-4">
+      <div className="flex w-3/5 items-center gap-2">
         <Link
           href="/medusa"
-          className="underline decoration-dotted text-nowrap"
+          className="text-nowrap underline decoration-dotted"
         >
           Medusa Home
         </Link>
@@ -37,3 +34,5 @@ export const Header = (props: HeaderProps) => {
     </div>
   );
 };
+
+export default Header;
