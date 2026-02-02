@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4000",
-    "build": "next build",
-    "start": "next start -p 4000",
-    "lint": "next lint",
+    "dev": "bun --bun next dev -p 4000",
+    "build": "bun --bun next build",
+    "start": "bun --bun next start -p 4000",
+    "lint": "bun --bun next lint",
     "gen:types": "openapi-typescript http://localhost:3001/api/pokemon.json --output src/app/type-sharing/ts-rest/types.ts",
-    "medusa:next": "next dev -p 4000"
+    "medusa:next": "bun --bun next dev -p 4000"
   },
   "dependencies": {
     "@casl/ability": "^6.7.3",
