@@ -6,7 +6,8 @@ import type {
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import type { AuthenticationInput } from "@medusajs/types/dist/auth/common/provider";
 import type { IAuthModuleService } from "@medusajs/types/dist/auth/service";
-import { HttpError } from "@repo/types";
+import { HttpError, type JwtContext } from "@repo/types";
+import jwt from "jsonwebtoken";
 import { generateJwtTokenForAuthIdentity } from "@/utils/auth/generate-jwt-token";
 import { setCookieTokenString } from "@/utils/auth/set-cookie-token-string";
 
@@ -56,6 +57,11 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         options: http.jwtOptions,
       },
     );
+
+    const payload = jwt.decode(token) as JwtContext;
+    if (payload.actor_type !== actor_type) {
+      throw new HttpError("AUTH.ACTOR_TYPE_MISMATCH", "Actor type mismatch");
+    }
 
     return res
       .status(200)
