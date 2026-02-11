@@ -1,0 +1,12 @@
+{
+  "entryFile": "src/api/scalar/entry.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/api/**/*.controller.ts"],
+  "spec": {
+    "outputDirectory": "build/oas",
+    "specVersion": 3
+  },
+  "routes": {
+    "noRoutes": true
+  }
+}
