@@ -1,0 +1,38 @@
+type: http_request
+model: http_request
+id: rq_aatUrCJXpH
+createdAt: 2025-12-14T17:11:01.310604400
+updatedAt: 2026-02-12T01:59:13.590345400
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_3j269iZHuJ
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "identifier": ${[ customer ]}
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Generate Reset Password Token for Customer
+sortPriority: 5000.0
+url: ${[baseUrl]}/auth/customer/:auth_provider/reset-password
+urlParameters:
+- enabled: true
+  name: :auth_provider
+  value: emailpass
+  id: bk7GebT8nM
+- enabled: true
+  name: ''
+  value: ''
+  id: HrsHEQQZpV

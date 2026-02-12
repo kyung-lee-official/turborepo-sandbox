@@ -1,0 +1,70 @@
+type: http_request
+model: http_request
+id: rq_RrnGnDE23i
+createdAt: 2025-12-14T17:11:01.315805300
+updatedAt: 2025-12-14T17:11:01.315805600
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_JFV8Dh4v3d
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: List Currencies
+sortPriority: 37.0
+url: ${[baseUrl]}/store/currencies
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: offset
+  value: <number>
+  id: null
+- enabled: true
+  name: limit
+  value: <number>
+  id: null
+- enabled: true
+  name: order
+  value: <string>
+  id: null
+- enabled: true
+  name: q
+  value: <string>
+  id: null
+- enabled: true
+  name: code
+  value: <string>
+  id: null
+- enabled: true
+  name: $and
+  value: <object>
+  id: null
+- enabled: true
+  name: $and
+  value: <object>
+  id: null
+- enabled: true
+  name: $or
+  value: <object>
+  id: null
+- enabled: true
+  name: $or
+  value: <object>
+  id: null
+- enabled: true
+  name: with_deleted
+  value: <boolean>
+  id: null

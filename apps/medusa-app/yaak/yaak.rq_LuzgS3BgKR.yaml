@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_LuzgS3BgKR
+createdAt: 2026-01-27T03:18:49.910398200
+updatedAt: 2026-01-29T07:58:29.202039200
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_fZzaFYiyLT
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers:
+- enabled: true
+  name: ${[ x-publishable-api-key ]}
+  value: ${[ apiKey ]}
+  id: b8VwCfdM5A
+- enabled: true
+  name: ''
+  value: ''
+  id: XCUksaD5Qg
+method: GET
+name: custom https
+sortPriority: 0.6676666666666666
+url: https://medusa.sandbox.local/store/custom
+urlParameters: []

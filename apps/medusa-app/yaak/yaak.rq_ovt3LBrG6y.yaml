@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_ovt3LBrG6y
+createdAt: 2025-12-14T17:11:01.317945
+updatedAt: 2025-12-14T17:11:01.317945200
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_Xv9WjVMQ3v
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get a Gift Card
+sortPriority: 52.0
+url: ${[baseUrl]}/store/gift-cards/:idOrCode
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :idOrCode
+  value: <string>
+  id: null

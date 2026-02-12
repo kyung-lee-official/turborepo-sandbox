@@ -1,0 +1,39 @@
+type: http_request
+model: http_request
+id: rq_cuaCVHrKCg
+createdAt: 2025-12-14T17:11:01.310387700
+updatedAt: 2026-02-12T03:04:44.932248
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_3j269iZHuJ
+authentication: {}
+authenticationType: none
+body:
+  text: |-
+    {
+      "email": ${[ customer ]},
+      "password": "supersecret"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: md2x2am63k
+method: POST
+name: Retrieve Registration JWT Token
+sortPriority: 4000.0
+url: ${[baseUrl]}/auth/customer/:auth_provider/register
+urlParameters:
+- enabled: true
+  name: :auth_provider
+  value: emailpass
+  id: ypmdyjUqds
+- enabled: true
+  name: ''
+  value: ''
+  id: HgDgperTx9

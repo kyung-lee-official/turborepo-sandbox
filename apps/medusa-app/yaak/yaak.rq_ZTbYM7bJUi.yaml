@@ -1,0 +1,46 @@
+type: http_request
+model: http_request
+id: rq_ZTbYM7bJUi
+createdAt: 2026-01-12T08:22:08.525568600
+updatedAt: 2026-01-12T08:27:59.679796
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_6HKoQEWazo
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "region_id": "reg_01K78NCYZAPMA8W4AWW4THKAM8"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: ${[ apiKey ]}
+  id: HcUguXEbmb
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: RYnnF7IdQB
+- enabled: true
+  name: Accept
+  value: application/json
+  id: SypesRU86Z
+- enabled: true
+  name: ''
+  value: ''
+  id: McjJntBGX9
+method: POST
+name: Create Cart Copy
+sortPriority: 13.001
+url: ${[baseUrl]}/store/carts
+urlParameters:
+- enabled: false
+  name: fields
+  value: <string>
+  id: GvmBx6Z4zA
+- enabled: true
+  name: ''
+  value: ''
+  id: gQx3nPiG8d

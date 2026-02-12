@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_EeoWCvnFee
+createdAt: 2025-12-14T17:11:01.322271600
+updatedAt: 2025-12-14T17:11:01.322272
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_iXd97UWXYw
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get a Product Tag
+sortPriority: 72.0
+url: ${[baseUrl]}/store/product-tags/:id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null

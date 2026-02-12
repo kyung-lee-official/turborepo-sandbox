@@ -1,0 +1,39 @@
+type: http_request
+model: http_request
+id: rq_eZvEc7UxeB
+createdAt: 2025-12-19T06:19:30.026810900
+updatedAt: 2026-02-11T23:46:13.304368300
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_3j269iZHuJ
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "customer1@example.com",
+      "password": "supersecret"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: DELETE
+name: Sign Out Customer
+sortPriority: 2000.0
+url: ${[baseUrl]}/auth/sign-out
+urlParameters:
+- enabled: false
+  name: :auth_provider
+  value: emailpass
+  id: CyvTYHJbF3
+- enabled: true
+  name: ''
+  value: ''
+  id: mCAMdKVG0D

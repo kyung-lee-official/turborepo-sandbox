@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_Cgp7qsNf4h
+createdAt: 2025-12-19T06:03:14.151351100
+updatedAt: 2025-12-19T06:15:08.611395
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_fZzaFYiyLT
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: custom
+sortPriority: 0.6666666666666666
+url: ${[ baseUrl ]}/auth
+urlParameters: []

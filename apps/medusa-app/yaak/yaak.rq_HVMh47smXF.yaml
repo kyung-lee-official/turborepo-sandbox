@@ -1,0 +1,46 @@
+type: http_request
+model: http_request
+id: rq_HVMh47smXF
+createdAt: 2025-12-14T17:11:01.324630100
+updatedAt: 2025-12-14T17:11:01.324630600
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_7XphmE8ZY8
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: List Return Reasons
+sortPriority: 83.0
+url: ${[baseUrl]}/store/return-reasons
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: offset
+  value: <number>
+  id: null
+- enabled: true
+  name: limit
+  value: <number>
+  id: null
+- enabled: true
+  name: order
+  value: <string>
+  id: null
+- enabled: true
+  name: with_deleted
+  value: <boolean>
+  id: null

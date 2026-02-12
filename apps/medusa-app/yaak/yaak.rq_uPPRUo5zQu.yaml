@@ -1,0 +1,48 @@
+type: http_request
+model: http_request
+id: rq_uPPRUo5zQu
+createdAt: 2025-12-14T17:11:01.313520
+updatedAt: 2025-12-14T17:11:01.313520100
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_HCSsWttnRW
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "quantity": "<number>",
+      "metadata": "<object>",
+      "additional_data": "<object>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Update a Line Item in a Cart
+sortPriority: 25.0
+url: ${[baseUrl]}/store/carts/:id/line-items/:line_id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null
+- enabled: true
+  name: :line_id
+  value: <string>
+  id: null

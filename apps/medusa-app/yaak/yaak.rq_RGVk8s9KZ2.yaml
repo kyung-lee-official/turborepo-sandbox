@@ -1,0 +1,50 @@
+type: http_request
+model: http_request
+id: rq_RGVk8s9KZ2
+createdAt: 2025-12-14T17:11:01.320279100
+updatedAt: 2026-01-11T16:26:14.077156400
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_XGc5NPZjQG
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "provider_id": "pp_system_default"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: ${[ apiKey ]}
+  id: uuWTDqp49q
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: V8ZdqwmIuH
+- enabled: true
+  name: Accept
+  value: application/json
+  id: hEchcuMK0Q
+- enabled: true
+  name: ''
+  value: ''
+  id: gbueFvi5GX
+method: POST
+name: Initialize Payment Session of a Payment Collection
+sortPriority: 65.0
+url: ${[baseUrl]}/store/payment-collections/:id/payment-sessions
+urlParameters:
+- enabled: false
+  name: fields
+  value: <string>
+  id: 8BZKmGY8yx
+- enabled: true
+  name: :id
+  value: pay_col_01KEEEFTANNNC7K2P48668RBYK
+  id: UZYkxhA9ue
+- enabled: true
+  name: ''
+  value: ''
+  id: VvFAq8zQ22

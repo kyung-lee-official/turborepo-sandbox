@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_MkjqyrUEPn
+createdAt: 2025-12-14T17:11:01.329166600
+updatedAt: 2025-12-14T17:11:01.329167
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_v2bndhksMU
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: '{address_id}'
+sortPriority: 47.0

@@ -1,0 +1,69 @@
+type: http_request
+model: http_request
+id: rq_dxi2RrvMPW
+createdAt: 2025-12-14T17:11:01.316764400
+updatedAt: 2025-12-14T17:11:01.316764500
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_v2bndhksMU
+authentication:
+  key: ${[apiKey]}
+  location: header
+  value: connect.sid
+authenticationType: apikey
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: List Customer's Addresses
+sortPriority: 45.0
+url: ${[baseUrl]}/store/customers/me/addresses
+urlParameters:
+- enabled: true
+  name: city
+  value: <string>
+  id: null
+- enabled: true
+  name: postal_code
+  value: <string>
+  id: null
+- enabled: true
+  name: country_code
+  value: <string>
+  id: null
+- enabled: true
+  name: q
+  value: <string>
+  id: null
+- enabled: true
+  name: company
+  value: <string>
+  id: null
+- enabled: true
+  name: province
+  value: <string>
+  id: null
+- enabled: true
+  name: $and
+  value: <object>
+  id: null
+- enabled: true
+  name: $and
+  value: <object>
+  id: null
+- enabled: true
+  name: $or
+  value: <object>
+  id: null
+- enabled: true
+  name: $or
+  value: <object>
+  id: null

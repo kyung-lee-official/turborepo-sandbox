@@ -1,0 +1,43 @@
+type: http_request
+model: http_request
+id: rq_BwgUn6y95H
+createdAt: 2025-12-14T17:11:01.318152800
+updatedAt: 2025-12-17T03:14:03.914554400
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_Xv9WjVMQ3v
+authentication:
+  key: Bearer
+authenticationType: bearer
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: ${[ x-publishable-api-key ]}
+  value: ${[ apiKey ]}
+  id: i57aJ82f3Z
+- enabled: true
+  name: Accept
+  value: application/json
+  id: QrrJmFs4VV
+- enabled: true
+  name: ''
+  value: ''
+  id: 6nyvgjZCUG
+method: POST
+name: Redeem a Gift Card
+sortPriority: 53.0
+url: ${[baseUrl]}/store/gift-cards/:idOrCode/redeem
+urlParameters:
+- enabled: false
+  name: fields
+  value: <string>
+  id: Z3ey3z2FIr
+- enabled: true
+  name: :idOrCode
+  value: '123123'
+  id: NejCCqWQFG
+- enabled: true
+  name: ''
+  value: ''
+  id: 7DD09E2tWc

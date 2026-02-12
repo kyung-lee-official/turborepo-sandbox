@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_pQ2S9TUxfQ
+createdAt: 2025-12-14T17:11:01.316350800
+updatedAt: 2025-12-21T03:05:14.491548100
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_QMcspLtuof
+authentication: {}
+authenticationType: none
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: mtPstbXNwC
+- enabled: true
+  name: ${[ x-publishable-api-key ]}
+  value: ${[ apiKey ]}
+  id: 80CeUKzVuw
+- enabled: true
+  name: ''
+  value: ''
+  id: fvJsTirn0i
+method: POST
+name: Get Logged-in Customer
+sortPriority: 42.0
+url: ${[baseUrl]}/store/customers/me
+urlParameters:
+- enabled: true
+  name: ''
+  value: ''
+  id: vgRJ4SY2fD

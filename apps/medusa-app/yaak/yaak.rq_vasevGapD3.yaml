@@ -1,0 +1,54 @@
+type: http_request
+model: http_request
+id: rq_vasevGapD3
+createdAt: 2025-12-14T17:11:01.316949900
+updatedAt: 2025-12-14T17:11:01.316950
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_v2bndhksMU
+authentication:
+  key: ${[apiKey]}
+  location: header
+  value: connect.sid
+authenticationType: apikey
+body:
+  text: |-
+    {
+      "first_name": "<string>",
+      "last_name": "<string>",
+      "phone": "<string>",
+      "company": "<string>",
+      "address_1": "<string>",
+      "address_2": "<string>",
+      "city": "<string>",
+      "country_code": "<string>",
+      "province": "<string>",
+      "postal_code": "<string>",
+      "address_name": "<string>",
+      "is_default_shipping": "<boolean>",
+      "is_default_billing": "<boolean>",
+      "metadata": "<object>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create Address for Logged-In Customer
+sortPriority: 46.0
+url: ${[baseUrl]}/store/customers/me/addresses
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null

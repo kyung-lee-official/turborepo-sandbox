@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_dLQFpBg4cN
+createdAt: 2025-12-14T17:11:01.329669700
+updatedAt: 2025-12-14T17:11:01.329669900
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_eYuMau22cc
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: transfer
+sortPriority: 58.0

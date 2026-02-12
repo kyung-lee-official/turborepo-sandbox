@@ -1,0 +1,44 @@
+type: http_request
+model: http_request
+id: rq_L2mTMGpyJ7
+createdAt: 2025-12-14T17:11:01.316154
+updatedAt: 2025-12-22T10:06:12.041331300
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_9pZjzQAUG8
+authentication:
+  key: Bearer
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rvcl9pZCI6IiIsImFjdG9yX3R5cGUiOiJjdXN0b21lciIsImF1dGhfaWRlbnRpdHlfaWQiOiJhdXRoaWRfMDFLRDJSNkYyU1NaNDQwRjNRRkpQQlpSUksiLCJhcHBfbWV0YWRhdGEiOnt9LCJ1c2VyX21ldGFkYXRhIjp7fSwiaWF0IjoxNzY2Mzk3Nzg3LCJleHAiOjE3NjY0ODQxODd9.Zuk7PMCeCNHgmQcERvB06Nf2r9Wq9pREIdU1IOilTrk
+authenticationType: bearer
+body:
+  text: |-
+    {
+      "email": "18601782316@qq.com"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: ${[ x-publishable-api-key ]}
+  value: ${[ apiKey ]}
+  id: fAxGMpRUka
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: uHX6CU3mUA
+- enabled: true
+  name: Accept
+  value: application/json
+  id: pQ7afHj5jq
+- enabled: true
+  name: ''
+  value: ''
+  id: QbG3caTmDS
+method: POST
+name: Register Customer
+sortPriority: 40.0
+url: ${[baseUrl]}/store/customers
+urlParameters:
+- enabled: true
+  name: ''
+  value: ''
+  id: u49MfNSMCS

@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_PSzy3CJKcY
+createdAt: 2025-12-14T17:11:01.311331100
+updatedAt: 2025-12-14T17:11:01.311331200
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_TuQq3XsSXU
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: DELETE
+name: Delete Authentication Session
+sortPriority: 9.0
+url: ${[baseUrl]}/auth/session
+urlParameters: []

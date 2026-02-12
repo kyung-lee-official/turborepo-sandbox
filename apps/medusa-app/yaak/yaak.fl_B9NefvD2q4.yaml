@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_B9NefvD2q4
+createdAt: 2025-12-14T17:11:01.329447300
+updatedAt: 2025-12-14T17:11:01.329447400
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_fZzaFYiyLT
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: orders
+sortPriority: 54.0

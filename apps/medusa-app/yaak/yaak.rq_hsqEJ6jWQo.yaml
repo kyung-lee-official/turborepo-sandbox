@@ -1,0 +1,55 @@
+type: http_request
+model: http_request
+id: rq_hsqEJ6jWQo
+createdAt: 2025-12-14T17:11:01.325443900
+updatedAt: 2025-12-14T17:11:01.325444500
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_fZzaFYiyLT
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "order_id": "<string>",
+      "items": [
+        {
+          "id": "<string>",
+          "quantity": "<number>",
+          "reason_id": "<string>",
+          "note": "<string>"
+        },
+        {
+          "id": "<string>",
+          "quantity": "<number>",
+          "reason_id": "<string>",
+          "note": "<string>"
+        }
+      ],
+      "return_shipping": {
+        "option_id": "<string>",
+        "price": "<number>"
+      },
+      "note": "<string>",
+      "receive_now": "<boolean>",
+      "location_id": "<string>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create Return
+sortPriority: 85.0
+url: ${[baseUrl]}/store/returns
+urlParameters: []

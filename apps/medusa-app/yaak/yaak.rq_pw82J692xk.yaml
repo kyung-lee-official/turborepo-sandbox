@@ -1,0 +1,126 @@
+type: http_request
+model: http_request
+id: rq_pw82J692xk
+createdAt: 2025-12-14T17:11:01.312256
+updatedAt: 2025-12-14T17:11:01.312256200
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_2z87LTCWrZ
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "region_id": "<string>",
+      "customer_id": "<string>",
+      "sales_channel_id": "<string>",
+      "email": "<email>",
+      "currency_code": "<string>",
+      "shipping_address_id": "<string>",
+      "billing_address_id": "<string>",
+      "billing_address": {
+        "customer_id": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "company": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "first_name": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "last_name": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "address_1": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "address_2": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "city": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "country_code": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "province": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "postal_code": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "phone": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "metadata": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        }
+      },
+      "shipping_address": {
+        "customer_id": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "company": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "first_name": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "last_name": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "address_1": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "address_2": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "city": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "country_code": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "province": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "postal_code": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "phone": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        },
+        "metadata": {
+          "value": "<Error: Too many levels of nesting to fake this schema>"
+        }
+      },
+      "metadata": "<object>",
+      "additional_data": "<object>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Update a Cart
+sortPriority: 16.0
+url: ${[baseUrl]}/store/carts/:id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null

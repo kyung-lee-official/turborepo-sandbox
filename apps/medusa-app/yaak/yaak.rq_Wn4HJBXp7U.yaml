@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_Wn4HJBXp7U
+createdAt: 2025-12-14T17:11:01.316003200
+updatedAt: 2025-12-14T17:11:01.316003300
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_JFV8Dh4v3d
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get a Currency
+sortPriority: 38.0
+url: ${[baseUrl]}/store/currencies/:code
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :code
+  value: <string>
+  id: null

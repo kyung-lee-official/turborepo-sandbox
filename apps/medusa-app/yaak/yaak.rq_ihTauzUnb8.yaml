@@ -1,0 +1,52 @@
+type: http_request
+model: http_request
+id: rq_ihTauzUnb8
+createdAt: 2025-12-14T17:11:01.314021400
+updatedAt: 2026-01-11T01:21:15.890100100
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_haCGcMnguD
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "promo_codes": [
+        "SUMMER15"
+      ]
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: ${[ apiKey ]}
+  id: Nga4VgYmG8
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: 22knnsa3Kx
+- enabled: true
+  name: Accept
+  value: application/json
+  id: mBDKjz7GPE
+- enabled: true
+  name: ''
+  value: ''
+  id: Sm8hbbk8ph
+method: POST
+name: Add Promotions to Cart
+sortPriority: 28.0
+url: ${[baseUrl]}/store/carts/:id/promotions
+urlParameters:
+- enabled: false
+  name: fields
+  value: <string>
+  id: N0QMYTcDia
+- enabled: true
+  name: :id
+  value: cart_01KDCWCP8G0MJWFF74DX1D93ZG
+  id: RaS4sjXqYr
+- enabled: true
+  name: ''
+  value: ''
+  id: W8PGptrQW3

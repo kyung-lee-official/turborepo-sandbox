@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_6iBD3xbzFp
+createdAt: 2025-12-14T17:11:01.315599500
+updatedAt: 2025-12-14T17:11:01.315599700
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_2GmRM5SBCM
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get a Collection
+sortPriority: 35.0
+url: ${[baseUrl]}/store/collections/:id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null

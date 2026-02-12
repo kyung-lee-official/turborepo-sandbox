@@ -1,0 +1,42 @@
+type: http_request
+model: http_request
+id: rq_wgRgdVYwzv
+createdAt: 2025-12-14T17:11:01.313087800
+updatedAt: 2025-12-14T17:11:01.313088
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_Ustdv52PJD
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "code": "<string>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: DELETE
+name: Remove Gift Card from Cart
+sortPriority: 21.0
+url: ${[baseUrl]}/store/carts/:id/gift-cards
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null

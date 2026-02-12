@@ -1,0 +1,66 @@
+type: http_request
+model: http_request
+id: rq_hN47yhxeDa
+createdAt: 2025-12-14T17:11:01.325885600
+updatedAt: 2025-12-14T17:11:01.325885800
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_taYhkYpZ9g
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: List Shipping Options for Cart
+sortPriority: 87.0
+url: ${[baseUrl]}/store/shipping-options
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: offset
+  value: <number>
+  id: null
+- enabled: true
+  name: limit
+  value: <number>
+  id: null
+- enabled: true
+  name: order
+  value: <string>
+  id: null
+- enabled: true
+  name: cart_id
+  value: <string>
+  id: null
+- enabled: true
+  name: $and
+  value: <object>
+  id: null
+- enabled: true
+  name: $and
+  value: <object>
+  id: null
+- enabled: true
+  name: $or
+  value: <object>
+  id: null
+- enabled: true
+  name: $or
+  value: <object>
+  id: null
+- enabled: true
+  name: is_return
+  value: <boolean>
+  id: null

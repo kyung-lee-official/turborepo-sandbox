@@ -1,0 +1,38 @@
+type: http_request
+model: http_request
+id: rq_tZBiUmeiFn
+createdAt: 2025-12-14T17:11:01.319982800
+updatedAt: 2025-12-14T17:11:01.319983
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_XGc5NPZjQG
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "cart_id": "<string>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create Payment Collection
+sortPriority: 64.0
+url: ${[baseUrl]}/store/payment-collections
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null

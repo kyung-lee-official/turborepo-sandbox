@@ -1,0 +1,37 @@
+type: http_request
+model: http_request
+id: rq_hgrSKmGd7g
+createdAt: 2025-12-14T17:11:01.317131300
+updatedAt: 2025-12-14T17:11:01.317131400
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_MkjqyrUEPn
+authentication:
+  key: ${[apiKey]}
+  location: header
+  value: connect.sid
+authenticationType: apikey
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get Customer's Address
+sortPriority: 48.0
+url: ${[baseUrl]}/store/customers/me/addresses/:address_id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :address_id
+  value: <string>
+  id: null

@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_2YsJQGEWxr
+createdAt: 2025-12-14T17:11:01.311522800
+updatedAt: 2025-12-14T17:11:01.311522900
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_5jGBfpWeBd
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Refresh Authentication Token
+sortPriority: 10.0
+url: ${[baseUrl]}/auth/token/refresh
+urlParameters: []

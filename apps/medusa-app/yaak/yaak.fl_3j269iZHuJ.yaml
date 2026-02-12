@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_3j269iZHuJ
+createdAt: 2025-12-14T17:11:01.327091600
+updatedAt: 2025-12-14T17:11:01.327092300
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_5jGBfpWeBd
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: customer/{auth_provider}
+sortPriority: 1.0

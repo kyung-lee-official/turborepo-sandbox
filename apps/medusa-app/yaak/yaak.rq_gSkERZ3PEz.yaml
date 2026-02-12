@@ -1,0 +1,38 @@
+type: http_request
+model: http_request
+id: rq_gSkERZ3PEz
+createdAt: 2025-12-14T17:11:01.313762100
+updatedAt: 2025-12-14T17:11:01.313762200
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_HCSsWttnRW
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: DELETE
+name: Remove Line Item from Cart
+sortPriority: 26.0
+url: ${[baseUrl]}/store/carts/:id/line-items/:line_id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null
+- enabled: true
+  name: :line_id
+  value: <string>
+  id: null

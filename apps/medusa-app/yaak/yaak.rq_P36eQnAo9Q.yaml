@@ -1,0 +1,42 @@
+type: http_request
+model: http_request
+id: rq_P36eQnAo9Q
+createdAt: 2025-12-14T17:11:01.321506700
+updatedAt: 2025-12-14T17:11:01.321507300
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_jXVnn9E4aH
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: GET
+name: Get a Product Category
+sortPriority: 69.0
+url: ${[baseUrl]}/store/product-categories/:id
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
+- enabled: true
+  name: include_ancestors_tree
+  value: <boolean>
+  id: null
+- enabled: true
+  name: include_descendants_tree
+  value: <boolean>
+  id: null
+- enabled: true
+  name: :id
+  value: <string>
+  id: null

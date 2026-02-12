@@ -1,0 +1,341 @@
+type: http_request
+model: http_request
+id: rq_KNSRtbGeiY
+createdAt: 2025-12-14T17:11:01.311713100
+updatedAt: 2025-12-14T17:11:01.311713300
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_6HKoQEWazo
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "region_id": "<string>",
+      "shipping_address": {
+        "id": "<string>",
+        "created_at": "<dateTime>",
+        "updated_at": "<dateTime>",
+        "customer_id": "<string>",
+        "first_name": "<string>",
+        "last_name": "<string>",
+        "phone": "<string>",
+        "company": "<string>",
+        "address_1": "<string>",
+        "address_2": "<string>",
+        "city": "<string>",
+        "country_code": "<string>",
+        "province": "<string>",
+        "postal_code": "<string>",
+        "metadata": "<object>"
+      },
+      "billing_address": {
+        "id": "<string>",
+        "created_at": "<dateTime>",
+        "updated_at": "<dateTime>",
+        "customer_id": "<string>",
+        "first_name": "<string>",
+        "last_name": "<string>",
+        "phone": "<string>",
+        "company": "<string>",
+        "address_1": "<string>",
+        "address_2": "<string>",
+        "city": "<string>",
+        "country_code": "<string>",
+        "province": "<string>",
+        "postal_code": "<string>",
+        "metadata": "<object>"
+      },
+      "email": "<email>",
+      "currency_code": "<string>",
+      "items": [
+        {
+          "cart": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "title": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "requires_shipping": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "is_discountable": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "is_tax_inclusive": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "unit_price": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "quantity": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "cart_id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "subtitle": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "thumbnail": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_title": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_description": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_subtitle": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_type": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_collection": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_handle": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_sku": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_barcode": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_title": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_option_values": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "compare_at_unit_price": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "tax_lines": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "adjustments": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "metadata": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "created_at": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "updated_at": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "deleted_at": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "original_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "original_subtotal": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "original_tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "item_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "item_subtotal": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "item_tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "subtotal": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "discount_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "discount_tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          }
+        },
+        {
+          "cart": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "title": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "requires_shipping": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "is_discountable": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "is_tax_inclusive": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "unit_price": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "quantity": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "cart_id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "subtitle": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "thumbnail": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_title": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_description": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_subtitle": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_type": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_collection": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "product_handle": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_id": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_sku": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_barcode": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_title": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "variant_option_values": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "compare_at_unit_price": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "tax_lines": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "adjustments": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "metadata": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "created_at": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "updated_at": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "deleted_at": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "original_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "original_subtotal": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "original_tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "item_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "item_subtotal": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "item_tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "subtotal": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "discount_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          },
+          "discount_tax_total": {
+            "value": "<Error: Too many levels of nesting to fake this schema>"
+          }
+        }
+      ],
+      "sales_channel_id": "<string>",
+      "metadata": "<object>",
+      "additional_data": "<object>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Create Cart
+sortPriority: 13.0
+url: ${[baseUrl]}/store/carts
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null

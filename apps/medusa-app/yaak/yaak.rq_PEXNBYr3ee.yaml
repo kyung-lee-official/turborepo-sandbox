@@ -1,0 +1,40 @@
+type: http_request
+model: http_request
+id: rq_PEXNBYr3ee
+createdAt: 2025-12-14T17:11:01.310924800
+updatedAt: 2026-02-12T01:59:37.962875400
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_3j269iZHuJ
+authentication:
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnRpdHlfaWQiOiI5MTAwMDY4MDNAcXEuY29tIiwicHJvdmlkZXIiOiJlbWFpbHBhc3MiLCJhY3Rvcl90eXBlIjoiY3VzdG9tZXIiLCJpYXQiOjE3NjYzOTczMTMsImV4cCI6MTc2NjM5ODIxM30.lIyRnlpVmaLYcXsfs4p6W0_i2seJlB3GH0nrEFwsPZk
+authenticationType: bearer
+body:
+  text: |-
+    {
+      "email": ${[ customer ]},
+      "password": ${[ customerPsw ]}
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Reset a Customer's Password
+sortPriority: 6000.0
+url: ${[baseUrl]}/auth/customer/:auth_provider/update
+urlParameters:
+- enabled: true
+  name: :auth_provider
+  value: emailpass
+  id: Gjh5JyNiAB
+- enabled: true
+  name: ''
+  value: ''
+  id: tTJqkea0pW

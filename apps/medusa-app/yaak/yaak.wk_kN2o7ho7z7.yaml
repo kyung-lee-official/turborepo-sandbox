@@ -1,0 +1,15 @@
+type: workspace
+model: workspace
+id: wk_kN2o7ho7z7
+createdAt: 2025-12-14T17:11:01.308277500
+updatedAt: 2025-12-14T17:11:01.308278300
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: Medusa Storefront API
+encryptionKeyChallenge: null
+settingValidateCertificates: true
+settingFollowRedirects: true
+settingRequestTimeout: 0
+settingDnsOverrides: []

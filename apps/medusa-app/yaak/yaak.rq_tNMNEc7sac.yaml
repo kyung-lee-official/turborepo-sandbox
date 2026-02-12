@@ -1,0 +1,46 @@
+type: http_request
+model: http_request
+id: rq_tNMNEc7sac
+createdAt: 2025-12-14T17:11:01.316535500
+updatedAt: 2025-12-20T12:46:06.724444200
+workspaceId: wk_kN2o7ho7z7
+folderId: fl_QMcspLtuof
+authentication:
+  key: ${[apiKey]}
+  location: header
+  prefix: ${[apiKey]}
+  value: connect.sid
+authenticationType: apikey
+body:
+  text: |-
+    {
+      "company_name": "<string>",
+      "first_name": "<string>",
+      "last_name": "<string>",
+      "phone": "<string>",
+      "metadata": "<object>"
+    }
+bodyType: application/json
+description: '[object Object]'
+headers:
+- enabled: true
+  name: x-publishable-api-key
+  value: <string>
+  id: null
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: null
+- enabled: true
+  name: Accept
+  value: application/json
+  id: null
+method: POST
+name: Update Customer
+sortPriority: 43.0
+url: ${[baseUrl]}/store/customers/me
+urlParameters:
+- enabled: true
+  name: fields
+  value: <string>
+  id: null
