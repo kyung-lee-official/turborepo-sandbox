@@ -1,0 +1,45 @@
+$kind: http-request
+description: Create a new view configuration for an entity. If
+  `is_system_default` is set to true, the created configuration will be set as
+  the system default for the specified entity. Otherwise, it will be a custom
+  configuration for the admin user.
+url: "{{baseUrl}}/admin/views/:entity/configurations"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: entity
+    value: string
+    description: The entity to create its view configuration (for example, `orders`).
+body:
+  type: json
+  content: |-
+    {
+      "is_system_default": false,
+      "set_active": false,
+      "configuration": {
+        "visible_columns": [
+          "string",
+          "string"
+        ],
+        "column_order": [
+          "string",
+          "string"
+        ],
+        "search": "string",
+        "column_widths": {},
+        "filters": {},
+        "sorting": {
+          "id": "string",
+          "desc": true
+        }
+      },
+      "name": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create View Configuration.resources/examples
+order: 4000

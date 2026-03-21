@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/translations/statistics?locales=fr-FR&entity_types=prod\
+    ucts"
+  method: GET
+  headers:
+    - key: Accept
+      value: text/plain
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: locales
+      value: fr-FR
+      description: The locale codes to retrieve translation statistics for. Locale
+        codes are in [BCP
+        47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1)
+        format.
+    - key: entity_types
+      value: products
+      description: The table names of entities to retrieve translation statistics for.
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: text/plain
+  body:
+    type: text
+    content: Unauthorized
+order: 3000

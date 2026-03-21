@@ -1,0 +1,748 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/products/batch?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  body:
+    type: json
+    content: |-
+      {
+        "create": [
+          {
+            "title": "string",
+            "options": [
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              },
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              }
+            ],
+            "subtitle": "string",
+            "description": "string",
+            "is_giftcard": false,
+            "discountable": false,
+            "images": [
+              {
+                "url": "string"
+              },
+              {
+                "url": "string"
+              }
+            ],
+            "thumbnail": "string",
+            "handle": "string",
+            "status": "rejected",
+            "type_id": "string",
+            "collection_id": "string",
+            "categories": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "tags": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "variants": [
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 1973.842161379955,
+                    "min_quantity": 8857.328829323473,
+                    "max_quantity": 3089.778942974937,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 9633.862925426663,
+                    "min_quantity": 4428.7796082701125,
+                    "max_quantity": 9395.604042182313,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": false,
+                "manage_inventory": true,
+                "variant_rank": 2975.6068755614406,
+                "weight": 8885.572730389698,
+                "length": 305.3016849411283,
+                "height": 2005.0401231283233,
+                "width": 6861.823470198944,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 2787.070117657762
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 4363.2965450528345
+                  }
+                ]
+              },
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 2758.7507130904633,
+                    "min_quantity": 8707.483606142967,
+                    "max_quantity": 4387.564950638319,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 4848.8048769198185,
+                    "min_quantity": 4642.328171036694,
+                    "max_quantity": 1280.0601477131556,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": true,
+                "manage_inventory": false,
+                "variant_rank": 2102.71347831704,
+                "weight": 4327.921942954585,
+                "length": 8560.318704132995,
+                "height": 6389.302218393138,
+                "width": 6515.045239075974,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 1139.9624279417874
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 5019.697627849367
+                  }
+                ]
+              }
+            ],
+            "sales_channels": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "weight": 3069.927715144223,
+            "length": 226.70475663429724,
+            "height": 5761.7083389612935,
+            "width": 2173.2693153934156,
+            "hs_code": "string",
+            "mid_code": "string",
+            "origin_country": "string",
+            "material": "string",
+            "metadata": {},
+            "external_id": "string",
+            "shipping_profile_id": "string"
+          },
+          {
+            "title": "string",
+            "options": [
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              },
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              }
+            ],
+            "subtitle": "string",
+            "description": "string",
+            "is_giftcard": true,
+            "discountable": false,
+            "images": [
+              {
+                "url": "string"
+              },
+              {
+                "url": "string"
+              }
+            ],
+            "thumbnail": "string",
+            "handle": "string",
+            "status": "rejected",
+            "type_id": "string",
+            "collection_id": "string",
+            "categories": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "tags": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "variants": [
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 3778.1628788985745,
+                    "min_quantity": 9007.880794721093,
+                    "max_quantity": 833.3336333659247,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 1606.0863744636845,
+                    "min_quantity": 2776.491859573582,
+                    "max_quantity": 2086.764963398462,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": false,
+                "manage_inventory": false,
+                "variant_rank": 5370.281139794429,
+                "weight": 6487.748165767717,
+                "length": 6356.028942453191,
+                "height": 7736.196369734834,
+                "width": 2570.390146505357,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 889.9502042877039
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 8959.647124405146
+                  }
+                ]
+              },
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 7354.275985226992,
+                    "min_quantity": 1592.6603367684943,
+                    "max_quantity": 7316.365984900146,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 9058.933428368045,
+                    "min_quantity": 2874.42175552848,
+                    "max_quantity": 6485.427218638058,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": false,
+                "manage_inventory": false,
+                "variant_rank": 3068.344569649686,
+                "weight": 1252.5982606363307,
+                "length": 9106.649252166962,
+                "height": 7566.032993227938,
+                "width": 9689.924469785958,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 8469.984670794374
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 2940.728766700462
+                  }
+                ]
+              }
+            ],
+            "sales_channels": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "weight": 5474.135796917756,
+            "length": 2754.5301825633596,
+            "height": 977.2971281516063,
+            "width": 2970.0298047897822,
+            "hs_code": "string",
+            "mid_code": "string",
+            "origin_country": "string",
+            "material": "string",
+            "metadata": {},
+            "external_id": "string",
+            "shipping_profile_id": "string"
+          }
+        ],
+        "update": [
+          {
+            "id": "string",
+            "title": "string",
+            "subtitle": "string",
+            "description": "string",
+            "is_giftcard": false,
+            "discountable": true,
+            "images": [
+              {
+                "url": "string",
+                "id": "string"
+              },
+              {
+                "url": "string",
+                "id": "string"
+              }
+            ],
+            "thumbnail": "string",
+            "handle": "string",
+            "status": "rejected",
+            "type_id": "string",
+            "collection_id": "string",
+            "categories": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "tags": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "options": [
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              },
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              }
+            ],
+            "variants": [
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 629.1607095223317,
+                    "min_quantity": 6389.733023976405,
+                    "max_quantity": 2115.4377269212655,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 5268.280403096801,
+                    "min_quantity": 1316.450391709072,
+                    "max_quantity": 3264.8630884664562,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": true,
+                "manage_inventory": false,
+                "variant_rank": 3109.4111911661203,
+                "weight": 3387.874996665976,
+                "length": 2163.695547454956,
+                "height": 9031.83167295472,
+                "width": 2573.339247115796,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 6821.515459117482
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 9149.267902855921
+                  }
+                ]
+              },
+              {
+                "title": "string",
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": false,
+                "manage_inventory": false,
+                "variant_rank": 3079.1481688401377,
+                "weight": 6221.307834387204,
+                "length": 2316.541917348618,
+                "height": 5730.958611978025,
+                "width": 6760.771113894748,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 1244.9537941963529,
+                    "min_quantity": 2849.7923824994364,
+                    "max_quantity": 364.2820347434106,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 856.7916882961746,
+                    "min_quantity": 9927.261963550844,
+                    "max_quantity": 6419.112791731683,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "options": {}
+              }
+            ],
+            "sales_channels": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "weight": 8117.75544639193,
+            "length": 717.2155286177273,
+            "height": 4475.222373527093,
+            "width": 9230.121257474788,
+            "hs_code": "string",
+            "mid_code": "string",
+            "origin_country": "string",
+            "material": "string",
+            "metadata": {},
+            "external_id": "string",
+            "shipping_profile_id": "string"
+          },
+          {
+            "id": "string",
+            "title": "string",
+            "subtitle": "string",
+            "description": "string",
+            "is_giftcard": true,
+            "discountable": true,
+            "images": [
+              {
+                "url": "string",
+                "id": "string"
+              },
+              {
+                "url": "string",
+                "id": "string"
+              }
+            ],
+            "thumbnail": "string",
+            "handle": "string",
+            "status": "proposed",
+            "type_id": "string",
+            "collection_id": "string",
+            "categories": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "tags": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "options": [
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              },
+              {
+                "title": "string",
+                "values": [
+                  "string",
+                  "string"
+                ]
+              }
+            ],
+            "variants": [
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 656.4207639692099,
+                    "min_quantity": 3865.7457232336333,
+                    "max_quantity": 4811.914997450448,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 452.372836704642,
+                    "min_quantity": 4559.981281103389,
+                    "max_quantity": 3693.0301336202942,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": false,
+                "manage_inventory": true,
+                "variant_rank": 2166.8800318328763,
+                "weight": 5613.57386521657,
+                "length": 9821.563890459096,
+                "height": 6256.627162669272,
+                "width": 3807.9371880255585,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 1885.9198296439583
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 251.62168203016088
+                  }
+                ]
+              },
+              {
+                "title": "string",
+                "prices": [
+                  {
+                    "currency_code": "string",
+                    "amount": 9463.084154286444,
+                    "min_quantity": 1870.4099488712322,
+                    "max_quantity": 1038.8533238692733,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  },
+                  {
+                    "currency_code": "string",
+                    "amount": 4414.195986365507,
+                    "min_quantity": 1643.6605706192386,
+                    "max_quantity": 8539.88794457192,
+                    "rules": {
+                      "region_id": "reg_123"
+                    }
+                  }
+                ],
+                "sku": "string",
+                "ean": "string",
+                "upc": "string",
+                "barcode": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "allow_backorder": false,
+                "manage_inventory": false,
+                "variant_rank": 8647.227136149524,
+                "weight": 812.1271137296903,
+                "length": 1728.10617198498,
+                "height": 7668.194295129009,
+                "width": 4559.324997200105,
+                "origin_country": "string",
+                "material": "string",
+                "metadata": {},
+                "options": {
+                  "Color": "Black"
+                },
+                "inventory_items": [
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 6736.899889077957
+                  },
+                  {
+                    "inventory_item_id": "string",
+                    "required_quantity": 7179.889892336498
+                  }
+                ]
+              }
+            ],
+            "sales_channels": [
+              {
+                "id": "string"
+              },
+              {
+                "id": "string"
+              }
+            ],
+            "weight": 2531.3425188493466,
+            "length": 3733.413318787153,
+            "height": 2832.7658333004747,
+            "width": 1883.1933789415411,
+            "hs_code": "string",
+            "mid_code": "string",
+            "origin_country": "string",
+            "material": "string",
+            "metadata": {},
+            "external_id": "string",
+            "shipping_profile_id": "string"
+          }
+        ],
+        "delete": [
+          "string",
+          "string"
+        ]
+      }
+response:
+  statusCode: 500
+  statusText: Internal Server Error
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "api_error",
+        "message": "An error occured while hashing password",
+        "type": "database_error"
+      }
+order: 7000

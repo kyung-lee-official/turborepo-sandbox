@@ -1,0 +1,164 @@
+$kind: http-request
+description: >
+  Remove a requested item to be returned by the ID of the item's `RETURN_ITEM`
+  action.
+
+
+  Every item has an `actions` property, whose value is an array of actions. You
+  can check the action's name using its `action` property, and use the value of
+  the `id` property. return.
+url: "{{baseUrl}}/admin/returns/:id/request-items/:action_id?fields=string&id=s\
+  tring&order_id=string&status=string&$eq=string&$ne=string&$in=string,string&$\
+  nin=string,string&$not=string&$gt=string&$gte=string&$lt=string&$lte=string&$\
+  like=string&$re=string&$ilike=string&$fulltext=string&$overlap=string,string&\
+  $contains=string,string&$contained=string,string&$exists=false&limit=3050.160\
+  7324519186&offset=3157.9117089204024&order=string&with_deleted=true&$eq=strin\
+  g&$ne=string&$in=string,string&$nin=string,string&$not=string&$gt=string&$gte\
+  =string&$lt=string&$lte=string&$like=string&$re=string&$ilike=string&$fulltex\
+  t=string&$overlap=string,string&$contains=string,string&$contained=string,str\
+  ing&$exists=false"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: id
+    value: string
+  - key: order_id
+    value: string
+  - key: status
+    value: string
+  - key: $eq
+    value: string
+    description: Filter by a return's update date.
+  - key: $ne
+    value: string
+    description: Filter by a return's update date.
+  - key: $in
+    value: string,string
+    description: Filter by a return's update date.
+  - key: $nin
+    value: string,string
+    description: Filter by a return's update date.
+  - key: $not
+    value: string
+    description: Filter by a return's update date.
+  - key: $gt
+    value: string
+    description: Filter by a return's update date.
+  - key: $gte
+    value: string
+    description: Filter by a return's update date.
+  - key: $lt
+    value: string
+    description: Filter by a return's update date.
+  - key: $lte
+    value: string
+    description: Filter by a return's update date.
+  - key: $like
+    value: string
+    description: Filter by a return's update date.
+  - key: $re
+    value: string
+    description: Filter by a return's update date.
+  - key: $ilike
+    value: string
+    description: Filter by a return's update date.
+  - key: $fulltext
+    value: string
+    description: Filter by a return's update date.
+  - key: $overlap
+    value: string,string
+    description: Filter by a return's update date.
+  - key: $contains
+    value: string,string
+    description: Filter by a return's update date.
+  - key: $contained
+    value: string,string
+    description: Filter by a return's update date.
+  - key: $exists
+    value: "false"
+    description: Filter by a return's update date.
+  - key: limit
+    value: "3050.1607324519186"
+    description: Limit the number of items returned in the list.
+  - key: offset
+    value: "3157.9117089204024"
+    description: The number of items to skip when retrieving a list.
+  - key: order
+    value: string
+    description: The field to sort the data by. By default, the sort order is
+      ascending. To change the order to descending, prefix the field name with
+      `-`.
+  - key: with_deleted
+    value: "true"
+    description: The return's with deleted.
+  - key: $eq
+    value: string
+    description: Filter by the return's creation date.
+  - key: $ne
+    value: string
+    description: Filter by the return's creation date.
+  - key: $in
+    value: string,string
+    description: Filter by the return's creation date.
+  - key: $nin
+    value: string,string
+    description: Filter by the return's creation date.
+  - key: $not
+    value: string
+    description: Filter by the return's creation date.
+  - key: $gt
+    value: string
+    description: Filter by the return's creation date.
+  - key: $gte
+    value: string
+    description: Filter by the return's creation date.
+  - key: $lt
+    value: string
+    description: Filter by the return's creation date.
+  - key: $lte
+    value: string
+    description: Filter by the return's creation date.
+  - key: $like
+    value: string
+    description: Filter by the return's creation date.
+  - key: $re
+    value: string
+    description: Filter by the return's creation date.
+  - key: $ilike
+    value: string
+    description: Filter by the return's creation date.
+  - key: $fulltext
+    value: string
+    description: Filter by the return's creation date.
+  - key: $overlap
+    value: string,string
+    description: Filter by the return's creation date.
+  - key: $contains
+    value: string,string
+    description: Filter by the return's creation date.
+  - key: $contained
+    value: string,string
+    description: Filter by the return's creation date.
+  - key: $exists
+    value: "false"
+    description: Filter by the return's creation date.
+pathVariables:
+  - key: id
+    value: string
+    description: The return's ID.
+  - key: action_id
+    value: string
+    description: The ID of the item's `RETURN_ITEM` action.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove Item from Return.resources/examples
+order: 2000

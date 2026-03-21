@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/gift-cards/:idOrCode?fields=string&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: >-
+        Comma-separated fields that should be included in the returned data.
+         if a field is prefixed with `+` it will be added to the default fields, using `-` will remove it from the default fields.
+         without prefix it will replace the entire default fields.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+  pathVariables:
+    - key: idOrCode
+      value: string
+      description: The gift card's ID or code.
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity (WebDAV) (RFC 4918)
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "invalid_request_error",
+        "message": "Discount with code TEST already exists.",
+        "type": "duplicate_error"
+      }
+order: 6000

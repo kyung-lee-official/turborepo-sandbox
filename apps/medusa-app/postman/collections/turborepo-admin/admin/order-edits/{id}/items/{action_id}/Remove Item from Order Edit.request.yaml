@@ -1,0 +1,26 @@
+$kind: http-request
+description: >
+  Remove an added item in the order edit by the ID of the item's `ITEM_ADD`
+  action.
+
+
+  Every item has an `actions` property, whose value is an array of actions. You
+  can check the action's name using its `action` property, and use the value of
+  the `id` property.
+url: "{{baseUrl}}/admin/order-edits/:id/items/:action_id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The order edit's ID.
+  - key: action_id
+    value: string
+    description: The ID of the new item's `ITEM_ADD` action.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove Item from Order Edit.resources/examples
+order: 2000

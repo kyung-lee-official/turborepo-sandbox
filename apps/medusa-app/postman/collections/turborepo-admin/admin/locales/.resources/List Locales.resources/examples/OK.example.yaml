@@ -1,0 +1,68 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/locales?q=string&code=string&limit=3050.1607324519186&o\
+    ffset=3157.9117089204024&order=string&with_deleted=true&fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: q
+      value: string
+      description: Search query to filter locales by code or other fields.
+    - key: code
+      value: string
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: with_deleted
+      value: "true"
+      description: The locale's with deleted.
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. If a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. Without prefix
+        it will replace the entire default fields.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 8959.042930398717,
+        "offset": 3081.586596396315,
+        "count": 4077.817515155857,
+        "locales": [
+          {
+            "code": "fr-FR",
+            "name": "string",
+            "created_at": "1960-02-15T15:28:02.612Z",
+            "updated_at": "1978-02-10T20:04:32.878Z",
+            "deleted_at": "2021-07-19T04:45:05.887Z"
+          },
+          {
+            "code": "fr-FR",
+            "name": "string",
+            "created_at": "1977-03-03T02:10:22.305Z",
+            "updated_at": "1951-08-28T03:20:55.389Z",
+            "deleted_at": "1980-04-29T16:51:26.687Z"
+          }
+        ],
+        "estimate_count": 1828.6001046043743
+      }
+order: 1000

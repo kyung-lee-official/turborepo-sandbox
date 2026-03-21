@@ -1,0 +1,17 @@
+$kind: http-request
+description: Confirm that a created product import should start importing the
+  products into Medusa.
+url: "{{baseUrl}}/admin/products/imports/:transaction_id/confirm"
+method: POST
+headers:
+  Accept: application/json
+pathVariables:
+  - key: transaction_id
+    value: string
+    description: The product's transaction id.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Confirm Product Import.resources/examples
+order: 1000

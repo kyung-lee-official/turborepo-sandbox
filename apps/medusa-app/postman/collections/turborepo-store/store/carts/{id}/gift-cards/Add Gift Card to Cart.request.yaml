@@ -1,0 +1,31 @@
+$kind: http-request
+description: Add a Gift Card to a cart
+url: "{{baseUrl}}/store/carts/:id/gift-cards?locale=en-US"
+method: POST
+headers:
+  - key: x-publishable-api-key
+    value: string
+    description: Publishable API Key created in the Medusa Admin.
+  - key: x-medusa-locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+queryParams:
+  - key: locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+pathVariables:
+  - key: id
+    value: string
+    description: The cart's ID.
+body:
+  type: json
+  content: |-
+    {
+      "code": "string"
+    }
+examples: ./.resources/Add Gift Card to Cart.resources/examples
+order: 1000

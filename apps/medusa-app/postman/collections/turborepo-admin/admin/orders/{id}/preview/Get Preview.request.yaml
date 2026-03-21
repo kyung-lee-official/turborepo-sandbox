@@ -1,0 +1,16 @@
+$kind: http-request
+description: Retrieve a preview of an order using its associated change, such as an edit.
+url: "{{baseUrl}}/admin/orders/:id/preview"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The order's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Get Preview.resources/examples
+order: 1000

@@ -1,0 +1,85 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/views/:entity/columns"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: entity
+      value: string
+      description: The entity to retrieve its columns (for example, `orders`)
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "columns": [
+          {
+            "id": "string",
+            "name": "string",
+            "field": "string",
+            "sortable": false,
+            "hideable": true,
+            "default_visible": true,
+            "data_type": "currency",
+            "description": "string",
+            "semantic_type": "string",
+            "context": "string",
+            "computed": {
+              "type": "string",
+              "required_fields": [
+                "string",
+                "string"
+              ],
+              "optional_fields": [
+                "string",
+                "string"
+              ]
+            },
+            "relationship": {
+              "entity": "string",
+              "field": "string"
+            },
+            "default_order": 4109.164959527525,
+            "category": "relationship"
+          },
+          {
+            "id": "string",
+            "name": "string",
+            "field": "string",
+            "sortable": true,
+            "hideable": false,
+            "default_visible": true,
+            "data_type": "currency",
+            "description": "string",
+            "semantic_type": "string",
+            "context": "string",
+            "computed": {
+              "type": "string",
+              "required_fields": [
+                "string",
+                "string"
+              ],
+              "optional_fields": [
+                "string",
+                "string"
+              ]
+            },
+            "relationship": {
+              "entity": "string",
+              "field": "string"
+            },
+            "default_order": 6770.612330245609,
+            "category": "identifier"
+          }
+        ]
+      }
+order: 1000

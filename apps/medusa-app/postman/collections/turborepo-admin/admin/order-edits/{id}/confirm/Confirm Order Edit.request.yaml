@@ -1,0 +1,16 @@
+$kind: http-request
+description: Confirm an order edit request and apply the changes on the order.
+url: "{{baseUrl}}/admin/order-edits/:id/confirm"
+method: POST
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The order edit's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Confirm Order Edit.resources/examples
+order: 1000

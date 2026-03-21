@@ -1,0 +1,77 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/price-preferences?fields=string&offset=3157.91170892040\
+    24&limit=3050.1607324519186&order=string&id=string&attribute=string&value=s\
+    tring&q=string&with_deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: id
+      value: string
+    - key: attribute
+      value: string
+    - key: value
+      value: string
+    - key: q
+      value: string
+      description: Search term to apply on the price preference's searchable properties.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 9623.047050711546,
+        "offset": 6546.355699540541,
+        "count": 8506.693141349404,
+        "price_preferences": [
+          {
+            "id": "string",
+            "attribute": "region_id",
+            "value": "reg_123",
+            "is_tax_inclusive": false,
+            "created_at": "1973-08-24T11:04:05.215Z",
+            "updated_at": "1965-08-25T11:23:40.752Z",
+            "deleted_at": "2017-06-06T02:53:27.677Z"
+          },
+          {
+            "id": "string",
+            "attribute": "region_id",
+            "value": "reg_123",
+            "is_tax_inclusive": false,
+            "created_at": "2015-03-29T13:57:03.621Z",
+            "updated_at": "1978-07-27T00:30:58.767Z",
+            "deleted_at": "1983-06-06T15:20:00.394Z"
+          }
+        ],
+        "estimate_count": 365.5677426618698
+      }
+order: 1000

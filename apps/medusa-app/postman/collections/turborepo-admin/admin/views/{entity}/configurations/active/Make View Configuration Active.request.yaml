@@ -1,0 +1,28 @@
+$kind: http-request
+description: Make a view configuration active. This will set the given view
+  configuration as the active one for the specified entity for the admin user.
+  An admin user can only set their own configurations as active. If the view
+  configuration ID is `null`, the active view configuration will be cleared, and
+  the `code` or system default view configuration type will be used as the
+  active view.
+url: "{{baseUrl}}/admin/views/:entity/configurations/active"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: entity
+    value: string
+    description: The entity to update its view configuration (for example, `orders`).
+body:
+  type: json
+  content: |-
+    {
+      "view_configuration_id": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Make View Configuration Active.resources/examples
+order: 2000

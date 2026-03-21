@@ -1,0 +1,33 @@
+$kind: http-request
+description: Update a collection's details.
+url: "{{baseUrl}}/admin/collections/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The collection's ID.
+body:
+  type: json
+  content: |-
+    {
+      "title": "string",
+      "handle": "string",
+      "metadata": {},
+      "additional_data": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Collection.resources/examples
+order: 3000

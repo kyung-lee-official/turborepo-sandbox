@@ -1,0 +1,52 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/inventory-items?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  body:
+    type: json
+    content: |-
+      {
+        "sku": "string",
+        "hs_code": "string",
+        "weight": 9495.402611386817,
+        "length": 6944.063702938465,
+        "height": 1859.4422384443842,
+        "width": 6896.82405454904,
+        "origin_country": "string",
+        "mid_code": "string",
+        "material": "string",
+        "title": "string",
+        "description": "string",
+        "requires_shipping": false,
+        "thumbnail": "string",
+        "metadata": {}
+      }
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity (WebDAV) (RFC 4918)
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "invalid_request_error",
+        "message": "Discount with code TEST already exists.",
+        "type": "duplicate_error"
+      }
+order: 6000

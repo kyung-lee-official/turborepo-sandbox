@@ -1,0 +1,67 @@
+$kind: http-request
+description: Manage the buy rules of a `buyget` promotion to create, update, or delete them.
+url: "{{baseUrl}}/admin/promotions/:id/buy-rules/batch?promotion_type=buyget&ap\
+  plication_method_type=percentage&application_method_target_type=items"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: promotion_type
+    value: buyget
+    description: The promotion's type.
+  - key: application_method_type
+    value: percentage
+    description: The promotion's application method type.
+  - key: application_method_target_type
+    value: items
+    description: The promotion's application method target type.
+pathVariables:
+  - key: id
+    value: string
+    description: The promotion's ID.
+body:
+  type: json
+  content: |-
+    {
+      "create": [
+        {
+          "operator": "gt",
+          "attribute": "items.product.id",
+          "values": "prod_123",
+          "description": "string"
+        },
+        {
+          "operator": "lte",
+          "attribute": "items.product.id",
+          "values": "prod_123",
+          "description": "string"
+        }
+      ],
+      "update": [
+        {
+          "id": "string",
+          "values": "prod_123",
+          "operator": "gt",
+          "description": "string",
+          "attribute": "items.product.id"
+        },
+        {
+          "id": "string",
+          "values": "prod_123",
+          "operator": "in",
+          "description": "string",
+          "attribute": "items.product.id"
+        }
+      ],
+      "delete": [
+        "string",
+        "string"
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Manage the Buy Rules of a Promotion.resources/examples
+order: 1000

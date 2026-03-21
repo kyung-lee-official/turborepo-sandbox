@@ -1,0 +1,54 @@
+$kind: http-request
+description: Update a store's details.
+url: "{{baseUrl}}/admin/stores/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The store's ID.
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "supported_currencies": [
+        {
+          "currency_code": "usd",
+          "is_default": true,
+          "is_tax_inclusive": true
+        },
+        {
+          "currency_code": "usd",
+          "is_default": false,
+          "is_tax_inclusive": true
+        }
+      ],
+      "default_sales_channel_id": "string",
+      "default_region_id": "string",
+      "default_location_id": "string",
+      "metadata": {},
+      "supported_locales": [
+        {
+          "locale_code": "fr-FR"
+        },
+        {
+          "locale_code": "fr-FR"
+        }
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Store.resources/examples
+order: 2000

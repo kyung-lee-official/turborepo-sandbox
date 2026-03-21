@@ -1,0 +1,46 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/return-reasons/:id?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The return reason's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "value": "string",
+        "label": "string",
+        "description": "string",
+        "metadata": {}
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: >-
+      {
+        "code": "unknown_error",
+        "message": "The request conflicted with another request. You may retry the request with the provided Idempotency-Key.",
+        "type": "QueryRunnerAlreadyReleasedError"
+      }
+order: 5000

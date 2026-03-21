@@ -1,0 +1,37 @@
+$kind: http-request
+description: Create a tax region.
+url: "{{baseUrl}}/admin/tax-regions?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+body:
+  type: json
+  content: |-
+    {
+      "country_code": "us",
+      "province_code": "us-ca",
+      "parent_id": "string",
+      "default_tax_rate": {
+        "code": "string",
+        "name": "VAT",
+        "rate": 10,
+        "is_combinable": false,
+        "metadata": {}
+      },
+      "metadata": {},
+      "provider_id": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Tax Region.resources/examples
+order: 3000

@@ -1,0 +1,42 @@
+$kind: http-request
+description: Decline an order transfer previously requested, typically by the
+  admin user using the [Request Order Transfer Admin API
+  route](https://docs.medusajs.com/api/admin#orders_postordersidtransferrequest).
+url: "{{baseUrl}}/store/orders/:id/transfer/decline?fields=string&locale=en-US"
+method: POST
+headers:
+  - key: x-publishable-api-key
+    value: string
+    description: Publishable API Key created in the Medusa Admin.
+  - key: x-medusa-locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+  - key: Content-Type
+    value: application/json
+  - key: Accept
+    value: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: >-
+      Comma-separated fields that should be included in the returned data.
+
+      if a field is prefixed with `+` it will be added to the default fields,
+      using `-` will remove it from the default fields.
+
+      without prefix it will replace the entire default fields.
+  - key: locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+pathVariables:
+  - key: id
+    value: string
+    description: The order's ID.
+body:
+  type: json
+  content: |-
+    {
+      "token": "string"
+    }
+examples: ./.resources/Decline Order Transfer.resources/examples
+order: 1000

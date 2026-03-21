@@ -1,0 +1,143 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/shipping-options/:id/calculate?fields=string&locale=en-US"
+  method: POST
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: >-
+        Comma-separated fields that should be included in the returned data.
+
+        if a field is prefixed with `+` it will be added to the default fields,
+        using `-` will remove it from the default fields.
+
+        without prefix it will replace the entire default fields.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+  pathVariables:
+    - key: id
+      value: string
+      description: The shipping option's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "cart_id": "string",
+        "data": {}
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "shipping_option": {
+          "id": "string",
+          "name": "string",
+          "price_type": "calculated",
+          "service_zone_id": "string",
+          "shipping_profile_id": "string",
+          "provider_id": "string",
+          "data": {},
+          "type": {
+            "id": "string",
+            "label": "string",
+            "description": "string",
+            "code": "string"
+          },
+          "provider": {
+            "id": "string",
+            "is_enabled": true
+          },
+          "amount": 5128.02233172214,
+          "prices": [
+            {
+              "id": "string",
+              "currency_code": "usd",
+              "amount": 2700.6336679353926,
+              "min_quantity": 5536.088812984052,
+              "max_quantity": 7677.3606141486935,
+              "price_rules": [
+                {
+                  "id": "string",
+                  "attribute": "string",
+                  "operator": "gte",
+                  "value": "string"
+                },
+                {
+                  "id": "string",
+                  "attribute": "string",
+                  "operator": "lte",
+                  "value": "string"
+                }
+              ]
+            },
+            {
+              "id": "string",
+              "currency_code": "usd",
+              "amount": 2973.6143554212304,
+              "min_quantity": 5325.413555181708,
+              "max_quantity": 8183.006062273037,
+              "price_rules": [
+                {
+                  "id": "string",
+                  "attribute": "string",
+                  "operator": "lte",
+                  "value": "string"
+                },
+                {
+                  "id": "string",
+                  "attribute": "string",
+                  "operator": "lte",
+                  "value": "string"
+                }
+              ]
+            }
+          ],
+          "calculated_price": {
+            "id": "string",
+            "calculated_amount": 817.1506150443975,
+            "original_amount": 9013.288581698409,
+            "original_amount_with_tax": 9048.870312551191,
+            "original_amount_without_tax": 5902.455594524341,
+            "currency_code": "string",
+            "is_calculated_price_price_list": true,
+            "is_calculated_price_tax_inclusive": true,
+            "calculated_amount_with_tax": 8073.56256322858,
+            "calculated_amount_without_tax": 4111.3500784084845,
+            "is_original_price_price_list": true,
+            "is_original_price_tax_inclusive": false,
+            "calculated_price": {
+              "id": "string",
+              "price_list_id": "string",
+              "price_list_type": "string",
+              "min_quantity": 7684.557713218252,
+              "max_quantity": 6110.9707649309385
+            },
+            "original_price": {
+              "id": "string",
+              "price_list_id": "string",
+              "price_list_type": "string",
+              "min_quantity": 2367.9640193354403,
+              "max_quantity": 2081.229258295654
+            }
+          },
+          "insufficient_inventory": false
+        }
+      }
+order: 1000

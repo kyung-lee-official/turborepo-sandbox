@@ -1,0 +1,121 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/shipping-options/:id/rules/batch?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The shipping option's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "create": [
+          {
+            "operator": "ne",
+            "attribute": "customer_group",
+            "value": "cusgroup_123"
+          },
+          {
+            "operator": "nin",
+            "attribute": "customer_group",
+            "value": "cusgroup_123"
+          }
+        ],
+        "update": [
+          {
+            "id": "string",
+            "operator": "gte",
+            "attribute": "customer_group",
+            "value": "cusgroup_123"
+          },
+          {
+            "id": "string",
+            "operator": "eq",
+            "attribute": "customer_group",
+            "value": "cusgroup_123"
+          }
+        ],
+        "delete": [
+          "string",
+          "string"
+        ]
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "created": [
+          {
+            "id": "string",
+            "attribute": "is_return",
+            "operator": "ne",
+            "value": "true",
+            "shipping_option_id": "string",
+            "created_at": "1966-05-17T18:21:52.200Z",
+            "updated_at": "1949-01-16T15:03:35.691Z",
+            "deleted_at": "1951-01-02T13:51:29.291Z"
+          },
+          {
+            "id": "string",
+            "attribute": "is_return",
+            "operator": "in",
+            "value": "true",
+            "shipping_option_id": "string",
+            "created_at": "2007-10-26T22:19:48.569Z",
+            "updated_at": "2012-09-01T06:13:12.609Z",
+            "deleted_at": "2017-12-06T06:28:41.635Z"
+          }
+        ],
+        "updated": [
+          {
+            "id": "string",
+            "attribute": "is_return",
+            "operator": "eq",
+            "value": "true",
+            "shipping_option_id": "string",
+            "created_at": "2004-09-18T10:28:59.203Z",
+            "updated_at": "1989-09-21T14:49:08.066Z",
+            "deleted_at": "1979-11-08T05:45:14.037Z"
+          },
+          {
+            "id": "string",
+            "attribute": "is_return",
+            "operator": "nin",
+            "value": "true",
+            "shipping_option_id": "string",
+            "created_at": "1951-08-06T01:34:50.040Z",
+            "updated_at": "1975-10-15T09:31:49.393Z",
+            "deleted_at": "1982-11-10T03:28:17.485Z"
+          }
+        ],
+        "deleted": {
+          "ids": [
+            "string",
+            "string"
+          ],
+          "object": "shipping_option_rule",
+          "deleted": true
+        }
+      }
+order: 1000

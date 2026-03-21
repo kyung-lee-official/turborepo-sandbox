@@ -1,0 +1,205 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/price-lists?fields=string&offset=3157.9117089204024&lim\
+    it=3050.1607324519186&order=string&q=string&id=string&$eq=string&$ne=string\
+    &$in=string,string&$nin=string,string&$not=string&$gt=string&$gte=string&$l\
+    t=string&$lte=string&$like=string&$re=string&$ilike=string&$fulltext=string\
+    &$overlap=string,string&$contains=string,string&$contained=string,string&$e\
+    xists=true&status=draft&rules_count=4619.1361854589&with_deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to filter the price list's searchable properties.
+    - key: id
+      value: string
+    - key: $eq
+      value: string
+      description: Filter by a price list's start date.
+    - key: $ne
+      value: string
+      description: Filter by a price list's start date.
+    - key: $in
+      value: string,string
+      description: Filter by a price list's start date.
+    - key: $nin
+      value: string,string
+      description: Filter by a price list's start date.
+    - key: $not
+      value: string
+      description: Filter by a price list's start date.
+    - key: $gt
+      value: string
+      description: Filter by a price list's start date.
+    - key: $gte
+      value: string
+      description: Filter by a price list's start date.
+    - key: $lt
+      value: string
+      description: Filter by a price list's start date.
+    - key: $lte
+      value: string
+      description: Filter by a price list's start date.
+    - key: $like
+      value: string
+      description: Filter by a price list's start date.
+    - key: $re
+      value: string
+      description: Filter by a price list's start date.
+    - key: $ilike
+      value: string
+      description: Filter by a price list's start date.
+    - key: $fulltext
+      value: string
+      description: Filter by a price list's start date.
+    - key: $overlap
+      value: string,string
+      description: Filter by a price list's start date.
+    - key: $contains
+      value: string,string
+      description: Filter by a price list's start date.
+    - key: $contained
+      value: string,string
+      description: Filter by a price list's start date.
+    - key: $exists
+      value: "true"
+      description: Filter by a price list's start date.
+    - key: status
+      value: draft
+      description: Filter by the price list's status.
+    - key: rules_count
+      value: "4619.1361854589"
+      description: Filter by the price list's rules count.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 6050.012565803316,
+        "offset": 5770.712671723204,
+        "count": 9799.685017689953,
+        "price_lists": [
+          {
+            "id": "string",
+            "title": "string",
+            "description": "string",
+            "rules": {},
+            "starts_at": "string",
+            "ends_at": "string",
+            "status": "draft",
+            "type": "override",
+            "prices": [
+              {
+                "variant_id": "string",
+                "rules": {},
+                "id": "string",
+                "title": "string",
+                "currency_code": "usd",
+                "amount": 3857.0694197090693,
+                "raw_amount": {},
+                "min_quantity": 590.3610886689004,
+                "max_quantity": 4533.192646571447,
+                "price_set_id": "string",
+                "created_at": "1949-02-22T17:49:08.976Z",
+                "updated_at": "2011-09-14T11:03:42.844Z",
+                "deleted_at": "2020-06-11T06:54:19.143Z"
+              },
+              {
+                "variant_id": "string",
+                "rules": {},
+                "id": "string",
+                "title": "string",
+                "currency_code": "usd",
+                "amount": 7853.1639378598975,
+                "raw_amount": {},
+                "min_quantity": 599.942207728541,
+                "max_quantity": 2418.5570108877787,
+                "price_set_id": "string",
+                "created_at": "1959-12-30T19:38:49.921Z",
+                "updated_at": "1986-02-17T13:40:46.729Z",
+                "deleted_at": "1997-09-13T08:41:59.010Z"
+              }
+            ],
+            "created_at": "1951-11-17T01:42:31.832Z",
+            "updated_at": "1998-02-05T15:00:13.878Z",
+            "deleted_at": "2016-09-12T16:40:57.638Z"
+          },
+          {
+            "id": "string",
+            "title": "string",
+            "description": "string",
+            "rules": {},
+            "starts_at": "string",
+            "ends_at": "string",
+            "status": "active",
+            "type": "override",
+            "prices": [
+              {
+                "variant_id": "string",
+                "rules": {},
+                "id": "string",
+                "title": "string",
+                "currency_code": "usd",
+                "amount": 2626.8906007092996,
+                "raw_amount": {},
+                "min_quantity": 8053.358963578145,
+                "max_quantity": 555.7354510926959,
+                "price_set_id": "string",
+                "created_at": "1975-08-31T16:38:11.605Z",
+                "updated_at": "2016-01-24T13:56:28.234Z",
+                "deleted_at": "2019-09-15T21:29:00.182Z"
+              },
+              {
+                "variant_id": "string",
+                "rules": {},
+                "id": "string",
+                "title": "string",
+                "currency_code": "usd",
+                "amount": 448.2358068057901,
+                "raw_amount": {},
+                "min_quantity": 3642.0764461282083,
+                "max_quantity": 412.8534823916752,
+                "price_set_id": "string",
+                "created_at": "1952-12-09T17:53:14.749Z",
+                "updated_at": "1993-02-23T07:43:04.552Z",
+                "deleted_at": "2014-12-11T17:59:10.473Z"
+              }
+            ],
+            "created_at": "1981-10-11T09:20:42.020Z",
+            "updated_at": "2004-05-01T14:00:50.117Z",
+            "deleted_at": "1982-12-13T18:03:10.903Z"
+          }
+        ],
+        "estimate_count": 1656.338368176533
+      }
+order: 1000

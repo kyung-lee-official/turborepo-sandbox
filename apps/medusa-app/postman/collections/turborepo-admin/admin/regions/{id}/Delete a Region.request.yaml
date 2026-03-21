@@ -1,0 +1,16 @@
+$kind: http-request
+description: Delete a region.
+url: "{{baseUrl}}/admin/regions/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The region's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Delete a Region.resources/examples
+order: 3000

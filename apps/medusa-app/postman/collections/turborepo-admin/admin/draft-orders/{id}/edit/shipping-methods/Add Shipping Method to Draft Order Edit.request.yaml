@@ -1,0 +1,27 @@
+$kind: http-request
+description: Add a shipping method to a draft order edit.
+url: "{{baseUrl}}/admin/draft-orders/:id/edit/shipping-methods"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The draft order's ID.
+body:
+  type: json
+  content: |-
+    {
+      "shipping_option_id": "string",
+      "custom_amount": 9123.555717494539,
+      "description": "string",
+      "internal_note": "string",
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Add Shipping Method to Draft Order Edit.resources/examples
+order: 3000

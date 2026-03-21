@@ -1,0 +1,87 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/translations?q=string&reference_id=prod_123&reference=s\
+    tring&locale_code=fr-FR&limit=3050.1607324519186&offset=3157.9117089204024&\
+    order=string&with_deleted=false&fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: q
+      value: string
+      description: Search query to filter translations by their fields.
+    - key: reference_id
+      value: prod_123
+    - key: reference
+      value: string
+      description: Filter translations by the resource they belong to. For example,
+        `product` or `product_variant`.
+    - key: locale_code
+      value: fr-FR
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: with_deleted
+      value: "false"
+      description: The translation's with deleted.
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. If a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. Without prefix
+        it will replace the entire default fields.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 3783.4386053742296,
+        "limit": 8265.267714233287,
+        "offset": 8632.81087556637,
+        "translations": [
+          {
+            "id": "string",
+            "reference_id": "prod_123",
+            "reference": "product",
+            "locale_code": "fr-FR",
+            "translations": {
+              "title": "Chaussures",
+              "description": "Des chaussures élégantes."
+            },
+            "created_at": "2015-06-29T05:42:59.789Z",
+            "updated_at": "2025-06-30T06:09:50.664Z",
+            "deleted_at": "1952-05-21T02:40:04.024Z"
+          },
+          {
+            "id": "string",
+            "reference_id": "prod_123",
+            "reference": "product",
+            "locale_code": "fr-FR",
+            "translations": {
+              "title": "Chaussures",
+              "description": "Des chaussures élégantes."
+            },
+            "created_at": "1972-05-11T17:01:24.402Z",
+            "updated_at": "1988-11-13T13:25:38.781Z",
+            "deleted_at": "2021-08-26T10:04:04.628Z"
+          }
+        ],
+        "estimate_count": 7810.328256012047
+      }
+order: 1000

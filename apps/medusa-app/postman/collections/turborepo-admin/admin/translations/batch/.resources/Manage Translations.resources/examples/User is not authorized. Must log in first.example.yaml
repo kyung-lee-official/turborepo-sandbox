@@ -1,0 +1,72 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/translations/batch"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: text/plain
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "create": [
+          {
+            "reference": "product",
+            "reference_id": "prod_123",
+            "locale_code": "fr-FR",
+            "translations": {
+              "title": "Chaussures",
+              "description": "Des chaussures élégantes."
+            }
+          },
+          {
+            "reference": "product",
+            "reference_id": "prod_123",
+            "locale_code": "fr-FR",
+            "translations": {
+              "title": "Chaussures",
+              "description": "Des chaussures élégantes."
+            }
+          }
+        ],
+        "update": [
+          {
+            "id": "string",
+            "reference": "product",
+            "reference_id": "prod_123",
+            "locale_code": "fr-FR",
+            "translations": {
+              "title": "Chaussures Modifiées",
+              "description": "Des chaussures élégantes et modifiées."
+            }
+          },
+          {
+            "id": "string",
+            "reference": "product",
+            "reference_id": "prod_123",
+            "locale_code": "fr-FR",
+            "translations": {
+              "title": "Chaussures Modifiées",
+              "description": "Des chaussures élégantes et modifiées."
+            }
+          }
+        ],
+        "delete": [
+          "string",
+          "string"
+        ]
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: text/plain
+  body:
+    type: text
+    content: Unauthorized
+order: 3000

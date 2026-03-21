@@ -1,0 +1,22 @@
+$kind: http-request
+description: Create an order edit.
+url: "{{baseUrl}}/admin/order-edits"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "order_id": "string",
+      "description": "string",
+      "internal_note": "string",
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Order Edit.resources/examples
+order: 2000

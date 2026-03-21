@@ -1,0 +1,43 @@
+$kind: http-request
+description: Retrieve a list of stores. The stores can be filtered by fields
+  such as `id`. The stores can also be sorted or paginated.
+url: "{{baseUrl}}/admin/stores?fields=string&offset=3157.9117089204024&limit=30\
+  50.1607324519186&order=string&q=string&id=string&name=string&with_deleted=tru\
+  e"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: offset
+    value: "3157.9117089204024"
+    description: The number of items to skip when retrieving a list.
+  - key: limit
+    value: "3050.1607324519186"
+    description: Limit the number of items returned in the list.
+  - key: order
+    value: string
+    description: The field to sort the data by. By default, the sort order is
+      ascending. To change the order to descending, prefix the field name with
+      `-`.
+  - key: q
+    value: string
+    description: Search term to filter the store's searchable properties.
+  - key: id
+    value: string
+  - key: name
+    value: string
+  - key: with_deleted
+    value: "true"
+    description: Whether to include deleted records in the result.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Stores.resources/examples
+order: 2000

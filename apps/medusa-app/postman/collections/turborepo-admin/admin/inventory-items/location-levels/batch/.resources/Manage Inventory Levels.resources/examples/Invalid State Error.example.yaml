@@ -1,0 +1,66 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/inventory-items/location-levels/batch"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "create": [
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 5209.53888919393,
+            "incoming_quantity": 3182.2307581789964
+          },
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 8620.867183596067,
+            "incoming_quantity": 3380.404494009406
+          }
+        ],
+        "update": [
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 6253.320048777126,
+            "incoming_quantity": 1978.3642625639252,
+            "id": "string"
+          },
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 6770.326185666458,
+            "incoming_quantity": 4892.841834031234,
+            "id": "string"
+          }
+        ],
+        "delete": [
+          "string",
+          "string"
+        ],
+        "force": false
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: >-
+      {
+        "code": "unknown_error",
+        "message": "The request conflicted with another request. You may retry the request with the provided Idempotency-Key.",
+        "type": "QueryRunnerAlreadyReleasedError"
+      }
+order: 5000

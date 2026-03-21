@@ -1,0 +1,23 @@
+$kind: http-request
+description: Change the status of an order to archived.
+url: "{{baseUrl}}/admin/orders/:id/archive?fields=string"
+method: POST
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The order's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Archive an Order.resources/examples
+order: 1000

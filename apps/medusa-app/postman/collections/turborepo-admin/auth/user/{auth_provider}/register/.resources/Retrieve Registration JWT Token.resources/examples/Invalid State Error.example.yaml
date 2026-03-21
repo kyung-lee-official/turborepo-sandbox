@@ -1,0 +1,32 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/auth/user/:auth_provider/register"
+  method: POST
+  headers:
+    Content-Type: application/json
+    Accept: application/json
+  pathVariables:
+    - key: auth_provider
+      value: emailpass
+      description: The provider used for authentication.
+  body:
+    type: json
+    content: |-
+      {
+        "email": "admin@medusa-test.com",
+        "password": "supersecret"
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: >-
+      {
+        "code": "unknown_error",
+        "message": "The request conflicted with another request. You may retry the request with the provided Idempotency-Key.",
+        "type": "QueryRunnerAlreadyReleasedError"
+      }
+order: 5000

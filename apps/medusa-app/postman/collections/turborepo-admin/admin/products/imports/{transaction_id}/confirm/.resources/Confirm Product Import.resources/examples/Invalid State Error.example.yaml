@@ -1,0 +1,28 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/products/imports/:transaction_id/confirm"
+  method: POST
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: transaction_id
+      value: string
+      description: The product's transaction id.
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: >-
+      {
+        "code": "unknown_error",
+        "message": "The request conflicted with another request. You may retry the request with the provided Idempotency-Key.",
+        "type": "QueryRunnerAlreadyReleasedError"
+      }
+order: 5000

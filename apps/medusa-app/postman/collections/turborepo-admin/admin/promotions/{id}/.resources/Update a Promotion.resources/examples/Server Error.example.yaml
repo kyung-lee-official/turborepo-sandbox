@@ -1,0 +1,59 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/promotions/:id?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The promotion's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "campaign_id": "string",
+        "code": "string",
+        "is_automatic": false,
+        "type": "standard",
+        "application_method": {
+          "id": "string",
+          "description": "string",
+          "max_quantity": 4733.676482209159,
+          "currency_code": "string",
+          "apply_to_quantity": 7842.066479450505,
+          "buy_rules_min_quantity": 9890.232334565098,
+          "value": 9826.04102074494,
+          "type": "fixed",
+          "target_type": "items",
+          "allocation": "across"
+        },
+        "additional_data": {}
+      }
+response:
+  statusCode: 500
+  statusText: Internal Server Error
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "api_error",
+        "message": "An error occured while hashing password",
+        "type": "database_error"
+      }
+order: 7000

@@ -1,0 +1,42 @@
+$kind: http-request
+description: Add damaged items, whose quantity is to be dismissed, to a return.
+  These items will have the action `RECEIVE_DAMAGED_RETURN_ITEM`.
+url: "{{baseUrl}}/admin/returns/:id/dismiss-items?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The return's ID.
+body:
+  type: json
+  content: |-
+    {
+      "items": [
+        {
+          "id": "string",
+          "quantity": 5822.903340293253,
+          "internal_note": "string"
+        },
+        {
+          "id": "string",
+          "quantity": 6257.892292360063,
+          "internal_note": "string"
+        }
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Add Damaged Items to Return.resources/examples
+order: 2000

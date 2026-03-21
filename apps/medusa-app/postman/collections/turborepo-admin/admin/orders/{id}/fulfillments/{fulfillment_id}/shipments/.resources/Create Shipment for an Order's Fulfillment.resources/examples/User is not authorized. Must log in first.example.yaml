@@ -1,0 +1,66 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/orders/:id/fulfillments/:fulfillment_id/shipments?field\
+    s=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: text/plain
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The order's ID.
+    - key: fulfillment_id
+      value: string
+      description: The fulfillment's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "items": [
+          {
+            "id": "string",
+            "quantity": 4679.270499610538
+          },
+          {
+            "id": "string",
+            "quantity": 1768.858142607357
+          }
+        ],
+        "metadata": {},
+        "labels": [
+          {
+            "tracking_number": "string",
+            "tracking_url": "string",
+            "label_url": "string"
+          },
+          {
+            "tracking_number": "string",
+            "tracking_url": "string",
+            "label_url": "string"
+          }
+        ],
+        "no_notification": false,
+        "additional_data": {}
+      }
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: text/plain
+  body:
+    type: text
+    content: Unauthorized
+order: 3000

@@ -1,0 +1,32 @@
+$kind: http-request
+description: Create an inventory level for an inventory item.
+url: "{{baseUrl}}/admin/inventory-items/:id/location-levels?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The inventory item's ID.
+body:
+  type: json
+  content: |-
+    {
+      "location_id": "string",
+      "stocked_quantity": 6707.6355061976665,
+      "incoming_quantity": 5360.808424427919
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Inventory Level for Inventory Item.resources/examples
+order: 4000

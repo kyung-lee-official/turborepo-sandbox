@@ -1,0 +1,17 @@
+$kind: http-request
+description: Change the status of a draft order's edit to be requested. Later,
+  the edit can be confirmed or canceled.
+url: "{{baseUrl}}/admin/draft-orders/:id/edit/request"
+method: POST
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The draft order's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Request Edit on Draft Order.resources/examples
+order: 1000

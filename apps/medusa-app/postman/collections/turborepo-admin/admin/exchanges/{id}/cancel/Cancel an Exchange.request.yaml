@@ -1,0 +1,23 @@
+$kind: http-request
+description: Cancel an exchange and its associated return.
+url: "{{baseUrl}}/admin/exchanges/:id/cancel"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The exchange's ID.
+body:
+  type: json
+  content: |-
+    {
+      "no_notification": false
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Cancel an Exchange.resources/examples
+order: 1000

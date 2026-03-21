@@ -1,0 +1,41 @@
+$kind: http-request
+description: Retrieve a list of translatable entities. The entities can be
+  filtered by fields such as `id`. The entities can also be sorted or paginated.
+url: "{{baseUrl}}/admin/translations/entities?type=product&id=string&limit=3050\
+  .1607324519186&offset=3157.9117089204024&order=string&with_deleted=true&field\
+  s=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: type
+    value: product
+    description: Filter by a translatable entity type.
+  - key: id
+    value: string
+  - key: limit
+    value: "3050.1607324519186"
+    description: Limit the number of items returned in the list.
+  - key: offset
+    value: "3157.9117089204024"
+    description: The number of items to skip when retrieving a list.
+  - key: order
+    value: string
+    description: The field to sort the data by. By default, the sort order is
+      ascending. To change the order to descending, prefix the field name with
+      `-`.
+  - key: with_deleted
+    value: "true"
+    description: The translation's with deleted.
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. If a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. Without prefix
+      it will replace the entire default fields.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Translatable Entities.resources/examples
+order: 1000

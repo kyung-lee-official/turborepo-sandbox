@@ -1,0 +1,243 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/workflows-executions/:workflow_id/:transaction_id?field\
+    s=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: workflow_id
+      value: string
+      description: The workflows execution's workflow id.
+    - key: transaction_id
+      value: string
+      description: The workflows execution's transaction id.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "workflow_execution": {
+          "id": "string",
+          "workflow_id": "string",
+          "transaction_id": "string",
+          "execution": {
+            "steps": {
+              "id": {
+                "id": "string",
+                "invoke": {
+                  "state": "reverted",
+                  "status": "waiting_response"
+                },
+                "definition": {
+                  "async": true,
+                  "compensateAsync": true,
+                  "noCompensation": true,
+                  "continueOnPermanentFailure": true,
+                  "skipOnPermanentFailure": "string",
+                  "maxRetries": 7639.120411246971,
+                  "noWait": false,
+                  "retryInterval": 2574.4444561371283,
+                  "retryIntervalAwaiting": 7694.3184618372525,
+                  "saveResponse": false,
+                  "timeout": 273.99569465953897,
+                  "autoRetry": false,
+                  "maxAwaitingRetries": 1774.9104273049388
+                },
+                "compensate": {
+                  "state": "compensating",
+                  "status": "idle"
+                },
+                "depth": 8367.67382253693,
+                "startedAt": 7298.3244638936485
+              },
+              "invoke": {
+                "id": "string",
+                "invoke": {
+                  "state": "timeout",
+                  "status": "permanent_failure"
+                },
+                "definition": {
+                  "async": false,
+                  "compensateAsync": false,
+                  "noCompensation": false,
+                  "continueOnPermanentFailure": false,
+                  "skipOnPermanentFailure": "string",
+                  "maxRetries": 9243.399000682075,
+                  "noWait": false,
+                  "retryInterval": 6631.907289574504,
+                  "retryIntervalAwaiting": 9686.687152303062,
+                  "saveResponse": false,
+                  "timeout": 1304.7475732575874,
+                  "autoRetry": false,
+                  "maxAwaitingRetries": 5136.162539468454
+                },
+                "compensate": {
+                  "state": "skipped",
+                  "status": "ok"
+                },
+                "depth": 2351.2862784993204,
+                "startedAt": 2641.822853424538
+              },
+              "definition": {
+                "id": "string",
+                "invoke": {
+                  "state": "dormant",
+                  "status": "idle"
+                },
+                "definition": {
+                  "async": false,
+                  "compensateAsync": true,
+                  "noCompensation": false,
+                  "continueOnPermanentFailure": true,
+                  "skipOnPermanentFailure": "string",
+                  "maxRetries": 3583.3871539900074,
+                  "noWait": false,
+                  "retryInterval": 2307.3398108597767,
+                  "retryIntervalAwaiting": 6830.073963042176,
+                  "saveResponse": false,
+                  "timeout": 1079.6388542794898,
+                  "autoRetry": false,
+                  "maxAwaitingRetries": 9866.820157296337
+                },
+                "compensate": {
+                  "state": "invoking",
+                  "status": "waiting_response"
+                },
+                "depth": 3732.4925177818113,
+                "startedAt": 9138.195285591148
+              },
+              "compensate": {
+                "id": "string",
+                "invoke": {
+                  "state": "skipped",
+                  "status": "idle"
+                },
+                "definition": {
+                  "async": false,
+                  "compensateAsync": true,
+                  "noCompensation": true,
+                  "continueOnPermanentFailure": true,
+                  "skipOnPermanentFailure": "string",
+                  "maxRetries": 7685.250326642837,
+                  "noWait": false,
+                  "retryInterval": 5353.190237279997,
+                  "retryIntervalAwaiting": 4785.025365109658,
+                  "saveResponse": false,
+                  "timeout": 4171.078120048673,
+                  "autoRetry": false,
+                  "maxAwaitingRetries": 3558.1784425154783
+                },
+                "compensate": {
+                  "state": "skipped_failure",
+                  "status": "ok"
+                },
+                "depth": 8588.501018539742,
+                "startedAt": 2629.1363987719074
+              },
+              "depth": {
+                "id": "string",
+                "invoke": {
+                  "state": "invoking",
+                  "status": "idle"
+                },
+                "definition": {
+                  "async": true,
+                  "compensateAsync": false,
+                  "noCompensation": true,
+                  "continueOnPermanentFailure": true,
+                  "skipOnPermanentFailure": "string",
+                  "maxRetries": 9598.715186229498,
+                  "noWait": false,
+                  "retryInterval": 3188.3968033447572,
+                  "retryIntervalAwaiting": 4649.934367069084,
+                  "saveResponse": false,
+                  "timeout": 7234.094047265274,
+                  "autoRetry": true,
+                  "maxAwaitingRetries": 7421.8878839237705
+                },
+                "compensate": {
+                  "state": "timeout",
+                  "status": "ok"
+                },
+                "depth": 6254.886930984187,
+                "startedAt": 226.2861718910969
+              },
+              "startedAt": {
+                "id": "string",
+                "invoke": {
+                  "state": "invoking",
+                  "status": "waiting_response"
+                },
+                "definition": {
+                  "async": false,
+                  "compensateAsync": false,
+                  "noCompensation": false,
+                  "continueOnPermanentFailure": true,
+                  "skipOnPermanentFailure": "string",
+                  "maxRetries": 1824.8334560321555,
+                  "noWait": false,
+                  "retryInterval": 3613.45633962993,
+                  "retryIntervalAwaiting": 6532.347200245798,
+                  "saveResponse": false,
+                  "timeout": 4048.6610983351934,
+                  "autoRetry": false,
+                  "maxAwaitingRetries": 4948.871671891977
+                },
+                "compensate": {
+                  "state": "skipped_failure",
+                  "status": "idle"
+                },
+                "depth": 4277.406759009507,
+                "startedAt": 835.5820037806527
+              }
+            }
+          },
+          "context": {
+            "compensate": {},
+            "errors": [
+              {
+                "error": {},
+                "action": "string",
+                "handlerType": "string"
+              },
+              {
+                "error": {},
+                "action": "string",
+                "handlerType": "string"
+              }
+            ],
+            "data": {
+              "invoke": {
+                "output": {
+                  "output": {
+                    "output": "",
+                    "compensateInput": ""
+                  }
+                }
+              },
+              "payload": ""
+            }
+          },
+          "state": "failed",
+          "created_at": "1984-02-27T21:38:19.522Z",
+          "updated_at": "1967-12-17T16:26:24.751Z",
+          "deleted_at": "1973-12-07T21:25:11.163Z"
+        }
+      }
+order: 1000

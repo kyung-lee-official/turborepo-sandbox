@@ -1,0 +1,37 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/store-credit-accounts/:id?locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+    - key: connect.sid
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+  pathVariables:
+    - key: id
+      value: string
+      description: The store credit account's ID.
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Discount must be set to dynamic",
+        "type": "not_allowed"
+      }
+order: 2000

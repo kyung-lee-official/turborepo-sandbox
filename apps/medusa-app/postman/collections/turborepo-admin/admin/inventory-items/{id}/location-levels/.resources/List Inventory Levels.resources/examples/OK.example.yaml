@@ -1,0 +1,75 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/inventory-items/:id/location-levels?fields=string&offse\
+    t=3157.9117089204024&limit=3050.1607324519186&order=string&with_deleted=tru\
+    e&location_id=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+    - key: location_id
+      value: string
+  pathVariables:
+    - key: id
+      value: string
+      description: The inventory item's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 4221.831066889101,
+        "inventory_levels": [
+          {
+            "id": "string",
+            "inventory_item_id": "string",
+            "location_id": "string",
+            "stocked_quantity": 3297.0732976836057,
+            "reserved_quantity": 4465.588699964862,
+            "available_quantity": 6610.101008204534,
+            "incoming_quantity": 7630.179997786783,
+            "metadata": {}
+          },
+          {
+            "id": "string",
+            "inventory_item_id": "string",
+            "location_id": "string",
+            "stocked_quantity": 7427.990474283295,
+            "reserved_quantity": 4896.71251690696,
+            "available_quantity": 7861.451118734293,
+            "incoming_quantity": 1820.0622891295582,
+            "metadata": {}
+          }
+        ],
+        "limit": 9914.206027761555,
+        "offset": 6701.235347274379
+      }
+order: 1000

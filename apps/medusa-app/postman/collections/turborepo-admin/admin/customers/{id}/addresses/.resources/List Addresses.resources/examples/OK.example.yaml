@@ -1,0 +1,111 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/customers/:id/addresses?fields=string&offset=3157.91170\
+    89204024&limit=3050.1607324519186&order=string&q=string&company=string&city\
+    =string&country_code=string&province=us-ca&postal_code=string&with_deleted=\
+    true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields. This API route restricts the
+        fields that can be selected. Learn how to override the retrievable
+        fields in the [Retrieve Custom
+        Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links)
+        documentation.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to apply on the address's searchable properties.
+    - key: company
+      value: string
+    - key: city
+      value: string
+    - key: country_code
+      value: string
+    - key: province
+      value: us-ca
+    - key: postal_code
+      value: string
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+  pathVariables:
+    - key: id
+      value: string
+      description: The customer's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "addresses": [
+          {
+            "id": "string",
+            "address_name": "string",
+            "is_default_shipping": false,
+            "is_default_billing": true,
+            "customer_id": "string",
+            "company": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "us",
+            "province": "us-ca",
+            "postal_code": "string",
+            "phone": "string",
+            "metadata": {},
+            "created_at": "2007-12-22T11:03:34.679Z",
+            "updated_at": "1975-01-20T15:22:01.338Z"
+          },
+          {
+            "id": "string",
+            "address_name": "string",
+            "is_default_shipping": false,
+            "is_default_billing": false,
+            "customer_id": "string",
+            "company": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "us",
+            "province": "us-ca",
+            "postal_code": "string",
+            "phone": "string",
+            "metadata": {},
+            "created_at": "2009-07-14T00:16:02.943Z",
+            "updated_at": "1981-07-09T07:12:22.130Z"
+          }
+        ],
+        "count": 8085.745943062375,
+        "limit": 4408.156212484686,
+        "offset": 4389.671278174478
+      }
+order: 1000

@@ -1,0 +1,141 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/users?fields=string&offset=3157.9117089204024&limit=305\
+    0.1607324519186&order=string&q=string&id=string&email=Tza9PhMLSe@ONGtaROHYd\
+    PakIWEkUMRtFT.waoq&first_name=string&last_name=string&$eq=string&$ne=string\
+    &$in=string,string&$nin=string,string&$not=string&$gt=string&$gte=string&$l\
+    t=string&$lte=string&$like=string&$re=string&$ilike=string&$fulltext=string\
+    &$overlap=string,string&$contains=string,string&$contained=string,string&$e\
+    xists=true&with_deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: connect.sid
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: The search term to filter the user's searchable properties.
+    - key: id
+      value: string
+    - key: email
+      value: Tza9PhMLSe@ONGtaROHYdPakIWEkUMRtFT.waoq
+      description: Filter by an email.
+    - key: first_name
+      value: string
+      description: Filter by a first name.
+    - key: last_name
+      value: string
+      description: Filter by a last name.
+    - key: $eq
+      value: string
+      description: Filter by a user's creation date.
+    - key: $ne
+      value: string
+      description: Filter by a user's creation date.
+    - key: $in
+      value: string,string
+      description: Filter by a user's creation date.
+    - key: $nin
+      value: string,string
+      description: Filter by a user's creation date.
+    - key: $not
+      value: string
+      description: Filter by a user's creation date.
+    - key: $gt
+      value: string
+      description: Filter by a user's creation date.
+    - key: $gte
+      value: string
+      description: Filter by a user's creation date.
+    - key: $lt
+      value: string
+      description: Filter by a user's creation date.
+    - key: $lte
+      value: string
+      description: Filter by a user's creation date.
+    - key: $like
+      value: string
+      description: Filter by a user's creation date.
+    - key: $re
+      value: string
+      description: Filter by a user's creation date.
+    - key: $ilike
+      value: string
+      description: Filter by a user's creation date.
+    - key: $fulltext
+      value: string
+      description: Filter by a user's creation date.
+    - key: $overlap
+      value: string,string
+      description: Filter by a user's creation date.
+    - key: $contains
+      value: string,string
+      description: Filter by a user's creation date.
+    - key: $contained
+      value: string,string
+      description: Filter by a user's creation date.
+    - key: $exists
+      value: "true"
+      description: Filter by a user's creation date.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 5202.3404583442125,
+        "offset": 157.99838170530433,
+        "count": 5404.842870027622,
+        "users": [
+          {
+            "id": "string",
+            "email": "v1XxHQWqZp@KHMEweOwfiuxuDXJiWRGZdMBRuoeYTZyN.gn",
+            "first_name": "string",
+            "last_name": "string",
+            "avatar_url": "string",
+            "metadata": {},
+            "created_at": "1960-07-06T08:13:08.830Z",
+            "updated_at": "2014-01-04T00:28:59.507Z",
+            "deleted_at": "2018-05-02T05:55:34.101Z"
+          },
+          {
+            "id": "string",
+            "email": "CtHGs9PJRmKdOJl@pYRYzHMteO.erg",
+            "first_name": "string",
+            "last_name": "string",
+            "avatar_url": "string",
+            "metadata": {},
+            "created_at": "2003-08-06T04:22:12.600Z",
+            "updated_at": "1990-04-22T11:04:44.512Z",
+            "deleted_at": "1980-04-25T16:42:26.958Z"
+          }
+        ],
+        "estimate_count": 3571.3751623467792
+      }
+order: 1000

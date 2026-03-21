@@ -1,0 +1,34 @@
+$kind: http-request
+description: Manage the association between product images and a product
+  variant. You can add or remove associations between images and the variant.
+url: "{{baseUrl}}/admin/products/:id/variants/:variant_id/images/batch"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The product's ID.
+  - key: variant_id
+    value: string
+    description: The product variant's ID.
+body:
+  type: json
+  content: |-
+    {
+      "add": [
+        "string",
+        "string"
+      ],
+      "remove": [
+        "string",
+        "string"
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Manage Images of Product Variant.resources/examples
+order: 1000

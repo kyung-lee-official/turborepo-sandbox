@@ -1,0 +1,31 @@
+$kind: http-request
+description: Mark a payment collection as paid. This creates and authorizes a
+  payment session, then capture its payment, using the manual payment provider.
+url: "{{baseUrl}}/admin/payment-collections/:id/mark-as-paid?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The payment collection's ID.
+body:
+  type: json
+  content: |-
+    {
+      "order_id": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Mark a Payment Collection as Paid.resources/examples
+order: 1000

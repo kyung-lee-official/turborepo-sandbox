@@ -1,0 +1,51 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/customers/me/addresses?city=string&postal_code=string&c\
+    ountry_code=string&q=string&company=string&province=string&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+    - key: connect.sid
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: city
+      value: string
+      description: Filter by the address's city.
+    - key: postal_code
+      value: string
+      description: Filter by the address's postal code.
+    - key: country_code
+      value: string
+      description: Filter by the address's country code.
+    - key: q
+      value: string
+      description: Search term to filter the address's searchable properties.
+    - key: company
+      value: string
+    - key: province
+      value: string
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity (WebDAV) (RFC 4918)
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "invalid_request_error",
+        "message": "Discount with code TEST already exists.",
+        "type": "duplicate_error"
+      }
+order: 6000

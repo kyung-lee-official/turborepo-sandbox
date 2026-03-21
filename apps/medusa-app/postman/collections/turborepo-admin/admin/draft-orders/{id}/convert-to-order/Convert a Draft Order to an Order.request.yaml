@@ -1,0 +1,24 @@
+$kind: http-request
+description: Convert a draft order to an order. This will finalize the draft
+  order and create a new order with the same details.
+url: "{{baseUrl}}/admin/draft-orders/:id/convert-to-order"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The draft order's ID.
+body:
+  type: json
+  content: |-
+    {
+      "fields": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Convert a Draft Order to an Order.resources/examples
+order: 1000

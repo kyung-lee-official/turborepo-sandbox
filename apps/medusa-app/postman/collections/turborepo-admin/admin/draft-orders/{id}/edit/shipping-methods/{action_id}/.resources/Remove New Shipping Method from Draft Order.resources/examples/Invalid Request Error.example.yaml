@@ -1,0 +1,31 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/draft-orders/:id/edit/shipping-methods/:action_id"
+  method: DELETE
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: id
+      value: string
+      description: The draft order's ID.
+    - key: action_id
+      value: string
+      description: The ID of the shipping method's `SHIPPING_ADD` action.
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity (WebDAV) (RFC 4918)
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "invalid_request_error",
+        "message": "Discount with code TEST already exists.",
+        "type": "duplicate_error"
+      }
+order: 6000

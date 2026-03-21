@@ -1,0 +1,32 @@
+$kind: http-request
+description: >
+  Remove the inventory level of an inventory item.
+
+
+  If the inventory level has reserved quantity greater than `0`, an error is
+  thrown.
+url: "{{baseUrl}}/admin/inventory-items/:id/location-levels/:location_id?fields\
+  =string"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The inventory item's ID.
+  - key: location_id
+    value: string
+    description: The inventory item's location id.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove Inventory Level of Inventory Item.resources/examples
+order: 2000

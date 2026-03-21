@@ -1,0 +1,29 @@
+$kind: http-request
+description: Create a sales channel.
+url: "{{baseUrl}}/admin/sales-channels?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "description": "string",
+      "is_disabled": true,
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Sales Channel.resources/examples
+order: 3000

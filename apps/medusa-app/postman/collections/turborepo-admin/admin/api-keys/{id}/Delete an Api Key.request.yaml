@@ -1,0 +1,17 @@
+$kind: http-request
+description: |
+  Delete a publishable or secret API key.
+url: "{{baseUrl}}/admin/api-keys/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The API key's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Delete an Api Key.resources/examples
+order: 5000

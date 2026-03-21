@@ -1,0 +1,63 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/promotions/rule-value-options/:rule_type/:rule_attribut\
+    e_id?offset=3157.9117089204024&limit=3050.1607324519186&order=string&with_d\
+    eleted=true&application_method_target_type=string&q=string&value=string&fie\
+    lds=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+    - key: application_method_target_type
+      value: string
+      description: The application method target type to retrieve rules for.
+    - key: q
+      value: string
+      description: Apply a search query on the rule values' searchable properties.
+    - key: value
+      value: string
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. If a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. Without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: rule_type
+      value: buy-rules
+      description: The rule type.
+    - key: rule_attribute_id
+      value: string
+      description: The rule attribute's ID.
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity (WebDAV) (RFC 4918)
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "invalid_request_error",
+        "message": "Discount with code TEST already exists.",
+        "type": "duplicate_error"
+      }
+order: 6000

@@ -1,0 +1,119 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/fulfillments/:id/cancel?fields=string"
+  method: POST
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The fulfillment's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "fulfillment": {
+          "id": "string",
+          "location_id": "string",
+          "provider_id": "string",
+          "shipping_option_id": "string",
+          "provider": {
+            "id": "string",
+            "is_enabled": true
+          },
+          "delivery_address": {
+            "id": "string",
+            "fulfillment_id": "string",
+            "company": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "string",
+            "province": "us-ca",
+            "postal_code": "string",
+            "phone": "string",
+            "metadata": {},
+            "created_at": "1997-04-18T00:06:00.626Z",
+            "updated_at": "2010-01-22T12:51:39.371Z",
+            "deleted_at": "1956-04-07T12:16:03.057Z"
+          },
+          "items": [
+            {
+              "id": "string",
+              "title": "string",
+              "quantity": 129.13133769253403,
+              "sku": "string",
+              "barcode": "string",
+              "line_item_id": "string",
+              "inventory_item_id": "string",
+              "fulfillment_id": "string",
+              "created_at": "1991-12-15T16:22:41.468Z",
+              "updated_at": "1993-05-21T12:10:22.000Z",
+              "deleted_at": "1967-02-17T09:32:17.256Z"
+            },
+            {
+              "id": "string",
+              "title": "string",
+              "quantity": 8345.583813863852,
+              "sku": "string",
+              "barcode": "string",
+              "line_item_id": "string",
+              "inventory_item_id": "string",
+              "fulfillment_id": "string",
+              "created_at": "2002-12-18T07:54:10.548Z",
+              "updated_at": "1946-06-22T18:42:10.953Z",
+              "deleted_at": "2019-10-12T18:22:02.587Z"
+            }
+          ],
+          "labels": [
+            {
+              "id": "string",
+              "tracking_number": "string",
+              "tracking_url": "string",
+              "label_url": "string",
+              "fulfillment_id": "string",
+              "created_at": "1958-08-05T01:57:50.910Z",
+              "updated_at": "1959-12-13T07:15:38.180Z",
+              "deleted_at": "2004-09-13T01:30:48.430Z"
+            },
+            {
+              "id": "string",
+              "tracking_number": "string",
+              "tracking_url": "string",
+              "label_url": "string",
+              "fulfillment_id": "string",
+              "created_at": "1981-10-18T05:40:24.943Z",
+              "updated_at": "1991-02-08T05:33:24.052Z",
+              "deleted_at": "1963-10-12T05:13:17.002Z"
+            }
+          ],
+          "packed_at": "string",
+          "shipped_at": "string",
+          "delivered_at": "string",
+          "canceled_at": "string",
+          "data": {},
+          "metadata": {},
+          "created_at": "1998-11-18T14:33:07.771Z",
+          "updated_at": "1961-06-05T07:02:23.201Z",
+          "deleted_at": "1978-06-03T07:51:12.309Z"
+        }
+      }
+order: 1000

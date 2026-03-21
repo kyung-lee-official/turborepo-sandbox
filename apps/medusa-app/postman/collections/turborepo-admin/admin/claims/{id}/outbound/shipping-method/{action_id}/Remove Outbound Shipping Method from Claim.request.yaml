@@ -1,0 +1,34 @@
+$kind: http-request
+description: >
+  Remove the shipping method for delivering outbound items in the claim using
+  the `ID` of the method's `SHIPPING_ADD` action.
+
+
+  Every shipping method has an `actions` property, whose value is an array of
+  actions. You can check the action's name using its `action` property, and use
+  the value of the `id` property.
+url: "{{baseUrl}}/admin/claims/:id/outbound/shipping-method/:action_id?fields=s\
+  tring"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The claim's ID.
+  - key: action_id
+    value: string
+    description: The ID of the shipping method's `SHIPPING_ADD` action.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove Outbound Shipping Method from Claim.resources/examples
+order: 2000

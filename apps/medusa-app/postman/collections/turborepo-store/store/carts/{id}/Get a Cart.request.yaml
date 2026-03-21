@@ -1,0 +1,30 @@
+$kind: http-request
+description: Retrieve a cart by its ID. You can expand the cart's relations or
+  select the fields that should be returned.
+url: "{{baseUrl}}/store/carts/:id?fields=string&locale=en-US"
+method: GET
+headers:
+  - key: x-publishable-api-key
+    value: string
+    description: Publishable API Key created in the Medusa Admin.
+  - key: x-medusa-locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+  - key: Accept
+    value: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+pathVariables:
+  - key: id
+    value: string
+    description: The cart's ID.
+examples: ./.resources/Get a Cart.resources/examples
+order: 9000

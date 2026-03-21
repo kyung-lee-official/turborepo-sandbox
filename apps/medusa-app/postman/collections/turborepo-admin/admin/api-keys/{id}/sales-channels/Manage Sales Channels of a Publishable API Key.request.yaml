@@ -1,0 +1,38 @@
+$kind: http-request
+description: Manage the sales channels of a publishable API key, either to
+  associate them or remove them from the API key.
+url: "{{baseUrl}}/admin/api-keys/:id/sales-channels?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The API key's ID.
+body:
+  type: json
+  content: |-
+    {
+      "add": [
+        "string",
+        "string"
+      ],
+      "remove": [
+        "string",
+        "string"
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Manage Sales Channels of a Publishable API Key.resources/examples
+order: 1000

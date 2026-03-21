@@ -1,0 +1,28 @@
+$kind: http-request
+description: Add an inbound (or return) shipping method to an exchange. The
+  inbound shipping method will have a `SHIPPING_ADD` action.
+url: "{{baseUrl}}/admin/exchanges/:id/inbound/shipping-method"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The exchange's ID.
+body:
+  type: json
+  content: |-
+    {
+      "shipping_option_id": "string",
+      "custom_amount": 7502.836443670427,
+      "description": "string",
+      "internal_note": "string",
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Add an Inbound Shipping Method to an Exchange.resources/examples
+order: 2000

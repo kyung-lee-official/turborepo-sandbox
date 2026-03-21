@@ -1,0 +1,18 @@
+$kind: http-request
+description: Delete a user.
+url: "{{baseUrl}}/admin/users/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The user's ID.
+auth:
+  type: apikey
+  credentials:
+    key: connect.sid
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Delete a User.resources/examples
+order: 3000

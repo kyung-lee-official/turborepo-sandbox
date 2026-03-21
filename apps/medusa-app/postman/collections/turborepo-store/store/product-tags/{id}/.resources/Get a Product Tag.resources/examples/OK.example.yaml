@@ -1,0 +1,49 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/product-tags/:id?fields=string&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: >-
+        Comma-separated fields that should be included in the returned data.
+
+        if a field is prefixed with `+` it will be added to the default fields,
+        using `-` will remove it from the default fields.
+
+        without prefix it will replace the entire default fields.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+  pathVariables:
+    - key: id
+      value: string
+      description: The product tag's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "product_tag": {
+          "id": "string",
+          "value": "string",
+          "created_at": "1955-03-30T20:07:01.192Z",
+          "updated_at": "2024-12-21T21:38:52.677Z",
+          "deleted_at": "1993-04-07T03:39:07.509Z",
+          "metadata": {}
+        }
+      }
+order: 1000

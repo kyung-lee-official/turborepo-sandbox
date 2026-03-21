@@ -1,0 +1,41 @@
+$kind: http-request
+description: >
+  Update an outbound (or new) item from an exchange using the `ID` of the item's
+  `ITEM_ADD` action.
+
+
+  Every item has an `actions` property, whose value is an array of actions. You
+  can check the action's name using its `action` property, and use the value of
+  the `id` property.
+url: "{{baseUrl}}/admin/exchanges/:id/outbound/items/:action_id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The exchange's ID.
+  - key: action_id
+    value: string
+    description: The ID of the new exchange item's `ITEM_ADD` action.
+body:
+  type: json
+  content: |-
+    {
+      "quantity": 6782.5757563278885,
+      "internal_note": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update Outbound Item of an Exchange.resources/examples
+order: 1000

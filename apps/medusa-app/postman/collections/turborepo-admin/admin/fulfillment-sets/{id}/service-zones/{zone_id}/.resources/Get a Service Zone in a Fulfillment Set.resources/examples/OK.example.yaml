@@ -1,0 +1,355 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/fulfillment-sets/:id/service-zones/:zone_id?fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The fulfillment set's ID.
+    - key: zone_id
+      value: string
+      description: The service zone's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "service_zone": {
+          "id": "string",
+          "name": "string",
+          "fulfillment_set_id": "string",
+          "fulfillment_set": {},
+          "geo_zones": [
+            {
+              "id": "string",
+              "type": "city",
+              "country_code": "string",
+              "province_code": "us-ca",
+              "city": "string",
+              "postal_expression": {},
+              "created_at": "1965-09-15T21:19:28.116Z",
+              "updated_at": "2014-04-07T18:37:45.866Z",
+              "deleted_at": "1960-08-18T10:40:13.866Z"
+            },
+            {
+              "id": "string",
+              "type": "country",
+              "country_code": "string",
+              "province_code": "us-ca",
+              "city": "string",
+              "postal_expression": {},
+              "created_at": "2007-04-14T22:26:45.270Z",
+              "updated_at": "1962-03-15T23:04:37.886Z",
+              "deleted_at": "1994-05-12T11:08:53.960Z"
+            }
+          ],
+          "shipping_options": [
+            {
+              "id": "string",
+              "name": "string",
+              "price_type": "calculated",
+              "service_zone_id": "string",
+              "service_zone": {},
+              "provider_id": "string",
+              "provider": {
+                "id": "string",
+                "is_enabled": true
+              },
+              "shipping_option_type_id": "string",
+              "type": {
+                "id": "string",
+                "label": "string",
+                "description": "string",
+                "code": "string",
+                "shipping_option_id": "string",
+                "created_at": "1978-12-08T18:01:18.399Z",
+                "updated_at": "1998-12-01T02:27:13.631Z",
+                "deleted_at": "1966-10-11T05:49:42.071Z"
+              },
+              "shipping_profile_id": "string",
+              "shipping_profile": {
+                "id": "string",
+                "name": "string",
+                "type": "string",
+                "metadata": {},
+                "created_at": "1958-07-12T07:16:41.902Z",
+                "updated_at": "1981-03-05T21:00:36.114Z",
+                "deleted_at": "1980-04-15T18:14:40.037Z"
+              },
+              "rules": [
+                {
+                  "id": "string",
+                  "attribute": "is_return",
+                  "operator": "eq",
+                  "value": [
+                    "true",
+                    "true"
+                  ],
+                  "shipping_option_id": "string",
+                  "created_at": "2011-10-23T06:42:46.547Z",
+                  "updated_at": "2023-03-15T14:37:24.809Z",
+                  "deleted_at": "1987-06-17T11:31:08.842Z"
+                },
+                {
+                  "id": "string",
+                  "attribute": "is_return",
+                  "operator": "ne",
+                  "value": [
+                    "true",
+                    "true"
+                  ],
+                  "shipping_option_id": "string",
+                  "created_at": "2000-03-10T13:44:24.555Z",
+                  "updated_at": "1987-02-12T12:11:41.260Z",
+                  "deleted_at": "1965-07-14T22:36:01.044Z"
+                }
+              ],
+              "prices": [
+                {
+                  "price_rules": [
+                    {
+                      "id": "string",
+                      "value": 9049.966619098937,
+                      "operator": "lte",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 6732.898174322055,
+                      "created_at": "1985-01-15T08:17:34.130Z",
+                      "updated_at": "1998-02-25T07:51:08.786Z",
+                      "deleted_at": "1991-10-11T19:41:07.490Z"
+                    },
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "operator": "gt",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 210.40075859764417,
+                      "created_at": "1962-12-13T01:26:00.057Z",
+                      "updated_at": "1971-02-20T07:04:14.517Z",
+                      "deleted_at": "2019-12-04T00:16:54.902Z"
+                    }
+                  ],
+                  "rules_count": 2784.383918973148,
+                  "id": "string",
+                  "title": "string",
+                  "currency_code": "usd",
+                  "amount": 6303.356253940213,
+                  "raw_amount": {},
+                  "min_quantity": 8177.378598551865,
+                  "max_quantity": 5619.448523351105,
+                  "price_set_id": "string",
+                  "created_at": "2013-12-04T06:26:55.783Z",
+                  "updated_at": "1975-01-10T02:36:55.572Z",
+                  "deleted_at": "1971-07-25T23:20:01.253Z"
+                },
+                {
+                  "price_rules": [
+                    {
+                      "id": "string",
+                      "value": 5712.550431824579,
+                      "operator": "ne",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 3025.8139754918934,
+                      "created_at": "1950-07-11T16:21:40.669Z",
+                      "updated_at": "2024-05-11T21:53:30.207Z",
+                      "deleted_at": "2018-10-01T01:36:36.968Z"
+                    },
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "operator": "ne",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 8758.793710881426,
+                      "created_at": "1958-05-11T08:18:25.370Z",
+                      "updated_at": "1987-12-13T22:37:35.672Z",
+                      "deleted_at": "2008-01-28T05:10:27.026Z"
+                    }
+                  ],
+                  "rules_count": 4892.412500735104,
+                  "id": "string",
+                  "title": "string",
+                  "currency_code": "usd",
+                  "amount": 8721.213890080442,
+                  "raw_amount": {},
+                  "min_quantity": 1174.5056738365856,
+                  "max_quantity": 6400.492126767683,
+                  "price_set_id": "string",
+                  "created_at": "2016-01-27T19:43:49.000Z",
+                  "updated_at": "1951-05-01T23:33:28.980Z",
+                  "deleted_at": "2000-03-07T19:22:03.312Z"
+                }
+              ],
+              "data": {},
+              "metadata": {},
+              "created_at": "1954-05-05T15:12:04.120Z",
+              "updated_at": "2020-10-17T01:19:18.025Z",
+              "deleted_at": "2013-08-04T14:29:23.106Z"
+            },
+            {
+              "id": "string",
+              "name": "string",
+              "price_type": "calculated",
+              "service_zone_id": "string",
+              "service_zone": {},
+              "provider_id": "string",
+              "provider": {
+                "id": "string",
+                "is_enabled": false
+              },
+              "shipping_option_type_id": "string",
+              "type": {
+                "id": "string",
+                "label": "string",
+                "description": "string",
+                "code": "string",
+                "shipping_option_id": "string",
+                "created_at": "1962-05-05T10:09:19.098Z",
+                "updated_at": "1957-11-26T11:58:49.844Z",
+                "deleted_at": "1986-05-10T03:57:06.556Z"
+              },
+              "shipping_profile_id": "string",
+              "shipping_profile": {
+                "id": "string",
+                "name": "string",
+                "type": "string",
+                "metadata": {},
+                "created_at": "1950-06-14T05:09:35.618Z",
+                "updated_at": "1975-08-29T03:04:46.927Z",
+                "deleted_at": "1963-12-03T11:30:33.168Z"
+              },
+              "rules": [
+                {
+                  "id": "string",
+                  "attribute": "is_return",
+                  "operator": "lte",
+                  "value": "true",
+                  "shipping_option_id": "string",
+                  "created_at": "1981-07-10T02:07:34.815Z",
+                  "updated_at": "1948-11-26T00:41:12.011Z",
+                  "deleted_at": "2017-11-06T04:18:45.806Z"
+                },
+                {
+                  "id": "string",
+                  "attribute": "is_return",
+                  "operator": "gte",
+                  "value": [
+                    "true",
+                    "true"
+                  ],
+                  "shipping_option_id": "string",
+                  "created_at": "1956-07-08T07:14:36.305Z",
+                  "updated_at": "1972-03-24T02:39:50.771Z",
+                  "deleted_at": "2025-07-08T02:05:41.638Z"
+                }
+              ],
+              "prices": [
+                {
+                  "price_rules": [
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "operator": "ne",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 6625.62978657488,
+                      "created_at": "2017-06-05T22:31:47.734Z",
+                      "updated_at": "2019-12-08T00:26:45.486Z",
+                      "deleted_at": "1952-03-27T12:39:51.005Z"
+                    },
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "operator": "in",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 1399.1559880418624,
+                      "created_at": "1998-05-18T07:59:09.445Z",
+                      "updated_at": "2025-04-23T15:20:31.471Z",
+                      "deleted_at": "1958-01-25T10:44:31.585Z"
+                    }
+                  ],
+                  "rules_count": 3590.3044812211783,
+                  "id": "string",
+                  "title": "string",
+                  "currency_code": "usd",
+                  "amount": 3243.477201129399,
+                  "raw_amount": {},
+                  "min_quantity": 1700.5073856150732,
+                  "max_quantity": 1566.661339051303,
+                  "price_set_id": "string",
+                  "created_at": "2012-07-19T06:03:20.828Z",
+                  "updated_at": "1954-04-06T20:53:13.879Z",
+                  "deleted_at": "1986-01-23T20:16:03.392Z"
+                },
+                {
+                  "price_rules": [
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "operator": "in",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 5736.470849509614,
+                      "created_at": "1985-04-23T05:27:42.455Z",
+                      "updated_at": "2000-04-22T16:49:26.640Z",
+                      "deleted_at": "2020-10-04T09:51:08.943Z"
+                    },
+                    {
+                      "id": "string",
+                      "value": 8299.16723559492,
+                      "operator": "gt",
+                      "attribute": "string",
+                      "price_id": "string",
+                      "priority": 2638.759524345007,
+                      "created_at": "2002-05-27T15:37:15.287Z",
+                      "updated_at": "2024-12-28T04:42:26.580Z",
+                      "deleted_at": "1999-08-21T11:37:11.203Z"
+                    }
+                  ],
+                  "rules_count": 5520.677341032525,
+                  "id": "string",
+                  "title": "string",
+                  "currency_code": "usd",
+                  "amount": 9312.464998496576,
+                  "raw_amount": {},
+                  "min_quantity": 7148.680996262502,
+                  "max_quantity": 9275.233140095384,
+                  "price_set_id": "string",
+                  "created_at": "1951-09-17T19:46:47.929Z",
+                  "updated_at": "1988-12-30T19:03:05.229Z",
+                  "deleted_at": "1955-09-29T11:17:21.618Z"
+                }
+              ],
+              "data": {},
+              "metadata": {},
+              "created_at": "1955-08-19T20:38:45.464Z",
+              "updated_at": "2017-04-13T23:45:35.655Z",
+              "deleted_at": "1994-03-21T11:24:45.550Z"
+            }
+          ],
+          "created_at": "1995-10-22T15:42:35.171Z",
+          "updated_at": "1949-06-08T11:11:45.688Z",
+          "deleted_at": "1951-02-19T03:16:37.520Z"
+        }
+      }
+order: 1000

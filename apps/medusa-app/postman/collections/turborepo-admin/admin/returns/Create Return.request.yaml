@@ -1,0 +1,31 @@
+$kind: http-request
+description: Create a return. The return can later be requested or confirmed.
+url: "{{baseUrl}}/admin/returns?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+body:
+  type: json
+  content: |-
+    {
+      "order_id": "string",
+      "location_id": "string",
+      "description": "string",
+      "internal_note": "string",
+      "no_notification": true,
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Return.resources/examples
+order: 3000

@@ -1,0 +1,130 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/translations/settings/batch"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "create": [
+          {
+            "entity_type": "product",
+            "fields": [
+              "title",
+              "title"
+            ],
+            "is_active": true
+          },
+          {
+            "entity_type": "product",
+            "fields": [
+              "title",
+              "title"
+            ],
+            "is_active": true
+          }
+        ],
+        "update": [
+          {
+            "id": "string",
+            "entity_type": "string",
+            "fields": [
+              "string",
+              "string"
+            ],
+            "is_active": true
+          },
+          {
+            "id": "string",
+            "entity_type": "string",
+            "fields": [
+              "string",
+              "string"
+            ],
+            "is_active": false
+          }
+        ],
+        "delete": [
+          "string",
+          "string"
+        ]
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "created": [
+          {
+            "id": "string",
+            "created_at": "1994-12-04T19:49:10.734Z",
+            "updated_at": "1979-10-14T23:59:07.949Z",
+            "deleted_at": "2008-02-27T04:07:48.684Z",
+            "entity_type": "product",
+            "fields": [
+              "string",
+              "string"
+            ],
+            "is_active": false
+          },
+          {
+            "id": "string",
+            "created_at": "2024-04-21T15:14:04.809Z",
+            "updated_at": "1996-04-05T22:28:56.502Z",
+            "deleted_at": "2016-01-23T17:17:27.178Z",
+            "entity_type": "product",
+            "fields": [
+              "string",
+              "string"
+            ],
+            "is_active": true
+          }
+        ],
+        "updated": [
+          {
+            "id": "string",
+            "created_at": "1985-04-11T06:10:20.324Z",
+            "updated_at": "1967-05-01T11:57:02.791Z",
+            "deleted_at": "1985-09-29T15:14:10.789Z",
+            "entity_type": "product",
+            "fields": [
+              "string",
+              "string"
+            ],
+            "is_active": true
+          },
+          {
+            "id": "string",
+            "created_at": "2002-04-29T14:55:07.107Z",
+            "updated_at": "1994-01-11T20:22:05.316Z",
+            "deleted_at": "2009-09-10T17:39:09.705Z",
+            "entity_type": "product",
+            "fields": [
+              "string",
+              "string"
+            ],
+            "is_active": false
+          }
+        ],
+        "deleted": {
+          "ids": [
+            "string",
+            "string"
+          ],
+          "object": "string",
+          "deleted": true
+        }
+      }
+order: 1000

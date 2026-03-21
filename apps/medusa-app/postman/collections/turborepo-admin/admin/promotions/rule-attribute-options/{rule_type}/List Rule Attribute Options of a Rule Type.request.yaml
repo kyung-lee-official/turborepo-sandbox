@@ -1,0 +1,44 @@
+$kind: http-request
+description: >
+  Retrieve a list of potential rule attributes for the promotion and application
+  method types specified in the query parameters.
+
+  Only the attributes of the rule type specified in the path parameter are
+  retrieved:
+
+  - If `rule_type` is `rules`, the attributes of the promotion's type are
+  retrieved.
+
+
+  - If `rule_type` is `target-rules`, the target rules' attributes of the
+  application method's type are retrieved.
+
+
+  - If `rule_type` is `buy-rules`, the buy rules' attributes of the application
+  method's type are retrieved.
+url: "{{baseUrl}}/admin/promotions/rule-attribute-options/:rule_type?promotion_\
+  type=buyget&application_method_type=percentage&application_method_target_type\
+  =order"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: promotion_type
+    value: buyget
+    description: The promotion type to retrieve rules for.
+  - key: application_method_type
+    value: percentage
+    description: The application method type to retrieve rules for.
+  - key: application_method_target_type
+    value: order
+    description: The application method target type to retrieve rules for.
+pathVariables:
+  - key: rule_type
+    value: buy-rules
+    description: The rule type.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Rule Attribute Options of a Rule Type.resources/examples
+order: 1000

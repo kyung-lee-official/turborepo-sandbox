@@ -1,0 +1,29 @@
+$kind: http-request
+description: Update an existing item in a draft order edit.
+url: "{{baseUrl}}/admin/draft-orders/:id/edit/items/item/:item_id"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The draft order's ID.
+  - key: item_id
+    value: string
+    description: The item's ID.
+body:
+  type: json
+  content: |-
+    {
+      "quantity": 2069.6376909933088,
+      "unit_price": 4921.909937036872,
+      "compare_at_unit_price": 850.5142567043333,
+      "internal_note": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update Existing Item in Draft Order Edit.resources/examples
+order: 1000

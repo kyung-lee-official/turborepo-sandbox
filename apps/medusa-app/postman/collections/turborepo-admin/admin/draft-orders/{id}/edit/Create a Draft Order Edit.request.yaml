@@ -1,0 +1,19 @@
+$kind: http-request
+description: Create an edit on a draft order. This will allow you to make
+  changes to the draft order's items, shipping methods, or promotions. Once
+  you've made the necessar changes, you can later either request the edit (which
+  requires a confirmation from the customer), or force-confirm the edit.
+url: "{{baseUrl}}/admin/draft-orders/:id/edit"
+method: POST
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The draft order's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create a Draft Order Edit.resources/examples
+order: 6000

@@ -1,0 +1,29 @@
+$kind: http-request
+description: |
+  Delete an option from a product.
+
+  Values of this option in the product's variants are removed.
+url: "{{baseUrl}}/admin/products/:id/options/:option_id?fields=string"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The product's ID.
+  - key: option_id
+    value: string
+    description: The product option's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Delete an Option from Product.resources/examples
+order: 3000

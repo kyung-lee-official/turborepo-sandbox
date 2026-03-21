@@ -1,0 +1,40 @@
+$kind: http-request
+description: Update a price list's details.
+url: "{{baseUrl}}/admin/price-lists/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The price list's ID.
+body:
+  type: json
+  content: |-
+    {
+      "title": "string",
+      "description": "string",
+      "starts_at": "string",
+      "ends_at": "string",
+      "status": "active",
+      "type": "override",
+      "rules": {
+        "customer_group_id": [
+          "cusgrp_123"
+        ]
+      }
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Price List.resources/examples
+order: 4000

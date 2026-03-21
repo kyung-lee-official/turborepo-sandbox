@@ -1,0 +1,39 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/promotions/rule-attribute-options/:rule_type?promotion_\
+    type=buyget&application_method_type=percentage&application_method_target_ty\
+    pe=order"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: promotion_type
+      value: buyget
+      description: The promotion type to retrieve rules for.
+    - key: application_method_type
+      value: percentage
+      description: The application method type to retrieve rules for.
+    - key: application_method_target_type
+      value: order
+      description: The application method target type to retrieve rules for.
+  pathVariables:
+    - key: rule_type
+      value: buy-rules
+      description: The rule type.
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Entity with id 1 was not found",
+        "type": "not_found"
+      }
+order: 4000

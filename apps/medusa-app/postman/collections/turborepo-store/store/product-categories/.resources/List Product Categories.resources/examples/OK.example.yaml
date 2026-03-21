@@ -1,0 +1,1447 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/product-categories?fields=string&offset=5161.5802945281\
+    32&limit=7575.827557165484&order=string&q=string&id=string&description=stri\
+    ng&handle=string&parent_category_id=string&include_ancestors_tree=true&incl\
+    ude_descendants_tree=true&$eq=string&$ne=string&$in=string,string&$nin=stri\
+    ng,string&$not=string&$gt=string&$gte=string&$lt=string&$lte=string&$like=s\
+    tring&$re=string&$ilike=string&$fulltext=string&$overlap=string,string&$con\
+    tains=string,string&$contained=string,string&$exists=true&name=string&with_\
+    deleted=true&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "5161.580294528132"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "7575.827557165484"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to filter the product category's properties.
+    - key: id
+      value: string
+    - key: description
+      value: string
+    - key: handle
+      value: string
+    - key: parent_category_id
+      value: string
+    - key: include_ancestors_tree
+      value: "true"
+      description: Whether to retrieve the category's parent. If you enable this, add
+        to the `fields` query parameter `parent_category` to set the parent of a
+        category in this field. You can either pass `*parent_category` to
+        retreieve the fields of all parent categories, or select specific fields
+        to make the response size smaller. For example,
+        `fields=parent_category.id,parent_category.name`.
+    - key: include_descendants_tree
+      value: "true"
+      description: Whether to retrieve a list of child categories. If you enable this,
+        add to the `fields` query parameter `category_children` to set the child
+        of a category in this field. You can either pass `*category_children` to
+        retreieve the fields of all child categories, or select specific fields
+        to make the response size smaller. For example,
+        `fields=category_children.id,category_children.name`.
+    - key: $eq
+      value: string
+      description: Filter by the category's creation date.
+    - key: $ne
+      value: string
+      description: Filter by the category's creation date.
+    - key: $in
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $nin
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $not
+      value: string
+      description: Filter by the category's creation date.
+    - key: $gt
+      value: string
+      description: Filter by the category's creation date.
+    - key: $gte
+      value: string
+      description: Filter by the category's creation date.
+    - key: $lt
+      value: string
+      description: Filter by the category's creation date.
+    - key: $lte
+      value: string
+      description: Filter by the category's creation date.
+    - key: $like
+      value: string
+      description: Filter by the category's creation date.
+    - key: $re
+      value: string
+      description: Filter by the category's creation date.
+    - key: $ilike
+      value: string
+      description: Filter by the category's creation date.
+    - key: $fulltext
+      value: string
+      description: Filter by the category's creation date.
+    - key: $overlap
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $contains
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $contained
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $exists
+      value: "true"
+      description: Filter by the category's creation date.
+    - key: name
+      value: string
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 7135.81354880139,
+        "offset": 9047.439838613098,
+        "count": 4182.81705352346,
+        "product_categories": [
+          {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "handle": "string",
+            "rank": 1071.862581968792,
+            "parent_category_id": "string",
+            "parent_category": {},
+            "created_at": "1957-06-27T09:03:39.959Z",
+            "updated_at": "1952-03-24T00:51:06.225Z",
+            "deleted_at": "2019-02-23T17:36:48.968Z",
+            "metadata": {},
+            "products": [
+              {
+                "variants": [
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2014-09-19T00:28:22.195Z",
+                        "updated_at": "1964-09-02T07:06:49.892Z",
+                        "deleted_at": "1983-08-17T02:27:41.086Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1981-08-08T16:05:28.419Z",
+                        "updated_at": "1978-02-25T04:25:13.917Z",
+                        "deleted_at": "2001-10-08T23:55:01.330Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 4896.301429603809,
+                    "id": "string",
+                    "created_at": "1977-12-03T18:22:59.720Z",
+                    "updated_at": "1998-10-31T20:20:05.832Z",
+                    "thumbnail": "string",
+                    "width": 5506.227833028396,
+                    "weight": 6678.7484939038695,
+                    "height": 9889.153202911753,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1951-12-19T00:13:24.378Z",
+                    "manage_inventory": true,
+                    "allow_backorder": false,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 1542.5004185033608,
+                    "variant_rank": 3218.8895485031276,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 2116.787272764047,
+                      "original_amount": 4860.044837439017,
+                      "original_amount_with_tax": 2281.493916629529,
+                      "original_amount_without_tax": 7837.396651076658,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": true,
+                      "is_calculated_price_tax_inclusive": false,
+                      "calculated_amount_with_tax": 6533.051452013084,
+                      "calculated_amount_without_tax": 2581.8456187750294,
+                      "is_original_price_price_list": true,
+                      "is_original_price_tax_inclusive": false,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 663.6237857295124,
+                        "created_at": "1967-04-08T08:24:34.820Z",
+                        "updated_at": "1996-05-03T03:27:47.858Z",
+                        "deleted_at": "1968-03-03T10:41:32.899Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 951.6629853984449,
+                        "created_at": "1950-11-14T02:03:59.620Z",
+                        "updated_at": "2009-01-29T02:39:20.979Z",
+                        "deleted_at": "1985-04-07T14:23:22.767Z",
+                        "metadata": {}
+                      }
+                    ]
+                  },
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1996-06-09T10:26:23.190Z",
+                        "updated_at": "1950-02-13T04:24:39.524Z",
+                        "deleted_at": "1995-03-20T09:00:46.905Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1952-08-18T12:23:33.187Z",
+                        "updated_at": "2015-07-12T20:39:17.163Z",
+                        "deleted_at": "1947-11-10T17:43:52.241Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 6799.995765545627,
+                    "id": "string",
+                    "created_at": "2001-05-16T09:35:33.229Z",
+                    "updated_at": "1997-11-08T04:51:08.324Z",
+                    "thumbnail": "string",
+                    "width": 186.53207655948688,
+                    "weight": 4107.451255133669,
+                    "height": 8528.715559264589,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1997-03-04T03:16:48.951Z",
+                    "manage_inventory": false,
+                    "allow_backorder": false,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 5848.96587571122,
+                    "variant_rank": 4976.173302747762,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 9006.302665401083,
+                      "original_amount": 3224.3103305785125,
+                      "original_amount_with_tax": 5814.730633069276,
+                      "original_amount_without_tax": 9757.14213535993,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": false,
+                      "is_calculated_price_tax_inclusive": true,
+                      "calculated_amount_with_tax": 3363.968304945253,
+                      "calculated_amount_without_tax": 9314.266167730168,
+                      "is_original_price_price_list": false,
+                      "is_original_price_tax_inclusive": true,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 4304.141936153416,
+                        "created_at": "1981-02-11T00:18:02.534Z",
+                        "updated_at": "2018-07-18T04:43:01.472Z",
+                        "deleted_at": "1961-01-03T08:13:00.010Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 708.2053413736888,
+                        "created_at": "2025-10-26T17:57:43.016Z",
+                        "updated_at": "1978-12-07T16:56:07.322Z",
+                        "deleted_at": "1978-03-14T18:28:03.341Z",
+                        "metadata": {}
+                      }
+                    ]
+                  }
+                ],
+                "options": [
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2014-10-29T17:42:21.071Z",
+                        "updated_at": "1987-07-03T22:54:52.546Z",
+                        "deleted_at": "1956-10-28T18:23:28.130Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1970-09-10T15:08:44.691Z",
+                        "updated_at": "1976-03-16T23:07:10.959Z",
+                        "deleted_at": "1970-11-12T13:23:10.690Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "2005-11-10T05:00:25.400Z",
+                    "updated_at": "2005-12-14T15:53:48.499Z",
+                    "deleted_at": "1991-12-30T06:30:32.382Z"
+                  },
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1974-11-18T00:46:16.367Z",
+                        "updated_at": "1987-12-17T00:31:59.229Z",
+                        "deleted_at": "2009-07-19T08:29:23.649Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1953-08-25T09:07:58.966Z",
+                        "updated_at": "1978-03-14T21:29:07.339Z",
+                        "deleted_at": "1981-10-03T13:46:51.615Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "2000-01-13T10:18:37.248Z",
+                    "updated_at": "1952-01-08T14:23:28.930Z",
+                    "deleted_at": "2001-04-13T05:05:00.030Z"
+                  }
+                ],
+                "images": [
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 5651.617691028418,
+                    "created_at": "1990-05-26T09:32:59.543Z",
+                    "updated_at": "1982-06-26T19:39:41.858Z",
+                    "deleted_at": "2004-03-30T06:10:41.805Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 3014.6000511759175,
+                    "created_at": "1963-04-21T19:37:07.638Z",
+                    "updated_at": "1950-10-08T23:52:14.179Z",
+                    "deleted_at": "1970-09-28T23:21:22.560Z",
+                    "metadata": {}
+                  }
+                ],
+                "length": 6191.112283868641,
+                "title": "string",
+                "status": "draft",
+                "description": "string",
+                "id": "string",
+                "created_at": "1958-11-08T03:31:01.392Z",
+                "updated_at": "1998-11-17T03:04:38.717Z",
+                "subtitle": "string",
+                "thumbnail": "string",
+                "handle": "string",
+                "is_giftcard": false,
+                "width": 3739.4748615047633,
+                "weight": 3633.5683397399234,
+                "height": 6351.046267098633,
+                "origin_country": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "material": "string",
+                "collection_id": "string",
+                "type_id": "string",
+                "discountable": true,
+                "external_id": "string",
+                "deleted_at": "1993-03-04T17:49:56.194Z",
+                "type": {
+                  "id": "string",
+                  "value": "string",
+                  "created_at": "2015-04-08T04:51:34.966Z",
+                  "updated_at": "1965-01-06T10:37:47.761Z",
+                  "metadata": {},
+                  "deleted_at": "1982-02-17T06:01:11.338Z"
+                },
+                "metadata": {},
+                "collection": {
+                  "title": "string",
+                  "id": "string",
+                  "metadata": {},
+                  "created_at": "1946-05-12T06:46:01.432Z",
+                  "updated_at": "1953-02-05T22:57:33.164Z",
+                  "handle": "string",
+                  "deleted_at": "1993-06-02T06:10:39.308Z"
+                },
+                "tags": [
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1970-01-23T12:26:15.278Z",
+                    "updated_at": "2016-06-22T11:29:33.364Z",
+                    "deleted_at": "2019-11-07T16:17:36.552Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "2015-12-10T00:42:17.588Z",
+                    "updated_at": "1952-06-03T03:49:37.303Z",
+                    "deleted_at": "2004-01-07T18:23:23.763Z",
+                    "metadata": {}
+                  }
+                ]
+              },
+              {
+                "variants": [
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1961-06-23T15:31:21.794Z",
+                        "updated_at": "1967-09-05T02:41:49.093Z",
+                        "deleted_at": "1971-02-06T23:12:59.090Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1978-04-23T00:02:57.262Z",
+                        "updated_at": "1971-05-19T06:37:46.145Z",
+                        "deleted_at": "2025-01-26T11:57:20.970Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 8150.50284098552,
+                    "id": "string",
+                    "created_at": "1988-07-28T15:33:13.337Z",
+                    "updated_at": "2023-08-14T09:41:08.401Z",
+                    "thumbnail": "string",
+                    "width": 5607.525815056611,
+                    "weight": 3457.6434415088997,
+                    "height": 6544.079321873362,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "2020-04-11T00:00:55.688Z",
+                    "manage_inventory": false,
+                    "allow_backorder": false,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 8669.883231604606,
+                    "variant_rank": 8572.099427704785,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 7085.250701850725,
+                      "original_amount": 6668.802203818965,
+                      "original_amount_with_tax": 4324.632281501051,
+                      "original_amount_without_tax": 6496.26497794596,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": true,
+                      "is_calculated_price_tax_inclusive": false,
+                      "calculated_amount_with_tax": 3166.485749015886,
+                      "calculated_amount_without_tax": 3110.0695142403456,
+                      "is_original_price_price_list": true,
+                      "is_original_price_tax_inclusive": false,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 4365.530100138919,
+                        "created_at": "1961-09-10T03:48:17.685Z",
+                        "updated_at": "2017-07-08T13:10:06.780Z",
+                        "deleted_at": "1993-09-29T13:19:13.739Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 5525.294174118851,
+                        "created_at": "2024-04-02T20:05:11.363Z",
+                        "updated_at": "2003-06-19T20:00:01.490Z",
+                        "deleted_at": "1947-11-13T23:12:22.110Z",
+                        "metadata": {}
+                      }
+                    ]
+                  },
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2003-10-04T20:56:25.291Z",
+                        "updated_at": "1982-04-12T12:39:17.538Z",
+                        "deleted_at": "1998-06-26T00:10:06.754Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1990-06-07T14:21:40.911Z",
+                        "updated_at": "1989-09-23T19:16:11.899Z",
+                        "deleted_at": "1983-10-23T11:23:03.812Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 604.159863720466,
+                    "id": "string",
+                    "created_at": "1948-02-26T20:54:36.882Z",
+                    "updated_at": "1996-02-28T16:46:43.397Z",
+                    "thumbnail": "string",
+                    "width": 2631.0399536981154,
+                    "weight": 3222.6313989009127,
+                    "height": 2207.8840962057966,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1966-11-06T17:18:36.065Z",
+                    "manage_inventory": true,
+                    "allow_backorder": true,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 525.0282439076881,
+                    "variant_rank": 7593.903916633353,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 8309.683673436519,
+                      "original_amount": 9193.298600704362,
+                      "original_amount_with_tax": 1051.104939855536,
+                      "original_amount_without_tax": 4838.602367325673,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": false,
+                      "is_calculated_price_tax_inclusive": false,
+                      "calculated_amount_with_tax": 431.74400013031635,
+                      "calculated_amount_without_tax": 9833.288053587232,
+                      "is_original_price_price_list": true,
+                      "is_original_price_tax_inclusive": false,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 9509.402098429653,
+                        "created_at": "2013-08-25T02:10:42.459Z",
+                        "updated_at": "2007-12-16T01:20:24.553Z",
+                        "deleted_at": "1959-12-19T15:19:31.725Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 8171.967106096718,
+                        "created_at": "1973-01-26T23:48:21.201Z",
+                        "updated_at": "2023-12-09T13:14:29.769Z",
+                        "deleted_at": "1991-07-01T01:32:25.123Z",
+                        "metadata": {}
+                      }
+                    ]
+                  }
+                ],
+                "options": [
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1961-06-18T19:35:31.054Z",
+                        "updated_at": "1993-02-06T22:45:12.134Z",
+                        "deleted_at": "1959-04-01T14:33:28.324Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2022-05-22T14:49:32.448Z",
+                        "updated_at": "1959-10-02T09:06:21.075Z",
+                        "deleted_at": "1968-06-24T03:53:20.132Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "1966-06-30T19:30:18.958Z",
+                    "updated_at": "1997-12-24T00:25:35.045Z",
+                    "deleted_at": "1955-02-03T15:54:53.806Z"
+                  },
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2014-02-20T02:53:01.332Z",
+                        "updated_at": "2022-06-04T04:00:21.825Z",
+                        "deleted_at": "1960-05-27T11:55:07.230Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1989-08-27T11:17:25.549Z",
+                        "updated_at": "1977-04-04T12:43:50.821Z",
+                        "deleted_at": "1963-06-13T02:04:04.086Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "2011-07-03T13:55:37.017Z",
+                    "updated_at": "1976-03-15T23:19:42.886Z",
+                    "deleted_at": "2021-07-29T13:42:21.249Z"
+                  }
+                ],
+                "images": [
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 4740.24940572527,
+                    "created_at": "1995-04-18T05:25:55.569Z",
+                    "updated_at": "1948-03-18T23:52:00.252Z",
+                    "deleted_at": "1987-08-02T05:30:05.204Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 629.8911677529917,
+                    "created_at": "1993-04-28T10:00:39.542Z",
+                    "updated_at": "1971-05-22T12:12:40.944Z",
+                    "deleted_at": "2025-09-12T08:39:09.710Z",
+                    "metadata": {}
+                  }
+                ],
+                "length": 117.1551955261596,
+                "title": "string",
+                "status": "published",
+                "description": "string",
+                "id": "string",
+                "created_at": "2013-11-10T17:39:37.809Z",
+                "updated_at": "2022-07-04T16:04:09.557Z",
+                "subtitle": "string",
+                "thumbnail": "string",
+                "handle": "string",
+                "is_giftcard": true,
+                "width": 1013.307600379052,
+                "weight": 9668.300746503895,
+                "height": 1520.568922320973,
+                "origin_country": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "material": "string",
+                "collection_id": "string",
+                "type_id": "string",
+                "discountable": false,
+                "external_id": "string",
+                "deleted_at": "1948-08-28T01:59:03.095Z",
+                "type": {
+                  "id": "string",
+                  "value": "string",
+                  "created_at": "2023-05-09T19:55:21.730Z",
+                  "updated_at": "2021-12-10T03:07:30.369Z",
+                  "metadata": {},
+                  "deleted_at": "1954-09-19T18:06:48.445Z"
+                },
+                "metadata": {},
+                "collection": {
+                  "title": "string",
+                  "id": "string",
+                  "metadata": {},
+                  "created_at": "1952-11-08T22:46:07.498Z",
+                  "updated_at": "1967-11-11T00:58:18.901Z",
+                  "handle": "string",
+                  "deleted_at": "1986-08-01T09:12:59.002Z"
+                },
+                "tags": [
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1947-02-06T16:40:59.676Z",
+                    "updated_at": "1994-11-02T00:05:02.403Z",
+                    "deleted_at": "2001-08-24T00:38:17.303Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1997-01-04T18:52:51.033Z",
+                    "updated_at": "2005-10-31T15:35:06.799Z",
+                    "deleted_at": "1990-06-07T04:38:13.154Z",
+                    "metadata": {}
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "handle": "string",
+            "rank": 3782.2764249770426,
+            "parent_category_id": "string",
+            "parent_category": {},
+            "created_at": "2009-05-15T17:20:11.057Z",
+            "updated_at": "1958-11-16T01:32:06.008Z",
+            "deleted_at": "1977-06-10T16:59:00.512Z",
+            "metadata": {},
+            "products": [
+              {
+                "variants": [
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1957-12-20T03:20:00.728Z",
+                        "updated_at": "1996-05-19T16:03:42.829Z",
+                        "deleted_at": "2007-09-17T10:26:49.327Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2008-11-25T12:53:57.703Z",
+                        "updated_at": "1981-11-21T00:48:11.733Z",
+                        "deleted_at": "1995-09-08T17:21:53.546Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 335.5881254240045,
+                    "id": "string",
+                    "created_at": "1985-01-29T04:11:08.359Z",
+                    "updated_at": "1951-07-04T01:17:46.883Z",
+                    "thumbnail": "string",
+                    "width": 4370.850459289974,
+                    "weight": 2326.5132997042715,
+                    "height": 517.7638892282043,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1953-04-07T02:42:00.814Z",
+                    "manage_inventory": true,
+                    "allow_backorder": true,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 9149.80193822942,
+                    "variant_rank": 6982.281735539366,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 1982.1942449727746,
+                      "original_amount": 4781.642490578064,
+                      "original_amount_with_tax": 4578.54709588757,
+                      "original_amount_without_tax": 7770.2793742686645,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": false,
+                      "is_calculated_price_tax_inclusive": true,
+                      "calculated_amount_with_tax": 6284.539016377741,
+                      "calculated_amount_without_tax": 3245.2756890426303,
+                      "is_original_price_price_list": true,
+                      "is_original_price_tax_inclusive": true,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 6650.726358658822,
+                        "created_at": "1979-11-15T11:47:26.438Z",
+                        "updated_at": "1976-03-03T14:36:09.880Z",
+                        "deleted_at": "2016-07-31T05:53:10.066Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 3138.203491482212,
+                        "created_at": "1972-03-12T08:06:58.436Z",
+                        "updated_at": "2017-10-11T10:00:54.632Z",
+                        "deleted_at": "1995-07-21T20:09:57.897Z",
+                        "metadata": {}
+                      }
+                    ]
+                  },
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2012-06-29T11:56:41.333Z",
+                        "updated_at": "1987-08-12T14:05:57.466Z",
+                        "deleted_at": "2024-10-10T19:49:28.654Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1966-06-06T18:34:09.017Z",
+                        "updated_at": "2017-10-18T02:52:01.755Z",
+                        "deleted_at": "1980-04-29T20:30:34.998Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 680.1952929936616,
+                    "id": "string",
+                    "created_at": "2011-10-15T00:01:55.061Z",
+                    "updated_at": "1966-07-28T03:54:12.821Z",
+                    "thumbnail": "string",
+                    "width": 4295.624192820773,
+                    "weight": 3820.184325803442,
+                    "height": 6322.4819825292425,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1965-08-29T19:58:42.036Z",
+                    "manage_inventory": false,
+                    "allow_backorder": true,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 1667.0795807704076,
+                    "variant_rank": 4638.373244976866,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 8915.783917278954,
+                      "original_amount": 528.5506434588272,
+                      "original_amount_with_tax": 723.9363494185458,
+                      "original_amount_without_tax": 5380.104280887505,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": false,
+                      "is_calculated_price_tax_inclusive": false,
+                      "calculated_amount_with_tax": 1149.270797397639,
+                      "calculated_amount_without_tax": 2751.7178793546427,
+                      "is_original_price_price_list": false,
+                      "is_original_price_tax_inclusive": true,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 1500.7070520375198,
+                        "created_at": "2002-10-08T19:28:46.810Z",
+                        "updated_at": "2019-12-12T14:03:40.096Z",
+                        "deleted_at": "1959-03-14T11:11:10.415Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 4689.653472997641,
+                        "created_at": "2011-06-18T05:18:56.873Z",
+                        "updated_at": "2011-01-17T10:54:23.214Z",
+                        "deleted_at": "1999-03-02T08:46:06.512Z",
+                        "metadata": {}
+                      }
+                    ]
+                  }
+                ],
+                "options": [
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1953-06-26T19:32:02.871Z",
+                        "updated_at": "1977-05-11T20:29:24.306Z",
+                        "deleted_at": "1972-09-11T12:55:37.811Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1993-04-11T00:16:51.840Z",
+                        "updated_at": "1956-05-06T21:27:01.043Z",
+                        "deleted_at": "1967-07-03T07:43:14.873Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "1958-07-17T19:57:04.498Z",
+                    "updated_at": "2001-10-06T06:29:13.382Z",
+                    "deleted_at": "1995-07-09T09:38:11.381Z"
+                  },
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1963-04-30T05:07:36.867Z",
+                        "updated_at": "1951-03-30T04:25:25.649Z",
+                        "deleted_at": "1962-01-23T22:09:19.684Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1985-01-06T20:04:50.062Z",
+                        "updated_at": "1960-04-03T01:10:23.583Z",
+                        "deleted_at": "2022-12-01T10:07:41.443Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "2004-06-17T09:28:18.157Z",
+                    "updated_at": "1977-10-05T11:02:08.374Z",
+                    "deleted_at": "1967-04-04T18:46:55.739Z"
+                  }
+                ],
+                "images": [
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 4876.130780155437,
+                    "created_at": "2017-08-08T00:59:15.476Z",
+                    "updated_at": "1970-05-08T06:35:38.552Z",
+                    "deleted_at": "1973-03-17T22:55:59.240Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 3724.5136982576964,
+                    "created_at": "2009-02-19T16:35:38.254Z",
+                    "updated_at": "1985-09-14T07:00:03.768Z",
+                    "deleted_at": "2024-02-04T19:04:48.762Z",
+                    "metadata": {}
+                  }
+                ],
+                "length": 1217.9159467299617,
+                "title": "string",
+                "status": "proposed",
+                "description": "string",
+                "id": "string",
+                "created_at": "1947-11-22T19:04:31.639Z",
+                "updated_at": "1995-10-03T03:51:58.684Z",
+                "subtitle": "string",
+                "thumbnail": "string",
+                "handle": "string",
+                "is_giftcard": false,
+                "width": 3355.4750255802546,
+                "weight": 2782.892421231755,
+                "height": 18.126252692631795,
+                "origin_country": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "material": "string",
+                "collection_id": "string",
+                "type_id": "string",
+                "discountable": false,
+                "external_id": "string",
+                "deleted_at": "2020-11-15T15:56:59.750Z",
+                "type": {
+                  "id": "string",
+                  "value": "string",
+                  "created_at": "1967-08-10T18:45:02.424Z",
+                  "updated_at": "1967-03-28T08:41:48.009Z",
+                  "metadata": {},
+                  "deleted_at": "1995-04-09T02:59:20.307Z"
+                },
+                "metadata": {},
+                "collection": {
+                  "title": "string",
+                  "id": "string",
+                  "metadata": {},
+                  "created_at": "2022-05-25T13:17:52.453Z",
+                  "updated_at": "1963-11-11T13:19:22.980Z",
+                  "handle": "string",
+                  "deleted_at": "1992-08-26T05:43:27.753Z"
+                },
+                "tags": [
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1989-07-18T19:03:44.331Z",
+                    "updated_at": "1964-11-19T20:13:29.257Z",
+                    "deleted_at": "1986-09-24T12:51:04.909Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1981-10-12T21:09:08.942Z",
+                    "updated_at": "2022-12-01T10:07:49.493Z",
+                    "deleted_at": "2022-01-02T17:39:02.032Z",
+                    "metadata": {}
+                  }
+                ]
+              },
+              {
+                "variants": [
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2000-09-02T17:52:30.871Z",
+                        "updated_at": "1985-10-22T07:50:30.002Z",
+                        "deleted_at": "1959-02-16T04:53:10.247Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1976-07-29T23:13:32.392Z",
+                        "updated_at": "1965-03-05T10:50:35.759Z",
+                        "deleted_at": "2001-01-01T02:42:32.533Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 1315.7780962350785,
+                    "id": "string",
+                    "created_at": "1976-08-22T20:20:50.689Z",
+                    "updated_at": "1991-05-16T17:54:11.532Z",
+                    "thumbnail": "string",
+                    "width": 285.2342878209457,
+                    "weight": 3780.252709473053,
+                    "height": 1949.9384591385426,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1952-09-07T14:43:18.066Z",
+                    "manage_inventory": false,
+                    "allow_backorder": true,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 4615.558411933811,
+                    "variant_rank": 9305.893390662794,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 7661.492731998323,
+                      "original_amount": 3680.777047301189,
+                      "original_amount_with_tax": 1803.6449564087964,
+                      "original_amount_without_tax": 3809.998717505174,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": true,
+                      "is_calculated_price_tax_inclusive": false,
+                      "calculated_amount_with_tax": 3383.893383634533,
+                      "calculated_amount_without_tax": 4175.577784719153,
+                      "is_original_price_price_list": true,
+                      "is_original_price_tax_inclusive": false,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 3936.1829380392123,
+                        "created_at": "1996-04-23T02:14:45.373Z",
+                        "updated_at": "1951-01-28T02:51:24.524Z",
+                        "deleted_at": "2017-05-22T08:13:51.112Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 278.73761958147946,
+                        "created_at": "2021-09-18T13:18:16.178Z",
+                        "updated_at": "2019-10-11T21:23:52.753Z",
+                        "deleted_at": "1957-11-12T16:23:10.731Z",
+                        "metadata": {}
+                      }
+                    ]
+                  },
+                  {
+                    "options": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2023-01-17T12:22:33.140Z",
+                        "updated_at": "2012-06-05T03:25:13.838Z",
+                        "deleted_at": "2007-11-06T21:34:53.766Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1962-12-10T06:32:24.004Z",
+                        "updated_at": "1978-04-07T11:34:51.387Z",
+                        "deleted_at": "1975-03-31T07:05:23.585Z"
+                      }
+                    ],
+                    "title": "string",
+                    "length": 7463.94478258308,
+                    "id": "string",
+                    "created_at": "1968-11-23T19:58:27.650Z",
+                    "updated_at": "2012-09-24T18:03:47.565Z",
+                    "thumbnail": "string",
+                    "width": 1775.7996171078628,
+                    "weight": 6550.115611742175,
+                    "height": 9636.042253667454,
+                    "origin_country": "string",
+                    "hs_code": "string",
+                    "mid_code": "string",
+                    "material": "string",
+                    "deleted_at": "1955-12-15T12:38:24.171Z",
+                    "manage_inventory": true,
+                    "allow_backorder": true,
+                    "ean": "string",
+                    "upc": "string",
+                    "barcode": "string",
+                    "sku": "string",
+                    "product": {},
+                    "metadata": {},
+                    "product_id": "string",
+                    "inventory_quantity": 3532.9155578817617,
+                    "variant_rank": 394.39598549576795,
+                    "calculated_price": {
+                      "id": "string",
+                      "calculated_amount": 2374.3210638017877,
+                      "original_amount": 3569.946889561355,
+                      "original_amount_with_tax": 4850.1566330229725,
+                      "original_amount_without_tax": 3218.6035201512686,
+                      "currency_code": "usd",
+                      "is_calculated_price_price_list": false,
+                      "is_calculated_price_tax_inclusive": true,
+                      "calculated_amount_with_tax": 8332.83323671422,
+                      "calculated_amount_without_tax": 6881.661654606907,
+                      "is_original_price_price_list": true,
+                      "is_original_price_tax_inclusive": true,
+                      "calculated_price": {},
+                      "original_price": {}
+                    },
+                    "images": [
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 8861.142253460077,
+                        "created_at": "1985-05-07T06:28:49.858Z",
+                        "updated_at": "2021-01-30T10:56:36.146Z",
+                        "deleted_at": "2015-01-11T15:16:09.677Z",
+                        "metadata": {}
+                      },
+                      {
+                        "id": "string",
+                        "url": "string",
+                        "rank": 6485.419441707474,
+                        "created_at": "1987-05-28T01:38:53.970Z",
+                        "updated_at": "1951-09-28T16:00:29.336Z",
+                        "deleted_at": "2021-10-19T06:53:53.155Z",
+                        "metadata": {}
+                      }
+                    ]
+                  }
+                ],
+                "options": [
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2012-05-20T17:15:09.082Z",
+                        "updated_at": "1965-02-21T13:49:49.789Z",
+                        "deleted_at": "1950-06-02T20:37:35.688Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "2001-04-13T12:04:06.100Z",
+                        "updated_at": "1972-10-17T23:32:36.640Z",
+                        "deleted_at": "1957-10-17T10:03:57.107Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "1956-12-29T16:29:01.509Z",
+                    "updated_at": "1988-06-18T09:31:47.494Z",
+                    "deleted_at": "1973-08-08T12:14:26.915Z"
+                  },
+                  {
+                    "title": "string",
+                    "id": "string",
+                    "product": {},
+                    "product_id": "string",
+                    "values": [
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1984-06-01T14:54:14.655Z",
+                        "updated_at": "2021-06-14T15:10:51.606Z",
+                        "deleted_at": "1977-04-13T21:46:06.433Z"
+                      },
+                      {
+                        "value": "string",
+                        "id": "string",
+                        "option": {},
+                        "option_id": "string",
+                        "metadata": {},
+                        "created_at": "1986-05-27T18:44:50.278Z",
+                        "updated_at": "2014-06-22T10:38:03.692Z",
+                        "deleted_at": "1953-10-31T10:47:48.912Z"
+                      }
+                    ],
+                    "metadata": {},
+                    "created_at": "1959-03-20T06:01:19.053Z",
+                    "updated_at": "2018-08-14T23:32:47.128Z",
+                    "deleted_at": "1999-05-01T04:46:55.211Z"
+                  }
+                ],
+                "images": [
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 1105.6329524211494,
+                    "created_at": "2007-09-03T14:15:56.446Z",
+                    "updated_at": "1987-01-27T06:20:32.351Z",
+                    "deleted_at": "1995-08-05T10:57:11.706Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "url": "string",
+                    "rank": 6874.705454480037,
+                    "created_at": "1982-09-21T09:58:26.610Z",
+                    "updated_at": "2000-10-10T16:51:38.248Z",
+                    "deleted_at": "1951-04-17T00:32:34.969Z",
+                    "metadata": {}
+                  }
+                ],
+                "length": 2402.2332693414296,
+                "title": "string",
+                "status": "rejected",
+                "description": "string",
+                "id": "string",
+                "created_at": "1957-04-28T10:07:15.540Z",
+                "updated_at": "1962-08-24T20:57:36.179Z",
+                "subtitle": "string",
+                "thumbnail": "string",
+                "handle": "string",
+                "is_giftcard": false,
+                "width": 5105.222031906993,
+                "weight": 338.1776575625617,
+                "height": 2687.2065374880804,
+                "origin_country": "string",
+                "hs_code": "string",
+                "mid_code": "string",
+                "material": "string",
+                "collection_id": "string",
+                "type_id": "string",
+                "discountable": true,
+                "external_id": "string",
+                "deleted_at": "2021-05-11T07:10:09.339Z",
+                "type": {
+                  "id": "string",
+                  "value": "string",
+                  "created_at": "1952-10-07T18:48:32.297Z",
+                  "updated_at": "1954-10-02T10:30:08.528Z",
+                  "metadata": {},
+                  "deleted_at": "1998-03-01T16:56:05.631Z"
+                },
+                "metadata": {},
+                "collection": {
+                  "title": "string",
+                  "id": "string",
+                  "metadata": {},
+                  "created_at": "1966-06-11T11:35:46.767Z",
+                  "updated_at": "1983-05-12T22:58:29.608Z",
+                  "handle": "string",
+                  "deleted_at": "2007-03-11T16:47:33.153Z"
+                },
+                "tags": [
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1962-07-06T15:34:05.057Z",
+                    "updated_at": "2015-02-19T03:06:58.476Z",
+                    "deleted_at": "2021-10-31T04:40:59.782Z",
+                    "metadata": {}
+                  },
+                  {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1988-09-24T14:53:20.477Z",
+                    "updated_at": "2015-10-11T04:05:53.961Z",
+                    "deleted_at": "1956-07-10T14:29:48.689Z",
+                    "metadata": {}
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "estimate_count": 151.4865615126859
+      }
+order: 1000

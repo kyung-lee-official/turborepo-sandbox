@@ -1,0 +1,51 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/products/:id/variants/:variant_id/images/batch"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: id
+      value: string
+      description: The product's ID.
+    - key: variant_id
+      value: string
+      description: The product variant's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "add": [
+          "string",
+          "string"
+        ],
+        "remove": [
+          "string",
+          "string"
+        ]
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "added": [
+          "string",
+          "string"
+        ],
+        "removed": [
+          "string",
+          "string"
+        ]
+      }
+order: 1000

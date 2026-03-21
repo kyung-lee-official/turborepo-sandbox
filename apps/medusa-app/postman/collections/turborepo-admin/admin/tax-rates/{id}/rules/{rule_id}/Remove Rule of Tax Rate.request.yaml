@@ -1,0 +1,26 @@
+$kind: http-request
+description: Remove a tax rate's rule.
+url: "{{baseUrl}}/admin/tax-rates/:id/rules/:rule_id?fields=string"
+method: DELETE
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The tax rate's ID.
+  - key: rule_id
+    value: string
+    description: The tax rate rule's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove Rule of Tax Rate.resources/examples
+order: 1000

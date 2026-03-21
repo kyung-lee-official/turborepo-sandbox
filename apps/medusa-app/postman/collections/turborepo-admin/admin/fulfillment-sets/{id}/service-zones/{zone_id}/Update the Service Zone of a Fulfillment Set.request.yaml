@@ -1,0 +1,50 @@
+$kind: http-request
+description: Update the details of a service zone in a fulfillment set.
+url: "{{baseUrl}}/admin/fulfillment-sets/:id/service-zones/:zone_id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The fulfillment set's ID.
+  - key: zone_id
+    value: string
+    description: The service zone's ID.
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "geo_zones": [
+        {
+          "type": "zip",
+          "metadata": {},
+          "city": "string",
+          "country_code": "string",
+          "province_code": "us-ca",
+          "postal_expression": {},
+          "id": "string"
+        },
+        {
+          "type": "country",
+          "metadata": {},
+          "country_code": "string",
+          "id": "string"
+        }
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update the Service Zone of a Fulfillment Set.resources/examples
+order: 2000

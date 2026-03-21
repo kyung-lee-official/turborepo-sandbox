@@ -1,0 +1,37 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/customers/:id/addresses/:address_id?fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: text/plain
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields. This API route restricts the
+        fields that can be selected. Learn how to override the retrievable
+        fields in the [Retrieve Custom
+        Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links)
+        documentation.
+  pathVariables:
+    - key: id
+      value: string
+      description: The customer's ID.
+    - key: address_id
+      value: string
+      description: The customer's address id.
+response:
+  statusCode: 401
+  statusText: Unauthorized
+  headers:
+    Content-Type: text/plain
+  body:
+    type: text
+    content: Unauthorized
+order: 3000

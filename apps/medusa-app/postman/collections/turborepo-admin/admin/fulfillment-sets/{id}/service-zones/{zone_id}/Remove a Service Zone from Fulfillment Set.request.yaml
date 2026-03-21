@@ -1,0 +1,19 @@
+$kind: http-request
+description: Remove a service zone that belongs to a fulfillment set.
+url: "{{baseUrl}}/admin/fulfillment-sets/:id/service-zones/:zone_id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The fulfillment set's ID.
+  - key: zone_id
+    value: string
+    description: The service zone's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove a Service Zone from Fulfillment Set.resources/examples
+order: 3000

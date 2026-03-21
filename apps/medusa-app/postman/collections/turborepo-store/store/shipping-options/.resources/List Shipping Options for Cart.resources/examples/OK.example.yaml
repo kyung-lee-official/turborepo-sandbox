@@ -1,0 +1,293 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/shipping-options?fields=string&offset=5161.580294528132\
+    &limit=7575.827557165484&order=string&cart_id=string&is_return=true&locale=\
+    en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "5161.580294528132"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "7575.827557165484"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: cart_id
+      value: string
+      description: The ID of the cart to retrieve its shipping options.
+    - key: is_return
+      value: "true"
+      description: Whether the shipping option can be used for returns.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "shipping_options": [
+          {
+            "id": "string",
+            "name": "string",
+            "price_type": "calculated",
+            "service_zone_id": "string",
+            "shipping_profile_id": "string",
+            "provider_id": "string",
+            "data": {},
+            "type": {
+              "id": "string",
+              "label": "string",
+              "description": "string",
+              "code": "string"
+            },
+            "provider": {
+              "id": "string",
+              "is_enabled": false
+            },
+            "amount": 5015.167990527781,
+            "prices": [
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "amount": 627.8935898735139,
+                "min_quantity": 1896.801445690599,
+                "max_quantity": 9966.579181228697,
+                "price_rules": [
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "lte",
+                    "value": "string"
+                  },
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "gte",
+                    "value": "string"
+                  }
+                ]
+              },
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "amount": 6656.124516623873,
+                "min_quantity": 4547.492103445489,
+                "max_quantity": 1987.7059080572312,
+                "price_rules": [
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "lt",
+                    "value": "string"
+                  },
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "lte",
+                    "value": "string"
+                  }
+                ]
+              }
+            ],
+            "calculated_price": {
+              "id": "string",
+              "calculated_amount": 1312.087759863132,
+              "original_amount": 5453.393181647208,
+              "original_amount_with_tax": 6499.4677291864255,
+              "original_amount_without_tax": 8073.545113954808,
+              "currency_code": "string",
+              "is_calculated_price_price_list": true,
+              "is_calculated_price_tax_inclusive": false,
+              "calculated_amount_with_tax": 4949.371878051541,
+              "calculated_amount_without_tax": 3521.3890198958843,
+              "is_original_price_price_list": true,
+              "is_original_price_tax_inclusive": true,
+              "calculated_price": {
+                "id": "string",
+                "price_list_id": "string",
+                "price_list_type": "string",
+                "min_quantity": 5750.278237420412,
+                "max_quantity": 9616.251465373807
+              },
+              "original_price": {
+                "id": "string",
+                "price_list_id": "string",
+                "price_list_type": "string",
+                "min_quantity": 7896.997127027514,
+                "max_quantity": 9489.586880938992
+              }
+            },
+            "insufficient_inventory": false,
+            "service_zone": {
+              "id": "string",
+              "fulfillment_set_id": "string",
+              "fulfillment_set": {
+                "id": "string",
+                "type": "string",
+                "location": {
+                  "id": "string",
+                  "address": {
+                    "id": "string",
+                    "company": "string",
+                    "address_1": "string",
+                    "address_2": "string",
+                    "city": "string",
+                    "country_code": "us",
+                    "province": "string",
+                    "postal_code": "string",
+                    "phone": "string",
+                    "metadata": {},
+                    "created_at": "1998-11-06T00:52:37.457Z",
+                    "updated_at": "1955-06-14T17:08:02.202Z",
+                    "deleted_at": "2011-12-23T05:10:29.496Z"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "string",
+            "name": "string",
+            "price_type": "flat",
+            "service_zone_id": "string",
+            "shipping_profile_id": "string",
+            "provider_id": "string",
+            "data": {},
+            "type": {
+              "id": "string",
+              "label": "string",
+              "description": "string",
+              "code": "string"
+            },
+            "provider": {
+              "id": "string",
+              "is_enabled": true
+            },
+            "amount": 1999.4691455496372,
+            "prices": [
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "amount": 1065.925616702219,
+                "min_quantity": 2770.6154876826085,
+                "max_quantity": 9380.048809703021,
+                "price_rules": [
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "eq",
+                    "value": "string"
+                  },
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "eq",
+                    "value": "string"
+                  }
+                ]
+              },
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "amount": 9531.164005744156,
+                "min_quantity": 2185.142353241805,
+                "max_quantity": 6961.498097781869,
+                "price_rules": [
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "eq",
+                    "value": "string"
+                  },
+                  {
+                    "id": "string",
+                    "attribute": "string",
+                    "operator": "gte",
+                    "value": "string"
+                  }
+                ]
+              }
+            ],
+            "calculated_price": {
+              "id": "string",
+              "calculated_amount": 4442.386867621862,
+              "original_amount": 1428.105838821212,
+              "original_amount_with_tax": 3131.1317274732933,
+              "original_amount_without_tax": 907.6326817336367,
+              "currency_code": "string",
+              "is_calculated_price_price_list": true,
+              "is_calculated_price_tax_inclusive": false,
+              "calculated_amount_with_tax": 95.30934229793564,
+              "calculated_amount_without_tax": 7295.616652898322,
+              "is_original_price_price_list": false,
+              "is_original_price_tax_inclusive": false,
+              "calculated_price": {
+                "id": "string",
+                "price_list_id": "string",
+                "price_list_type": "string",
+                "min_quantity": 8032.741198599387,
+                "max_quantity": 7105.563981615713
+              },
+              "original_price": {
+                "id": "string",
+                "price_list_id": "string",
+                "price_list_type": "string",
+                "min_quantity": 5219.951655406392,
+                "max_quantity": 2293.1904157697527
+              }
+            },
+            "insufficient_inventory": false,
+            "service_zone": {
+              "id": "string",
+              "fulfillment_set_id": "string",
+              "fulfillment_set": {
+                "id": "string",
+                "type": "string",
+                "location": {
+                  "id": "string",
+                  "address": {
+                    "id": "string",
+                    "company": "string",
+                    "address_1": "string",
+                    "address_2": "string",
+                    "city": "string",
+                    "country_code": "us",
+                    "province": "string",
+                    "postal_code": "string",
+                    "phone": "string",
+                    "metadata": {},
+                    "created_at": "1987-04-07T17:57:10.128Z",
+                    "updated_at": "1992-09-04T22:38:10.485Z",
+                    "deleted_at": "1960-06-09T09:20:49.162Z"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+order: 1000

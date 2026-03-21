@@ -1,0 +1,52 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/claims/:id/inbound/items"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: id
+      value: string
+      description: The claim's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "items": [
+          {
+            "id": "string",
+            "quantity": 6785.9241280319375,
+            "description": "string",
+            "internal_note": "string",
+            "reason_id": "string",
+            "metadata": {}
+          },
+          {
+            "id": "string",
+            "quantity": 5193.552962709553,
+            "description": "string",
+            "internal_note": "string",
+            "reason_id": "string",
+            "metadata": {}
+          }
+        ]
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Discount must be set to dynamic",
+        "type": "not_allowed"
+      }
+order: 2000

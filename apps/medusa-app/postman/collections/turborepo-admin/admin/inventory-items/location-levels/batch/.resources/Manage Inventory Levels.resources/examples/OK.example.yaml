@@ -1,0 +1,111 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/inventory-items/location-levels/batch"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "create": [
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 5209.53888919393,
+            "incoming_quantity": 3182.2307581789964
+          },
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 8620.867183596067,
+            "incoming_quantity": 3380.404494009406
+          }
+        ],
+        "update": [
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 6253.320048777126,
+            "incoming_quantity": 1978.3642625639252,
+            "id": "string"
+          },
+          {
+            "location_id": "string",
+            "inventory_item_id": "string",
+            "stocked_quantity": 6770.326185666458,
+            "incoming_quantity": 4892.841834031234,
+            "id": "string"
+          }
+        ],
+        "delete": [
+          "string",
+          "string"
+        ],
+        "force": false
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "created": [
+          {
+            "id": "string",
+            "inventory_item_id": "string",
+            "location_id": "string",
+            "stocked_quantity": 4914.032299381075,
+            "reserved_quantity": 1009.719301405434,
+            "available_quantity": 111.76463613238764,
+            "incoming_quantity": 6092.0597077258435,
+            "metadata": {}
+          },
+          {
+            "id": "string",
+            "inventory_item_id": "string",
+            "location_id": "string",
+            "stocked_quantity": 55.08868494508157,
+            "reserved_quantity": 1215.9908249997975,
+            "available_quantity": 2975.0518280270244,
+            "incoming_quantity": 7928.136417757341,
+            "metadata": {}
+          }
+        ],
+        "updated": [
+          {
+            "id": "string",
+            "inventory_item_id": "string",
+            "location_id": "string",
+            "stocked_quantity": 6466.679265028021,
+            "reserved_quantity": 7001.465464181396,
+            "available_quantity": 3616.769696751867,
+            "incoming_quantity": 4259.894350218003,
+            "metadata": {}
+          },
+          {
+            "id": "string",
+            "inventory_item_id": "string",
+            "location_id": "string",
+            "stocked_quantity": 3049.7361904933305,
+            "reserved_quantity": 185.93975903881565,
+            "available_quantity": 9156.63585780583,
+            "incoming_quantity": 5126.392636640802,
+            "metadata": {}
+          }
+        ],
+        "deleted": [
+          "string",
+          "string"
+        ]
+      }
+order: 1000

@@ -1,0 +1,93 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/products/:id/variants?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The product's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "title": "string",
+        "prices": [
+          {
+            "currency_code": "string",
+            "amount": 5504.0187462186195,
+            "min_quantity": 8340.7121574724,
+            "max_quantity": 9924.097140797187,
+            "rules": {
+              "region_id": "reg_123"
+            }
+          },
+          {
+            "currency_code": "string",
+            "amount": 6833.789162329993,
+            "min_quantity": 3812.8760580112075,
+            "max_quantity": 7532.808290797639,
+            "rules": {
+              "region_id": "reg_123"
+            }
+          }
+        ],
+        "sku": "string",
+        "ean": "string",
+        "upc": "string",
+        "barcode": "string",
+        "hs_code": "string",
+        "mid_code": "string",
+        "allow_backorder": true,
+        "manage_inventory": true,
+        "variant_rank": 6457.118781413611,
+        "weight": 8737.477083582535,
+        "length": 4191.221693678462,
+        "height": 8571.776199995216,
+        "width": 5817.278399502464,
+        "origin_country": "string",
+        "material": "string",
+        "metadata": {},
+        "options": {
+          "Color": "Black"
+        },
+        "inventory_items": [
+          {
+            "inventory_item_id": "string",
+            "required_quantity": 4164.3784521984935
+          },
+          {
+            "inventory_item_id": "string",
+            "required_quantity": 8016.4159892156995
+          }
+        ],
+        "additional_data": {}
+      }
+response:
+  statusCode: 500
+  statusText: Internal Server Error
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "api_error",
+        "message": "An error occured while hashing password",
+        "type": "database_error"
+      }
+order: 7000

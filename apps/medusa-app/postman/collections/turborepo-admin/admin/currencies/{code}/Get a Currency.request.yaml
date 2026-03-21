@@ -1,0 +1,25 @@
+$kind: http-request
+description: Retrieve a currency by its code. You can expand the currency's
+  relations or select the fields that should be returned using the query
+  parameters.
+url: "{{baseUrl}}/admin/currencies/:code?fields=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: code
+    value: string
+    description: The currency's code.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Get a Currency.resources/examples
+order: 1000

@@ -1,0 +1,203 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/customers?fields=string&offset=3157.9117089204024&limit\
+    =3050.1607324519186&order=string&groups=string&q=string&id=string&email=IZN\
+    RY5AOuk@aCgLWAMejaAHBbabJIFApzxwSW.dtpk&company_name=string&first_name=stri\
+    ng&last_name=string&created_by=string&$eq=string&$ne=string&$in=string,stri\
+    ng&$nin=string,string&$not=string&$gt=string&$gte=string&$lt=string&$lte=st\
+    ring&$like=string&$re=string&$ilike=string&$fulltext=string&$overlap=string\
+    ,string&$contains=string,string&$contained=string,string&$exists=true&has_a\
+    ccount=false&with_deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields. This API route restricts the
+        fields that can be selected. Learn how to override the retrievable
+        fields in the [Retrieve Custom
+        Links](https://docs.medusajs.com/learn/fundamentals/api-routes/retrieve-custom-links)
+        documentation.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: groups
+      value: string
+    - key: q
+      value: string
+      description: Search term to filter the customer's searchable properties by.
+    - key: id
+      value: string
+    - key: email
+      value: IZNRY5AOuk@aCgLWAMejaAHBbabJIFApzxwSW.dtpk
+    - key: company_name
+      value: string
+    - key: first_name
+      value: string
+    - key: last_name
+      value: string
+    - key: created_by
+      value: string
+    - key: $eq
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $ne
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $in
+      value: string,string
+      description: Filter by the customer's creation date.
+    - key: $nin
+      value: string,string
+      description: Filter by the customer's creation date.
+    - key: $not
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $gt
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $gte
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $lt
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $lte
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $like
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $re
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $ilike
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $fulltext
+      value: string
+      description: Filter by the customer's creation date.
+    - key: $overlap
+      value: string,string
+      description: Filter by the customer's creation date.
+    - key: $contains
+      value: string,string
+      description: Filter by the customer's creation date.
+    - key: $contained
+      value: string,string
+      description: Filter by the customer's creation date.
+    - key: $exists
+      value: "true"
+      description: Filter by the customer's creation date.
+    - key: has_account
+      value: "false"
+      description: Filter by whether the customer is registered.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 1939.9214007012367,
+        "customers": {
+          "has_account": true,
+          "addresses": [
+            {
+              "id": "string",
+              "address_name": "string",
+              "is_default_shipping": true,
+              "is_default_billing": true,
+              "customer_id": "string",
+              "company": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "address_1": "string",
+              "address_2": "string",
+              "city": "string",
+              "country_code": "us",
+              "province": "us-ca",
+              "postal_code": "string",
+              "phone": "string",
+              "metadata": {},
+              "created_at": "1989-08-13T06:27:18.257Z",
+              "updated_at": "2018-10-22T11:53:48.616Z"
+            },
+            {
+              "id": "string",
+              "address_name": "string",
+              "is_default_shipping": false,
+              "is_default_billing": false,
+              "customer_id": "string",
+              "company": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "address_1": "string",
+              "address_2": "string",
+              "city": "string",
+              "country_code": "us",
+              "province": "us-ca",
+              "postal_code": "string",
+              "phone": "string",
+              "metadata": {},
+              "created_at": "1983-08-24T09:19:28.322Z",
+              "updated_at": "1975-03-01T10:45:12.055Z"
+            }
+          ],
+          "id": "string",
+          "email": "Brr5427y@ZKcQ.uied",
+          "default_billing_address_id": "string",
+          "default_shipping_address_id": "string",
+          "company_name": "string",
+          "first_name": "string",
+          "last_name": "string",
+          "groups": [
+            {
+              "customers": [],
+              "id": "string",
+              "name": "string",
+              "metadata": {},
+              "created_at": "1966-11-04T06:13:23.063Z",
+              "updated_at": "2022-10-12T03:28:00.332Z"
+            },
+            {
+              "customers": [],
+              "id": "string",
+              "name": "string",
+              "metadata": {},
+              "created_at": "2003-12-31T12:06:27.973Z",
+              "updated_at": "1984-10-02T21:09:45.535Z"
+            }
+          ],
+          "phone": "string",
+          "metadata": {},
+          "created_by": "string",
+          "created_at": "1961-08-11T18:29:42.417Z",
+          "updated_at": "1946-05-13T21:53:34.555Z",
+          "deleted_at": "2018-12-28T04:36:15.856Z"
+        },
+        "limit": 5970.530637273654,
+        "offset": 7682.5308325329925
+      }
+order: 1000

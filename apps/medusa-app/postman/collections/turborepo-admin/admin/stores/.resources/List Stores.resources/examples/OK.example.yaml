@@ -1,0 +1,225 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/stores?fields=string&offset=3157.9117089204024&limit=30\
+    50.1607324519186&order=string&q=string&id=string&name=string&with_deleted=t\
+    rue"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to filter the store's searchable properties.
+    - key: id
+      value: string
+    - key: name
+      value: string
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 2749.836970897235,
+        "offset": 7846.5814832610195,
+        "count": 6841.128518151913,
+        "stores": [
+          {
+            "id": "string",
+            "name": "string",
+            "supported_currencies": [
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "store_id": "string",
+                "is_default": true,
+                "currency": {
+                  "code": "usd",
+                  "symbol": "$",
+                  "symbol_native": "$",
+                  "name": "string",
+                  "decimal_digits": 7536.025294471773,
+                  "rounding": 7024.710317089058,
+                  "created_at": "1973-02-28T20:33:02.894Z",
+                  "updated_at": "1976-03-06T23:31:57.700Z",
+                  "deleted_at": "2013-05-30T10:26:55.500Z"
+                },
+                "created_at": "1954-07-30T14:26:22.552Z",
+                "updated_at": "1961-03-09T05:48:52.617Z",
+                "deleted_at": "1964-09-20T01:22:04.840Z"
+              },
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "store_id": "string",
+                "is_default": true,
+                "currency": {
+                  "code": "usd",
+                  "symbol": "$",
+                  "symbol_native": "$",
+                  "name": "string",
+                  "decimal_digits": 8249.064695431385,
+                  "rounding": 9591.256658238246,
+                  "created_at": "1982-11-26T16:01:39.318Z",
+                  "updated_at": "1966-06-28T12:55:41.328Z",
+                  "deleted_at": "1974-01-01T20:32:45.939Z"
+                },
+                "created_at": "2016-05-11T20:58:28.018Z",
+                "updated_at": "1962-11-07T10:27:24.347Z",
+                "deleted_at": "1993-09-20T17:42:41.663Z"
+              }
+            ],
+            "supported_locales": [
+              {
+                "id": "string",
+                "locale_code": "string",
+                "store_id": "string",
+                "locale": {
+                  "code": "fr-FR",
+                  "name": "string",
+                  "created_at": "1964-07-18T19:33:56.767Z",
+                  "updated_at": "2025-06-15T01:40:52.144Z",
+                  "deleted_at": "1970-06-05T23:28:45.647Z"
+                },
+                "created_at": "1960-09-05T01:27:54.418Z",
+                "updated_at": "1972-09-11T23:41:47.875Z",
+                "deleted_at": "2003-06-27T06:54:46.095Z"
+              },
+              {
+                "id": "string",
+                "locale_code": "string",
+                "store_id": "string",
+                "locale": {
+                  "code": "fr-FR",
+                  "name": "string",
+                  "created_at": "2005-10-17T23:43:12.966Z",
+                  "updated_at": "1975-08-30T05:02:27.311Z",
+                  "deleted_at": "1978-02-24T18:24:11.953Z"
+                },
+                "created_at": "2011-11-05T16:17:27.476Z",
+                "updated_at": "1947-01-07T07:46:05.219Z",
+                "deleted_at": "1967-05-09T22:01:02.809Z"
+              }
+            ],
+            "default_sales_channel_id": "string",
+            "default_region_id": "string",
+            "default_location_id": "string",
+            "metadata": {},
+            "created_at": "1982-10-20T21:37:11.456Z",
+            "updated_at": "1996-08-15T20:25:23.871Z"
+          },
+          {
+            "id": "string",
+            "name": "string",
+            "supported_currencies": [
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "store_id": "string",
+                "is_default": false,
+                "currency": {
+                  "code": "usd",
+                  "symbol": "$",
+                  "symbol_native": "$",
+                  "name": "string",
+                  "decimal_digits": 9466.281794938419,
+                  "rounding": 8467.294343600708,
+                  "created_at": "1976-10-23T17:03:02.706Z",
+                  "updated_at": "1952-09-13T00:15:10.305Z",
+                  "deleted_at": "1963-12-19T07:41:07.347Z"
+                },
+                "created_at": "1961-11-28T07:29:09.995Z",
+                "updated_at": "1948-10-22T00:32:05.979Z",
+                "deleted_at": "1961-12-15T11:02:36.119Z"
+              },
+              {
+                "id": "string",
+                "currency_code": "usd",
+                "store_id": "string",
+                "is_default": false,
+                "currency": {
+                  "code": "usd",
+                  "symbol": "$",
+                  "symbol_native": "$",
+                  "name": "string",
+                  "decimal_digits": 8156.779854025611,
+                  "rounding": 8458.685399958576,
+                  "created_at": "1973-05-30T01:44:16.174Z",
+                  "updated_at": "1970-06-24T12:17:28.855Z",
+                  "deleted_at": "1949-08-09T16:42:19.752Z"
+                },
+                "created_at": "1962-01-02T02:35:41.057Z",
+                "updated_at": "1990-03-22T21:21:23.074Z",
+                "deleted_at": "1985-10-18T18:37:54.926Z"
+              }
+            ],
+            "supported_locales": [
+              {
+                "id": "string",
+                "locale_code": "string",
+                "store_id": "string",
+                "locale": {
+                  "code": "fr-FR",
+                  "name": "string",
+                  "created_at": "1973-04-18T09:52:08.615Z",
+                  "updated_at": "1997-02-07T04:08:32.727Z",
+                  "deleted_at": "1963-11-10T00:53:37.686Z"
+                },
+                "created_at": "1963-11-07T19:14:43.540Z",
+                "updated_at": "1963-06-30T14:25:20.732Z",
+                "deleted_at": "2018-01-23T21:11:06.321Z"
+              },
+              {
+                "id": "string",
+                "locale_code": "string",
+                "store_id": "string",
+                "locale": {
+                  "code": "fr-FR",
+                  "name": "string",
+                  "created_at": "1967-08-05T18:39:45.087Z",
+                  "updated_at": "2017-08-21T03:05:59.832Z",
+                  "deleted_at": "2018-11-01T17:17:35.061Z"
+                },
+                "created_at": "2010-12-28T21:28:41.633Z",
+                "updated_at": "1999-12-17T18:52:59.550Z",
+                "deleted_at": "1985-04-30T22:30:28.979Z"
+              }
+            ],
+            "default_sales_channel_id": "string",
+            "default_region_id": "string",
+            "default_location_id": "string",
+            "metadata": {},
+            "created_at": "2019-12-11T16:21:38.259Z",
+            "updated_at": "1978-01-23T23:47:46.794Z"
+          }
+        ],
+        "estimate_count": 8410.900980849836
+      }
+order: 1000

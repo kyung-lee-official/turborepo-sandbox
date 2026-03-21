@@ -1,0 +1,25 @@
+$kind: http-request
+description: Get a presigned URL for uploading a file to the configured File
+  Module Provider. The presigned URL can be used to upload files directly to the
+  third-party provider. This only works if your configured provider supports
+  presigned URLs, such as the S3 provider.
+url: "{{baseUrl}}/admin/uploads/presigned-urls"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "originalname": "string",
+      "size": 7435.200434867555,
+      "mime_type": "text/csv",
+      "access": "private"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Get Presigned Upload URL.resources/examples
+order: 1000

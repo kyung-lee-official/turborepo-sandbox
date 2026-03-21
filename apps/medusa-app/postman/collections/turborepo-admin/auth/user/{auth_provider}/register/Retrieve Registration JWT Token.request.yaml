@@ -1,0 +1,22 @@
+$kind: http-request
+description: This API route retrieves a registration JWT token of a user that
+  hasn't been registered yet. The token is used in the header of requests that
+  create a user, such as the Accept Invite API route.
+url: "{{baseUrl}}/auth/user/:auth_provider/register"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: auth_provider
+    value: emailpass
+    description: The provider used for authentication.
+body:
+  type: json
+  content: |-
+    {
+      "email": "admin@medusa-test.com",
+      "password": "supersecret"
+    }
+examples: ./.resources/Retrieve Registration JWT Token.resources/examples
+order: 1000

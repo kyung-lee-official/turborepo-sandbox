@@ -1,0 +1,214 @@
+$kind: http-request
+description: >
+  Retrieve a list of products. The products can be filtered by fields such as
+  `id`. The products can also be sorted or paginated.
+
+
+  You can retrieve the content of the products translated to a specific locale
+  either by passing the `locale` query parameter or by setting the
+  `x-medusa-locale` header to the desired locale code in BCP 47 format. If you
+  don't pass a locale, and your store has a default locale, the default locale
+  will be used.
+
+
+  With localization, the products' content like title and description will be in
+  the specified locale if a translation is available,  and fallback to the
+  original content otherwise. Learn more in the [Localization](#localization)
+  section.
+url: "{{baseUrl}}/store/products?fields=string&offset=5161.580294528132&limit=7\
+  575.827557165484&order=string&q=string&id=string&title=string&handle=string&i\
+  s_giftcard=true&collection_id=string&collection_id=string&tag_id=string&type_\
+  id=string&$eq=string&$ne=string&$in=string,string&$nin=string,string&$not=str\
+  ing&$gt=string&$gte=string&$lt=string&$lte=string&$like=string&$re=string&$il\
+  ike=string&$fulltext=string&$overlap=string,string&$contains=string,string&$c\
+  ontained=string,string&$exists=true&$eq=string&$ne=string&$in=string,string&$\
+  nin=string,string&$not=string&$gt=string&$gte=string&$lt=string&$lte=string&$\
+  like=string&$re=string&$ilike=string&$fulltext=string&$overlap=string,string&\
+  $contains=string,string&$contained=string,string&$exists=true&region_id=strin\
+  g&province=us-ca&sales_channel_id=string&category_id=string&options=[object
+  Object]&country_code=string&cart_id=string&locale=en-US&external_id=string"
+method: GET
+headers:
+  - key: x-publishable-api-key
+    value: string
+    description: Publishable API Key created in the Medusa Admin.
+  - key: x-medusa-locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+  - key: Accept
+    value: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: offset
+    value: "5161.580294528132"
+    description: The number of items to skip when retrieving a list.
+  - key: limit
+    value: "7575.827557165484"
+    description: Limit the number of items returned in the list.
+  - key: order
+    value: string
+    description: The field to sort the data by. By default, the sort order is
+      ascending. To change the order to descending, prefix the field name with
+      `-`.
+  - key: q
+    value: string
+    description: Search term to filter the product's searchable properties.
+  - key: id
+    value: string
+  - key: title
+    value: string
+    description: Filter by product titles.
+  - key: handle
+    value: string
+    description: Filter by product handles.
+  - key: is_giftcard
+    value: "true"
+    description: Whether the product is a gift card.
+  - key: collection_id
+    value: string
+    description: Filter by a collection's ID to retrieve the products in it.
+  - key: collection_id
+    value: string
+    description: Filter by a collection's ID to retrieve the products in it.
+  - key: tag_id
+    value: string
+    description: Filter by a tag's ID to retrieve the products in it.
+  - key: type_id
+    value: string
+    description: Filter by a type's ID to retrieve the products in it.
+  - key: $eq
+    value: string
+    description: Filter by the product's creation date.
+  - key: $ne
+    value: string
+    description: Filter by the product's creation date.
+  - key: $in
+    value: string,string
+    description: Filter by the product's creation date.
+  - key: $nin
+    value: string,string
+    description: Filter by the product's creation date.
+  - key: $not
+    value: string
+    description: Filter by the product's creation date.
+  - key: $gt
+    value: string
+    description: Filter by the product's creation date.
+  - key: $gte
+    value: string
+    description: Filter by the product's creation date.
+  - key: $lt
+    value: string
+    description: Filter by the product's creation date.
+  - key: $lte
+    value: string
+    description: Filter by the product's creation date.
+  - key: $like
+    value: string
+    description: Filter by the product's creation date.
+  - key: $re
+    value: string
+    description: Filter by the product's creation date.
+  - key: $ilike
+    value: string
+    description: Filter by the product's creation date.
+  - key: $fulltext
+    value: string
+    description: Filter by the product's creation date.
+  - key: $overlap
+    value: string,string
+    description: Filter by the product's creation date.
+  - key: $contains
+    value: string,string
+    description: Filter by the product's creation date.
+  - key: $contained
+    value: string,string
+    description: Filter by the product's creation date.
+  - key: $exists
+    value: "true"
+    description: Filter by the product's creation date.
+  - key: $eq
+    value: string
+    description: Filter by the product's update date.
+  - key: $ne
+    value: string
+    description: Filter by the product's update date.
+  - key: $in
+    value: string,string
+    description: Filter by the product's update date.
+  - key: $nin
+    value: string,string
+    description: Filter by the product's update date.
+  - key: $not
+    value: string
+    description: Filter by the product's update date.
+  - key: $gt
+    value: string
+    description: Filter by the product's update date.
+  - key: $gte
+    value: string
+    description: Filter by the product's update date.
+  - key: $lt
+    value: string
+    description: Filter by the product's update date.
+  - key: $lte
+    value: string
+    description: Filter by the product's update date.
+  - key: $like
+    value: string
+    description: Filter by the product's update date.
+  - key: $re
+    value: string
+    description: Filter by the product's update date.
+  - key: $ilike
+    value: string
+    description: Filter by the product's update date.
+  - key: $fulltext
+    value: string
+    description: Filter by the product's update date.
+  - key: $overlap
+    value: string,string
+    description: Filter by the product's update date.
+  - key: $contains
+    value: string,string
+    description: Filter by the product's update date.
+  - key: $contained
+    value: string,string
+    description: Filter by the product's update date.
+  - key: $exists
+    value: "true"
+    description: Filter by the product's update date.
+  - key: region_id
+    value: string
+    description: The ID of the region the products are being viewed from. This is
+      required if you're retrieving product variant prices with taxes.
+  - key: province
+    value: us-ca
+    description: The lower-case ISO 3166-2 province code the products are being
+      viewed from. This is useful to narrow down the tax context when
+      calculating product variant prices with taxes.
+  - key: sales_channel_id
+    value: string
+  - key: category_id
+    value: string
+  - key: options
+    value: "[object Object]"
+    description: Filter the products' variants.
+  - key: country_code
+    value: string
+    description: The product's country code.
+  - key: cart_id
+    value: string
+    description: The product's cart id.
+  - key: locale
+    value: en-US
+    description: The locale in BCP 47 format to retrieve localized content.
+  - key: external_id
+    value: string
+examples: ./.resources/List Products.resources/examples
+order: 2000

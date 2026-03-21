@@ -1,0 +1,20 @@
+$kind: http-request
+description: Remove view configurations of an entity. An admin user can only
+  delete their own configurations.
+url: "{{baseUrl}}/admin/views/:entity/configurations/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: entity
+    value: string
+    description: The entity to delete its view configuration (for example, `orders`)
+  - key: id
+    value: string
+    description: The ID of the view configuration to delete
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Remove View Configurations.resources/examples
+order: 3000

@@ -1,0 +1,118 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/reservations?fields=string&offset=3157.9117089204024&li\
+    mit=3050.1607324519186&order=string&location_id=string&inventory_item_id=st\
+    ring&line_item_id=string&created_by=string&description=string&$eq=string&$n\
+    e=8957.190010050334&$in=5308.1138886510735,9222.393822634387&$nin=605.78324\
+    81544012,4255.45229211927&$not=string&$gt=5420.168099678666&$gte=6953.82743\
+    7327116&$lt=6739.889060700654&$lte=9970.800583898466&$like=4589.98101361403\
+    5&$re=8754.057857815234&$ilike=3528.256868787314&$fulltext=5147.69069077976\
+    &$overlap=8344.349123462045,8207.556460403322&$contains=7730.139863945209,4\
+    878.5419454438415&$contained=1445.9675579269149,5443.70199989412&$exists=tr\
+    ue&with_deleted=true&q=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: location_id
+      value: string
+    - key: inventory_item_id
+      value: string
+    - key: line_item_id
+      value: string
+    - key: created_by
+      value: string
+    - key: description
+      value: string
+    - key: $eq
+      value: string
+      description: Filter by a reservation's creation date.
+    - key: $ne
+      value: "8957.190010050334"
+      description: Filter by a reservation's creation date.
+    - key: $in
+      value: 5308.1138886510735,9222.393822634387
+      description: Filter by a reservation's creation date.
+    - key: $nin
+      value: 605.7832481544012,4255.45229211927
+      description: Filter by a reservation's creation date.
+    - key: $not
+      value: string
+      description: Filter by a reservation's creation date.
+    - key: $gt
+      value: "5420.168099678666"
+      description: Filter by a reservation's creation date.
+    - key: $gte
+      value: "6953.827437327116"
+      description: Filter by a reservation's creation date.
+    - key: $lt
+      value: "6739.889060700654"
+      description: Filter by a reservation's creation date.
+    - key: $lte
+      value: "9970.800583898466"
+      description: Filter by a reservation's creation date.
+    - key: $like
+      value: "4589.981013614035"
+      description: Filter by a reservation's creation date.
+    - key: $re
+      value: "8754.057857815234"
+      description: Filter by a reservation's creation date.
+    - key: $ilike
+      value: "3528.256868787314"
+      description: Filter by a reservation's creation date.
+    - key: $fulltext
+      value: "5147.69069077976"
+      description: Filter by a reservation's creation date.
+    - key: $overlap
+      value: 8344.349123462045,8207.556460403322
+      description: Filter by a reservation's creation date.
+    - key: $contains
+      value: 7730.139863945209,4878.5419454438415
+      description: Filter by a reservation's creation date.
+    - key: $contained
+      value: 1445.9675579269149,5443.70199989412
+      description: Filter by a reservation's creation date.
+    - key: $exists
+      value: "true"
+      description: Filter by a reservation's creation date.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+    - key: q
+      value: string
+      description: Apply a search query on the reservation's searchable properties.
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: >-
+      {
+        "code": "unknown_error",
+        "message": "The request conflicted with another request. You may retry the request with the provided Idempotency-Key.",
+        "type": "QueryRunnerAlreadyReleasedError"
+      }
+order: 5000

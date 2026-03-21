@@ -1,0 +1,249 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/store-credit-accounts?currency_code=usd&$eq=string&$ne=\
+    string&$in=string,string&$nin=string,string&$not=string&$gt=string&$gte=str\
+    ing&$lt=string&$lte=string&$like=string&$re=string&$ilike=string&$fulltext=\
+    string&$overlap=string,string&$contains=string,string&$contained=string,str\
+    ing&$exists=false&limit=7575.827557165484&offset=5161.580294528132&order=st\
+    ring&fields=string&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+    - key: connect.sid
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: currency_code
+      value: usd
+      description: Filter by the store credit account's currency code.
+    - key: $eq
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $ne
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $in
+      value: string,string
+      description: Filter by a store credit account's creation date.
+    - key: $nin
+      value: string,string
+      description: Filter by a store credit account's creation date.
+    - key: $not
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $gt
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $gte
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $lt
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $lte
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $like
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $re
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $ilike
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $fulltext
+      value: string
+      description: Filter by a store credit account's creation date.
+    - key: $overlap
+      value: string,string
+      description: Filter by a store credit account's creation date.
+    - key: $contains
+      value: string,string
+      description: Filter by a store credit account's creation date.
+    - key: $contained
+      value: string,string
+      description: Filter by a store credit account's creation date.
+    - key: $exists
+      value: "false"
+      description: Filter by a store credit account's creation date.
+    - key: limit
+      value: "7575.827557165484"
+      description: Limit the number of items returned in the list.
+    - key: offset
+      value: "5161.580294528132"
+      description: The number of items to skip when retrieving a list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. If a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. Without prefix
+        it will replace the entire default fields.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 5639.86134293835,
+        "offset": 2597.1696610602235,
+        "count": 5281.1190162796365,
+        "store_credit_accounts": [
+          {
+            "customer": {
+              "addresses": [
+                {
+                  "id": "string",
+                  "address_name": "string",
+                  "is_default_shipping": true,
+                  "is_default_billing": false,
+                  "customer_id": "string",
+                  "company": "string",
+                  "first_name": "string",
+                  "last_name": "string",
+                  "address_1": "string",
+                  "address_2": "string",
+                  "city": "string",
+                  "country_code": "usd",
+                  "province": "us-ca",
+                  "postal_code": "string",
+                  "phone": "string",
+                  "metadata": {},
+                  "created_at": "1998-04-03T02:45:48.894Z",
+                  "updated_at": "1954-11-02T12:23:55.704Z"
+                },
+                {
+                  "id": "string",
+                  "address_name": "string",
+                  "is_default_shipping": true,
+                  "is_default_billing": false,
+                  "customer_id": "string",
+                  "company": "string",
+                  "first_name": "string",
+                  "last_name": "string",
+                  "address_1": "string",
+                  "address_2": "string",
+                  "city": "string",
+                  "country_code": "usd",
+                  "province": "us-ca",
+                  "postal_code": "string",
+                  "phone": "string",
+                  "metadata": {},
+                  "created_at": "1994-04-10T04:41:00.514Z",
+                  "updated_at": "1961-08-26T18:55:18.781Z"
+                }
+              ],
+              "id": "string",
+              "email": "7rzbA-TCP@oWRflmzfnkxjtItgHYuEcmk.mo",
+              "company_name": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "default_billing_address_id": "string",
+              "default_shipping_address_id": "string",
+              "phone": "string",
+              "metadata": {},
+              "created_at": "1973-08-24T04:07:19.662Z",
+              "updated_at": "2021-11-01T12:22:18.558Z",
+              "deleted_at": "1989-12-30T07:08:16.702Z"
+            },
+            "id": "string",
+            "currency_code": "usd",
+            "credits": 9495.782530458691,
+            "debits": 3082.9444827700627,
+            "balance": 9121.66232437274,
+            "metadata": {},
+            "created_at": "1976-06-27T21:39:39.513Z",
+            "updated_at": "2009-01-28T21:17:11.181Z",
+            "customer_id": "string",
+            "code": "string"
+          },
+          {
+            "customer": {
+              "addresses": [
+                {
+                  "id": "string",
+                  "address_name": "string",
+                  "is_default_shipping": true,
+                  "is_default_billing": true,
+                  "customer_id": "string",
+                  "company": "string",
+                  "first_name": "string",
+                  "last_name": "string",
+                  "address_1": "string",
+                  "address_2": "string",
+                  "city": "string",
+                  "country_code": "usd",
+                  "province": "us-ca",
+                  "postal_code": "string",
+                  "phone": "string",
+                  "metadata": {},
+                  "created_at": "1994-06-28T17:48:42.290Z",
+                  "updated_at": "1955-08-02T02:00:47.097Z"
+                },
+                {
+                  "id": "string",
+                  "address_name": "string",
+                  "is_default_shipping": false,
+                  "is_default_billing": true,
+                  "customer_id": "string",
+                  "company": "string",
+                  "first_name": "string",
+                  "last_name": "string",
+                  "address_1": "string",
+                  "address_2": "string",
+                  "city": "string",
+                  "country_code": "usd",
+                  "province": "us-ca",
+                  "postal_code": "string",
+                  "phone": "string",
+                  "metadata": {},
+                  "created_at": "2014-05-23T09:52:14.377Z",
+                  "updated_at": "1993-06-07T05:01:52.583Z"
+                }
+              ],
+              "id": "string",
+              "email": "7EQo@bUoFBSBDGGiIZ.vux",
+              "company_name": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "default_billing_address_id": "string",
+              "default_shipping_address_id": "string",
+              "phone": "string",
+              "metadata": {},
+              "created_at": "2025-01-18T16:02:45.365Z",
+              "updated_at": "2016-07-24T03:47:14.371Z",
+              "deleted_at": "1960-12-11T08:17:42.467Z"
+            },
+            "id": "string",
+            "currency_code": "usd",
+            "credits": 7983.071483763093,
+            "debits": 3386.089118488016,
+            "balance": 2957.7764271992455,
+            "metadata": {},
+            "created_at": "1962-04-27T12:26:03.081Z",
+            "updated_at": "1985-08-31T21:42:46.256Z",
+            "customer_id": "string",
+            "code": "string"
+          }
+        ],
+        "estimate_count": 9182.488111505882
+      }
+order: 1000

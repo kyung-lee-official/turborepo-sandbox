@@ -1,0 +1,30 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/views/:entity/configurations/:id"
+  method: DELETE
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: entity
+      value: string
+      description: The entity to delete its view configuration (for example, `orders`)
+    - key: id
+      value: string
+      description: The ID of the view configuration to delete
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Discount must be set to dynamic",
+        "type": "not_allowed"
+      }
+order: 2000

@@ -1,0 +1,107 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/promotions?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  body:
+    type: json
+    content: |-
+      {
+        "code": "string",
+        "type": "standard",
+        "campaign_id": "string",
+        "application_method": {
+          "description": "string",
+          "value": 5888.419103961811,
+          "currency_code": "string",
+          "max_quantity": 1188.4567230055088,
+          "type": "fixed",
+          "target_type": "order",
+          "apply_to_quantity": 1857.6538101603046,
+          "buy_rules_min_quantity": 5609.077445088117,
+          "allocation": "across",
+          "target_rules": [
+            {
+              "operator": "eq",
+              "description": "string",
+              "attribute": "items.product.id",
+              "values": "prod_123"
+            },
+            {
+              "operator": "in",
+              "description": "string",
+              "attribute": "items.product.id",
+              "values": "prod_123"
+            }
+          ],
+          "buy_rules": [
+            {
+              "operator": "lte",
+              "description": "string",
+              "attribute": "items.product.id",
+              "values": "prod_123"
+            },
+            {
+              "operator": "lt",
+              "description": "string",
+              "attribute": "items.product.id",
+              "values": "prod_123"
+            }
+          ]
+        },
+        "is_automatic": true,
+        "campaign": {
+          "name": "string",
+          "campaign_identifier": "string",
+          "description": "string",
+          "budget": {
+            "type": "spend",
+            "limit": 2296.8991190648635,
+            "currency_code": "string"
+          },
+          "starts_at": "2021-01-07T08:31:12.469Z",
+          "ends_at": "1968-03-05T13:37:31.054Z"
+        },
+        "rules": [
+          {
+            "operator": "gt",
+            "description": "string",
+            "attribute": "items.product.id",
+            "values": "prod_123"
+          },
+          {
+            "operator": "eq",
+            "description": "string",
+            "attribute": "items.product.id",
+            "values": "prod_123"
+          }
+        ],
+        "additional_data": {}
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Discount must be set to dynamic",
+        "type": "not_allowed"
+      }
+order: 2000

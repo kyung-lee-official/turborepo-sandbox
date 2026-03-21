@@ -1,0 +1,68 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/tax-rates/:id?fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The tax rate's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "tax_rate": {
+          "id": "string",
+          "rate": 10,
+          "code": "string",
+          "name": "string",
+          "metadata": {},
+          "tax_region_id": "string",
+          "is_combinable": false,
+          "is_default": false,
+          "created_at": "2019-08-03T19:45:41.454Z",
+          "updated_at": "1983-12-28T08:11:51.406Z",
+          "deleted_at": "1988-05-06T03:12:55.155Z",
+          "created_by": "string",
+          "tax_region": {
+            "id": "string",
+            "country_code": "us",
+            "province_code": "us-ca",
+            "metadata": {},
+            "parent_id": "string",
+            "created_at": "2017-04-09T03:42:44.522Z",
+            "updated_at": "1983-04-15T02:15:10.634Z",
+            "deleted_at": "2009-12-25T20:09:00.795Z",
+            "created_by": "string",
+            "parent": {}
+          },
+          "rules": [
+            {
+              "reference": "product_type",
+              "reference_id": "ptyp_1"
+            },
+            {
+              "reference": "product_type",
+              "reference_id": "ptyp_1"
+            }
+          ]
+        }
+      }
+order: 1000

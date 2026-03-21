@@ -1,0 +1,66 @@
+$kind: http-request
+description: Manage translations in bulk by creating, updating, or deleting
+  multiple translations in a single request. You can manage translations for
+  various resources such as products, product variants, categories, and more.
+url: "{{baseUrl}}/admin/translations/batch"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "create": [
+        {
+          "reference": "product",
+          "reference_id": "prod_123",
+          "locale_code": "fr-FR",
+          "translations": {
+            "title": "Chaussures",
+            "description": "Des chaussures élégantes."
+          }
+        },
+        {
+          "reference": "product",
+          "reference_id": "prod_123",
+          "locale_code": "fr-FR",
+          "translations": {
+            "title": "Chaussures",
+            "description": "Des chaussures élégantes."
+          }
+        }
+      ],
+      "update": [
+        {
+          "id": "string",
+          "reference": "product",
+          "reference_id": "prod_123",
+          "locale_code": "fr-FR",
+          "translations": {
+            "title": "Chaussures Modifiées",
+            "description": "Des chaussures élégantes et modifiées."
+          }
+        },
+        {
+          "id": "string",
+          "reference": "product",
+          "reference_id": "prod_123",
+          "locale_code": "fr-FR",
+          "translations": {
+            "title": "Chaussures Modifiées",
+            "description": "Des chaussures élégantes et modifiées."
+          }
+        }
+      ],
+      "delete": [
+        "string",
+        "string"
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Manage Translations.resources/examples
+order: 1000

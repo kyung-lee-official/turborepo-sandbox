@@ -1,0 +1,38 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/uploads/presigned-urls"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  body:
+    type: json
+    content: |-
+      {
+        "originalname": "string",
+        "size": 7435.200434867555,
+        "mime_type": "text/csv",
+        "access": "private"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "url": "string",
+        "filename": "string",
+        "originalname": "string",
+        "mime_type": "text/csv",
+        "extension": "csv",
+        "size": 7132.8089659337475
+      }
+order: 1000

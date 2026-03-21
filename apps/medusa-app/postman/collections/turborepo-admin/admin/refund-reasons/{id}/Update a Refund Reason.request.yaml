@@ -1,0 +1,33 @@
+$kind: http-request
+description: Update a refund reason's details.
+url: "{{baseUrl}}/admin/refund-reasons/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The refund reason's ID.
+body:
+  type: json
+  content: |-
+    {
+      "label": "string",
+      "code": "string",
+      "description": "string",
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Refund Reason.resources/examples
+order: 2000

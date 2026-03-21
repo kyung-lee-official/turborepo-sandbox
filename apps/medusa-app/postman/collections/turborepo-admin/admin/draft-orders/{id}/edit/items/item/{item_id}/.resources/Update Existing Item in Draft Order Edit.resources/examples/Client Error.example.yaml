@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/draft-orders/:id/edit/items/item/:item_id"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: id
+      value: string
+      description: The draft order's ID.
+    - key: item_id
+      value: string
+      description: The item's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "quantity": 2069.6376909933088,
+        "unit_price": 4921.909937036872,
+        "compare_at_unit_price": 850.5142567043333,
+        "internal_note": "string"
+      }
+response:
+  statusCode: 400
+  statusText: Bad Request
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Discount must be set to dynamic",
+        "type": "not_allowed"
+      }
+order: 2000

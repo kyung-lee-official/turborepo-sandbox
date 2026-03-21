@@ -1,0 +1,90 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/campaigns?fields=string&offset=3157.9117089204024&limit\
+    =3050.1607324519186&order=string&with_deleted=true&q=string&campaign_identi\
+    fier=string&currency_code=usd"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+    - key: q
+      value: string
+      description: Apply a search query to the campaign's searchable properties.
+    - key: campaign_identifier
+      value: string
+      description: Filter by a campaign identifier.
+    - key: currency_code
+      value: usd
+      description: Filter by the campaign's budget.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "campaigns": [
+          {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "currency": "string",
+            "campaign_identifier": "string",
+            "starts_at": "string",
+            "ends_at": "string",
+            "budget": {
+              "id": "string",
+              "type": "usage",
+              "currency_code": "string",
+              "limit": 4389.216426598372,
+              "used": 1919.7802597420477
+            }
+          },
+          {
+            "id": "string",
+            "name": "string",
+            "description": "string",
+            "currency": "string",
+            "campaign_identifier": "string",
+            "starts_at": "string",
+            "ends_at": "string",
+            "budget": {
+              "id": "string",
+              "type": "usage",
+              "currency_code": "string",
+              "limit": 4194.017102203651,
+              "used": 824.3743568021267
+            }
+          }
+        ],
+        "count": 9289.516749208402,
+        "limit": 3958.172125260835,
+        "offset": 5629.223601594742
+      }
+order: 1000

@@ -1,0 +1,1394 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/claims/:id/cancel"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: id
+      value: string
+      description: The claim's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "no_notification": false
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "claim": {
+          "order": {
+            "payment_collections": [
+              {
+                "payment_providers": [
+                  {
+                    "is_enabled": true,
+                    "id": "string"
+                  }
+                ],
+                "id": "string",
+                "currency_code": "string",
+                "amount": 8399.170944381878,
+                "status": "canceled",
+                "authorized_amount": 1529.0103874042659,
+                "captured_amount": 2268.414748631917,
+                "refunded_amount": 6564.893979177155,
+                "completed_at": "1999-11-20T19:10:39.062Z",
+                "created_at": "1979-02-28T05:36:34.649Z",
+                "updated_at": "1992-06-10T18:44:13.619Z",
+                "metadata": {},
+                "payment_sessions": [
+                  {
+                    "id": "string",
+                    "amount": 8947.424058260067,
+                    "currency_code": "usd",
+                    "provider_id": "string",
+                    "data": {},
+                    "status": "authorized",
+                    "context": {
+                      "customer": {}
+                    },
+                    "authorized_at": "1971-02-26T23:04:29.747Z",
+                    "payment_collection": {},
+                    "payment": {
+                      "id": "string",
+                      "amount": 1753.4085898101437,
+                      "currency_code": "string",
+                      "provider_id": "string",
+                      "authorized_amount": 9148.809049621506,
+                      "data": {},
+                      "created_at": "2020-12-23T00:01:06.279Z",
+                      "updated_at": "1966-03-23T17:58:53.912Z",
+                      "captured_at": "1959-07-30T22:40:44.632Z",
+                      "canceled_at": "1984-02-16T17:38:55.106Z",
+                      "captured_amount": 800.7931493976183,
+                      "refunded_amount": 5897.365805216082,
+                      "captures": [
+                        {
+                          "id": "string",
+                          "amount": 2188.185152000803,
+                          "created_at": "1968-10-29T09:10:38.705Z",
+                          "payment": {},
+                          "created_by": "string"
+                        }
+                      ],
+                      "refunds": [
+                        {
+                          "id": "string",
+                          "amount": 9608.172193226905,
+                          "created_at": "1957-06-03T02:54:01.482Z",
+                          "payment": {},
+                          "refund_reason_id": "string",
+                          "note": "string",
+                          "created_by": "string",
+                          "refund_reason": {
+                            "id": "string",
+                            "label": "string",
+                            "code": "string",
+                            "created_at": "2014-03-13T12:22:23.272Z",
+                            "updated_at": "1981-04-01T14:27:50.152Z",
+                            "description": "string",
+                            "metadata": {}
+                          }
+                        }
+                      ],
+                      "payment_collection": {},
+                      "payment_session": {}
+                    }
+                  }
+                ],
+                "payments": [
+                  {
+                    "id": "string",
+                    "amount": 6408.723287926084,
+                    "currency_code": "string",
+                    "provider_id": "string",
+                    "authorized_amount": 3127.37462015777,
+                    "data": {},
+                    "created_at": "1990-11-19T16:58:50.800Z",
+                    "updated_at": "1952-04-24T13:12:01.841Z",
+                    "captured_at": "1958-12-17T04:05:37.486Z",
+                    "canceled_at": "1996-11-07T14:10:59.649Z",
+                    "captured_amount": 720.3599061847221,
+                    "refunded_amount": 1212.5313023591477,
+                    "captures": [
+                      {
+                        "id": "string",
+                        "amount": 684.3323059956718,
+                        "created_at": "1984-02-29T04:33:12.801Z",
+                        "payment": {},
+                        "created_by": "string"
+                      }
+                    ],
+                    "refunds": [
+                      {
+                        "id": "string",
+                        "amount": 8035.487399533763,
+                        "created_at": "1972-10-18T01:21:51.347Z",
+                        "payment": {
+                          "id": "string",
+                          "amount": 6652.38017953736,
+                          "currency_code": "string",
+                          "provider_id": "string",
+                          "authorized_amount": 9370.44171134248,
+                          "data": {},
+                          "created_at": "1981-08-08T03:12:04.918Z",
+                          "updated_at": "1956-07-05T18:08:35.456Z",
+                          "captured_at": "1960-05-09T00:59:38.339Z",
+                          "canceled_at": "2008-06-19T10:22:00.888Z",
+                          "captured_amount": 4762.548596512657,
+                          "refunded_amount": 4543.420996105902,
+                          "captures": [
+                            {
+                              "id": "string",
+                              "amount": 475.9278190983496,
+                              "created_at": "1999-06-02T01:24:29.178Z",
+                              "payment": {},
+                              "created_by": "string"
+                            }
+                          ],
+                          "refunds": [
+                            {
+                              "id": "string",
+                              "amount": 3938.832154155827,
+                              "created_at": "2003-09-07T23:16:28.995Z",
+                              "payment": {},
+                              "refund_reason_id": "string",
+                              "note": "string",
+                              "created_by": "string",
+                              "refund_reason": {
+                                "id": "string",
+                                "label": "string",
+                                "code": "string",
+                                "created_at": "1958-07-19T03:27:05.203Z",
+                                "updated_at": "2002-09-04T18:41:41.345Z",
+                                "description": "string",
+                                "metadata": {}
+                              }
+                            }
+                          ],
+                          "payment_collection": {},
+                          "payment_session": {}
+                        },
+                        "refund_reason_id": "string",
+                        "note": "string",
+                        "created_by": "string",
+                        "refund_reason": {
+                          "id": "string",
+                          "label": "string",
+                          "code": "string",
+                          "created_at": "2020-10-29T04:18:47.738Z",
+                          "updated_at": "1946-08-27T23:02:22.647Z",
+                          "description": "string",
+                          "metadata": {}
+                        }
+                      }
+                    ],
+                    "payment_collection": {},
+                    "payment_session": {
+                      "id": "string",
+                      "amount": 3867.9917312138336,
+                      "currency_code": "usd",
+                      "provider_id": "string",
+                      "data": {},
+                      "status": "canceled",
+                      "context": {
+                        "customer": {}
+                      },
+                      "authorized_at": "1977-02-15T19:14:21.835Z",
+                      "payment_collection": {},
+                      "payment": {
+                        "id": "string",
+                        "amount": 6145.61325007535,
+                        "currency_code": "string",
+                        "provider_id": "string",
+                        "authorized_amount": 9458.2381381359,
+                        "data": {},
+                        "created_at": "1984-04-17T21:40:28.331Z",
+                        "updated_at": "1953-07-29T09:44:38.616Z",
+                        "captured_at": "1988-04-13T00:55:39.618Z",
+                        "canceled_at": "1958-08-12T20:00:48.432Z",
+                        "captured_amount": 512.1893796125288,
+                        "refunded_amount": 123.99231670809252,
+                        "captures": [
+                          {
+                            "id": "string",
+                            "amount": 3590.2504480689213,
+                            "created_at": "2002-03-19T15:16:08.945Z",
+                            "payment": {},
+                            "created_by": "string"
+                          }
+                        ],
+                        "refunds": [
+                          {
+                            "id": "string",
+                            "amount": 4879.691216617736,
+                            "created_at": "1964-02-15T02:52:24.130Z",
+                            "payment": {},
+                            "refund_reason_id": "string",
+                            "note": "string",
+                            "created_by": "string",
+                            "refund_reason": {
+                              "id": "string",
+                              "label": "string",
+                              "code": "string",
+                              "created_at": "1960-02-13T01:40:16.246Z",
+                              "updated_at": "1947-08-20T15:23:18.556Z",
+                              "description": "string",
+                              "metadata": {}
+                            }
+                          }
+                        ],
+                        "payment_collection": {},
+                        "payment_session": {}
+                      }
+                    }
+                  }
+                ]
+              }
+            ],
+            "items": [
+              {
+                "title": "string",
+                "id": "string",
+                "metadata": {},
+                "created_at": "2003-01-10T11:27:50.791Z",
+                "updated_at": "1992-05-03T03:09:51.438Z",
+                "item_total": 737.5428260770067,
+                "item_subtotal": 9425.716139037395,
+                "item_tax_total": 6501.904469692754,
+                "original_total": 9397.682426538553,
+                "original_subtotal": 2636.3609560088453,
+                "original_tax_total": 4026.972871467336,
+                "total": 6598.660598535115,
+                "subtotal": 6942.044592276799,
+                "tax_total": 700.2839531494986,
+                "discount_total": 5697.263870889961,
+                "discount_tax_total": 2627.171777865529,
+                "subtitle": "string",
+                "thumbnail": "string",
+                "variant_id": "string",
+                "product_id": "string",
+                "product_title": "string",
+                "product_description": "string",
+                "product_subtitle": "string",
+                "product_type_id": "string",
+                "product_type": "string",
+                "product_collection": "string",
+                "product_handle": "string",
+                "variant_sku": "string",
+                "variant_barcode": "string",
+                "variant_title": "string",
+                "variant_option_values": {
+                  "Color": "Blue"
+                },
+                "requires_shipping": false,
+                "is_discountable": false,
+                "is_tax_inclusive": true,
+                "unit_price": 8570.296139530255,
+                "quantity": 3345.267127010818,
+                "detail": {},
+                "refundable_total": 6119.896265714598,
+                "refundable_total_per_unit": 1122.4709356205565,
+                "variant": {
+                  "prices": [
+                    {
+                      "id": "string",
+                      "title": "string",
+                      "currency_code": "usd",
+                      "amount": 6219.31780493229,
+                      "raw_amount": {},
+                      "min_quantity": 6275.785765082862,
+                      "max_quantity": 4774.431788665852,
+                      "price_set_id": "string",
+                      "created_at": "2001-09-02T10:45:13.152Z",
+                      "updated_at": "2010-11-26T14:32:07.537Z",
+                      "deleted_at": "1972-02-07T23:58:12.712Z"
+                    }
+                  ],
+                  "options": [
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "option": {
+                        "id": "string",
+                        "title": "string",
+                        "product": {},
+                        "product_id": "string",
+                        "metadata": {},
+                        "created_at": "1987-12-02T17:16:24.222Z",
+                        "updated_at": "2000-09-28T06:18:48.521Z",
+                        "deleted_at": "1950-03-20T18:03:28.885Z"
+                      },
+                      "option_id": "string",
+                      "metadata": {},
+                      "created_at": "1978-12-04T07:16:52.523Z",
+                      "updated_at": "1963-10-04T07:26:42.259Z",
+                      "deleted_at": "1965-08-18T10:32:18.077Z"
+                    }
+                  ],
+                  "id": "string",
+                  "title": "string",
+                  "sku": "string",
+                  "barcode": "string",
+                  "ean": "string",
+                  "upc": "string",
+                  "thumbnail": "string",
+                  "images": [
+                    {
+                      "id": "string",
+                      "url": "string",
+                      "rank": 1471.1581700951126,
+                      "created_at": "1970-12-13T09:11:16.455Z",
+                      "updated_at": "1967-01-10T22:07:23.155Z",
+                      "deleted_at": "2009-01-13T20:30:47.727Z",
+                      "metadata": {}
+                    }
+                  ],
+                  "allow_backorder": false,
+                  "manage_inventory": true,
+                  "hs_code": "string",
+                  "origin_country": "string",
+                  "mid_code": "string",
+                  "material": "string",
+                  "weight": 6855.464452278062,
+                  "length": 3420.6640603808537,
+                  "height": 3124.9922251080607,
+                  "width": 4864.052670376688,
+                  "created_at": "2011-02-02T01:00:20.156Z",
+                  "updated_at": "2006-04-12T22:28:12.647Z",
+                  "deleted_at": "2016-07-03T05:17:56.453Z",
+                  "inventory_quantity": 2811.9688819567014,
+                  "variant_rank": 6487.92921398524,
+                  "product": {},
+                  "product_id": "string",
+                  "calculated_price": {
+                    "id": "string",
+                    "calculated_amount": 2988.1350249310244,
+                    "original_amount": 9392.217135309817,
+                    "original_amount_with_tax": 8148.6799869891265,
+                    "original_amount_without_tax": 3130.940322539826,
+                    "currency_code": "usd",
+                    "is_calculated_price_price_list": true,
+                    "is_calculated_price_tax_inclusive": false,
+                    "calculated_amount_with_tax": 4731.130415977492,
+                    "calculated_amount_without_tax": 9187.204099112509,
+                    "is_original_price_price_list": true,
+                    "is_original_price_tax_inclusive": true,
+                    "calculated_price": {},
+                    "original_price": {}
+                  },
+                  "metadata": {},
+                  "inventory_items": [
+                    {
+                      "id": "string",
+                      "variant_id": "string",
+                      "inventory_item_id": "string",
+                      "variant": {},
+                      "inventory": {
+                        "id": "string",
+                        "requires_shipping": true,
+                        "sku": "string",
+                        "origin_country": "string",
+                        "hs_code": "string",
+                        "mid_code": "string",
+                        "material": "string",
+                        "weight": 5059.381434037349,
+                        "length": 912.1306744854207,
+                        "height": 4274.291414323737,
+                        "width": 2780.2055371752153,
+                        "title": "string",
+                        "description": "string",
+                        "thumbnail": "string",
+                        "metadata": {},
+                        "location_levels": [
+                          {
+                            "id": "string",
+                            "created_at": "1994-06-01T19:51:02.287Z",
+                            "updated_at": "2020-02-23T19:14:53.877Z",
+                            "deleted_at": "1999-09-23T10:08:09.393Z",
+                            "inventory_item_id": "string",
+                            "location_id": "string",
+                            "stocked_quantity": 1008.398929380554,
+                            "reserved_quantity": 9131.671371972696,
+                            "incoming_quantity": 3463.762082821271,
+                            "metadata": {},
+                            "available_quantity": 162.54686077056934,
+                            "inventory_item": {}
+                          }
+                        ]
+                      },
+                      "required_quantity": 9812.920842283562
+                    }
+                  ],
+                  "translations": [
+                    {
+                      "id": "string",
+                      "reference_id": "prod_123",
+                      "reference": "product",
+                      "locale_code": "fr-FR",
+                      "translations": {
+                        "title": "Chaussures",
+                        "description": "Des chaussures élégantes."
+                      },
+                      "created_at": "2005-01-19T10:09:04.993Z",
+                      "updated_at": "1954-11-25T05:38:03.251Z",
+                      "deleted_at": "2001-05-11T00:47:29.394Z"
+                    }
+                  ]
+                },
+                "product": {
+                  "variants": [
+                    {
+                      "prices": [
+                        {
+                          "id": "string",
+                          "title": "string",
+                          "currency_code": "usd",
+                          "amount": 2918.6964070500053,
+                          "raw_amount": {},
+                          "min_quantity": 9345.867548168624,
+                          "max_quantity": 6206.131032302613,
+                          "price_set_id": "string",
+                          "created_at": "1974-03-27T16:48:24.968Z",
+                          "updated_at": "2001-11-19T20:37:20.180Z",
+                          "deleted_at": "1986-06-25T00:16:32.323Z"
+                        }
+                      ],
+                      "options": [
+                        {
+                          "id": "string",
+                          "value": "string",
+                          "option": {
+                            "id": "string",
+                            "title": "string",
+                            "product": {},
+                            "product_id": "string",
+                            "metadata": {},
+                            "created_at": "1955-04-12T23:46:24.248Z",
+                            "updated_at": "1992-04-04T02:49:42.248Z",
+                            "deleted_at": "1978-03-14T03:18:37.325Z"
+                          },
+                          "option_id": "string",
+                          "metadata": {},
+                          "created_at": "1995-06-29T16:50:17.319Z",
+                          "updated_at": "1993-02-05T05:22:56.934Z",
+                          "deleted_at": "1951-07-16T07:07:51.683Z"
+                        }
+                      ],
+                      "id": "string",
+                      "title": "string",
+                      "sku": "string",
+                      "barcode": "string",
+                      "ean": "string",
+                      "upc": "string",
+                      "thumbnail": "string",
+                      "images": [
+                        {
+                          "id": "string",
+                          "url": "string",
+                          "rank": 3743.848508637746,
+                          "created_at": "2023-01-05T07:40:04.219Z",
+                          "updated_at": "1982-12-02T19:51:26.942Z",
+                          "deleted_at": "1949-09-06T22:54:32.731Z",
+                          "metadata": {}
+                        }
+                      ],
+                      "allow_backorder": true,
+                      "manage_inventory": false,
+                      "hs_code": "string",
+                      "origin_country": "string",
+                      "mid_code": "string",
+                      "material": "string",
+                      "weight": 959.8884204977231,
+                      "length": 7194.898176237601,
+                      "height": 8586.78307992687,
+                      "width": 1087.3442049095238,
+                      "created_at": "1987-03-14T13:04:13.702Z",
+                      "updated_at": "2001-08-17T06:22:52.736Z",
+                      "deleted_at": "2018-12-25T14:23:52.486Z",
+                      "inventory_quantity": 5714.798460163784,
+                      "variant_rank": 3938.54828435396,
+                      "product": {},
+                      "product_id": "string",
+                      "calculated_price": {
+                        "id": "string",
+                        "calculated_amount": 5480.587704880664,
+                        "original_amount": 9809.848368442486,
+                        "original_amount_with_tax": 9351.947036603315,
+                        "original_amount_without_tax": 5598.0630705135745,
+                        "currency_code": "usd",
+                        "is_calculated_price_price_list": true,
+                        "is_calculated_price_tax_inclusive": true,
+                        "calculated_amount_with_tax": 8541.13219297511,
+                        "calculated_amount_without_tax": 9215.610936708008,
+                        "is_original_price_price_list": true,
+                        "is_original_price_tax_inclusive": true,
+                        "calculated_price": {},
+                        "original_price": {}
+                      },
+                      "metadata": {},
+                      "inventory_items": [
+                        {
+                          "id": "string",
+                          "variant_id": "string",
+                          "inventory_item_id": "string",
+                          "variant": {},
+                          "inventory": {
+                            "id": "string",
+                            "requires_shipping": true,
+                            "sku": "string",
+                            "origin_country": "string",
+                            "hs_code": "string",
+                            "mid_code": "string",
+                            "material": "string",
+                            "weight": 3539.654610258207,
+                            "length": 4377.001744749218,
+                            "height": 356.4027238696932,
+                            "width": 6217.096152278867,
+                            "title": "string",
+                            "description": "string",
+                            "thumbnail": "string",
+                            "metadata": {},
+                            "location_levels": [
+                              {
+                                "id": "string",
+                                "created_at": "1989-05-17T15:30:07.083Z",
+                                "updated_at": "1968-11-20T07:49:46.254Z",
+                                "deleted_at": "1983-01-16T20:07:15.519Z",
+                                "inventory_item_id": "string",
+                                "location_id": "string",
+                                "stocked_quantity": 3770.473057986503,
+                                "reserved_quantity": 7258.198068401957,
+                                "incoming_quantity": 3771.508953752609,
+                                "metadata": {},
+                                "available_quantity": 6679.678198820533,
+                                "inventory_item": {}
+                              }
+                            ]
+                          },
+                          "required_quantity": 9682.51123800777
+                        }
+                      ],
+                      "translations": [
+                        {
+                          "id": "string",
+                          "reference_id": "prod_123",
+                          "reference": "product",
+                          "locale_code": "fr-FR",
+                          "translations": {
+                            "title": "Chaussures",
+                            "description": "Des chaussures élégantes."
+                          },
+                          "created_at": "1997-03-06T06:53:06.481Z",
+                          "updated_at": "1981-01-04T05:21:39.647Z",
+                          "deleted_at": "2010-03-22T12:21:43.611Z"
+                        }
+                      ]
+                    }
+                  ],
+                  "type": {
+                    "id": "string",
+                    "value": "string",
+                    "created_at": "1988-10-08T03:43:53.309Z",
+                    "updated_at": "2011-04-28T11:07:59.959Z",
+                    "deleted_at": "1993-06-03T16:29:37.725Z",
+                    "metadata": {},
+                    "translations": [
+                      {
+                        "id": "string",
+                        "reference_id": "prod_123",
+                        "reference": "product",
+                        "locale_code": "fr-FR",
+                        "translations": {
+                          "title": "Chaussures",
+                          "description": "Des chaussures élégantes."
+                        },
+                        "created_at": "2013-12-02T15:25:21.568Z",
+                        "updated_at": "1999-07-03T22:28:17.946Z",
+                        "deleted_at": "1995-06-05T18:53:52.836Z"
+                      }
+                    ]
+                  },
+                  "options": [
+                    {
+                      "id": "string",
+                      "title": "string",
+                      "product": {},
+                      "product_id": "string",
+                      "metadata": {},
+                      "created_at": "2023-12-22T02:14:27.227Z",
+                      "updated_at": "1997-07-29T15:57:01.688Z",
+                      "deleted_at": "2004-09-01T00:56:34.423Z"
+                    }
+                  ],
+                  "images": [
+                    {
+                      "id": "string",
+                      "url": "string",
+                      "rank": 9152.770717214116,
+                      "created_at": "2025-10-04T15:39:37.204Z",
+                      "updated_at": "1990-01-30T03:48:08.372Z",
+                      "deleted_at": "2010-05-12T23:54:28.852Z",
+                      "metadata": {},
+                      "product": {}
+                    }
+                  ],
+                  "title": "string",
+                  "status": "draft",
+                  "length": 4407.1012670709515,
+                  "id": "string",
+                  "created_at": "2006-07-22T11:30:23.815Z",
+                  "updated_at": "1995-05-04T04:10:51.363Z",
+                  "subtitle": "string",
+                  "thumbnail": "string",
+                  "handle": "string",
+                  "description": "string",
+                  "is_giftcard": true,
+                  "width": 3549.925401693048,
+                  "weight": 5703.795175239073,
+                  "height": 4460.536905169419,
+                  "origin_country": "string",
+                  "hs_code": "string",
+                  "mid_code": "string",
+                  "material": "string",
+                  "collection_id": "string",
+                  "type_id": "string",
+                  "discountable": false,
+                  "external_id": "string",
+                  "deleted_at": "1957-03-22T13:01:21.549Z",
+                  "collection": {
+                    "id": "string",
+                    "title": "string",
+                    "handle": "string",
+                    "created_at": "1971-06-17T04:40:53.693Z",
+                    "updated_at": "1961-07-29T00:23:35.057Z",
+                    "deleted_at": "1950-02-13T07:37:34.204Z",
+                    "metadata": {},
+                    "products": [
+                      {
+                        "id": "string",
+                        "title": "string",
+                        "handle": "string",
+                        "subtitle": "string",
+                        "description": "string",
+                        "is_giftcard": false,
+                        "status": "proposed",
+                        "thumbnail": "string",
+                        "width": 3116.1489069452996,
+                        "weight": 3102.016318089367,
+                        "length": 221.08472927519162,
+                        "height": 3904.0096048808646,
+                        "origin_country": "string",
+                        "hs_code": "string",
+                        "mid_code": "string",
+                        "material": "string",
+                        "collection_id": "string",
+                        "type_id": "string",
+                        "variants": [],
+                        "options": [
+                          {
+                            "id": "string",
+                            "title": "string",
+                            "product": {},
+                            "product_id": "string",
+                            "values": [
+                              {
+                                "id": "string",
+                                "value": "string",
+                                "option": {},
+                                "option_id": "string",
+                                "metadata": {},
+                                "created_at": "1956-10-05T18:26:14.327Z",
+                                "updated_at": "1988-12-22T04:23:17.254Z",
+                                "deleted_at": "1994-07-17T23:12:10.538Z"
+                              }
+                            ],
+                            "metadata": {},
+                            "created_at": "2006-11-04T10:29:10.788Z",
+                            "updated_at": "2005-11-11T03:37:06.073Z",
+                            "deleted_at": "2010-10-14T13:47:23.112Z"
+                          }
+                        ],
+                        "images": [
+                          {
+                            "id": "string",
+                            "url": "string",
+                            "rank": 2748.5156317453584,
+                            "created_at": "1996-08-22T03:42:27.485Z",
+                            "updated_at": "2011-05-24T11:51:41.885Z",
+                            "deleted_at": "1949-01-30T09:32:09.019Z",
+                            "metadata": {}
+                          }
+                        ],
+                        "discountable": true,
+                        "external_id": "string",
+                        "created_at": "1977-01-24T19:36:47.166Z",
+                        "updated_at": "2022-09-22T09:36:28.242Z",
+                        "deleted_at": "1949-09-29T13:29:25.941Z",
+                        "collection": {
+                          "id": "string",
+                          "title": "string",
+                          "handle": "string",
+                          "created_at": "2021-02-09T14:34:49.498Z",
+                          "updated_at": "1976-01-28T06:59:01.352Z",
+                          "deleted_at": "2013-04-13T06:48:48.339Z",
+                          "metadata": {}
+                        },
+                        "categories": [
+                          {
+                            "id": "string",
+                            "name": "string",
+                            "description": "string",
+                            "handle": "string",
+                            "is_active": false,
+                            "is_internal": false,
+                            "rank": 1032.01528890438,
+                            "parent_category_id": "string",
+                            "parent_category": {
+                              "parent_category": {},
+                              "name": "string",
+                              "description": "string",
+                              "id": "string",
+                              "created_at": "1951-03-24T05:36:01.477Z",
+                              "updated_at": "1963-08-18T01:54:17.762Z",
+                              "handle": "string",
+                              "deleted_at": "1961-10-25T23:09:35.316Z",
+                              "is_active": false,
+                              "is_internal": false,
+                              "rank": 621.1432482535706,
+                              "parent_category_id": "string",
+                              "metadata": {}
+                            },
+                            "category_children": [
+                              {
+                                "parent_category": {},
+                                "name": "string",
+                                "description": "string",
+                                "id": "string",
+                                "created_at": "2005-03-17T03:50:27.895Z",
+                                "updated_at": "1984-02-13T13:25:18.725Z",
+                                "handle": "string",
+                                "deleted_at": "1991-04-30T03:15:28.579Z",
+                                "is_active": false,
+                                "is_internal": false,
+                                "rank": 8225.530468522249,
+                                "parent_category_id": "string",
+                                "metadata": {}
+                              }
+                            ],
+                            "created_at": "1991-12-20T03:22:39.280Z",
+                            "updated_at": "1968-11-16T10:25:54.706Z",
+                            "deleted_at": "2001-12-15T23:25:59.509Z",
+                            "metadata": {}
+                          }
+                        ],
+                        "type": {
+                          "id": "string",
+                          "value": "string",
+                          "created_at": "1969-09-29T23:03:18.970Z",
+                          "updated_at": "1972-09-18T05:20:30.464Z",
+                          "deleted_at": "2005-08-08T13:22:41.500Z",
+                          "metadata": {}
+                        },
+                        "tags": [
+                          {
+                            "id": "string",
+                            "value": "string",
+                            "created_at": "1995-09-17T11:42:39.130Z",
+                            "updated_at": "1963-04-10T06:29:48.614Z",
+                            "deleted_at": "1954-01-06T19:20:57.381Z",
+                            "metadata": {}
+                          }
+                        ],
+                        "metadata": {}
+                      }
+                    ],
+                    "translations": [
+                      {
+                        "id": "string",
+                        "reference_id": "prod_123",
+                        "reference": "product",
+                        "locale_code": "fr-FR",
+                        "translations": {
+                          "title": "Chaussures",
+                          "description": "Des chaussures élégantes."
+                        },
+                        "created_at": "1947-05-19T10:31:17.760Z",
+                        "updated_at": "1956-09-01T10:43:35.131Z",
+                        "deleted_at": "1998-04-23T15:24:10.815Z"
+                      }
+                    ]
+                  },
+                  "categories": [
+                    {
+                      "category_children": [],
+                      "parent_category": {},
+                      "name": "string",
+                      "description": "string",
+                      "id": "string",
+                      "created_at": "1952-10-12T23:24:08.799Z",
+                      "updated_at": "1954-02-09T10:51:45.726Z",
+                      "handle": "string",
+                      "deleted_at": "1995-07-26T06:08:51.735Z",
+                      "is_active": true,
+                      "is_internal": false,
+                      "rank": 6937.680960083432,
+                      "parent_category_id": "string",
+                      "metadata": {}
+                    }
+                  ],
+                  "sales_channels": [
+                    {
+                      "id": "string",
+                      "name": "string",
+                      "description": "string",
+                      "is_disabled": true,
+                      "metadata": {},
+                      "created_at": "1951-07-21T13:08:45.306Z",
+                      "updated_at": "1972-08-21T07:21:30.233Z",
+                      "deleted_at": "2022-12-13T04:56:53.612Z"
+                    }
+                  ],
+                  "tags": [
+                    {
+                      "id": "string",
+                      "value": "string",
+                      "created_at": "2003-12-11T04:21:11.771Z",
+                      "updated_at": "1965-05-14T01:45:40.201Z",
+                      "deleted_at": "1968-12-10T20:22:30.637Z",
+                      "metadata": {},
+                      "translations": [
+                        {
+                          "id": "string",
+                          "reference_id": "prod_123",
+                          "reference": "product",
+                          "locale_code": "fr-FR",
+                          "translations": {
+                            "title": "Chaussures",
+                            "description": "Des chaussures élégantes."
+                          },
+                          "created_at": "1961-10-28T17:12:45.663Z",
+                          "updated_at": "2020-03-04T03:45:58.264Z",
+                          "deleted_at": "2010-03-28T17:56:14.215Z"
+                        }
+                      ]
+                    }
+                  ],
+                  "metadata": {},
+                  "shipping_profile": {
+                    "id": "string",
+                    "name": "string",
+                    "type": "string",
+                    "metadata": {},
+                    "created_at": "2018-04-03T13:35:55.684Z",
+                    "updated_at": "2010-02-04T06:59:32.131Z",
+                    "deleted_at": "1976-06-08T04:21:44.330Z"
+                  },
+                  "translations": [
+                    {
+                      "id": "string",
+                      "reference_id": "prod_123",
+                      "reference": "product",
+                      "locale_code": "fr-FR",
+                      "translations": {
+                        "title": "Chaussures",
+                        "description": "Des chaussures élégantes."
+                      },
+                      "created_at": "2014-11-22T11:51:06.808Z",
+                      "updated_at": "1994-09-10T06:09:19.622Z",
+                      "deleted_at": "1969-12-09T12:27:25.848Z"
+                    }
+                  ]
+                },
+                "compare_at_unit_price": 5494.6373840343485,
+                "tax_lines": [
+                  {
+                    "item": {},
+                    "item_id": "string",
+                    "total": 4714.408589077432,
+                    "subtotal": 8582.132204683563,
+                    "id": "string",
+                    "code": "string",
+                    "rate": 9012.984267910606,
+                    "created_at": "1955-12-18T00:58:06.849Z",
+                    "updated_at": "1971-05-07T00:25:52.219Z",
+                    "description": "string",
+                    "tax_rate_id": "string",
+                    "provider_id": "string"
+                  }
+                ],
+                "adjustments": [
+                  {
+                    "item": {},
+                    "item_id": "string",
+                    "id": "string",
+                    "amount": 2268.6004997739806,
+                    "order_id": "string",
+                    "created_at": "1969-03-11T02:56:31.956Z",
+                    "updated_at": "2019-06-17T21:23:39.565Z",
+                    "code": "string",
+                    "description": "string",
+                    "promotion_id": "string",
+                    "provider_id": "string"
+                  }
+                ]
+              }
+            ],
+            "shipping_methods": [
+              {
+                "id": "string",
+                "order_id": "string",
+                "name": "string",
+                "amount": 2547.3818709752004,
+                "is_tax_inclusive": false,
+                "shipping_option_id": "string",
+                "data": {},
+                "metadata": {},
+                "original_total": 702.423899309994,
+                "original_subtotal": 2939.443215941351,
+                "original_tax_total": 3199.5370671456812,
+                "total": 9951.389963259762,
+                "subtotal": 2388.8692209663163,
+                "tax_total": 7675.2452477520565,
+                "discount_total": 6567.000026329038,
+                "discount_tax_total": 7325.104180815045,
+                "created_at": "1961-03-07T04:09:53.171Z",
+                "updated_at": "2007-02-08T07:49:47.127Z",
+                "description": "string",
+                "tax_lines": [
+                  {
+                    "shipping_method": {},
+                    "shipping_method_id": "string",
+                    "total": 2492.7869682456194,
+                    "subtotal": 1859.4001212713817,
+                    "id": "string",
+                    "code": "string",
+                    "rate": 9853.533221729505,
+                    "created_at": "1954-02-18T06:22:38.099Z",
+                    "updated_at": "1970-05-22T06:52:04.862Z",
+                    "description": "string",
+                    "tax_rate_id": "string",
+                    "provider_id": "string"
+                  }
+                ],
+                "adjustments": [
+                  {
+                    "shipping_method": {},
+                    "shipping_method_id": "string",
+                    "id": "string",
+                    "amount": 1332.8652407571772,
+                    "order_id": "string",
+                    "created_at": "1961-08-09T06:46:24.857Z",
+                    "updated_at": "2004-07-18T21:36:26.672Z",
+                    "code": "string",
+                    "description": "string",
+                    "promotion_id": "string",
+                    "provider_id": "string"
+                  }
+                ],
+                "detail": {
+                  "id": "string",
+                  "shipping_method_id": "string",
+                  "shipping_method": {},
+                  "created_at": "1947-04-09T14:23:33.437Z",
+                  "updated_at": "2017-04-10T18:27:45.168Z",
+                  "claim_id": "string",
+                  "exchange_id": "string",
+                  "return_id": "string"
+                }
+              }
+            ],
+            "status": "string",
+            "id": "string",
+            "version": 1636.5395829807917,
+            "region_id": "string",
+            "customer_id": "string",
+            "sales_channel_id": "string",
+            "email": "goho3ORnH@IpNhDwzHBjozEdDdBvZfXksPrU.rpzr",
+            "currency_code": "string",
+            "payment_status": "not_paid",
+            "fulfillment_status": "partially_delivered",
+            "summary": {
+              "pending_difference": 9397.217927394093,
+              "current_order_total": 3962.394405175196,
+              "original_order_total": 1251.472694690392,
+              "transaction_total": 1026.2288488033278,
+              "paid_total": 2751.315117755875,
+              "refunded_total": 5886.2802940606125,
+              "accounting_total": 3760.423906984374
+            },
+            "created_at": "2017-12-15T09:25:35.526Z",
+            "updated_at": "1969-11-18T06:32:16.178Z",
+            "original_item_total": 9760.309423400182,
+            "original_item_subtotal": 6126.603863014941,
+            "original_item_tax_total": 9565.116166985104,
+            "item_total": 9353.131468203406,
+            "item_subtotal": 9206.345781803771,
+            "item_tax_total": 2663.0783829913216,
+            "item_discount_total": 9386.74475383919,
+            "original_total": 680.4991451824494,
+            "original_subtotal": 5683.706507281207,
+            "original_tax_total": 9048.852206600222,
+            "total": 4203.206465840337,
+            "subtotal": 120.04401620661741,
+            "tax_total": 6348.0400503788205,
+            "discount_total": 9947.04148060419,
+            "discount_tax_total": 8635.736668163472,
+            "gift_card_total": 5235.112782294112,
+            "gift_card_tax_total": 8232.830061191324,
+            "shipping_total": 9348.277322584165,
+            "shipping_subtotal": 6747.079471114625,
+            "shipping_tax_total": 3726.8760528394764,
+            "shipping_discount_total": 4890.18177722099,
+            "original_shipping_total": 9339.219710241232,
+            "original_shipping_subtotal": 7434.64248802568,
+            "original_shipping_tax_total": 9750.117395456815,
+            "credit_line_total": 7176.240762284509,
+            "fulfillments": [
+              {
+                "id": "string",
+                "location_id": "string",
+                "packed_at": "2016-06-13T19:43:09.779Z",
+                "shipped_at": "1961-11-28T07:28:04.598Z",
+                "delivered_at": "1985-11-23T22:16:13.462Z",
+                "canceled_at": "1974-03-30T03:33:12.481Z",
+                "requires_shipping": false,
+                "data": {},
+                "provider_id": "string",
+                "shipping_option_id": "string",
+                "metadata": {},
+                "created_at": "2019-01-30T18:18:15.495Z",
+                "updated_at": "1988-11-22T13:29:17.596Z"
+              }
+            ],
+            "sales_channel": {
+              "id": "string",
+              "name": "string",
+              "description": "string",
+              "is_disabled": false,
+              "metadata": {},
+              "created_at": "1955-07-07T22:26:23.757Z",
+              "updated_at": "2025-06-29T19:11:02.422Z",
+              "deleted_at": "1951-03-01T23:19:50.018Z"
+            },
+            "customer": {
+              "has_account": false,
+              "addresses": [
+                {
+                  "id": "string",
+                  "address_name": "string",
+                  "is_default_shipping": true,
+                  "is_default_billing": true,
+                  "customer_id": "string",
+                  "company": "string",
+                  "first_name": "string",
+                  "last_name": "string",
+                  "address_1": "string",
+                  "address_2": "string",
+                  "city": "string",
+                  "country_code": "us",
+                  "province": "us-ca",
+                  "postal_code": "string",
+                  "phone": "string",
+                  "metadata": {},
+                  "created_at": "2025-08-22T15:45:19.704Z",
+                  "updated_at": "2005-11-08T13:00:01.192Z"
+                }
+              ],
+              "id": "string",
+              "email": "9oP5@EckSMRV.wl",
+              "default_billing_address_id": "string",
+              "default_shipping_address_id": "string",
+              "company_name": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "groups": [
+                {
+                  "customers": [],
+                  "id": "string",
+                  "name": "string",
+                  "metadata": {},
+                  "created_at": "2000-10-26T15:05:21.117Z",
+                  "updated_at": "1984-09-20T14:09:21.603Z"
+                }
+              ],
+              "phone": "string",
+              "metadata": {},
+              "created_by": "string",
+              "created_at": "1982-05-10T23:14:04.057Z",
+              "updated_at": "1976-08-14T11:55:26.906Z",
+              "deleted_at": "1951-02-02T22:18:18.106Z"
+            },
+            "shipping_address": {
+              "id": "string",
+              "metadata": {},
+              "created_at": "1965-06-30T18:22:24.593Z",
+              "updated_at": "1950-05-15T16:41:25.615Z",
+              "customer_id": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "phone": "string",
+              "company": "string",
+              "address_1": "string",
+              "address_2": "string",
+              "city": "string",
+              "country_code": "us",
+              "country": {
+                "id": "string",
+                "iso_2": "us",
+                "iso_3": "usa",
+                "num_code": "string",
+                "name": "string",
+                "display_name": "string"
+              },
+              "province": "us-ca",
+              "postal_code": "string"
+            },
+            "billing_address": {
+              "id": "string",
+              "metadata": {},
+              "created_at": "1989-07-24T07:38:56.534Z",
+              "updated_at": "1995-11-19T07:32:05.010Z",
+              "customer_id": "string",
+              "first_name": "string",
+              "last_name": "string",
+              "phone": "string",
+              "company": "string",
+              "address_1": "string",
+              "address_2": "string",
+              "city": "string",
+              "country_code": "us",
+              "country": {
+                "id": "string",
+                "iso_2": "us",
+                "iso_3": "usa",
+                "num_code": "string",
+                "name": "string",
+                "display_name": "string"
+              },
+              "province": "us-ca",
+              "postal_code": "string"
+            },
+            "display_id": 4389.5614495679665,
+            "transactions": [
+              {
+                "id": "string",
+                "order_id": "string",
+                "amount": 5923.693475649637,
+                "currency_code": "usd",
+                "reference": "refund",
+                "reference_id": "string",
+                "metadata": {},
+                "created_at": "2013-08-20T19:26:08.098Z",
+                "updated_at": "1998-11-28T06:39:25.137Z"
+              }
+            ],
+            "metadata": {},
+            "region": {
+              "id": "string",
+              "currency_code": "usd",
+              "name": "string",
+              "automatic_taxes": false,
+              "countries": [
+                {
+                  "id": "string",
+                  "iso_2": "us",
+                  "iso_3": "usa",
+                  "num_code": "string",
+                  "name": "string",
+                  "display_name": "string"
+                }
+              ],
+              "payment_providers": [
+                {
+                  "is_enabled": true,
+                  "id": "string"
+                }
+              ],
+              "metadata": {},
+              "created_at": "1953-05-01T03:42:18.878Z",
+              "updated_at": "1958-04-17T00:11:14.855Z"
+            },
+            "credit_lines": [
+              {
+                "id": "string",
+                "order_id": "string",
+                "order": {},
+                "amount": 9896.648480705384,
+                "reference": "string",
+                "reference_id": "string",
+                "metadata": {},
+                "created_at": "1949-03-12T12:19:04.537Z",
+                "updated_at": "1982-04-28T12:11:38.118Z"
+              }
+            ],
+            "custom_display_id": "string"
+          },
+          "return": {
+            "items": [
+              {
+                "id": "string",
+                "quantity": 2605.3812224136873,
+                "received_quantity": 4336.080547717161,
+                "damaged_quantity": 1484.698510085829,
+                "item_id": "string",
+                "return_id": "string",
+                "reason_id": "string",
+                "note": "string",
+                "metadata": {}
+              }
+            ],
+            "id": "string",
+            "order_id": "string",
+            "order_version": 9587.362858300183,
+            "display_id": 4999.103773268772,
+            "received_at": "string",
+            "created_at": "2015-01-24T02:58:52.445Z",
+            "canceled_at": "1964-10-07T01:36:40.769Z",
+            "status": "received",
+            "refund_amount": 4508.357085412029,
+            "exchange_id": "string",
+            "location_id": "string",
+            "claim_id": "string",
+            "no_notification": true
+          },
+          "id": "string",
+          "type": "refund",
+          "order_id": "string",
+          "display_id": 9830.187428340105,
+          "order_version": "string",
+          "created_at": "2018-08-31T17:55:33.848Z",
+          "updated_at": "2002-12-25T18:31:27.620Z",
+          "canceled_at": "2008-12-26T01:06:38.555Z",
+          "additional_items": [
+            {
+              "id": "string",
+              "claim_id": "string",
+              "order_id": "string",
+              "item_id": "string",
+              "quantity": 4719.129182341426,
+              "reason": "other",
+              "raw_quantity": {
+                "value": 1020.9508261586908
+              },
+              "metadata": {},
+              "created_at": "1966-11-06T23:02:47.471Z",
+              "updated_at": "1974-05-18T03:18:50.811Z"
+            }
+          ],
+          "claim_items": [
+            {
+              "id": "string",
+              "claim_id": "string",
+              "order_id": "string",
+              "item_id": "string",
+              "quantity": 1264.8567827215772,
+              "reason": "production_failure",
+              "raw_quantity": {
+                "value": 4995.85084352894
+              },
+              "metadata": {},
+              "created_at": "2008-02-22T05:49:49.230Z",
+              "updated_at": "2012-12-17T06:11:29.193Z"
+            }
+          ],
+          "return_id": "string",
+          "no_notification": false,
+          "refund_amount": 769.2609502174541,
+          "shipping_methods": [
+            {
+              "id": "string",
+              "order_id": "string",
+              "name": "string",
+              "amount": 9460.002715526274,
+              "is_tax_inclusive": true,
+              "shipping_option_id": "string",
+              "data": {},
+              "metadata": {},
+              "original_total": 8819.847292603583,
+              "original_subtotal": 8595.81251186108,
+              "original_tax_total": 7495.766875601177,
+              "total": 5170.507287535973,
+              "subtotal": 4994.729137026193,
+              "tax_total": 9855.286540616866,
+              "discount_total": 8412.611323063542,
+              "discount_tax_total": 5005.452140708279,
+              "created_at": "2021-12-04T03:31:04.293Z",
+              "updated_at": "1948-12-06T17:20:22.156Z",
+              "description": "string",
+              "tax_lines": [
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "total": 8367.580769173255,
+                  "subtotal": 5856.523440357553,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 3418.139936322746,
+                  "created_at": "1991-02-20T04:38:18.653Z",
+                  "updated_at": "1968-12-27T18:11:54.198Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "adjustments": [
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "id": "string",
+                  "amount": 5155.4226038601,
+                  "order_id": "string",
+                  "created_at": "2020-10-07T09:31:47.012Z",
+                  "updated_at": "1986-10-04T07:58:20.594Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "detail": {
+                "id": "string",
+                "shipping_method_id": "string",
+                "shipping_method": {},
+                "created_at": "1956-10-09T14:52:32.146Z",
+                "updated_at": "2002-11-01T00:49:42.353Z",
+                "claim_id": "string",
+                "exchange_id": "string",
+                "return_id": "string"
+              }
+            }
+          ],
+          "transactions": [
+            {
+              "id": "string",
+              "order_id": "string",
+              "amount": 6585.242192652756,
+              "currency_code": "usd",
+              "reference": "refund",
+              "reference_id": "string",
+              "metadata": {},
+              "created_at": "2024-05-30T07:27:14.674Z",
+              "updated_at": "1947-05-11T18:15:59.521Z"
+            }
+          ],
+          "metadata": {},
+          "created_by": "string",
+          "deleted_at": "1959-01-20T07:50:35.801Z"
+        }
+      }
+order: 1000

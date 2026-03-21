@@ -1,0 +1,38 @@
+$kind: http-request
+description: Create a stock location.
+url: "{{baseUrl}}/admin/stock-locations?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "address_id": "string",
+      "address": {
+        "address_1": "string",
+        "country_code": "usd",
+        "address_2": "string",
+        "company": "string",
+        "city": "string",
+        "phone": "string",
+        "postal_code": "string",
+        "province": "us-ca"
+      },
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Stock Location.resources/examples
+order: 3000

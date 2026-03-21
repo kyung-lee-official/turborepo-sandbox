@@ -1,0 +1,85 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/carts/:id?fields=string&locale=en-US"
+  method: POST
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+  pathVariables:
+    - key: id
+      value: string
+      description: The cart's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "region_id": "string",
+        "customer_id": "string",
+        "sales_channel_id": "string",
+        "email": "joStDtKHVbl@OBwWjjvnbRSWNDuCLBaTGbXcjxDdQPgm.eik",
+        "currency_code": "usd",
+        "shipping_address_id": "string",
+        "billing_address_id": "string",
+        "billing_address": {
+          "customer_id": "string",
+          "company": "string",
+          "first_name": "string",
+          "last_name": "string",
+          "address_1": "string",
+          "address_2": "string",
+          "city": "string",
+          "country_code": "us",
+          "province": "us-ca",
+          "postal_code": "string",
+          "phone": "string",
+          "metadata": {}
+        },
+        "shipping_address": {
+          "id": "string",
+          "customer_id": "string",
+          "company": "string",
+          "first_name": "string",
+          "last_name": "string",
+          "address_1": "string",
+          "address_2": "string",
+          "city": "string",
+          "country_code": "usd",
+          "province": "us-ca",
+          "postal_code": "string",
+          "phone": "string",
+          "metadata": {}
+        },
+        "metadata": {},
+        "additional_data": {}
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Entity with id 1 was not found",
+        "type": "not_found"
+      }
+order: 4000

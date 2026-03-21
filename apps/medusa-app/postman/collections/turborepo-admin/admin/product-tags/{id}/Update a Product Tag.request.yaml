@@ -1,0 +1,31 @@
+$kind: http-request
+description: Update a product tag's details.
+url: "{{baseUrl}}/admin/product-tags/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The product tag's ID.
+body:
+  type: json
+  content: |-
+    {
+      "value": "string",
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Product Tag.resources/examples
+order: 2000

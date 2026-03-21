@@ -1,0 +1,43 @@
+$kind: http-request
+description: Add a service zone to a fulfillment set.
+url: "{{baseUrl}}/admin/fulfillment-sets/:id/service-zones?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The fulfillment set's ID.
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "geo_zones": [
+        {
+          "metadata": {},
+          "country_code": "string",
+          "type": "province",
+          "province_code": "us-ca"
+        },
+        {
+          "metadata": {},
+          "country_code": "string",
+          "type": "country"
+        }
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Add a Service Zone to a Fulfillment Set.resources/examples
+order: 2000

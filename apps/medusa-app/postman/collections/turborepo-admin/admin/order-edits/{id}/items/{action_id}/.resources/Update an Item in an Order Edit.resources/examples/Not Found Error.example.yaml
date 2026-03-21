@@ -1,0 +1,41 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/order-edits/:id/items/:action_id"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: id
+      value: string
+      description: The order edit's ID.
+    - key: action_id
+      value: string
+      description: The ID of the new item's `ITEM_ADD` action.
+  body:
+    type: json
+    content: |-
+      {
+        "quantity": 8785.828814746375,
+        "internal_note": "string",
+        "unit_price": 6585.9520355020695,
+        "compare_at_unit_price": 1497.5762549590966
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Entity with id 1 was not found",
+        "type": "not_found"
+      }
+order: 4000

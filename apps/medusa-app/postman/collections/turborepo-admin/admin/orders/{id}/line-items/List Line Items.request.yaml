@@ -1,0 +1,34 @@
+$kind: http-request
+description: Retrieve a list of line items in a order. The line items can be
+  filtered by fields like FILTER FIELDS. The line items can also be paginated.
+url: "{{baseUrl}}/admin/orders/:id/line-items?fields=string&id=string&item_id=s\
+  tring&version=8661.135667642375"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: >-
+      Comma-separated fields that should be included in the returned data.
+
+      if a field is prefixed with `+` it will be added to the default fields,
+      using `-` will remove it from the default fields.
+
+      without prefix it will replace the entire default fields.
+  - key: id
+    value: string
+  - key: item_id
+    value: string
+  - key: version
+    value: "8661.135667642375"
+pathVariables:
+  - key: id
+    value: string
+    description: The order's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Line Items.resources/examples
+order: 1000

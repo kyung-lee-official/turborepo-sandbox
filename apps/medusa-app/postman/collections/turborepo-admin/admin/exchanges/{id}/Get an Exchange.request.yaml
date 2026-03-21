@@ -1,0 +1,24 @@
+$kind: http-request
+description: Retrieve an exchange by its ID. You can expand the exchange's
+  relations or select the fields that should be returned using query parameters.
+url: "{{baseUrl}}/admin/exchanges/:id?fields=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The exchange's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Get an Exchange.resources/examples
+order: 5000

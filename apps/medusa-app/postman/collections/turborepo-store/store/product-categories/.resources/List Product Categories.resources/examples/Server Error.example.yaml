@@ -1,0 +1,138 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/product-categories?fields=string&offset=5161.5802945281\
+    32&limit=7575.827557165484&order=string&q=string&id=string&description=stri\
+    ng&handle=string&parent_category_id=string&include_ancestors_tree=true&incl\
+    ude_descendants_tree=true&$eq=string&$ne=string&$in=string,string&$nin=stri\
+    ng,string&$not=string&$gt=string&$gte=string&$lt=string&$lte=string&$like=s\
+    tring&$re=string&$ilike=string&$fulltext=string&$overlap=string,string&$con\
+    tains=string,string&$contained=string,string&$exists=true&name=string&with_\
+    deleted=true&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "5161.580294528132"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "7575.827557165484"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to filter the product category's properties.
+    - key: id
+      value: string
+    - key: description
+      value: string
+    - key: handle
+      value: string
+    - key: parent_category_id
+      value: string
+    - key: include_ancestors_tree
+      value: "true"
+      description: Whether to retrieve the category's parent. If you enable this, add
+        to the `fields` query parameter `parent_category` to set the parent of a
+        category in this field. You can either pass `*parent_category` to
+        retreieve the fields of all parent categories, or select specific fields
+        to make the response size smaller. For example,
+        `fields=parent_category.id,parent_category.name`.
+    - key: include_descendants_tree
+      value: "true"
+      description: Whether to retrieve a list of child categories. If you enable this,
+        add to the `fields` query parameter `category_children` to set the child
+        of a category in this field. You can either pass `*category_children` to
+        retreieve the fields of all child categories, or select specific fields
+        to make the response size smaller. For example,
+        `fields=category_children.id,category_children.name`.
+    - key: $eq
+      value: string
+      description: Filter by the category's creation date.
+    - key: $ne
+      value: string
+      description: Filter by the category's creation date.
+    - key: $in
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $nin
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $not
+      value: string
+      description: Filter by the category's creation date.
+    - key: $gt
+      value: string
+      description: Filter by the category's creation date.
+    - key: $gte
+      value: string
+      description: Filter by the category's creation date.
+    - key: $lt
+      value: string
+      description: Filter by the category's creation date.
+    - key: $lte
+      value: string
+      description: Filter by the category's creation date.
+    - key: $like
+      value: string
+      description: Filter by the category's creation date.
+    - key: $re
+      value: string
+      description: Filter by the category's creation date.
+    - key: $ilike
+      value: string
+      description: Filter by the category's creation date.
+    - key: $fulltext
+      value: string
+      description: Filter by the category's creation date.
+    - key: $overlap
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $contains
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $contained
+      value: string,string
+      description: Filter by the category's creation date.
+    - key: $exists
+      value: "true"
+      description: Filter by the category's creation date.
+    - key: name
+      value: string
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+response:
+  statusCode: 500
+  statusText: Internal Server Error
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "api_error",
+        "message": "An error occured while hashing password",
+        "type": "database_error"
+      }
+order: 7000

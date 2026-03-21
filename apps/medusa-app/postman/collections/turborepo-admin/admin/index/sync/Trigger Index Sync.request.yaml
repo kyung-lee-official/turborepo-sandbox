@@ -1,0 +1,19 @@
+$kind: http-request
+description: Trigger reindexing or re-ingestion of the Index Module.
+url: "{{baseUrl}}/admin/index/sync"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "strategy": "reset"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Trigger Index Sync.resources/examples
+order: 1000

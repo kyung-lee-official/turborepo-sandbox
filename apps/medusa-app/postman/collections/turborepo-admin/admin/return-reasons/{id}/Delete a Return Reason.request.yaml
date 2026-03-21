@@ -1,0 +1,16 @@
+$kind: http-request
+description: Delete a return reason.
+url: "{{baseUrl}}/admin/return-reasons/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The return reason's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Delete a Return Reason.resources/examples
+order: 3000

@@ -1,0 +1,470 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/workflows-executions?fields=string&offset=3157.91170892\
+    04024&limit=3050.1607324519186&order=string&transaction_id=string&workflow_\
+    id=string&q=string&with_deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: transaction_id
+      value: string
+    - key: workflow_id
+      value: string
+    - key: q
+      value: string
+      description: Search query to filter by a workflow execution's searchable fields.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "count": 2655.027141730504,
+        "limit": 1481.0191054934307,
+        "offset": 4828.634086364967,
+        "workflow_executions": [
+          {
+            "id": "string",
+            "workflow_id": "string",
+            "transaction_id": "string",
+            "execution": {
+              "steps": {
+                "id": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "invoking",
+                    "status": "permanent_failure"
+                  },
+                  "definition": {
+                    "async": true,
+                    "compensateAsync": true,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 4000.5958795144193,
+                    "noWait": false,
+                    "retryInterval": 6479.227008775021,
+                    "retryIntervalAwaiting": 1949.7394100795473,
+                    "saveResponse": false,
+                    "timeout": 7575.253373255379,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 85.60016416660599
+                  },
+                  "compensate": {
+                    "state": "invoking",
+                    "status": "ok"
+                  },
+                  "depth": 7682.756406390945,
+                  "startedAt": 4644.999135715444
+                },
+                "invoke": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "not_started",
+                    "status": "waiting_response"
+                  },
+                  "definition": {
+                    "async": true,
+                    "compensateAsync": false,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 8603.917259890357,
+                    "noWait": false,
+                    "retryInterval": 8072.776615503581,
+                    "retryIntervalAwaiting": 2877.525076348744,
+                    "saveResponse": true,
+                    "timeout": 1940.0442445279764,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 1745.723691396235
+                  },
+                  "compensate": {
+                    "state": "reverted",
+                    "status": "waiting_response"
+                  },
+                  "depth": 6214.351630282961,
+                  "startedAt": 8325.450719858547
+                },
+                "definition": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "not_started",
+                    "status": "permanent_failure"
+                  },
+                  "definition": {
+                    "async": false,
+                    "compensateAsync": true,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": true,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 2079.691740417575,
+                    "noWait": false,
+                    "retryInterval": 4269.814521347508,
+                    "retryIntervalAwaiting": 6022.391414326645,
+                    "saveResponse": false,
+                    "timeout": 8211.303395061112,
+                    "autoRetry": false,
+                    "maxAwaitingRetries": 1188.4371486103773
+                  },
+                  "compensate": {
+                    "state": "done",
+                    "status": "idle"
+                  },
+                  "depth": 352.59455822769235,
+                  "startedAt": 683.4792843363701
+                },
+                "compensate": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "invoking",
+                    "status": "ok"
+                  },
+                  "definition": {
+                    "async": false,
+                    "compensateAsync": false,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 176.19997264173736,
+                    "noWait": false,
+                    "retryInterval": 9156.912998291706,
+                    "retryIntervalAwaiting": 8947.000509327165,
+                    "saveResponse": false,
+                    "timeout": 2521.19017416363,
+                    "autoRetry": false,
+                    "maxAwaitingRetries": 7322.648020600895
+                  },
+                  "compensate": {
+                    "state": "skipped",
+                    "status": "ok"
+                  },
+                  "depth": 8929.290442041814,
+                  "startedAt": 2537.976301733231
+                },
+                "depth": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "dormant",
+                    "status": "waiting_response"
+                  },
+                  "definition": {
+                    "async": true,
+                    "compensateAsync": true,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 2020.332494021815,
+                    "noWait": false,
+                    "retryInterval": 4442.814092763283,
+                    "retryIntervalAwaiting": 7222.072574602656,
+                    "saveResponse": false,
+                    "timeout": 3688.570211897424,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 1068.670309595412
+                  },
+                  "compensate": {
+                    "state": "skipped_failure",
+                    "status": "waiting_response"
+                  },
+                  "depth": 2529.6797429960607,
+                  "startedAt": 7581.5516916376355
+                },
+                "startedAt": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "compensating",
+                    "status": "waiting_response"
+                  },
+                  "definition": {
+                    "async": true,
+                    "compensateAsync": false,
+                    "noCompensation": true,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 5342.447977471354,
+                    "noWait": false,
+                    "retryInterval": 2911.1577660148046,
+                    "retryIntervalAwaiting": 7784.854607219247,
+                    "saveResponse": true,
+                    "timeout": 7745.313882100202,
+                    "autoRetry": false,
+                    "maxAwaitingRetries": 1418.408642379989
+                  },
+                  "compensate": {
+                    "state": "not_started",
+                    "status": "waiting_response"
+                  },
+                  "depth": 5893.2393384874085,
+                  "startedAt": 354.38103987666557
+                }
+              }
+            },
+            "context": {
+              "compensate": {},
+              "errors": [
+                {
+                  "error": {},
+                  "action": "string",
+                  "handlerType": "string"
+                },
+                {
+                  "error": {},
+                  "action": "string",
+                  "handlerType": "string"
+                }
+              ],
+              "data": {
+                "invoke": {
+                  "output": {
+                    "output": {
+                      "output": "",
+                      "compensateInput": ""
+                    }
+                  }
+                },
+                "payload": ""
+              }
+            },
+            "state": "not_started",
+            "created_at": "1953-02-21T08:29:31.700Z",
+            "updated_at": "1955-07-30T16:06:18.538Z",
+            "deleted_at": "1972-08-29T10:34:33.319Z"
+          },
+          {
+            "id": "string",
+            "workflow_id": "string",
+            "transaction_id": "string",
+            "execution": {
+              "steps": {
+                "id": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "dormant",
+                    "status": "waiting_response"
+                  },
+                  "definition": {
+                    "async": true,
+                    "compensateAsync": false,
+                    "noCompensation": true,
+                    "continueOnPermanentFailure": true,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 3274.442259131043,
+                    "noWait": false,
+                    "retryInterval": 287.5732602328629,
+                    "retryIntervalAwaiting": 27.654939037986548,
+                    "saveResponse": false,
+                    "timeout": 9349.944350464351,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 4535.736997087203
+                  },
+                  "compensate": {
+                    "state": "not_started",
+                    "status": "waiting_response"
+                  },
+                  "depth": 1752.397878002072,
+                  "startedAt": 1766.24004590342
+                },
+                "invoke": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "timeout",
+                    "status": "ok"
+                  },
+                  "definition": {
+                    "async": true,
+                    "compensateAsync": false,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": true,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 2385.10492541546,
+                    "noWait": false,
+                    "retryInterval": 5310.442068102215,
+                    "retryIntervalAwaiting": 5815.215093353759,
+                    "saveResponse": true,
+                    "timeout": 4659.432969363859,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 6264.176489280433
+                  },
+                  "compensate": {
+                    "state": "reverted",
+                    "status": "permanent_failure"
+                  },
+                  "depth": 5405.5558613346275,
+                  "startedAt": 6122.592300717111
+                },
+                "definition": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "skipped_failure",
+                    "status": "waiting_response"
+                  },
+                  "definition": {
+                    "async": false,
+                    "compensateAsync": true,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 2620.1156713001537,
+                    "noWait": false,
+                    "retryInterval": 5029.767708258563,
+                    "retryIntervalAwaiting": 7660.679506545022,
+                    "saveResponse": false,
+                    "timeout": 4516.236763461763,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 9990.629605493154
+                  },
+                  "compensate": {
+                    "state": "done",
+                    "status": "idle"
+                  },
+                  "depth": 3761.5834696213924,
+                  "startedAt": 1776.8403150084655
+                },
+                "compensate": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "invoking",
+                    "status": "temp_failure"
+                  },
+                  "definition": {
+                    "async": false,
+                    "compensateAsync": false,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 7754.104731017029,
+                    "noWait": false,
+                    "retryInterval": 1689.6288384109482,
+                    "retryIntervalAwaiting": 2795.4957307830355,
+                    "saveResponse": false,
+                    "timeout": 315.316025153074,
+                    "autoRetry": false,
+                    "maxAwaitingRetries": 1601.5696747065888
+                  },
+                  "compensate": {
+                    "state": "dormant",
+                    "status": "temp_failure"
+                  },
+                  "depth": 842.2741633324482,
+                  "startedAt": 9951.291855940177
+                },
+                "depth": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "failed",
+                    "status": "waiting_response"
+                  },
+                  "definition": {
+                    "async": false,
+                    "compensateAsync": true,
+                    "noCompensation": false,
+                    "continueOnPermanentFailure": false,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 3578.2351574564486,
+                    "noWait": false,
+                    "retryInterval": 3865.4309625479486,
+                    "retryIntervalAwaiting": 9479.908416925968,
+                    "saveResponse": false,
+                    "timeout": 6018.059003384095,
+                    "autoRetry": false,
+                    "maxAwaitingRetries": 3352.0946498868852
+                  },
+                  "compensate": {
+                    "state": "skipped_failure",
+                    "status": "waiting_response"
+                  },
+                  "depth": 2247.8945472334335,
+                  "startedAt": 4574.2182949243725
+                },
+                "startedAt": {
+                  "id": "string",
+                  "invoke": {
+                    "state": "reverted",
+                    "status": "permanent_failure"
+                  },
+                  "definition": {
+                    "async": false,
+                    "compensateAsync": false,
+                    "noCompensation": true,
+                    "continueOnPermanentFailure": true,
+                    "skipOnPermanentFailure": "string",
+                    "maxRetries": 9866.097819677165,
+                    "noWait": false,
+                    "retryInterval": 8208.602918284629,
+                    "retryIntervalAwaiting": 3633.7239168897463,
+                    "saveResponse": false,
+                    "timeout": 3271.3911768703883,
+                    "autoRetry": true,
+                    "maxAwaitingRetries": 4699.169265994965
+                  },
+                  "compensate": {
+                    "state": "skipped_failure",
+                    "status": "waiting_response"
+                  },
+                  "depth": 757.8455858718014,
+                  "startedAt": 9458.468603079744
+                }
+              }
+            },
+            "context": {
+              "compensate": {},
+              "errors": [
+                {
+                  "error": {},
+                  "action": "string",
+                  "handlerType": "string"
+                },
+                {
+                  "error": {},
+                  "action": "string",
+                  "handlerType": "string"
+                }
+              ],
+              "data": {
+                "invoke": {
+                  "output": {
+                    "output": {
+                      "output": "",
+                      "compensateInput": ""
+                    }
+                  }
+                },
+                "payload": ""
+              }
+            },
+            "state": "invoking",
+            "created_at": "1955-01-11T15:11:43.588Z",
+            "updated_at": "1959-01-24T20:36:48.797Z",
+            "deleted_at": "1984-12-09T04:44:06.236Z"
+          }
+        ]
+      }
+order: 1000

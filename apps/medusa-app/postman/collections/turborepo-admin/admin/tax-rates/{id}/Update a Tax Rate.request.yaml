@@ -1,0 +1,45 @@
+$kind: http-request
+description: Update a tax rate's details.
+url: "{{baseUrl}}/admin/tax-rates/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The tax rate's ID.
+body:
+  type: json
+  content: |-
+    {
+      "code": "string",
+      "rate": 4093.6605802632075,
+      "rules": [
+        {
+          "reference": "product_type",
+          "reference_id": "ptype_123"
+        },
+        {
+          "reference": "product_type",
+          "reference_id": "ptype_123"
+        }
+      ],
+      "name": "string",
+      "is_default": false,
+      "is_combinable": false,
+      "metadata": {}
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Tax Rate.resources/examples
+order: 3000

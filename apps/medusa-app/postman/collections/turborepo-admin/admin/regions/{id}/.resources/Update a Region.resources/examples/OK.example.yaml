@@ -1,0 +1,89 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/regions/:id?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The region's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "name": "string",
+        "currency_code": "string",
+        "countries": [
+          "string",
+          "string"
+        ],
+        "automatic_taxes": true,
+        "payment_providers": [
+          "string",
+          "string"
+        ],
+        "metadata": {},
+        "is_tax_inclusive": false
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "region": {
+          "id": "string",
+          "currency_code": "usd",
+          "name": "string",
+          "automatic_taxes": true,
+          "countries": [
+            {
+              "id": "string",
+              "iso_2": "us",
+              "iso_3": "usa",
+              "num_code": "string",
+              "name": "string",
+              "display_name": "string"
+            },
+            {
+              "id": "string",
+              "iso_2": "us",
+              "iso_3": "usa",
+              "num_code": "string",
+              "name": "string",
+              "display_name": "string"
+            }
+          ],
+          "payment_providers": [
+            {
+              "is_enabled": false,
+              "id": "string"
+            },
+            {
+              "is_enabled": false,
+              "id": "string"
+            }
+          ],
+          "metadata": {},
+          "created_at": "1975-10-25T15:30:59.201Z",
+          "updated_at": "1985-08-02T05:40:45.340Z"
+        }
+      }
+order: 1000

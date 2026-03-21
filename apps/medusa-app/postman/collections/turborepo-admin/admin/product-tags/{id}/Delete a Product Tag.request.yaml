@@ -1,0 +1,16 @@
+$kind: http-request
+description: Delete a product tag. This doesn't delete products using the tag.
+url: "{{baseUrl}}/admin/product-tags/:id"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The product tag's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Delete a Product Tag.resources/examples
+order: 3000

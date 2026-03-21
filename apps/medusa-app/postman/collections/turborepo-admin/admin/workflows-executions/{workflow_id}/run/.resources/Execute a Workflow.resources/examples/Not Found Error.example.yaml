@@ -1,0 +1,36 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/workflows-executions/:workflow_id/run"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: workflow_id
+      value: string
+      description: The workflow's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "input": "",
+        "transaction_id": "string"
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "message": "Entity with id 1 was not found",
+        "type": "not_found"
+      }
+order: 4000

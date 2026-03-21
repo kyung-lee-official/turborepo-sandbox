@@ -1,0 +1,43 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/users/:id?fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: connect.sid
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The user's ID.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "user": {
+          "id": "string",
+          "email": "nAetNDja@yUlWQDrgkcAqGtNrAZzeiaZ.iry",
+          "first_name": "string",
+          "last_name": "string",
+          "avatar_url": "string",
+          "metadata": {},
+          "created_at": "1959-07-17T03:04:34.869Z",
+          "updated_at": "1990-05-27T20:34:31.540Z",
+          "deleted_at": "1992-04-17T03:29:07.443Z"
+        }
+      }
+order: 1000

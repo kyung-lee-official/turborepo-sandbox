@@ -1,0 +1,55 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/views/:entity/configurations"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  pathVariables:
+    - key: entity
+      value: string
+      description: The entity to create its view configuration (for example, `orders`).
+  body:
+    type: json
+    content: |-
+      {
+        "is_system_default": false,
+        "set_active": false,
+        "configuration": {
+          "visible_columns": [
+            "string",
+            "string"
+          ],
+          "column_order": [
+            "string",
+            "string"
+          ],
+          "search": "string",
+          "column_widths": {},
+          "filters": {},
+          "sorting": {
+            "id": "string",
+            "desc": true
+          }
+        },
+        "name": "string"
+      }
+response:
+  statusCode: 422
+  statusText: Unprocessable Entity (WebDAV) (RFC 4918)
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "code": "invalid_request_error",
+        "message": "Discount with code TEST already exists.",
+        "type": "duplicate_error"
+      }
+order: 6000

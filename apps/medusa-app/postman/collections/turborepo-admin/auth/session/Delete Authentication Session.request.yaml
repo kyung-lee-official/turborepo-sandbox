@@ -1,0 +1,8 @@
+$kind: http-request
+description: Deletes the cookie session ID previously set for authentication.
+url: "{{baseUrl}}/auth/session"
+method: DELETE
+headers:
+  Accept: application/json
+examples: ./.resources/Delete Authentication Session.resources/examples
+order: 2000

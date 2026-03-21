@@ -1,0 +1,26 @@
+$kind: http-request
+description: Get the active view configurations for an entity. If no active view
+  is set, `null` is returned. An admin user can only retrieve their own active
+  configuration.
+url: "{{baseUrl}}/admin/views/:entity/configurations/active?fields=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. If a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. Without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: entity
+    value: string
+    description: The entity to retrieve its active view configurations (for example,
+      `orders`).
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Get Active View Configuration.resources/examples
+order: 1000

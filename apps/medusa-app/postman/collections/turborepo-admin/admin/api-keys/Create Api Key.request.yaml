@@ -1,0 +1,27 @@
+$kind: http-request
+description: >
+  Create a secret or publishable API key.
+
+  A secret API key is used for admin authentication.
+
+
+  A publishable API key is used by client applications to set the scope of the
+  request.
+url: "{{baseUrl}}/admin/api-keys"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "string",
+      "type": "publishable"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Create Api Key.resources/examples
+order: 3000

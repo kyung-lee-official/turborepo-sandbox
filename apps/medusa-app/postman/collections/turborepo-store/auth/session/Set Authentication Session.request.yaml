@@ -1,0 +1,10 @@
+$kind: http-request
+description: Set the cookie session ID of a customer. The customer must be
+  previously authenticated with the `/auth/customer/{provider}` API route first,
+  as the JWT token is required in the header of the request.
+url: "{{baseUrl}}/auth/session"
+method: POST
+headers:
+  Accept: application/json
+examples: ./.resources/Set Authentication Session.resources/examples
+order: 1000

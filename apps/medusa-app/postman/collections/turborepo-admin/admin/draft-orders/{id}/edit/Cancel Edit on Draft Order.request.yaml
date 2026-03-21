@@ -1,0 +1,16 @@
+$kind: http-request
+description: Cancel an unconfirmed edit on a draft order.
+url: "{{baseUrl}}/admin/draft-orders/:id/edit"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The draft order's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Cancel Edit on Draft Order.resources/examples
+order: 7000

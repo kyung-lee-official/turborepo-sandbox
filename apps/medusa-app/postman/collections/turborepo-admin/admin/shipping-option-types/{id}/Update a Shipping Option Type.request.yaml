@@ -1,0 +1,35 @@
+$kind: http-request
+description: Update a shipping option type's details.
+url: "{{baseUrl}}/admin/shipping-option-types/:id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: >-
+      Comma-separated fields that should be included in the returned data.
+
+      if a field is prefixed with `+` it will be added to the default fields,
+      using `-` will remove it from the default fields.
+
+      without prefix it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The shipping option type's ID.
+body:
+  type: json
+  content: |-
+    {
+      "code": "string",
+      "description": "string",
+      "label": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update a Shipping Option Type.resources/examples
+order: 2000

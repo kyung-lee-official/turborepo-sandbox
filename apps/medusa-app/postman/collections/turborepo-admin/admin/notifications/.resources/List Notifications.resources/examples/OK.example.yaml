@@ -1,0 +1,87 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/notifications?fields=string&offset=3157.9117089204024&l\
+    imit=3050.1607324519186&order=string&q=string&id=string&channel=email&with_\
+    deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to apply on the notification's searchable properties.
+    - key: id
+      value: string
+    - key: channel
+      value: email
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 638.5546668837061,
+        "offset": 916.9091491086245,
+        "count": 339.7157418260322,
+        "notifications": [
+          {
+            "id": "string",
+            "to": "string",
+            "channel": "email",
+            "template": "string",
+            "provider_id": "string",
+            "created_at": "1978-08-06T10:16:38.499Z",
+            "data": {},
+            "trigger_type": "order.created",
+            "resource_id": "string",
+            "resource_type": "order",
+            "receiver_id": "string",
+            "original_notification_id": "string",
+            "external_id": "string"
+          },
+          {
+            "id": "string",
+            "to": "string",
+            "channel": "email",
+            "template": "string",
+            "provider_id": "string",
+            "created_at": "1983-09-19T03:20:07.172Z",
+            "data": {},
+            "trigger_type": "order.created",
+            "resource_id": "string",
+            "resource_type": "order",
+            "receiver_id": "string",
+            "original_notification_id": "string",
+            "external_id": "string"
+          }
+        ],
+        "estimate_count": 6393.323874989278
+      }
+order: 1000

@@ -1,0 +1,17 @@
+$kind: http-request
+description: Retrieve the list of fulfillment options of a fulfillment provider.
+  These options may be retrieved from an integrated third-party service.
+url: "{{baseUrl}}/admin/fulfillment-providers/:id/options"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The fulfillment provider's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Fulfillment Options.resources/examples
+order: 1000

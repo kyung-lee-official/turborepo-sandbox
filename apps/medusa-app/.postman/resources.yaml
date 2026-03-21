@@ -1,0 +1,15 @@
+# Use this workspace to collaborate
+workspace:
+  id: 5d09b51c-2b9c-4679-80a1-5ab069d9ee22
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+cloudResources:
+  collections:
+    ..\postman\collections\Medusa Storefront API: 66a64cfd-0844-47e5-bfbc-45953ca58d51
+    ..\postman\collections\Medusa Admin API: 7ea26c71-cfd0-43c6-b6dc-958707603046
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

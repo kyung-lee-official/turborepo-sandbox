@@ -1,0 +1,94 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/customers/me/addresses?city=string&postal_code=string&c\
+    ountry_code=string&q=string&company=string&province=string&locale=en-US"
+  method: GET
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Accept
+      value: application/json
+    - key: connect.sid
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+  queryParams:
+    - key: city
+      value: string
+      description: Filter by the address's city.
+    - key: postal_code
+      value: string
+      description: Filter by the address's postal code.
+    - key: country_code
+      value: string
+      description: Filter by the address's country code.
+    - key: q
+      value: string
+      description: Search term to filter the address's searchable properties.
+    - key: company
+      value: string
+    - key: province
+      value: string
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 6770.64180480272,
+        "offset": 1129.9820518908166,
+        "count": 639.1318469726137,
+        "addresses": [
+          {
+            "id": "string",
+            "address_name": "string",
+            "is_default_shipping": true,
+            "is_default_billing": false,
+            "customer_id": "string",
+            "company": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "usd",
+            "province": "us-ca",
+            "postal_code": "string",
+            "phone": "string",
+            "metadata": {},
+            "created_at": "2017-03-30T11:15:07.965Z",
+            "updated_at": "1971-10-02T06:06:15.544Z"
+          },
+          {
+            "id": "string",
+            "address_name": "string",
+            "is_default_shipping": false,
+            "is_default_billing": false,
+            "customer_id": "string",
+            "company": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "usd",
+            "province": "us-ca",
+            "postal_code": "string",
+            "phone": "string",
+            "metadata": {},
+            "created_at": "2014-05-29T08:26:56.863Z",
+            "updated_at": "1955-06-07T04:43:54.374Z"
+          }
+        ],
+        "estimate_count": 5126.315783332196
+      }
+order: 1000

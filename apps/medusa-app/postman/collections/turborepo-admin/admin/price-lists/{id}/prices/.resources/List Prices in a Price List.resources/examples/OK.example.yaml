@@ -1,0 +1,64 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/price-lists/:id/prices?fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. If a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. Without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The ID of the price list to retrieve prices from.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 9357.292503412773,
+        "offset": 9486.149102447846,
+        "count": 8117.068000045984,
+        "prices": [
+          {
+            "id": "string",
+            "title": "string",
+            "currency_code": "usd",
+            "amount": 4341.227786250932,
+            "raw_amount": {},
+            "min_quantity": 4733.357968645178,
+            "max_quantity": 87.43104713243798,
+            "price_set_id": "string",
+            "created_at": "1988-09-07T15:15:51.333Z",
+            "updated_at": "1961-07-12T20:20:41.596Z",
+            "deleted_at": "1947-05-24T00:55:50.041Z"
+          },
+          {
+            "id": "string",
+            "title": "string",
+            "currency_code": "usd",
+            "amount": 2760.3427488770362,
+            "raw_amount": {},
+            "min_quantity": 7122.895867688441,
+            "max_quantity": 7594.723678506672,
+            "price_set_id": "string",
+            "created_at": "2013-09-18T18:15:10.389Z",
+            "updated_at": "1950-12-26T13:13:36.589Z",
+            "deleted_at": "2021-10-07T21:07:46.448Z"
+          }
+        ],
+        "estimate_count": 928.01614199165
+      }
+order: 1000

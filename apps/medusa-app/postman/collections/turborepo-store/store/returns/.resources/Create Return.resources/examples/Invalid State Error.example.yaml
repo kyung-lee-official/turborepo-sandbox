@@ -1,0 +1,60 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/store/returns?locale=en-US"
+  method: POST
+  headers:
+    - key: x-publishable-api-key
+      value: string
+      description: Publishable API Key created in the Medusa Admin.
+    - key: x-medusa-locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+  queryParams:
+    - key: locale
+      value: en-US
+      description: The locale in BCP 47 format to retrieve localized content.
+  body:
+    type: json
+    content: |-
+      {
+        "order_id": "string",
+        "items": [
+          {
+            "id": "string",
+            "quantity": 5467.595444115299,
+            "reason_id": "string",
+            "note": "string"
+          },
+          {
+            "id": "string",
+            "quantity": 4090.0879999440076,
+            "reason_id": "string",
+            "note": "string"
+          }
+        ],
+        "return_shipping": {
+          "option_id": "string",
+          "price": 1927.5028970602493
+        },
+        "note": "string",
+        "receive_now": false,
+        "location_id": "string"
+      }
+response:
+  statusCode: 409
+  statusText: Conflict
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: >-
+      {
+        "code": "unknown_error",
+        "message": "The request conflicted with another request. You may retry the request with the provided Idempotency-Key.",
+        "type": "QueryRunnerAlreadyReleasedError"
+      }
+order: 5000

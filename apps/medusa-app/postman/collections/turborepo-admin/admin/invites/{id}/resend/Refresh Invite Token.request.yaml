@@ -1,0 +1,23 @@
+$kind: http-request
+description: Refresh the token of an invite.
+url: "{{baseUrl}}/admin/invites/:id/resend?fields=string"
+method: POST
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The invite's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Refresh Invite Token.resources/examples
+order: 1000

@@ -1,0 +1,29 @@
+$kind: http-request
+description: >
+  Accept an invite and create a new user.
+
+  Since the user isn't created yet, the JWT token used in the authorization
+  header is retrieved from the `/auth/user/emailpass/register` API route (or a
+  provider other than `emailpass`). The user can then authenticate using the
+  `/auth/user/emailpass` API route.
+url: "{{baseUrl}}/admin/invites/accept"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "J3qY@hsvPkOpEytsNZYsFVvfCcYkfe.tza",
+      "first_name": "string",
+      "last_name": "string"
+    }
+auth:
+  type: apikey
+  credentials:
+    key: connect.sid
+    value: "{{apiKey}}"
+    in: header
+examples: ./.resources/Accept Invite.resources/examples
+order: 1000

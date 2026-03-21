@@ -1,0 +1,183 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/product-types?fields=string&offset=3157.9117089204024&l\
+    imit=3050.1607324519186&order=string&q=string&id=string&value=string&$eq=st\
+    ring&$ne=string&$in=string,string&$nin=string,string&$not=string&$gt=string\
+    &$gte=string&$lt=string&$lte=string&$like=string&$re=string&$ilike=string&$\
+    fulltext=string&$overlap=string,string&$contains=string,string&$contained=s\
+    tring,string&$exists=true&with_deleted=true"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+    - key: offset
+      value: "3157.9117089204024"
+      description: The number of items to skip when retrieving a list.
+    - key: limit
+      value: "3050.1607324519186"
+      description: Limit the number of items returned in the list.
+    - key: order
+      value: string
+      description: The field to sort the data by. By default, the sort order is
+        ascending. To change the order to descending, prefix the field name with
+        `-`.
+    - key: q
+      value: string
+      description: Search term to filter the product type's searchable properties.
+    - key: id
+      value: string
+    - key: value
+      value: string
+    - key: $eq
+      value: string
+      description: Filter by the type's creation date.
+    - key: $ne
+      value: string
+      description: Filter by the type's creation date.
+    - key: $in
+      value: string,string
+      description: Filter by the type's creation date.
+    - key: $nin
+      value: string,string
+      description: Filter by the type's creation date.
+    - key: $not
+      value: string
+      description: Filter by the type's creation date.
+    - key: $gt
+      value: string
+      description: Filter by the type's creation date.
+    - key: $gte
+      value: string
+      description: Filter by the type's creation date.
+    - key: $lt
+      value: string
+      description: Filter by the type's creation date.
+    - key: $lte
+      value: string
+      description: Filter by the type's creation date.
+    - key: $like
+      value: string
+      description: Filter by the type's creation date.
+    - key: $re
+      value: string
+      description: Filter by the type's creation date.
+    - key: $ilike
+      value: string
+      description: Filter by the type's creation date.
+    - key: $fulltext
+      value: string
+      description: Filter by the type's creation date.
+    - key: $overlap
+      value: string,string
+      description: Filter by the type's creation date.
+    - key: $contains
+      value: string,string
+      description: Filter by the type's creation date.
+    - key: $contained
+      value: string,string
+      description: Filter by the type's creation date.
+    - key: $exists
+      value: "true"
+      description: Filter by the type's creation date.
+    - key: with_deleted
+      value: "true"
+      description: Whether to include deleted records in the result.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "limit": 4365.704503032761,
+        "offset": 5189.586282319656,
+        "count": 9916.933759039826,
+        "product_types": [
+          {
+            "id": "string",
+            "value": "string",
+            "created_at": "2002-05-18T23:53:49.056Z",
+            "updated_at": "2015-02-01T17:04:21.676Z",
+            "deleted_at": "1955-04-23T12:21:36.537Z",
+            "metadata": {},
+            "translations": [
+              {
+                "id": "string",
+                "reference_id": "prod_123",
+                "reference": "product",
+                "locale_code": "fr-FR",
+                "translations": {
+                  "title": "Chaussures",
+                  "description": "Des chaussures élégantes."
+                },
+                "created_at": "1956-08-24T19:58:58.031Z",
+                "updated_at": "2005-12-06T13:38:31.607Z",
+                "deleted_at": "1953-06-13T13:35:29.833Z"
+              },
+              {
+                "id": "string",
+                "reference_id": "prod_123",
+                "reference": "product",
+                "locale_code": "fr-FR",
+                "translations": {
+                  "title": "Chaussures",
+                  "description": "Des chaussures élégantes."
+                },
+                "created_at": "1958-07-30T12:56:58.998Z",
+                "updated_at": "1949-10-30T20:25:02.473Z",
+                "deleted_at": "1988-03-06T13:41:59.375Z"
+              }
+            ]
+          },
+          {
+            "id": "string",
+            "value": "string",
+            "created_at": "2017-03-06T16:24:02.070Z",
+            "updated_at": "2016-03-04T22:47:45.435Z",
+            "deleted_at": "1988-06-20T00:06:42.533Z",
+            "metadata": {},
+            "translations": [
+              {
+                "id": "string",
+                "reference_id": "prod_123",
+                "reference": "product",
+                "locale_code": "fr-FR",
+                "translations": {
+                  "title": "Chaussures",
+                  "description": "Des chaussures élégantes."
+                },
+                "created_at": "1987-08-12T04:48:25.543Z",
+                "updated_at": "1952-09-06T08:13:35.260Z",
+                "deleted_at": "2020-02-22T18:17:07.253Z"
+              },
+              {
+                "id": "string",
+                "reference_id": "prod_123",
+                "reference": "product",
+                "locale_code": "fr-FR",
+                "translations": {
+                  "title": "Chaussures",
+                  "description": "Des chaussures élégantes."
+                },
+                "created_at": "2026-01-19T01:19:32.429Z",
+                "updated_at": "2023-02-26T10:07:47.911Z",
+                "deleted_at": "2021-03-15T12:03:58.595Z"
+              }
+            ]
+          }
+        ],
+        "estimate_count": 1601.2698753317234
+      }
+order: 1000

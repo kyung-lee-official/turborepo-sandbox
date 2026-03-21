@@ -1,0 +1,17 @@
+$kind: http-request
+description: Cancel the receival process previously started, and hasn't been
+  confirmed, of a return.
+url: "{{baseUrl}}/admin/returns/:id/receive"
+method: DELETE
+headers:
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    description: The return's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Cancel Return Receival.resources/examples
+order: 3000

@@ -1,0 +1,23 @@
+$kind: http-request
+description: Retrieve a list of prices in a price list. The prices can also be paginated.
+url: "{{baseUrl}}/admin/price-lists/:id/prices?fields=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. If a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. Without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The ID of the price list to retrieve prices from.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Prices in a Price List.resources/examples
+order: 2000

@@ -1,0 +1,44 @@
+$kind: http-request
+description: Retrieve a list of workflows executions. The workflows executions
+  can be filtered by fields such as `id`. The workflows executions can also be
+  sorted or paginated.
+url: "{{baseUrl}}/admin/workflows-executions?fields=string&offset=3157.91170892\
+  04024&limit=3050.1607324519186&order=string&transaction_id=string&workflow_id\
+  =string&q=string&with_deleted=true"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: offset
+    value: "3157.9117089204024"
+    description: The number of items to skip when retrieving a list.
+  - key: limit
+    value: "3050.1607324519186"
+    description: Limit the number of items returned in the list.
+  - key: order
+    value: string
+    description: The field to sort the data by. By default, the sort order is
+      ascending. To change the order to descending, prefix the field name with
+      `-`.
+  - key: transaction_id
+    value: string
+  - key: workflow_id
+    value: string
+  - key: q
+    value: string
+    description: Search query to filter by a workflow execution's searchable fields.
+  - key: with_deleted
+    value: "true"
+    description: Whether to include deleted records in the result.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Workflows Executions.resources/examples
+order: 3000

@@ -1,0 +1,37 @@
+$kind: http-request
+description: Manage products in a sales channel to add or remove them from the channel.
+url: "{{baseUrl}}/admin/sales-channels/:id/products?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The sales channel's ID.
+body:
+  type: json
+  content: |-
+    {
+      "add": [
+        "string",
+        "string"
+      ],
+      "remove": [
+        "string",
+        "string"
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Manage Products in Sales Channel.resources/examples
+order: 1000

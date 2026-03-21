@@ -1,0 +1,629 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/returns/:id/receive?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The return's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "internal_note": "string",
+        "description": "string",
+        "metadata": {}
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "order": {
+          "id": "string",
+          "version": 1793.4474740036576,
+          "display_id": 2226.073283281049,
+          "status": "pending",
+          "currency_code": "usd",
+          "created_at": "2023-07-12T00:57:13.256Z",
+          "updated_at": "1982-10-24T15:20:21.116Z",
+          "original_item_total": 538.5640011160286,
+          "original_item_subtotal": 7649.404528784225,
+          "original_item_tax_total": 2039.7272759317752,
+          "item_total": 4846.778160562568,
+          "item_subtotal": 4660.989910770834,
+          "item_tax_total": 8596.761799128168,
+          "item_discount_total": 1093.1878368390712,
+          "original_total": 4444.722664362333,
+          "original_subtotal": 8641.05578446342,
+          "original_tax_total": 2156.1508363580815,
+          "total": 6717.92747535543,
+          "subtotal": 8064.758907882383,
+          "tax_total": 4958.625353550041,
+          "discount_subtotal": 1736.9827386515867,
+          "discount_total": 4828.033313240791,
+          "discount_tax_total": 5703.940584283773,
+          "credit_line_total": 6965.179255800566,
+          "gift_card_total": 648.5389481894832,
+          "gift_card_tax_total": 5959.198670449188,
+          "shipping_total": 2351.070316148418,
+          "shipping_subtotal": 1999.3421204768724,
+          "shipping_tax_total": 6219.631552986602,
+          "shipping_discount_total": 1027.4268852704195,
+          "original_shipping_total": 6427.66070910219,
+          "original_shipping_subtotal": 4217.450117530583,
+          "original_shipping_tax_total": 1064.2097131456119,
+          "order_change": {},
+          "region_id": "string",
+          "customer_id": "string",
+          "sales_channel_id": "string",
+          "email": "b-IHjted7sTe0Mh@SmfVNDtpWeZgupADVRHqP.wq",
+          "shipping_address": {
+            "id": "string",
+            "created_at": "2008-06-04T21:17:07.555Z",
+            "updated_at": "1988-03-31T06:10:30.021Z",
+            "customer_id": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "phone": "string",
+            "company": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "us",
+            "province": "us-ca",
+            "postal_code": "string",
+            "metadata": {}
+          },
+          "billing_address": {
+            "id": "string",
+            "created_at": "2003-11-18T09:08:59.364Z",
+            "updated_at": "1961-11-14T08:14:28.586Z",
+            "customer_id": "string",
+            "first_name": "string",
+            "last_name": "string",
+            "phone": "string",
+            "company": "string",
+            "address_1": "string",
+            "address_2": "string",
+            "city": "string",
+            "country_code": "us",
+            "province": "us-ca",
+            "postal_code": "string",
+            "metadata": {}
+          },
+          "items": [
+            {
+              "id": "string",
+              "title": "string",
+              "requires_shipping": false,
+              "is_discountable": true,
+              "is_giftcard": false,
+              "is_tax_inclusive": false,
+              "unit_price": 7711.54590945249,
+              "quantity": 386.52282381346214,
+              "detail": {
+                "id": "string",
+                "item_id": "string",
+                "item": {},
+                "quantity": 8217.420643162484,
+                "fulfilled_quantity": 2625.803731930494,
+                "delivered_quantity": 2975.244663214094,
+                "shipped_quantity": 5870.507770389823,
+                "return_requested_quantity": 887.3376928563625,
+                "return_received_quantity": 3267.1578689802573,
+                "return_dismissed_quantity": 9584.277114635774,
+                "written_off_quantity": 1557.524793715397,
+                "metadata": {},
+                "created_at": "1973-07-03T05:36:55.908Z",
+                "updated_at": "1986-08-17T01:51:45.479Z"
+              },
+              "created_at": "1984-06-21T16:19:02.261Z",
+              "updated_at": "2010-02-10T16:58:55.937Z",
+              "original_total": 3591.005076950042,
+              "original_subtotal": 7238.561223299072,
+              "original_tax_total": 1956.7028144730946,
+              "item_total": 1136.6656489344273,
+              "item_subtotal": 134.84896427837788,
+              "item_tax_total": 6956.69027733141,
+              "total": 2757.7948231297687,
+              "subtotal": 5275.437953582145,
+              "tax_total": 3664.8865001744666,
+              "discount_total": 9782.802307484111,
+              "discount_tax_total": 5456.79482376181,
+              "refundable_total": 3626.639483044829,
+              "refundable_total_per_unit": 7678.1537070002705,
+              "subtitle": "string",
+              "thumbnail": "string",
+              "variant_id": "string",
+              "product_id": "string",
+              "product_title": "string",
+              "product_description": "string",
+              "product_subtitle": "string",
+              "product_type": "string",
+              "product_collection": "string",
+              "product_handle": "string",
+              "variant_sku": "string",
+              "variant_barcode": "string",
+              "variant_title": "string",
+              "variant_option_values": {
+                "Color": "Red"
+              },
+              "compare_at_unit_price": 6888.896199013368,
+              "tax_lines": [
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "total": 8175.241418443875,
+                  "subtotal": 6410.890025417486,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 6443.639010304021,
+                  "created_at": "2024-07-17T05:20:34.954Z",
+                  "updated_at": "2004-02-09T06:03:04.651Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "total": 7640.5038872272835,
+                  "subtotal": 2848.6251406630927,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 6135.406399991681,
+                  "created_at": "1970-06-12T06:22:06.319Z",
+                  "updated_at": "1995-10-29T11:14:00.825Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "adjustments": [
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "id": "string",
+                  "amount": 9845.134415740271,
+                  "order_id": "string",
+                  "created_at": "1960-05-11T05:21:12.806Z",
+                  "updated_at": "1965-11-14T07:49:59.613Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "id": "string",
+                  "amount": 3624.7222766437103,
+                  "order_id": "string",
+                  "created_at": "2006-04-13T12:18:59.142Z",
+                  "updated_at": "1974-07-25T09:33:47.447Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "metadata": {},
+              "product_type_id": "string"
+            },
+            {
+              "id": "string",
+              "title": "string",
+              "requires_shipping": true,
+              "is_discountable": false,
+              "is_giftcard": false,
+              "is_tax_inclusive": false,
+              "unit_price": 4533.967306375397,
+              "quantity": 5949.386554297469,
+              "detail": {
+                "id": "string",
+                "item_id": "string",
+                "item": {},
+                "quantity": 9330.643322068805,
+                "fulfilled_quantity": 3541.489106464786,
+                "delivered_quantity": 1915.4977189550127,
+                "shipped_quantity": 7272.762581037809,
+                "return_requested_quantity": 4139.29613242821,
+                "return_received_quantity": 1575.194546075198,
+                "return_dismissed_quantity": 4132.342664356392,
+                "written_off_quantity": 9516.504661465315,
+                "metadata": {},
+                "created_at": "1972-10-15T07:28:16.970Z",
+                "updated_at": "2013-06-07T04:07:13.535Z"
+              },
+              "created_at": "2022-11-01T17:33:19.585Z",
+              "updated_at": "2009-01-15T09:42:54.126Z",
+              "original_total": 9304.812014520747,
+              "original_subtotal": 7381.508824499314,
+              "original_tax_total": 9011.163719711902,
+              "item_total": 9626.400756365767,
+              "item_subtotal": 3401.1928555028126,
+              "item_tax_total": 6890.388972903612,
+              "total": 6584.809297455816,
+              "subtotal": 5345.111764121875,
+              "tax_total": 1444.6392664189257,
+              "discount_total": 432.18646290801746,
+              "discount_tax_total": 4890.878801485918,
+              "refundable_total": 4056.1119730097794,
+              "refundable_total_per_unit": 7074.768083168761,
+              "subtitle": "string",
+              "thumbnail": "string",
+              "variant_id": "string",
+              "product_id": "string",
+              "product_title": "string",
+              "product_description": "string",
+              "product_subtitle": "string",
+              "product_type": "string",
+              "product_collection": "string",
+              "product_handle": "string",
+              "variant_sku": "string",
+              "variant_barcode": "string",
+              "variant_title": "string",
+              "variant_option_values": {
+                "Color": "Red"
+              },
+              "compare_at_unit_price": 1187.4658497664313,
+              "tax_lines": [
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "total": 4605.51587339957,
+                  "subtotal": 8075.784072426854,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 2654.5992252229867,
+                  "created_at": "2002-01-11T11:03:19.462Z",
+                  "updated_at": "1978-10-28T13:22:31.011Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "total": 5898.189647615805,
+                  "subtotal": 8622.861148334612,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 9457.892729341402,
+                  "created_at": "1990-04-30T23:17:46.427Z",
+                  "updated_at": "1977-11-13T07:37:09.706Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "adjustments": [
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "id": "string",
+                  "amount": 9104.774678775773,
+                  "order_id": "string",
+                  "created_at": "2021-08-05T21:39:41.595Z",
+                  "updated_at": "2010-11-18T21:42:42.282Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "item": {},
+                  "item_id": "string",
+                  "id": "string",
+                  "amount": 2839.165303795723,
+                  "order_id": "string",
+                  "created_at": "1975-09-09T03:22:38.894Z",
+                  "updated_at": "1985-07-10T22:07:57.054Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "metadata": {},
+              "product_type_id": "string"
+            }
+          ],
+          "shipping_methods": [
+            {
+              "id": "string",
+              "order_id": "string",
+              "name": "string",
+              "amount": 251.84420643639572,
+              "is_tax_inclusive": false,
+              "created_at": "1977-08-01T17:52:14.106Z",
+              "updated_at": "2025-04-22T04:09:32.287Z",
+              "original_total": 1554.6732433954612,
+              "original_subtotal": 9105.361188867682,
+              "original_tax_total": 8572.718692870973,
+              "total": 4762.160655828365,
+              "subtotal": 7678.813573251213,
+              "tax_total": 3243.3121095828033,
+              "discount_total": 4195.261943437125,
+              "discount_tax_total": 4799.259758965306,
+              "description": "string",
+              "shipping_option_id": "string",
+              "data": {},
+              "metadata": {},
+              "tax_lines": [
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "total": 6010.192071103533,
+                  "subtotal": 105.06662963322144,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 2107.577639928633,
+                  "created_at": "1995-06-14T12:47:48.685Z",
+                  "updated_at": "1978-12-11T17:25:16.647Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "total": 6024.720171153513,
+                  "subtotal": 4616.539604054084,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 7660.038077535243,
+                  "created_at": "1969-02-15T05:32:13.926Z",
+                  "updated_at": "2022-03-18T05:45:22.195Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "adjustments": [
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "id": "string",
+                  "amount": 5258.627074631916,
+                  "order_id": "string",
+                  "created_at": "2020-10-04T01:57:33.145Z",
+                  "updated_at": "2015-08-06T19:07:36.034Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "id": "string",
+                  "amount": 712.1603660012577,
+                  "order_id": "string",
+                  "created_at": "2002-10-03T08:21:27.516Z",
+                  "updated_at": "1961-09-06T23:57:38.244Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                }
+              ]
+            },
+            {
+              "id": "string",
+              "order_id": "string",
+              "name": "string",
+              "amount": 6089.1621297516285,
+              "is_tax_inclusive": true,
+              "created_at": "2005-02-05T01:39:20.463Z",
+              "updated_at": "1978-12-26T20:45:12.273Z",
+              "original_total": 6511.075942390394,
+              "original_subtotal": 1646.3899769931834,
+              "original_tax_total": 4982.751156922909,
+              "total": 4312.638147971084,
+              "subtotal": 481.8745393223289,
+              "tax_total": 4489.975159605744,
+              "discount_total": 9859.886337948965,
+              "discount_tax_total": 9264.719059677751,
+              "description": "string",
+              "shipping_option_id": "string",
+              "data": {},
+              "metadata": {},
+              "tax_lines": [
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "total": 9475.061375527606,
+                  "subtotal": 9240.141320647832,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 4438.673029371127,
+                  "created_at": "1989-07-08T05:42:45.113Z",
+                  "updated_at": "1960-06-03T19:44:08.787Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "total": 5932.986099495714,
+                  "subtotal": 6876.825018766013,
+                  "id": "string",
+                  "code": "string",
+                  "rate": 7754.96352563495,
+                  "created_at": "1968-07-22T20:36:42.481Z",
+                  "updated_at": "2023-11-26T11:19:12.237Z",
+                  "description": "string",
+                  "tax_rate_id": "string",
+                  "provider_id": "string"
+                }
+              ],
+              "adjustments": [
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "id": "string",
+                  "amount": 7544.348182919632,
+                  "order_id": "string",
+                  "created_at": "1983-06-11T07:12:52.566Z",
+                  "updated_at": "1955-08-08T13:27:14.220Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                },
+                {
+                  "shipping_method": {},
+                  "shipping_method_id": "string",
+                  "id": "string",
+                  "amount": 8886.402708578054,
+                  "order_id": "string",
+                  "created_at": "2008-10-07T10:48:05.950Z",
+                  "updated_at": "2020-08-14T17:56:43.210Z",
+                  "code": "string",
+                  "description": "string",
+                  "promotion_id": "string",
+                  "provider_id": "string"
+                }
+              ]
+            }
+          ],
+          "transactions": [
+            {
+              "id": "string",
+              "order_id": "string",
+              "version": 3042.4473083018056,
+              "order": {},
+              "amount": 4349.167642019811,
+              "currency_code": "usd",
+              "reference": "refund",
+              "reference_id": "string",
+              "metadata": {},
+              "created_at": "1998-04-18T20:29:13.907Z",
+              "updated_at": "2021-02-26T11:09:00.904Z"
+            },
+            {
+              "id": "string",
+              "order_id": "string",
+              "version": 3758.343623792766,
+              "order": {},
+              "amount": 4570.928567355554,
+              "currency_code": "usd",
+              "reference": "refund",
+              "reference_id": "string",
+              "metadata": {},
+              "created_at": "1967-02-27T09:58:59.592Z",
+              "updated_at": "2015-02-20T15:00:36.376Z"
+            }
+          ],
+          "summary": {
+            "pending_difference": 4827.58861022526,
+            "current_order_total": 3866.6407577042296,
+            "original_order_total": 8932.95049418825,
+            "transaction_total": 5573.082644257222,
+            "paid_total": 6053.401504174875,
+            "refunded_total": 8154.5394164964555,
+            "credit_line_total": 8991.314963687706,
+            "accounting_total": 8416.715348549058,
+            "raw_pending_difference": {},
+            "raw_current_order_total": {},
+            "raw_original_order_total": {},
+            "raw_transaction_total": {},
+            "raw_paid_total": {},
+            "raw_refunded_total": {},
+            "raw_credit_line_total": {},
+            "raw_accounting_total": {}
+          },
+          "metadata": {},
+          "canceled_at": "1967-02-11T11:57:10.852Z",
+          "credit_lines": [
+            {
+              "id": "string",
+              "order_id": "string",
+              "order": {},
+              "amount": 2818.597532737526,
+              "reference": "string",
+              "reference_id": "string",
+              "metadata": {},
+              "created_at": "2005-08-05T06:51:51.964Z",
+              "updated_at": "2022-10-13T20:10:42.521Z"
+            },
+            {
+              "id": "string",
+              "order_id": "string",
+              "order": {},
+              "amount": 3002.4234417718485,
+              "reference": "string",
+              "reference_id": "string",
+              "metadata": {},
+              "created_at": "1956-11-08T11:42:37.673Z",
+              "updated_at": "2013-11-28T21:16:57.995Z"
+            }
+          ],
+          "is_draft_order": false,
+          "deleted_at": "1987-01-09T18:03:30.721Z",
+          "custom_display_id": "string",
+          "locale": "en-US"
+        },
+        "return": {
+          "items": [
+            {
+              "id": "string",
+              "quantity": 6571.012908733937,
+              "received_quantity": 6038.009543217507,
+              "damaged_quantity": 8537.18975550786,
+              "item_id": "string",
+              "return_id": "string",
+              "reason_id": "string",
+              "note": "string",
+              "metadata": {}
+            },
+            {
+              "id": "string",
+              "quantity": 1262.2307313860827,
+              "received_quantity": 7121.902945726814,
+              "damaged_quantity": 2893.0109957621,
+              "item_id": "string",
+              "return_id": "string",
+              "reason_id": "string",
+              "note": "string",
+              "metadata": {}
+            }
+          ],
+          "id": "string",
+          "order_id": "string",
+          "order_version": 6884.172422100738,
+          "display_id": 3702.335593894799,
+          "received_at": "string",
+          "created_at": "1971-12-29T20:46:00.824Z",
+          "canceled_at": "1996-05-08T03:30:33.857Z",
+          "status": "requested",
+          "refund_amount": 1187.8763486396958,
+          "exchange_id": "string",
+          "location_id": "string",
+          "claim_id": "string",
+          "no_notification": true
+        }
+      }
+order: 1000

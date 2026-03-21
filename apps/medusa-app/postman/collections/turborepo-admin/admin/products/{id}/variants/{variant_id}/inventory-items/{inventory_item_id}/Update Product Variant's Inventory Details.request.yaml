@@ -1,0 +1,38 @@
+$kind: http-request
+description: Update the inventory item that manages the inventory details of a
+  product variant.
+url: "{{baseUrl}}/admin/products/:id/variants/:variant_id/inventory-items/:inve\
+  ntory_item_id?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The product's ID.
+  - key: variant_id
+    value: string
+    description: The variant's ID.
+  - key: inventory_item_id
+    value: string
+    description: The inventory item's ID.
+body:
+  type: json
+  content: |-
+    {
+      "required_quantity": 6723.987634685615
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Update Product Variant's Inventory Details.resources/examples
+order: 1000

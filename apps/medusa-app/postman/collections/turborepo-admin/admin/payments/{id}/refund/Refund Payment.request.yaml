@@ -1,0 +1,33 @@
+$kind: http-request
+description: Refund an amount of a payment. This uses the `refundPayment` method
+  of the payment provider associated with the payment's collection.
+url: "{{baseUrl}}/admin/payments/:id/refund?fields=string"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+pathVariables:
+  - key: id
+    value: string
+    description: The payment's ID.
+body:
+  type: json
+  content: |-
+    {
+      "amount": 2340.211533669574,
+      "refund_reason_id": "string",
+      "note": "string"
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Refund Payment.resources/examples
+order: 1000

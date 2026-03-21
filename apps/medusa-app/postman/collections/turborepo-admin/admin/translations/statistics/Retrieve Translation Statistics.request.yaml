@@ -1,0 +1,34 @@
+$kind: http-request
+description: Get statistics on translations for specified locales and entity
+  types. This includes overall translation progress for each entity type, and
+  statistics for each locale within those entity types.
+url: "{{baseUrl}}/admin/translations/statistics?locales=fr-FR&locales=fr-FR&ent\
+  ity_types=products&entity_types=products"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: locales
+    value: fr-FR
+    description: The locale codes to retrieve translation statistics for. Locale
+      codes are in [BCP
+      47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1)
+      format.
+  - key: locales
+    value: fr-FR
+    description: The locale codes to retrieve translation statistics for. Locale
+      codes are in [BCP
+      47](https://gist.github.com/typpo/b2b828a35e683b9bf8db91b5404f1bd1)
+      format.
+  - key: entity_types
+    value: products
+    description: The table names of entities to retrieve translation statistics for.
+  - key: entity_types
+    value: products
+    description: The table names of entities to retrieve translation statistics for.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/Retrieve Translation Statistics.resources/examples
+order: 1000

@@ -1,0 +1,43 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/currencies/:code?fields=string"
+  method: GET
+  headers:
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: code
+      value: string
+      description: The currency's code.
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "currency": {
+          "code": "usd",
+          "symbol": "$",
+          "symbol_native": "$",
+          "name": "string",
+          "decimal_digits": 1081.093813861167,
+          "rounding": 5665.226109609409,
+          "created_at": "1959-12-09T05:09:53.537Z",
+          "updated_at": "2000-01-23T19:26:56.567Z",
+          "deleted_at": "1947-06-23T22:49:49.389Z"
+        }
+      }
+order: 1000

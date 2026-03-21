@@ -1,0 +1,89 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/inventory-items/:id/location-levels?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The inventory item's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "location_id": "string",
+        "stocked_quantity": 6707.6355061976665,
+        "incoming_quantity": 5360.808424427919
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "inventory_item": {
+          "id": "string",
+          "requires_shipping": false,
+          "sku": "string",
+          "origin_country": "string",
+          "hs_code": "string",
+          "mid_code": "string",
+          "material": "string",
+          "weight": 8067.273327103566,
+          "length": 153.36793734612274,
+          "height": 5778.704250420026,
+          "width": 3338.8788551506864,
+          "title": "string",
+          "description": "string",
+          "thumbnail": "string",
+          "metadata": {},
+          "location_levels": [
+            {
+              "id": "string",
+              "created_at": "1996-06-11T17:07:22.658Z",
+              "updated_at": "2014-05-27T17:32:05.571Z",
+              "deleted_at": "1978-12-27T16:23:06.115Z",
+              "inventory_item_id": "string",
+              "location_id": "string",
+              "stocked_quantity": 7906.219814507515,
+              "reserved_quantity": 4040.156709856755,
+              "incoming_quantity": 6963.746028689235,
+              "metadata": {},
+              "available_quantity": 2756.6640626068993,
+              "inventory_item": {}
+            },
+            {
+              "id": "string",
+              "created_at": "2010-01-30T19:57:36.646Z",
+              "updated_at": "1985-02-22T22:58:51.876Z",
+              "deleted_at": "2024-11-05T19:57:40.555Z",
+              "inventory_item_id": "string",
+              "location_id": "string",
+              "stocked_quantity": 9351.384056661436,
+              "reserved_quantity": 7705.596342908339,
+              "incoming_quantity": 3278.1729986455166,
+              "metadata": {},
+              "available_quantity": 7641.010018853398,
+              "inventory_item": {}
+            }
+          ]
+        }
+      }
+order: 1000

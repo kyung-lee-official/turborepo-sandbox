@@ -1,0 +1,148 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/admin/stores/:id?fields=string"
+  method: POST
+  headers:
+    - key: Content-Type
+      value: application/json
+    - key: Accept
+      value: application/json
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+  queryParams:
+    - key: fields
+      value: string
+      description: Comma-separated fields that should be included in the returned
+        data. if a field is prefixed with `+` it will be added to the default
+        fields, using `-` will remove it from the default fields. without prefix
+        it will replace the entire default fields.
+  pathVariables:
+    - key: id
+      value: string
+      description: The store's ID.
+  body:
+    type: json
+    content: |-
+      {
+        "name": "string",
+        "supported_currencies": [
+          {
+            "currency_code": "usd",
+            "is_default": true,
+            "is_tax_inclusive": true
+          },
+          {
+            "currency_code": "usd",
+            "is_default": false,
+            "is_tax_inclusive": true
+          }
+        ],
+        "default_sales_channel_id": "string",
+        "default_region_id": "string",
+        "default_location_id": "string",
+        "metadata": {},
+        "supported_locales": [
+          {
+            "locale_code": "fr-FR"
+          },
+          {
+            "locale_code": "fr-FR"
+          }
+        ]
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "store": {
+          "id": "string",
+          "name": "string",
+          "supported_currencies": [
+            {
+              "id": "string",
+              "currency_code": "usd",
+              "store_id": "string",
+              "is_default": true,
+              "currency": {
+                "code": "usd",
+                "symbol": "$",
+                "symbol_native": "$",
+                "name": "string",
+                "decimal_digits": 574.3331523138618,
+                "rounding": 7220.544223858334,
+                "created_at": "1948-07-26T12:43:01.315Z",
+                "updated_at": "2000-02-08T14:29:27.121Z",
+                "deleted_at": "1963-05-28T12:40:05.416Z"
+              },
+              "created_at": "2003-02-21T12:12:44.448Z",
+              "updated_at": "1988-09-02T02:25:35.554Z",
+              "deleted_at": "1989-09-07T22:39:58.470Z"
+            },
+            {
+              "id": "string",
+              "currency_code": "usd",
+              "store_id": "string",
+              "is_default": true,
+              "currency": {
+                "code": "usd",
+                "symbol": "$",
+                "symbol_native": "$",
+                "name": "string",
+                "decimal_digits": 8513.104331563081,
+                "rounding": 8127.9864006008465,
+                "created_at": "1958-05-30T22:45:50.362Z",
+                "updated_at": "2021-07-25T07:46:27.436Z",
+                "deleted_at": "1971-01-19T07:29:36.796Z"
+              },
+              "created_at": "1988-06-23T06:25:01.648Z",
+              "updated_at": "2014-08-12T01:53:58.365Z",
+              "deleted_at": "1950-09-07T15:30:52.166Z"
+            }
+          ],
+          "supported_locales": [
+            {
+              "id": "string",
+              "locale_code": "string",
+              "store_id": "string",
+              "locale": {
+                "code": "fr-FR",
+                "name": "string",
+                "created_at": "1978-08-28T08:09:03.844Z",
+                "updated_at": "2021-12-02T23:54:57.429Z",
+                "deleted_at": "1990-05-24T11:20:46.410Z"
+              },
+              "created_at": "2024-06-17T22:54:43.361Z",
+              "updated_at": "2023-10-09T12:08:06.416Z",
+              "deleted_at": "1973-09-17T17:53:29.332Z"
+            },
+            {
+              "id": "string",
+              "locale_code": "string",
+              "store_id": "string",
+              "locale": {
+                "code": "fr-FR",
+                "name": "string",
+                "created_at": "2013-08-07T13:26:16.696Z",
+                "updated_at": "1952-12-09T01:31:42.747Z",
+                "deleted_at": "1980-04-23T21:51:37.058Z"
+              },
+              "created_at": "1983-08-07T08:30:10.551Z",
+              "updated_at": "2023-08-31T06:14:03.126Z",
+              "deleted_at": "1946-09-21T08:21:29.069Z"
+            }
+          ],
+          "default_sales_channel_id": "string",
+          "default_region_id": "string",
+          "default_location_id": "string",
+          "metadata": {},
+          "created_at": "1950-07-12T19:06:16.045Z",
+          "updated_at": "2001-12-10T22:05:18.858Z"
+        }
+      }
+order: 1000

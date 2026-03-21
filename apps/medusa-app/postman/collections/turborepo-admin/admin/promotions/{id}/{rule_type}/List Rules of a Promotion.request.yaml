@@ -1,0 +1,47 @@
+$kind: http-request
+description: >
+  Retrieve a list of rules in a promotion. The type of rules retrieved depend on
+  the value of the `rule_type` path parameter:
+
+  - If `rule_type` is `rules`, the promotion's rules are retrivied. - If
+  `rule_type` is `target-rules`, the target rules of the promotion's application
+  method are retrieved.
+
+
+  - If `rule_type` is `buy-rules`, the buy rules of the promotion's application
+  method are retrieved.
+url: "{{baseUrl}}/admin/promotions/:id/:rule_type?fields=string&promotion_type=\
+  buyget&application_method_type=percentage&application_method_target_type=item\
+  s"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: promotion_type
+    value: buyget
+    description: The type
+  - key: application_method_type
+    value: percentage
+    description: The promotion's application method type.
+  - key: application_method_target_type
+    value: items
+    description: The promotion's application method target type.
+pathVariables:
+  - key: id
+    value: string
+    description: The promotion's ID.
+  - key: rule_type
+    value: buy-rules
+    description: The type of rules to retrieve.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List Rules of a Promotion.resources/examples
+order: 1000

@@ -1,0 +1,47 @@
+$kind: http-request
+description: Retrieve a list of options of a product. The options can be
+  filtered by fields like `id`. The options can also be paginated.
+url: "{{baseUrl}}/admin/products/:id/options?fields=string&offset=3157.91170892\
+  04024&limit=3050.1607324519186&order=string&q=string&id=string&title=string&w\
+  ith_deleted=true"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  - key: fields
+    value: string
+    description: Comma-separated fields that should be included in the returned
+      data. if a field is prefixed with `+` it will be added to the default
+      fields, using `-` will remove it from the default fields. without prefix
+      it will replace the entire default fields.
+  - key: offset
+    value: "3157.9117089204024"
+    description: The number of items to skip when retrieving a list.
+  - key: limit
+    value: "3050.1607324519186"
+    description: Limit the number of items returned in the list.
+  - key: order
+    value: string
+    description: The field to sort the data by. By default, the sort order is
+      ascending. To change the order to descending, prefix the field name with
+      `-`.
+  - key: q
+    value: string
+    description: Search term to filter the product option's searchable fields.
+  - key: id
+    value: string
+  - key: title
+    value: string
+  - key: with_deleted
+    value: "true"
+    description: Whether to include deleted records in the result.
+pathVariables:
+  - key: id
+    value: string
+    description: The product's ID.
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+examples: ./.resources/List a Product's Options.resources/examples
+order: 2000
