@@ -17,7 +17,7 @@ import {
   ERROR_CODES,
   type HttpError,
   type HttpErrorData,
-  type MedusaErrorCodes,
+  type MedusaErrorCategory,
   MedusaErrorTypes,
 } from "@repo/types";
 import cors from "cors";
@@ -138,8 +138,7 @@ export default defineMiddlewares({
     if (MedusaError.isMedusaError(error)) {
       logger.error(error);
       const medusaError = error as MedusaError;
-      const map: Record<MedusaErrorCodes, number> =
-        MedusaErrorTypes[medusaError.type];
+      const map = MedusaErrorTypes[medusaError.type as MedusaErrorCategory];
       res.status(Object.values(map)[0]).json({
         code: Object.keys(map)[0] as keyof typeof ERROR_CODES,
         message: medusaError.message,
