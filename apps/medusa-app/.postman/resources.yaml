@@ -7,6 +7,8 @@ cloudResources:
   collections:
     ..\postman\collections\Medusa Storefront API: 66a64cfd-0844-47e5-bfbc-45953ca58d51
     ..\postman\collections\Medusa Admin API: 7ea26c71-cfd0-43c6-b6dc-958707603046
+    ..\postman\collections\turborepo-store: 14130994-a51393ee-e604-4ec6-8f7b-9bc4c7c7e19f
+    ..\postman\collections\turborepo-admin: 14130994-cbda0b6a-6b5d-478a-aa12-64a3ac976194
 
 # All resources in the `postman/` folder are automatically registered in Local View.
 # Point to additional files outside the `postman/` folder to register them individually. Example:
