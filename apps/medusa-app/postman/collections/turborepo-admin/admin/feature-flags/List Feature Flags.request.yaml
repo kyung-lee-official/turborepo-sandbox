@@ -1,9 +1,0 @@
-$kind: http-request
-description: Retrieve a list of feature flags. The feature flags can be filtered
-  by fields such as `id`. The feature flags can also be sorted or paginated.
-url: "{{baseUrl}}/admin/feature-flags"
-method: GET
-headers:
-  Accept: application/json
-examples: ./.resources/List Feature Flags.resources/examples
-order: 1000

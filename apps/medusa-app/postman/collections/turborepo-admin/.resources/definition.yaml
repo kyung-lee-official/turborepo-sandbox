@@ -1,6 +1,0 @@
-$kind: collection
-name: turborepo-admin
-variables:
-  baseUrl: ""
-  admin: ""
-  adminPsw: ""

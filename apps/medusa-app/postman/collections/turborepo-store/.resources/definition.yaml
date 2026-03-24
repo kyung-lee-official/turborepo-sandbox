@@ -1,7 +1,0 @@
-$kind: collection
-name: turborepo-store
-variables:
-  baseUrl: ""
-  apiKey: ""
-  customer: ""
-  customerPsw: ""
