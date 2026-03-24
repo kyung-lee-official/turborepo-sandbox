@@ -45,8 +45,11 @@ export const Content = () => {
 
   const handleCheckout = async () => {
     try {
+      if (!cartId) {
+        throw new Error("Cart ID is required for checkout");
+      }
       setIsCheckingOut(true);
-      const paymentCollection = await createPaymentCollection(cartId!);
+      const paymentCollection = await createPaymentCollection(cartId);
       router.push(`/medusa/store-api/cart/cart-checkout/${cartId}`);
     } catch (error) {
       console.error("Failed to create payment collection:", error);
