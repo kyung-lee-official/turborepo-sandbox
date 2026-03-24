@@ -8,8 +8,8 @@ import type { AuthenticationInput } from "@medusajs/types/dist/auth/common/provi
 import type { IAuthModuleService } from "@medusajs/types/dist/auth/service";
 import { HttpError, type JwtContext } from "@repo/types";
 import jwt from "jsonwebtoken";
-import { generateJwtTokenForAuthIdentity } from "@/utils/auth/generate-jwt-token";
-import { setCookieTokenString } from "@/utils/auth/set-cookie-token-string";
+import { generateJwtTokenForAuthIdentity } from "@/api/utils/auth/generate-jwt-token";
+import { setCookieTokenString } from "@/api/utils/auth/set-cookie-token-string";
 
 export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
   const { actor_type, auth_provider } = req.params;

@@ -21,8 +21,9 @@ import {
   MedusaErrorTypes,
 } from "@repo/types";
 import cors from "cors";
-import { authenticateJwt } from "@/utils/middleware/authenticate-jwt";
-import { medusaAuthBlocker } from "@/utils/middleware/medusa-auth-blocker";
+import { authenticateJwt } from "@/api/utils/middleware/authenticate-jwt";
+import { medusaAuthBlocker } from "@/api/utils/middleware/medusa-auth-blocker";
+import { storeCartRoutesMiddlewares } from "./store-api/carts/middlewares";
 
 const originalErrorHandler = errorHandler();
 
@@ -97,6 +98,7 @@ export default defineMiddlewares({
       matcher: "/store/store-credit-accounts*",
       middlewares: [authenticateJwt("customer", ["bearer"])],
     },
+    ...storeCartRoutesMiddlewares,
     /* custom routes middlewares */
     {
       method: ["POST"],

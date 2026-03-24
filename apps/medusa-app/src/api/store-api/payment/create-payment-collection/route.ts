@@ -1,7 +1,7 @@
 import type { MedusaResponse } from "@medusajs/framework";
 import { createPaymentCollectionForCartWorkflow } from "@medusajs/medusa/core-flows";
 import type { CreatePaymentCollectionForCartWorkflowInputDTO } from "@medusajs/types";
-import type { MedusaRequestWithRequester } from "@/utils/middleware/authenticate-jwt";
+import type { MedusaRequestWithRequester } from "@/api/utils/middleware/authenticate-jwt";
 
 export async function POST(
   req: MedusaRequestWithRequester,

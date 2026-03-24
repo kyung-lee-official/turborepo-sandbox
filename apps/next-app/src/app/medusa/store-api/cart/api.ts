@@ -37,7 +37,7 @@ export async function addPromotions(cartId: string, code: string) {
 }
 
 export async function createCart(regionId?: string) {
-  const data = await api.post<StoreCartResponse>("/store/carts", {
+  const data = await api.post<StoreCartResponse>("/store-api/carts", {
     region_id: regionId,
   });
   return data;
