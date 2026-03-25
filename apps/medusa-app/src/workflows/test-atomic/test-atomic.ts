@@ -1,4 +1,5 @@
 import {
+  createHook,
   createWorkflow,
   transform,
   WorkflowResponse,
@@ -17,6 +18,10 @@ export const testAtomicWorkflow = createWorkflow(
   (input: StepTwoWorkflowInput) => {
     const stepOneResult = stepOneStep();
     const stepTwoResult = stepTwoStep(input);
+    // here we can test hook by the way
+    const myHook = createHook("testHook", {
+      passAnythingToHook: input,
+    });
     const stepThreeResult = stepThreeStep();
 
     const result = transform(
@@ -37,6 +42,8 @@ export const testAtomicWorkflow = createWorkflow(
       },
     );
 
-    return new WorkflowResponse(result);
+    return new WorkflowResponse(result, {
+      hooks: [myHook],
+    });
   },
 );
