@@ -78,9 +78,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
           entity: "payment",
           fields: ["id"],
           filters: {
-            data: {
-              id: paypalOrderId,
-            },
+            id: paypalOrderId,
           },
         })) as { data: AdminPayment[] };
         if (payments.data.length === 0) {
