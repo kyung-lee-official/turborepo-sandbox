@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AUTH_ERRORS } from "./codes/auth";
+import { CART_ERRORS } from "./codes/cart";
 import { CUSTOMER_ERRORS } from "./codes/customer";
 import { MEDUSA_ERRORS } from "./codes/medusa";
 import { PAYMENT_ERRORS } from "./codes/payment";
@@ -8,6 +9,7 @@ import { USER_ERRORS } from "./codes/user";
 
 export const ERROR_CODES = {
   ...AUTH_ERRORS,
+  ...CART_ERRORS,
   ...CUSTOMER_ERRORS,
   ...MEDUSA_ERRORS,
   ...PAYMENT_ERRORS,
