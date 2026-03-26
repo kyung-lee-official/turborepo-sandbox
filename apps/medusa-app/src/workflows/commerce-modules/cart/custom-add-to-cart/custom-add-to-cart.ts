@@ -28,6 +28,13 @@ export const customAddToCartWorkflow = createWorkflow(
       ttl: 10,
     });
 
+    // Get existing cart metadata before adding items
+    const { data: existingCartData } = useQueryGraphStep({
+      entity: "cart",
+      fields: ["*", "metadata"],
+      filters: { id: input.cart_id },
+    }).config({ name: "get-existing-cart-metadata" });
+
     // Run the existing addToCartWorkflow as a step in the custom workflow
     addToCartWorkflow.runAsStep({
       input: input,
@@ -41,24 +48,37 @@ export const customAddToCartWorkflow = createWorkflow(
     }).config({ name: "refetch-cart" });
 
     // Update the cart's metadata
-    const metadataToUpdate = transform(data, (data) => {
-      const updatedCart = data[0];
-      const unchecked = (updatedCart.items || []).reduce(
-        (acc, item) => {
-          if (item?.variant_id) {
-            acc[item.variant_id] = {
-              quantity: item.quantity,
-            };
+    const metadataToUpdate = transform(
+      { existingCartData, newCartData: data, input },
+      (transformData) => {
+        const existingCart = transformData.existingCartData[0];
+        const updatedCart = transformData.newCartData[0];
+        const addToCartInput = transformData.input;
+
+        // Get existing unchecked metadata or initialize empty object
+        const existingMetadata =
+          (existingCart?.metadata as unknown as CartMetadata) || {};
+        const existingUnchecked = existingMetadata.unchecked || {};
+
+        // Create a copy of existing unchecked items
+        const updatedUnchecked = { ...existingUnchecked };
+
+        // Remove newly added items from unchecked if they exist
+        // The input contains the items being added to cart
+        if (addToCartInput.items) {
+          for (const item of addToCartInput.items) {
+            if (item.variant_id && updatedUnchecked[item.variant_id]) {
+              delete updatedUnchecked[item.variant_id];
+            }
           }
-          return acc;
-        },
-        {} as Record<string, { quantity: number }>,
-      );
-      const metadata: CartMetadata = {
-        unchecked: unchecked,
-      };
-      return metadata;
-    });
+        }
+
+        const metadata: CartMetadata = {
+          unchecked: updatedUnchecked,
+        };
+        return metadata;
+      },
+    );
     updateCartsStep([
       {
         id: input.cart_id,
