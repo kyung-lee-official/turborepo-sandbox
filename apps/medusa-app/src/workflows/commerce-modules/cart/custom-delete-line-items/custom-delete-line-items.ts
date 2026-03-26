@@ -17,11 +17,12 @@ import type { CartMetadata } from "@repo/types";
 // Custom input type for the new API design
 type CustomRemoveCartItemInput = {
   cart_id: string;
-  variant_id: string; // variant_id for both checked and unchecked items
+  item_id?: string; // line_item_id (for checked items) — optional
+  variant_id?: string; // variant_id (for unchecked items) — optional
 };
 
-export const customRemoveCartItemWorkflow = createWorkflow(
-  "custom-remove-cart-item",
+export const customDeleteLineItemsWorkflow = createWorkflow(
+  "custom-delete-line-items",
   (input: CustomRemoveCartItemInput) => {
     // Acquire the lock before running the nested workflow
     acquireLockStep({
@@ -37,49 +38,71 @@ export const customRemoveCartItemWorkflow = createWorkflow(
       filters: { id: input.cart_id },
     }).config({ name: "get-cart-and-metadata" });
 
-    // Find the item by variant_id in cart.items or metadata.unchecked
+    // Find the item by item_id in cart.items or by variant_id in metadata.unchecked
     const itemInfo = transform({ cartData, input }, (transformData) => {
       const cart = transformData.cartData[0];
-      const { variant_id } = transformData.input;
+      const { item_id, variant_id } = transformData.input;
 
       if (!cart) {
         throw new Error("Cart not found");
       }
 
-      if (!variant_id) {
-        throw new Error("variant_id is required");
+      // Validate that exactly one of item_id or variant_id is provided
+      if (!item_id && !variant_id) {
+        throw new Error("Either item_id or variant_id must be provided");
+      }
+
+      if (item_id && variant_id) {
+        throw new Error(
+          "Only one of item_id or variant_id should be provided, not both",
+        );
       }
 
       const existingMetadata = (cart.metadata as unknown as CartMetadata) || {};
       const uncheckedItems = existingMetadata.unchecked || {};
 
-      // Check if item exists in cart.items (checked item)
-      const lineItem = (cart.items || []).find(
-        (item) => item?.variant_id === variant_id,
-      );
+      // Handle checked item removal (by item_id)
+      if (item_id) {
+        const lineItem = (cart.items || []).find(
+          (item) => item?.id === item_id,
+        );
 
-      // Determine location and return essential data
-      if (lineItem) {
+        if (!lineItem) {
+          throw new Error(`Line item with id ${item_id} not found in cart`);
+        }
+
         return {
           location: "items" as const,
           lineItemId: lineItem.id,
           existingMetadata,
         };
-      } else if (uncheckedItems[variant_id]) {
+      }
+
+      // Handle unchecked item removal (by variant_id)
+      if (variant_id) {
+        if (!uncheckedItems[variant_id]) {
+          throw new Error(
+            `Item with variant_id ${variant_id} not found in cart metadata`,
+          );
+        }
+
         return {
           location: "metadata" as const,
           lineItemId: null,
           existingMetadata,
         };
-      } else {
-        throw new Error(
-          `Item with variant_id ${variant_id} not found in cart or metadata`,
-        );
       }
+
+      // This should never be reached due to validation above
+      throw new Error("Invalid input state");
     });
 
     // Conditionally execute deleteLineItemsWorkflow for checked items
-    when(itemInfo, (info) => info.location === "items").then(() => {
+    when(
+      "delete-line-items-for-selected-item",
+      itemInfo,
+      (info) => info.location === "items",
+    ).then(() => {
       // assert itemInfo.lineItemId is not null since location is "items"
       if (!itemInfo.lineItemId) {
         throw new Error("lineItemId is required for items location");
@@ -94,14 +117,15 @@ export const customRemoveCartItemWorkflow = createWorkflow(
 
     // Conditionally update metadata for unchecked items
     const updatedMetadata = when(
+      "prepare-metadata-for-unselected-item",
       itemInfo,
       (info) => info.location === "metadata",
     ).then(() => {
       return transform({ itemInfo, input }, ({ itemInfo, input }) => {
         const updatedUnchecked = { ...itemInfo.existingMetadata.unchecked };
 
-        // Remove the variant_id from unchecked metadata (input.variant_id is now a plain string)
-        delete updatedUnchecked[input.variant_id];
+        // Remove the variant_id from unchecked metadata
+        delete updatedUnchecked[input.variant_id!];
 
         const metadata: CartMetadata = {
           unchecked: updatedUnchecked,
@@ -111,7 +135,11 @@ export const customRemoveCartItemWorkflow = createWorkflow(
       });
     });
     // Execute updateCartsStep with the prepared metadata
-    when(itemInfo, (info) => info.location === "metadata").then(() => {
+    when(
+      "update-metadata-for-unselected-item",
+      itemInfo,
+      (info) => info.location === "metadata",
+    ).then(() => {
       return updateCartsStep([
         {
           id: input.cart_id,
