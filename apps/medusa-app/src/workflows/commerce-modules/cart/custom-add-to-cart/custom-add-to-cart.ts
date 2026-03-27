@@ -10,13 +10,18 @@ import {
   updateCartsStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import type { AdditionalData } from "@medusajs/types";
+import type {
+  AdditionalData,
+  BigNumberInput,
+  IBigNumber,
+} from "@medusajs/types";
 import type { AddToCartWorkflowInputDTO } from "@medusajs/types/dist/cart/workflows";
 import type {
   StoreCart,
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
 import type { CartMetadata } from "@repo/types";
+import { loggerStep } from "@/workflows/logger-step";
 
 export const customAddToCartWorkflow = createWorkflow(
   "custom-add-to-cart",
@@ -35,9 +40,35 @@ export const customAddToCartWorkflow = createWorkflow(
       filters: { id: input.cart_id },
     }).config({ name: "get-existing-cart-metadata" });
 
+    // Check if the cart has unselected items in metadata and if the input contains those items, if yes, remove them from unselected metadata, and add up quantity from input and existing unselected cart items
+    const incomingAndUnselectedQty = transform(
+      { existingCartData, input },
+      (transformData) => {
+        const { quantity, variant_id } = transformData.input.items[0];
+        const metadata = transformData.existingCartData[0]
+          ?.metadata as unknown as CartMetadata;
+        if (!metadata?.unselected || !metadata.unselected[variant_id!]) {
+          return (quantity as IBigNumber).valueOf();
+        }
+        const unselectedQty = metadata?.unselected[variant_id!].quantity || 0;
+        const total = (quantity as IBigNumber).valueOf() + unselectedQty;
+        return total;
+      },
+    );
+
+    loggerStep({ input: { incomingAndUnselectedQty } });
+
     // Run the existing addToCartWorkflow as a step in the custom workflow
     addToCartWorkflow.runAsStep({
-      input: input,
+      input: {
+        cart_id: input.cart_id,
+        items: [
+          {
+            variant_id: input.items[0].variant_id,
+            quantity: incomingAndUnselectedQty,
+          },
+        ],
+      },
     });
 
     // Refetch the cart to get the updated line items after the addToCartWorkflow step
