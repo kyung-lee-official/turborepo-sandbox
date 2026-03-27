@@ -10,11 +10,7 @@ import {
   updateCartsStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import type {
-  AdditionalData,
-  BigNumberInput,
-  IBigNumber,
-} from "@medusajs/types";
+import type { AdditionalData, IBigNumber } from "@medusajs/types";
 import type { AddToCartWorkflowInputDTO } from "@medusajs/types/dist/cart/workflows";
 import type {
   StoreCart,
