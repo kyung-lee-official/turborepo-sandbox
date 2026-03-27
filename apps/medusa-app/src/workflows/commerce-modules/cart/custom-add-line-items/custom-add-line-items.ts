@@ -52,8 +52,6 @@ export const customAddToCartWorkflow = createWorkflow(
       },
     );
 
-    loggerStep({ input: { incomingAndUnselectedQty } });
-
     // Run the existing addToCartWorkflow as a step in the custom workflow
     addToCartWorkflow.runAsStep({
       input: {
