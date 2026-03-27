@@ -1,0 +1,27 @@
+import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
+import type { HttpTypes } from "@medusajs/framework/types";
+import { customUpdateLineItemWorkflow } from "@/workflows/commerce-modules/cart/custom-update-line-item/custom-update-line-item";
+
+type UpdateLineItemRequest = {
+  quantity: number;
+};
+
+export const POST = async (
+  req: MedusaRequest<UpdateLineItemRequest, HttpTypes.SelectParams>,
+  res: MedusaResponse<HttpTypes.StoreCartResponse>,
+) => {
+  const cartId = req.params.id;
+  const lineItemId = req.params.line_id;
+
+  const workflowInput = {
+    cart_id: cartId,
+    line_item_id: lineItemId,
+    quantity: req.body.quantity,
+  };
+
+  const { result } = await customUpdateLineItemWorkflow(req.scope).run({
+    input: workflowInput,
+  });
+
+  res.send(result as unknown as HttpTypes.StoreCartResponse);
+};
