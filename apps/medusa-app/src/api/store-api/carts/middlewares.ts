@@ -13,6 +13,7 @@ import {
 import { HttpError } from "@repo/types";
 import type { NextFunction } from "express";
 import * as QueryConfig from "./query-config";
+import { DeleteLineItemRequest, UpdateLineItemRequest } from "./validators";
 
 export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
   {
@@ -60,6 +61,28 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
           "This route has been disabled because the metadata was not asynchronously updated properly. Please use `POST /store-api/carts/:id/line-items` instead.",
         );
       },
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/store-api/carts/:id/line-items/:line_id",
+    middlewares: [
+      validateAndTransformBody(UpdateLineItemRequest),
+      validateAndTransformQuery(
+        StoreGetCartsCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/store-api/carts/:id/delete-line-item",
+    middlewares: [
+      validateAndTransformBody(DeleteLineItemRequest),
+      validateAndTransformQuery(
+        StoreGetCartsCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
     ],
   },
 ];

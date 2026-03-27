@@ -16,7 +16,7 @@ export const POST = async (
   const workflowInput = {
     cart_id: cartId,
     line_item_id: lineItemId,
-    quantity: req.body.quantity,
+    quantity: req.validatedBody.quantity,
   };
 
   const { result } = await customUpdateLineItemWorkflow(req.scope).run({

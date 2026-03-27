@@ -32,3 +32,19 @@ export const StoreAddCartLineItem = z.object({
   quantity: z.number().gt(0),
   metadata: z.record(z.unknown()).nullish(),
 });
+
+export const UpdateLineItemRequest = z.object({
+  quantity: z.number().min(0),
+});
+
+export const DeleteLineItemRequest = z
+  .object({
+    item_id: z.string().optional(),
+    variant_id: z.string().optional(),
+  })
+  .refine((data) => data.item_id || data.variant_id, {
+    message: "Either item_id or variant_id must be provided",
+  })
+  .refine((data) => !(data.item_id && data.variant_id), {
+    message: "Only one of item_id or variant_id should be provided, not both",
+  });

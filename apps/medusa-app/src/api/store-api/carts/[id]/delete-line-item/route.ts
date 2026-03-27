@@ -1,6 +1,5 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import type { HttpTypes } from "@medusajs/framework/types";
-import { HttpError } from "@repo/types";
 import { customDeleteLineItemsWorkflow } from "@/workflows/commerce-modules/cart/custom-delete-line-items/custom-delete-line-items";
 
 type DeleteLineItemRequest = {
@@ -18,22 +17,7 @@ export const POST = async (
   res: MedusaResponse<HttpTypes.StoreCartResponse>,
 ) => {
   const cartId = req.params.id;
-  const { item_id, variant_id } = req.body;
-
-  // Validate that exactly one of item_id or variant_id is provided
-  if (!item_id && !variant_id) {
-    throw new HttpError(
-      "MEDUSA.INVALID_DATA",
-      "Either item_id or variant_id must be provided",
-    );
-  }
-
-  if (item_id && variant_id) {
-    throw new HttpError(
-      "MEDUSA.INVALID_DATA",
-      "Only one of item_id or variant_id should be provided, not both",
-    );
-  }
+  const { item_id, variant_id } = req.validatedBody;
 
   const workflowInput = {
     cart_id: cartId,

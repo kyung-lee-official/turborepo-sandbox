@@ -16,7 +16,6 @@ import type {
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
 import { HttpError } from "@repo/types";
-import { loggerStep } from "@/workflows/logger-step";
 
 // Custom input type for the update line item workflow
 type CustomUpdateLineItemInput = {
