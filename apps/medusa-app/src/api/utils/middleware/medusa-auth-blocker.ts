@@ -11,6 +11,10 @@ interface ResetPasswordJwtContext {
   exp?: number;
 }
 
+/**
+ * Only use this middleware to block Medusa's built-in authentication routes
+ * `POST /auth/customer/{auth_provider}` if {@link authenticateJwt} is used.
+ */
 export const medusaAuthBlocker: RequestHandler = (
   req: MedusaRequest,
   res: MedusaResponse,

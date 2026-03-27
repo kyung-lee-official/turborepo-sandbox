@@ -56,48 +56,48 @@ export default defineMiddlewares({
         },
       ],
     },
-    {
-      /**
-       * Don't use regex matcher here as medusa doesn't parse it correctly like `app.use` in ExpressJS.
-       * Instead, check for the pattern inside the middleware
-       */
-      matcher: "/auth",
-      middlewares: [medusaAuthBlocker],
-    },
-    {
-      matcher: "/store/customers*",
-      middlewares: [
-        (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
-          // some custom logic, remember to call next() to proceed to the next middleware
-          return next();
-        },
-        authenticateJwt("customer", ["bearer"]),
-      ],
-    },
-    {
-      matcher: "/store/gift-cards/{:idOrCode}/redeem",
-      middlewares: [authenticateJwt("customer", ["bearer"])],
-    },
-    {
-      matcher: "/store/orders*",
-      middlewares: [authenticateJwt("customer", ["bearer"])],
-    },
-    {
-      matcher: "/store-api/payment*",
-      middlewares: [authenticateJwt("customer", ["bearer"])],
-    },
-    {
-      matcher: "/store/payment-collections*",
-      middlewares: [authenticateJwt("customer", ["bearer"])],
-    },
-    {
-      matcher: "/store/payment-collections*",
-      middlewares: [authenticateJwt("customer", ["bearer"])],
-    },
-    {
-      matcher: "/store/store-credit-accounts*",
-      middlewares: [authenticateJwt("customer", ["bearer"])],
-    },
+    // {
+    //   /**
+    //    * Don't use regex matcher here as medusa doesn't parse it correctly like `app.use` in ExpressJS.
+    //    * Instead, check for the pattern inside the middleware
+    //    */
+    //   matcher: "/auth",
+    //   middlewares: [medusaAuthBlocker],
+    // },
+    // {
+    //   matcher: "/store/customers*",
+    //   middlewares: [
+    //     (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
+    //       // some custom logic, remember to call next() to proceed to the next middleware
+    //       return next();
+    //     },
+    //     authenticateJwt("customer", ["bearer"]),
+    //   ],
+    // },
+    // {
+    //   matcher: "/store/gift-cards/{:idOrCode}/redeem",
+    //   middlewares: [authenticateJwt("customer", ["bearer"])],
+    // },
+    // {
+    //   matcher: "/store/orders*",
+    //   middlewares: [authenticateJwt("customer", ["bearer"])],
+    // },
+    // {
+    //   matcher: "/store-api/payment*",
+    //   middlewares: [authenticateJwt("customer", ["bearer"])],
+    // },
+    // {
+    //   matcher: "/store/payment-collections*",
+    //   middlewares: [authenticateJwt("customer", ["bearer"])],
+    // },
+    // {
+    //   matcher: "/store/payment-collections*",
+    //   middlewares: [authenticateJwt("customer", ["bearer"])],
+    // },
+    // {
+    //   matcher: "/store/store-credit-accounts*",
+    //   middlewares: [authenticateJwt("customer", ["bearer"])],
+    // },
     ...storeCartRoutesMiddlewares,
     /* custom routes middlewares */
     {
