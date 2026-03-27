@@ -34,7 +34,7 @@ export const customUnselectCartItemWorkflow = createWorkflow(
     // Update the cart's metadata
     const metadataToUpdate = transform(data, (data) => {
       const updatedCart = data[0];
-      const unchecked = (updatedCart.items || []).reduce(
+      const unselected = (updatedCart.items || []).reduce(
         (acc, item) => {
           if (item?.variant_id) {
             acc[item.variant_id] = {
@@ -46,7 +46,7 @@ export const customUnselectCartItemWorkflow = createWorkflow(
         {} as Record<string, { quantity: number }>,
       );
       const metadata: CartMetadata = {
-        unchecked: unchecked,
+        unselected: unselected,
       };
       return metadata;
     });

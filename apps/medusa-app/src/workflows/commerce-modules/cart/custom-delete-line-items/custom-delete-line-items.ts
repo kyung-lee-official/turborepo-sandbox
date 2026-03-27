@@ -18,7 +18,7 @@ import type { CartMetadata } from "@repo/types";
 type CustomRemoveCartItemInput = {
   cart_id: string;
   item_id?: string; // line_item_id (for checked items) — optional
-  variant_id?: string; // variant_id (for unchecked items) — optional
+  variant_id?: string; // variant_id (for unselected items) — optional
 };
 
 export const customDeleteLineItemsWorkflow = createWorkflow(
@@ -38,7 +38,7 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
       filters: { id: input.cart_id },
     }).config({ name: "get-cart-and-metadata" });
 
-    // Find the item by item_id in cart.items or by variant_id in metadata.unchecked
+    // Find the item by item_id in cart.items or by variant_id in metadata.unselected
     const itemInfo = transform({ cartData, input }, (transformData) => {
       const cart = transformData.cartData[0];
       const { item_id, variant_id } = transformData.input;
@@ -59,7 +59,7 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
       }
 
       const existingMetadata = (cart.metadata as unknown as CartMetadata) || {};
-      const uncheckedItems = existingMetadata.unchecked || {};
+      const unselectedItems = existingMetadata.unselected || {};
 
       // Handle checked item removal (by item_id)
       if (item_id) {
@@ -78,9 +78,9 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
         };
       }
 
-      // Handle unchecked item removal (by variant_id)
+      // Handle unselected item removal (by variant_id)
       if (variant_id) {
-        if (!uncheckedItems[variant_id]) {
+        if (!unselectedItems[variant_id]) {
           throw new Error(
             `Item with variant_id ${variant_id} not found in cart metadata`,
           );
@@ -115,20 +115,20 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
       });
     });
 
-    // Conditionally update metadata for unchecked items
+    // Conditionally update metadata for unselected items
     const updatedMetadata = when(
       "prepare-metadata-for-unselected-item",
       itemInfo,
       (info) => info.location === "metadata",
     ).then(() => {
       return transform({ itemInfo, input }, ({ itemInfo, input }) => {
-        const updatedUnchecked = { ...itemInfo.existingMetadata.unchecked };
+        const updatedUnselected = { ...itemInfo.existingMetadata.unselected };
 
-        // Remove the variant_id from unchecked metadata
-        delete updatedUnchecked[input.variant_id!];
+        // Remove the variant_id from unselected metadata
+        delete updatedUnselected[input.variant_id!];
 
         const metadata: CartMetadata = {
-          unchecked: updatedUnchecked,
+          unselected: updatedUnselected,
         };
 
         return metadata;

@@ -1,5 +1,5 @@
 export interface CartMetadata {
-  unchecked: {
+  unselected: {
     [key: string]: {
       quantity: number;
     };

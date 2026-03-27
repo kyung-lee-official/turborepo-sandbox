@@ -55,26 +55,26 @@ export const customAddToCartWorkflow = createWorkflow(
         const updatedCart = transformData.newCartData[0];
         const addToCartInput = transformData.input;
 
-        // Get existing unchecked metadata or initialize empty object
+        // Get existing unselected metadata or initialize empty object
         const existingMetadata =
           (existingCart?.metadata as unknown as CartMetadata) || {};
-        const existingUnchecked = existingMetadata.unchecked || {};
+        const existingUnselected = existingMetadata.unselected || {};
 
-        // Create a copy of existing unchecked items
-        const updatedUnchecked = { ...existingUnchecked };
+        // Create a copy of existing unselected items
+        const updatedUnselected = { ...existingUnselected };
 
-        // Remove newly added items from unchecked if they exist
+        // Remove newly added items from unselected if they exist
         // The input contains the items being added to cart
         if (addToCartInput.items) {
           for (const item of addToCartInput.items) {
-            if (item.variant_id && updatedUnchecked[item.variant_id]) {
-              delete updatedUnchecked[item.variant_id];
+            if (item.variant_id && updatedUnselected[item.variant_id]) {
+              delete updatedUnselected[item.variant_id];
             }
           }
         }
 
         const metadata: CartMetadata = {
-          unchecked: updatedUnchecked,
+          unselected: updatedUnselected,
         };
         return metadata;
       },
