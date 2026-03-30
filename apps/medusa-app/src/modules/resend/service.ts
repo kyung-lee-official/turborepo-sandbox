@@ -18,7 +18,7 @@ enum Templates {
   PASSWORD_RESET = "password-reset",
 }
 
-const templates: { [key in Templates]?: (props: unknown) => React.ReactNode } =
+const templates: { [key in Templates]?: (props: any) => React.ReactNode } =
   {
     [Templates.ORDER_PLACED]: orderPlacedEmail,
     [Templates.USER_INVITED]: userInvitedEmail,
