@@ -50,13 +50,13 @@ export const CartSummary = ({
       <button
         onClick={onCheckout}
         className="mt-4 w-full rounded bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-        disabled={!cart.shipping_address || !cart.shipping_methods?.length}
+        disabled={!cart.shipping_address || !cart.shipping_methods?.length || !cart.items?.length}
       >
         Proceed to Checkout
       </button>
-      {(!cart.shipping_address || !cart.shipping_methods?.length) && (
+      {(!cart.shipping_address || !cart.shipping_methods?.length || !cart.items?.length) && (
         <p className="mt-2 text-center text-gray-500 text-sm">
-          Please add shipping address and select shipping method
+          {!cart.items?.length ? "Please select items to checkout" : "Please add shipping address and select shipping method"}
         </p>
       )}
     </div>

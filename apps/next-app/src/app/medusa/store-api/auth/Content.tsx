@@ -2,6 +2,11 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Button } from "@/app/medusa/components/Button";
+import { Card } from "@/app/medusa/components/Card";
+import { PageShell } from "@/app/medusa/components/PageShell";
+import { TextInput } from "@/app/medusa/components/TextInput";
 import { authenticateCustomer, signOutCustomer } from "./api";
 
 type FormData = {
@@ -45,8 +50,8 @@ export const Content = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow">
+    <PageShell>
+      <Card>
         <h2 className="mt-6 text-center font-extrabold text-3xl text-gray-900">
           Sign in to your account
         </h2>
@@ -56,7 +61,7 @@ export const Content = () => {
               <label htmlFor="email" className="sr-only">
                 Email address
               </label>
-              <input
+              <TextInput
                 {...register("email", {
                   required: "Email is required",
                   pattern: {
@@ -65,8 +70,8 @@ export const Content = () => {
                   },
                 })}
                 type="email"
-                className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 placeholder="Email address"
+                radius="top"
               />
               {errors.email && (
                 <p className="mt-1 text-red-600 text-sm">
@@ -78,7 +83,7 @@ export const Content = () => {
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
-              <input
+              <TextInput
                 {...register("password", {
                   required: "Password is required",
                   minLength: {
@@ -87,8 +92,8 @@ export const Content = () => {
                   },
                 })}
                 type="password"
-                className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 placeholder="Password"
+                radius="bottom"
               />
               {errors.password && (
                 <p className="mt-1 text-red-600 text-sm">
@@ -99,67 +104,48 @@ export const Content = () => {
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
               disabled={authenticateCustomerMutation.isPending}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {authenticateCustomerMutation.isPending
                 ? "Signing in..."
                 : "Sign in"}
-            </button>
+            </Button>
           </div>
 
           {authenticateCustomerMutation.isError && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="font-medium text-red-800 text-sm">
-                    Sign in failed
-                  </h3>
-                  <div className="mt-2 text-red-700 text-sm">
-                    <p>
-                      {authenticateCustomerMutation.error instanceof Error
-                        ? authenticateCustomerMutation.error.message
-                        : "An error occurred during sign in"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <Alert title="Sign in failed" variant="error">
+              <p>
+                {authenticateCustomerMutation.error instanceof Error
+                  ? authenticateCustomerMutation.error.message
+                  : "An error occurred during sign in"}
+              </p>
+            </Alert>
           )}
 
           {authenticateCustomerMutation.isSuccess && (
-            <div className="rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="font-medium text-green-800 text-sm">
-                    Sign in successful!
-                  </h3>
-                  <div className="mt-2 text-green-700 text-sm">
-                    <p>
-                      You have been authenticated successfully. Refresh to
-                      update token info in layout.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <Alert title="Sign in successful!" variant="success">
+              <p>
+                You have been authenticated successfully. Refresh to update
+                token info in layout.
+              </p>
+            </Alert>
           )}
         </form>
-      </div>
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow">
+      </Card>
+      <Card>
         <h2 className="mt-6 text-center font-extrabold text-3xl text-gray-900">
           Sign out
         </h2>
-        <button
+        <Button
           type="button"
-          className="group relative flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 font-medium text-sm text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          variant="danger"
           onClick={() => signOutMutation.mutate()}
         >
           Sign out
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Card>
+    </PageShell>
   );
 };
