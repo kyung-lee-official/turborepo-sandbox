@@ -6,7 +6,6 @@ import {
   validateAndTransformQuery,
 } from "@medusajs/framework/http";
 import {
-  StoreAddCartLineItem,
   StoreCreateCart,
   StoreGetCartsCart,
 } from "@medusajs/medusa/api/store/carts/validators";
@@ -15,6 +14,7 @@ import type { NextFunction } from "express";
 import * as QueryConfig from "./query-config";
 import {
   DeleteLineItemRequest,
+  StoreAddCartLineItem,
   StoreSelectCartLineItem,
   UpdateLineItemRequest,
 } from "./validators";
@@ -87,6 +87,18 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
         StoreGetCartsCart,
         QueryConfig.retrieveTransformQueryConfig,
       ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/store/carts/:id/line-items/:line_id",
+    middlewares: [
+      (req: MedusaRequest, res: MedusaResponse, next: NextFunction) => {
+        throw new HttpError(
+          "AUTH.FORBIDDEN",
+          "This route has been disabled because metadata and unselected-item behavior are managed by custom workflows. Please use `POST /store-api/carts/:id/line-items/:line_id` instead.",
+        );
+      },
     ],
   },
   {
