@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonVariant = "primary" | "danger";
+export type ButtonVariant = "primary" | "danger";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
@@ -22,6 +22,17 @@ const variantClassMap: Record<ButtonVariant, string> = {
   ),
 };
 
+const buttonBaseClassName =
+  "relative flex items-center justify-center rounded-none border-4 px-5 py-[10px] font-sans text-xs font-bold tracking-[1px] disabled:cursor-not-allowed disabled:opacity-50";
+
+/** Shared look for `<Button />` and links (e.g. Next `Link`). */
+export function medusaButtonClassName(
+  variant: ButtonVariant = "primary",
+  className?: string,
+) {
+  return cn(buttonBaseClassName, variantClassMap[variant], className);
+}
+
 export const Button = ({
   children,
   className,
@@ -29,15 +40,7 @@ export const Button = ({
   ...props
 }: ButtonProps) => {
   return (
-    <button
-      className={cn(
-        "relative flex w-full items-center justify-center rounded-none border-4 px-5 py-[10px] font-sans text-xs font-bold tracking-[1px]",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        variantClassMap[variant],
-        className,
-      )}
-      {...props}
-    >
+    <button className={cn(medusaButtonClassName(variant), "w-full", className)} {...props}>
       {children}
     </button>
   );

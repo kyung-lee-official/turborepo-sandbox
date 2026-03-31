@@ -7,12 +7,29 @@ import { Button } from "@/app/medusa/components/Button";
 import { Card } from "@/app/medusa/components/Card";
 import { PageShell } from "@/app/medusa/components/PageShell";
 import { TextInput } from "@/app/medusa/components/TextInput";
-import { authenticateCustomer, signOutCustomer } from "./api";
+import { authenticateCustomer, deleteSession, getSession } from "./api";
 
 type FormData = {
   email: string;
   password: string;
 };
+
+function extractJwt(authResult: unknown): string | null {
+  if (!authResult || typeof authResult !== "object") return null;
+  const data = authResult as Record<string, unknown>;
+
+  const tokenCandidates = [
+    data.token,
+    data.jwt,
+    data.access_token,
+    data.accessToken,
+  ];
+
+  for (const token of tokenCandidates) {
+    if (typeof token === "string" && token.length > 0) return token;
+  }
+  return null;
+}
 
 export const Content = () => {
   const {
@@ -28,7 +45,12 @@ export const Content = () => {
 
   const authenticateCustomerMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      return await authenticateCustomer(data.email, data.password);
+      const authResult = await authenticateCustomer(data.email, data.password);
+      const jwt = extractJwt(authResult);
+      if (!jwt) {
+        throw new Error("Authentication succeeded but no JWT was returned.");
+      }
+      return await getSession(jwt);
     },
     onSuccess: async (data) => {},
     onError: (error) => {
@@ -38,7 +60,7 @@ export const Content = () => {
 
   const signOutMutation = useMutation({
     mutationFn: async () => {
-      return await signOutCustomer();
+      return await deleteSession();
     },
     onSuccess: async () => {
       console.log("Signed out successfully");
@@ -127,8 +149,8 @@ export const Content = () => {
           {authenticateCustomerMutation.isSuccess && (
             <Alert title="Sign in successful!" variant="success">
               <p>
-                You have been authenticated successfully. Refresh to update
-                token info in layout.
+                You have been authenticated successfully and session has been
+                loaded.
               </p>
             </Alert>
           )}
