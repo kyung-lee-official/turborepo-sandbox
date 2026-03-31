@@ -57,10 +57,3 @@ export async function retrievePayment(data: unknown) {
   );
   return response.data;
 }
-
-export async function authorizePaymentSession(paymentSessionId: string) {
-  const data = await api.post(
-    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/commerce-modules/payment/payment-session/authorize-payment-session/${paymentSessionId}`,
-  );
-  return data;
-}

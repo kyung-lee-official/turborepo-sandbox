@@ -11,7 +11,6 @@ export interface PaymentProviderConfig {
   type: PaymentProviderType;
   buttonText: string;
   successMessage: string;
-  showAuthorizeButton: boolean;
   handleRedirect?: (data: any) => void;
 }
 
@@ -20,16 +19,13 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
   pp_system_default: {
     type: "system_default",
     buttonText: "Initialize Payment Session",
-    successMessage:
-      "Payment session initialized successfully! You can now authorize it.",
-    showAuthorizeButton: true,
+    successMessage: "Payment session initialized successfully.",
   },
   pp_paypal_paypal: {
     type: "external",
     buttonText: "Create Payment Session",
     successMessage:
       "Payment session created successfully! Redirecting to PayPal...",
-    showAuthorizeButton: false,
     handleRedirect: (data: any) => {
       const paymentSession = data.payment_sessions?.[0] || data;
       const approvalUrl =
@@ -60,9 +56,7 @@ export function getProviderConfig(providerId: string): PaymentProviderConfig {
     return {
       type: "system_default",
       buttonText: "Initialize Payment Session",
-      successMessage:
-        "Payment session initialized successfully! You can now authorize it.",
-      showAuthorizeButton: true,
+      successMessage: "Payment session initialized successfully.",
     };
   }
   return providerConfig;
@@ -98,10 +92,6 @@ export function handlePostInitialization(data: any, providerId: string): void {
   if (config.handleRedirect) {
     config.handleRedirect(data);
   }
-}
-
-export function shouldShowAuthorizeButton(providerId: string): boolean {
-  return getProviderConfig(providerId).showAuthorizeButton;
 }
 
 export function getButtonText(providerId: string): string {
