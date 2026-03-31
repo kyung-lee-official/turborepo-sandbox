@@ -11,31 +11,6 @@ export async function getCart(id: string) {
   return data;
 }
 
-export async function addLineItem(
-  cartId: string,
-  variantId: string,
-  quantity: number = 1,
-) {
-  const data = await api.post<StoreCartResponse>(
-    `/store/carts/${cartId}/line-items`,
-    {
-      variant_id: variantId,
-      quantity: quantity,
-    },
-  );
-  return data;
-}
-
-export async function addPromotions(cartId: string, code: string) {
-  const data = await api.post<StoreCartResponse>(
-    `/store/carts/${cartId}/promotions`,
-    {
-      promo_codes: [code],
-    },
-  );
-  return data;
-}
-
 export async function createCart(regionId?: string) {
   const data = await api.post<StoreCartResponse>("/store-api/carts", {
     region_id: regionId,
@@ -54,6 +29,21 @@ export async function updateACart(
   return data;
 }
 
+export async function addLineItem(
+  cartId: string,
+  variantId: string,
+  quantity: number = 1,
+) {
+  const data = await api.post<StoreCartResponse>(
+    `/store-api/carts/${cartId}/line-items`,
+    {
+      variant_id: variantId,
+      quantity: quantity,
+    },
+  );
+  return data;
+}
+
 export async function updateLineItem(
   cartId: string,
   lineItemId: string,
@@ -64,6 +54,13 @@ export async function updateLineItem(
     {
       quantity: quantity,
     },
+  );
+  return data;
+}
+
+export async function unselectLineItem(cartId: string, lineId: string) {
+  const data = await api.post<StoreCartResponse>(
+    `/store-api/carts/${cartId}/line-items/${lineId}/unselect`,
   );
   return data;
 }
@@ -83,6 +80,16 @@ export async function updateCartShippingMethod(
     `/store/carts/${cartId}/shipping-methods`,
     {
       option_id: optionId,
+    },
+  );
+  return data;
+}
+
+export async function addPromotions(cartId: string, code: string) {
+  const data = await api.post<StoreCartResponse>(
+    `/store/carts/${cartId}/promotions`,
+    {
+      promo_codes: [code],
     },
   );
   return data;
