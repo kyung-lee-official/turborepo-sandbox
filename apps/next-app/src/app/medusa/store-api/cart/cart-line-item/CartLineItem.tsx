@@ -9,8 +9,8 @@ import { formatCurrency } from "@/utils/currency";
 import {
   QK_CART,
   removeLineItem,
+  selectLineItem,
   unselectLineItem,
-  updateACart,
   updateLineItem,
 } from "../api";
 
@@ -66,13 +66,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
       if (!select) {
         return unselectLineItem(cartId, itemId);
       }
-
-      const updatedIds = [...new Set([...selectedItemIds, itemId])];
-      return updateACart(cartId, {
-        cart: {
-          metadata: { ...cart.metadata, selectedItemIds: updatedIds },
-        },
-      });
+      throw new Error("Selecting existing line items is not supported");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -84,9 +78,29 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     },
   });
 
-  const selectedItemIds: string[] =
-    ((cart.metadata as Record<string, unknown>)?.selectedItemIds as string[]) ??
-    (cart.items || []).map((i) => i.id);
+  const selectLineItemMutation = useMutation({
+    mutationFn: ({ variantId }: { variantId: string }) => {
+      if (!cartId) throw new Error("Cart ID is required");
+      return selectLineItem(cartId, variantId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QK_CART.GET_CART, cartId, regionId],
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to bring back unselected item:", error);
+    },
+  });
+
+  const unselectedMap = ((cart.metadata as Record<string, unknown>)
+    ?.unselected ?? {}) as Record<string, { quantity?: number }>;
+  const unselectedItems = Object.entries(unselectedMap).map(
+    ([variantId, details]) => ({
+      variantId,
+      quantity: details.quantity ?? 0,
+    }),
+  );
 
   const handleRemoveItem = (lineItemId: string) => {
     if (!cartId) return;
@@ -130,14 +144,17 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   };
 
   const allItems = cart.items || [];
+  const hasVisibleItems = allItems.length > 0 || unselectedItems.length > 0;
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-xl">Cart Items ({allItems.length})</h3>
-      {allItems.length > 0 ? (
+      <h3 className="font-semibold text-xl">
+        Cart Items ({allItems.length + unselectedItems.length})
+      </h3>
+      {hasVisibleItems ? (
         <div className="space-y-4">
           {allItems.map((item) => {
-            const isSelected = selectedItemIds.includes(item.id);
+            const isSelected = true;
             return (
               <div key={item.id} className="rounded-lg border p-4">
                 <div className="flex items-start justify-between">
@@ -248,6 +265,51 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
               </div>
             );
           })}
+
+          {unselectedItems.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                Unselected Items ({unselectedItems.length})
+              </h4>
+              {unselectedItems.map((item) => (
+                <div
+                  key={item.variantId}
+                  className="rounded-lg border border-gray-200 bg-gray-50 p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-700 text-sm">
+                        Variant ID
+                      </p>
+                      <p className="font-mono text-gray-500 text-xs">
+                        {item.variantId}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-gray-700 text-sm">
+                        Quantity: {item.quantity}
+                      </p>
+                      <p className="text-gray-500 text-xs">Not selected</p>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          selectLineItemMutation.mutate({
+                            variantId: item.variantId,
+                          })
+                        }
+                        disabled={selectLineItemMutation.isPending}
+                        className="mt-2 rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                      >
+                        {selectLineItemMutation.isPending
+                          ? "Bringing back..."
+                          : "Bring back"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <p className="py-8 text-center text-gray-500">Your cart is empty</p>

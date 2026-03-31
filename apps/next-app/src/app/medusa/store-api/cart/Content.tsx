@@ -49,9 +49,7 @@ export const Content = () => {
         throw new Error("Cart ID is required for checkout");
       }
       setIsCheckingOut(true);
-      const metadata = cartQuery.data?.metadata as Record<string, unknown> | undefined;
-      const selectedItemIds = metadata?.selectedItemIds as string[] | undefined;
-      await createPaymentCollection(cartId, selectedItemIds);
+      await createPaymentCollection(cartId);
       router.push(`/medusa/store-api/cart/cart-checkout/${cartId}`);
     } catch (error) {
       console.error("Failed to create payment collection:", error);
@@ -74,11 +72,6 @@ export const Content = () => {
         cart = cartRes.cart;
       }
       setCartId(cart.id);
-      // Initialize metadata for non-selected items if not present
-      if (!cart.metadata) cart.metadata = {};
-      if (!cart.metadata.selectedItemIds) {
-        cart.metadata.selectedItemIds = (cart.items || []).map((i) => i.id);
-      }
       return cart;
     },
     enabled: hasHydrated && !!regionId,
