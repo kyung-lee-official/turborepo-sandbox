@@ -1,0 +1,191 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "H0wYD",
+      "x": 0,
+      "y": 0,
+      "name": "Medusa Pixel Button",
+      "width": 440,
+      "fill": "#e7e5e4",
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 40,
+      "children": [
+        {
+          "type": "text",
+          "id": "kRhLS",
+          "name": "hdr",
+          "fill": "#44403c",
+          "content": "Pixel UI — from Button.tsx (primary / danger)",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "q9ZTW",
+          "name": "sub",
+          "fill": "#78716c",
+          "content": "full-width feel · chunky border · no radius · drop shadow block",
+          "fontFamily": "Inter",
+          "fontSize": 10,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "J1Nmm",
+          "name": "rowP",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "LtB4o",
+              "name": "capP",
+              "fill": "#57534e",
+              "content": "variant: primary",
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "n3Tem",
+              "name": "wrapP",
+              "width": 328,
+              "height": 52,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "OUZLy",
+                  "x": 8,
+                  "y": 8,
+                  "name": "shP",
+                  "fill": "#0f172a",
+                  "width": 312,
+                  "height": 40
+                },
+                {
+                  "type": "frame",
+                  "id": "e61Pr",
+                  "x": 0,
+                  "y": 0,
+                  "name": "faceP",
+                  "width": 320,
+                  "height": 44,
+                  "fill": "#4f46e5",
+                  "stroke": {
+                    "align": "center",
+                    "thickness": 4,
+                    "fill": "#1e1b84"
+                  },
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "emIFc",
+                      "name": "txtP",
+                      "fill": "#FFFFFF",
+                      "content": "Sign in",
+                      "lineHeight": 1.1,
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MfKw1",
+          "name": "rowD",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "5oamd",
+              "name": "capD",
+              "fill": "#57534e",
+              "content": "variant: danger",
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "iDMBV",
+              "name": "wrapD",
+              "width": 328,
+              "height": 52,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "22kdo",
+                  "x": 8,
+                  "y": 8,
+                  "name": "shD",
+                  "fill": "#450a0a",
+                  "width": 312,
+                  "height": 40
+                },
+                {
+                  "type": "frame",
+                  "id": "Wl16E",
+                  "x": 0,
+                  "y": 0,
+                  "name": "faceD",
+                  "width": 320,
+                  "height": 44,
+                  "fill": "#dc2626",
+                  "stroke": {
+                    "align": "center",
+                    "thickness": 4,
+                    "fill": "#7f1d1d"
+                  },
+                  "padding": [
+                    10,
+                    20
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zyAMD",
+                      "name": "txtD",
+                      "fill": "#FFFFFF",
+                      "content": "Sign out",
+                      "lineHeight": 1.1,
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "700",
+                      "letterSpacing": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
