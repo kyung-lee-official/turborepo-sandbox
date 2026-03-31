@@ -13,7 +13,11 @@ import {
 import { HttpError } from "@repo/types";
 import type { NextFunction } from "express";
 import * as QueryConfig from "./query-config";
-import { DeleteLineItemRequest, UpdateLineItemRequest } from "./validators";
+import {
+  DeleteLineItemRequest,
+  StoreSelectCartLineItem,
+  UpdateLineItemRequest,
+} from "./validators";
 
 export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
   {
@@ -45,6 +49,17 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
     matcher: "/store-api/carts/:id/line-items",
     middlewares: [
       validateAndTransformBody(StoreAddCartLineItem),
+      validateAndTransformQuery(
+        StoreGetCartsCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/store-api/carts/:id/line-items/select",
+    middlewares: [
+      validateAndTransformBody(StoreSelectCartLineItem),
       validateAndTransformQuery(
         StoreGetCartsCart,
         QueryConfig.retrieveTransformQueryConfig,
