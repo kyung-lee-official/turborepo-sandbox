@@ -6,7 +6,13 @@ import Image from "next/image";
 import { useState } from "react";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { formatCurrency } from "@/utils/currency";
-import { QK_CART, removeLineItem, updateACart, updateLineItem } from "../api";
+import {
+  QK_CART,
+  removeLineItem,
+  unselectLineItem,
+  updateACart,
+  updateLineItem,
+} from "../api";
 
 export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   const queryClient = useQueryClient();
@@ -53,8 +59,21 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     },
   });
 
-  const updateCartMutation = useMutation({
-    mutationFn: (updates: any) => updateACart(cartId!, { cart: updates }),
+  const toggleItemSelectionMutation = useMutation({
+    mutationFn: ({ itemId, select }: { itemId: string; select: boolean }) => {
+      if (!cartId) throw new Error("Cart ID is required");
+
+      if (!select) {
+        return unselectLineItem(cartId, itemId);
+      }
+
+      const updatedIds = [...new Set([...selectedItemIds, itemId])];
+      return updateACart(cartId, {
+        cart: {
+          metadata: { ...cart.metadata, selectedItemIds: updatedIds },
+        },
+      });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],
@@ -68,16 +87,6 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   const selectedItemIds: string[] =
     ((cart.metadata as Record<string, unknown>)?.selectedItemIds as string[]) ??
     (cart.items || []).map((i) => i.id);
-
-  const toggleItemSelection = (itemId: string, select: boolean) => {
-    if (!cartId || updateCartMutation.isPending) return;
-    const updatedIds = select
-      ? [...selectedItemIds, itemId]
-      : selectedItemIds.filter((id) => id !== itemId);
-    updateCartMutation.mutate({
-      metadata: { ...cart.metadata, selectedItemIds: updatedIds },
-    });
-  };
 
   const handleRemoveItem = (lineItemId: string) => {
     if (!cartId) return;
@@ -137,10 +146,13 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() =>
-                          toggleItemSelection(item.id, !isSelected)
-                        }
-                        disabled={updateCartMutation.isPending}
+                        onChange={() => {
+                          toggleItemSelectionMutation.mutate({
+                            itemId: item.id,
+                            select: !isSelected,
+                          });
+                        }}
+                        disabled={toggleItemSelectionMutation.isPending}
                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <label className="font-medium text-gray-700 text-sm">
