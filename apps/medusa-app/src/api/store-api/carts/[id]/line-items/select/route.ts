@@ -7,7 +7,6 @@ import { customAddToCartWorkflow } from "@/workflows/commerce-modules/cart/custo
 
 type StoreSelectCartLineItemPayload = {
   variant_id: string;
-  metadata?: Record<string, unknown> | null;
 };
 
 /**

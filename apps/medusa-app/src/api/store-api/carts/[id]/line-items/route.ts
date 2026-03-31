@@ -3,10 +3,11 @@ import type {
   AddToCartWorkflowInputDTO,
   HttpTypes,
 } from "@medusajs/framework/types";
+import type { StoreAddCartLineItemType } from "@/api/store-api/carts/validators";
 import { customAddToCartWorkflow } from "@/workflows/commerce-modules/cart/custom-add-line-items/custom-add-line-items";
 
 export const POST = async (
-  req: MedusaRequest<HttpTypes.StoreAddCartLineItem, HttpTypes.SelectParams>,
+  req: MedusaRequest<StoreAddCartLineItemType, HttpTypes.SelectParams>,
   res: MedusaResponse<HttpTypes.StoreCartResponse>,
 ) => {
   const cartId = req.params.id;
