@@ -18,14 +18,14 @@ export async function authenticateCustomer(email: string, password: string) {
 export async function getSession(jwt: string) {
   const headers = new AxiosHeaders();
   headers.set("Authorization", `Bearer ${jwt}`);
-  const data = await api.post(`/auth/session`, {}, { headers });
+  const data = await api.post(`/auth/session`, {}, { headers: headers });
   return data;
 }
 
 /**
  * Medusa's built-in session deletion endpoint
  */
-export async function deleteSession(jwt: string) {
+export async function deleteSession() {
   const data = await api.del(`/auth/session`);
   return data;
 }
