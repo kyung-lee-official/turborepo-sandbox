@@ -50,7 +50,7 @@ export async function updateLineItem(
   quantity: number,
 ) {
   const data = await api.post<StoreCartResponse>(
-    `/store/carts/${cartId}/line-items/${lineItemId}`,
+    `/store-api/carts/${cartId}/line-items/${lineItemId}`,
     {
       quantity: quantity,
     },
