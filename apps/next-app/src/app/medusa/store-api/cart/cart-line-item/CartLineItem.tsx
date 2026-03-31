@@ -19,6 +19,12 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   const cartId = useMIdStore((state) => state.cartId);
   const regionId = useMIdStore((state) => state.regionId);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [pendingSelectionItemId, setPendingSelectionItemId] = useState<
+    string | null
+  >(null);
+  const [pendingRestoreVariantId, setPendingRestoreVariantId] = useState<
+    string | null
+  >(null);
 
   const removeLineItemMutation = useMutation({
     mutationFn: ({
@@ -68,10 +74,16 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
       }
       throw new Error("Selecting existing line items is not supported");
     },
+    onMutate: async ({ itemId }) => {
+      setPendingSelectionItemId(itemId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],
       });
+    },
+    onSettled: () => {
+      setPendingSelectionItemId(null);
     },
     onError: (error) => {
       console.error("Failed to update cart metadata:", error);
@@ -83,10 +95,16 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
       if (!cartId) throw new Error("Cart ID is required");
       return selectLineItem(cartId, variantId);
     },
+    onMutate: async ({ variantId }) => {
+      setPendingRestoreVariantId(variantId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],
       });
+    },
+    onSettled: () => {
+      setPendingRestoreVariantId(null);
     },
     onError: (error) => {
       console.error("Failed to bring back unselected item:", error);
@@ -155,6 +173,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
         <div className="space-y-4">
           {allItems.map((item) => {
             const isSelected = true;
+            const isSelectionPending = pendingSelectionItemId === item.id;
             return (
               <div key={item.id} className="rounded-lg border p-4">
                 <div className="flex items-start justify-between">
@@ -169,7 +188,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
                             select: !isSelected,
                           });
                         }}
-                        disabled={toggleItemSelectionMutation.isPending}
+                        disabled={isSelectionPending}
                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <label className="font-medium text-gray-700 text-sm">
@@ -276,36 +295,42 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
                   key={item.variantId}
                   className="rounded-lg border border-gray-200 bg-gray-50 p-4"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-700 text-sm">
-                        Variant ID
-                      </p>
-                      <p className="font-mono text-gray-500 text-xs">
-                        {item.variantId}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-700 text-sm">
-                        Quantity: {item.quantity}
-                      </p>
-                      <p className="text-gray-500 text-xs">Not selected</p>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          selectLineItemMutation.mutate({
-                            variantId: item.variantId,
-                          })
-                        }
-                        disabled={selectLineItemMutation.isPending}
-                        className="mt-2 rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                      >
-                        {selectLineItemMutation.isPending
-                          ? "Bringing back..."
-                          : "Bring back"}
-                      </button>
-                    </div>
-                  </div>
+                  {(() => {
+                    const isRestorePending =
+                      pendingRestoreVariantId === item.variantId;
+                    return (
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-700 text-sm">
+                            Variant ID
+                          </p>
+                          <p className="font-mono text-gray-500 text-xs">
+                            {item.variantId}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium text-gray-700 text-sm">
+                            Quantity: {item.quantity}
+                          </p>
+                          <p className="text-gray-500 text-xs">Not selected</p>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              selectLineItemMutation.mutate({
+                                variantId: item.variantId,
+                              })
+                            }
+                            disabled={isRestorePending}
+                            className="mt-2 rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                          >
+                            {isRestorePending
+                              ? "Bringing back..."
+                              : "Bring back"}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
