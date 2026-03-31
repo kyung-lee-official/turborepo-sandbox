@@ -89,7 +89,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
     "@hookform/devtools": "^4.4.0",
-    "@medusajs/types": "^2.12.3",
+    "@medusajs/types": "^2.13.5",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/jsonwebtoken": "^9.0.10",

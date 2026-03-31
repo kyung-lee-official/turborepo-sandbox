@@ -80,14 +80,14 @@ async function post<T>(
   options?: {
     withoutApiKey?: boolean;
     apiKey?: string;
-    header?: AxiosHeaders;
+    headers?: AxiosHeaders;
   },
 ): Promise<T> {
   const res = await request<T>("POST", url, {
     data,
     withoutApiKey: options?.withoutApiKey,
     apiKey: options?.apiKey,
-    header: options?.header,
+    headers: options?.headers,
   });
   return res.data;
 }
@@ -116,7 +116,7 @@ async function request<T>(
     params?: any;
     withoutApiKey?: boolean;
     apiKey?: string;
-    header?: AxiosHeaders;
+    headers?: AxiosHeaders;
   },
 ): Promise<AxiosResponse<T>> {
   const headers = new AxiosHeaders();
@@ -130,7 +130,7 @@ async function request<T>(
     method,
     url,
     ...options,
-    headers: options?.header ? options.header.concat(headers) : headers,
+    headers: options?.headers ? options.headers.concat(headers) : headers,
   });
 }
 

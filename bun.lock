@@ -226,7 +226,7 @@
       "devDependencies": {
         "@biomejs/biome": "2.3.13",
         "@hookform/devtools": "^4.4.0",
-        "@medusajs/types": "^2.12.3",
+        "@medusajs/types": "^2.13.5",
         "@repo/types": "workspace:*",
         "@repo/typescript-config": "workspace:*",
         "@types/jsonwebtoken": "^9.0.10",
@@ -6311,6 +6311,8 @@
     "next/postcss": ["postcss@8.4.31", "", { "dependencies": { "nanoid": "^3.3.6", "picocolors": "^1.0.0", "source-map-js": "^1.0.2" } }, "sha512-PS08Iboia9mts/2ygV3eLpY5ghnUcfLV/EXTOW1E2qYxJKGGBUtNjN76FYHnMs36RmARn41bC0AZmn+rR0OVpQ=="],
 
     "next-app/@biomejs/biome": ["@biomejs/biome@2.3.13", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.3.13", "@biomejs/cli-darwin-x64": "2.3.13", "@biomejs/cli-linux-arm64": "2.3.13", "@biomejs/cli-linux-arm64-musl": "2.3.13", "@biomejs/cli-linux-x64": "2.3.13", "@biomejs/cli-linux-x64-musl": "2.3.13", "@biomejs/cli-win32-arm64": "2.3.13", "@biomejs/cli-win32-x64": "2.3.13" }, "bin": { "biome": "bin/biome" } }, "sha512-Fw7UsV0UAtWIBIm0M7g5CRerpu1eKyKAXIazzxhbXYUyMkwNrkX/KLkGI7b+uVDQ5cLUMfOC9vR60q9IDYDstA=="],
+
+    "next-app/@medusajs/types": ["@medusajs/types@2.13.5", "", { "dependencies": { "bignumber.js": "^9.1.2" }, "peerDependencies": { "ioredis": "^5.4.1", "vite": "^5.4.21" }, "optionalPeers": ["ioredis", "vite"] }, "sha512-vHfXGdR2GcQB7tLnX13Tzo0vlzSIPvMxea8y60cEviZhq8+ercXCkMylNzhCeXngEU7pLv8aWHBQqZ7YOT547Q=="],
 
     "next-app/@types/node": ["@types/node@22.19.2", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-LPM2G3Syo1GLzXLGJAKdqoU35XvrWzGJ21/7sgZTUpbkBaOasTj8tjwn6w+hCkqaa1TfJ/w67rJSwYItlJ2mYw=="],
 
