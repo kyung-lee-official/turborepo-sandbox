@@ -31,10 +31,18 @@ export const customUnselectCartItemWorkflow = createWorkflow(
       filters: { id: input.cart_id },
     }).config({ name: "get-variants" });
 
-    // Update the cart's metadata
-    const metadataToUpdate = transform(data, (data) => {
-      const updatedCart = data[0];
-      const unselected = (updatedCart.items || []).reduce(
+    // Update cart metadata by appending only the line item(s) being unselected.
+    const metadataToUpdate = transform({ data, input }, (transformData) => {
+      const updatedCart = transformData.data[0];
+      const existingMetadata =
+        (updatedCart?.metadata as unknown as CartMetadata) || {};
+      const existingUnselected = existingMetadata.unselected || {};
+
+      const lineItemsToUnselect = (updatedCart.items || []).filter(
+        (item) => !!item?.id && transformData.input.ids.includes(item.id),
+      );
+
+      const newlyUnselected = lineItemsToUnselect.reduce(
         (acc, item) => {
           if (item?.variant_id) {
             acc[item.variant_id] = {
@@ -45,8 +53,12 @@ export const customUnselectCartItemWorkflow = createWorkflow(
         },
         {} as Record<string, { quantity: number }>,
       );
+
       const metadata: CartMetadata = {
-        unselected: unselected,
+        unselected: {
+          ...existingUnselected,
+          ...newlyUnselected,
+        },
       };
       return metadata;
     });
