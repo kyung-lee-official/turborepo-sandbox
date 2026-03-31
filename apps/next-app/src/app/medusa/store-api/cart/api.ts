@@ -65,6 +65,16 @@ export async function unselectLineItem(cartId: string, lineId: string) {
   return data;
 }
 
+export async function selectLineItem(cartId: string, variantId: string) {
+  const data = await api.post<StoreCartResponse>(
+    `/store-api/carts/${cartId}/line-items/select`,
+    {
+      variant_id: variantId,
+    },
+  );
+  return data;
+}
+
 export async function removeLineItem(cartId: string, lineItemId: string) {
   const data = await api.del<StoreCartResponse>(
     `/store/carts/${cartId}/line-items/${lineItemId}`,
