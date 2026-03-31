@@ -30,7 +30,6 @@ export type StoreAddCartLineItemType = z.infer<typeof StoreAddCartLineItem>;
 export const StoreAddCartLineItem = z.object({
   variant_id: z.string(),
   quantity: z.number().gt(0),
-  metadata: z.record(z.unknown()).nullish(),
 });
 
 /**
