@@ -20,7 +20,7 @@ export async function createCart(regionId?: string) {
 
 export async function updateACart(
   cartId: string,
-  updates: Partial<StoreCartResponse>,
+  updates: Record<string, unknown>,
 ) {
   const data = await api.post<StoreCartResponse>(
     `/store/carts/${cartId}`,
@@ -59,7 +59,7 @@ export async function updateLineItem(
 }
 
 export async function unselectLineItem(cartId: string, lineId: string) {
-  const data = await api.post<StoreCartResponse>(
+  const data = await api.del<StoreCartResponse>(
     `/store-api/carts/${cartId}/line-items/${lineId}/unselect`,
   );
   return data;
