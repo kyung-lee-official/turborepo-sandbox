@@ -4,10 +4,7 @@ import type {
   AdminPaymentSession,
 } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
-import {
-  capturePaymentWorkflow,
-  completeCartWorkflow,
-} from "@medusajs/medusa/core-flows";
+import { capturePaymentWorkflow } from "@medusajs/medusa/core-flows";
 import {
   HttpError,
   type PayPalAuthorizationEvent,
@@ -15,6 +12,7 @@ import {
   type PayPalCheckoutOrderApprovedEvent,
   type PayPalWebhookEvent,
 } from "@repo/types";
+import { customCompleteCartWorkflow } from "@/workflows/commerce-modules/cart/custom-complete-cart/custom-complete-cart";
 import { verifyWebhookSignature } from "./verify-webhook-signature";
 
 /**
@@ -107,7 +105,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             "No cart ID found in the PayPal capture completed event",
           );
         }
-        const { result } = await completeCartWorkflow(req.scope).run({
+        const { result } = await customCompleteCartWorkflow(req.scope).run({
           input: {
             id: cartId,
           },
