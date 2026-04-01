@@ -1,10 +1,10 @@
+import { logger } from "@medusajs/framework";
 import {
   createWorkflow,
   transform,
   WorkflowResponse,
   when,
 } from "@medusajs/framework/workflows-sdk";
-import { logger } from "@medusajs/framework";
 import {
   acquireLockStep,
   addToCartWorkflow,
