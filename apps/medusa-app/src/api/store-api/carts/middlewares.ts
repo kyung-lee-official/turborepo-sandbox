@@ -1,4 +1,5 @@
 import {
+  authenticate,
   type MedusaRequest,
   type MedusaResponse,
   type MiddlewareRoute,
@@ -29,6 +30,9 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
         QueryConfig.retrieveTransformQueryConfig,
       ),
       validateAndTransformBody(StoreCreateCart),
+      authenticate("customer", ["session", "bearer"], {
+        allowUnregistered: true, // allows guest customers too
+      }),
     ],
   },
   // block the old route for carts to avoid confusion
