@@ -16,11 +16,23 @@ import * as QueryConfig from "./query-config";
 import {
   DeleteLineItemRequest,
   StoreAddCartLineItem,
+  StoreGetOrCreateCustomerCart,
   StoreSelectCartLineItem,
   UpdateLineItemRequest,
 } from "./validators";
 
 export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
+  {
+    method: ["GET"],
+    matcher: "/store-api/carts",
+    middlewares: [
+      validateAndTransformQuery(
+        StoreGetOrCreateCustomerCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
+      authenticate("customer", ["session", "bearer"]),
+    ],
+  },
   {
     method: ["POST"],
     matcher: "/store-api/carts",

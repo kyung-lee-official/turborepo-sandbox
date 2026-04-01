@@ -3,6 +3,10 @@ import { AddressPayload } from "@/api/utils/common-validators";
 import { createSelectParams, WithAdditionalData } from "@/api/utils/validators";
 
 export const StoreGetCartsCart = createSelectParams();
+export const StoreGetOrCreateCustomerCart = createSelectParams().extend({
+  region_id: z.string(),
+  sales_channel_id: z.string().optional(),
+});
 
 const ItemSchema = z.object({
   variant_id: z.string(),
@@ -25,6 +29,9 @@ export const CreateCart = z
   })
   .strict();
 export const StoreCreateCart = WithAdditionalData(CreateCart);
+export type StoreGetOrCreateCustomerCartType = z.infer<
+  typeof StoreGetOrCreateCustomerCart
+>;
 
 export type StoreAddCartLineItemType = z.infer<typeof StoreAddCartLineItem>;
 export const StoreAddCartLineItem = z.object({
