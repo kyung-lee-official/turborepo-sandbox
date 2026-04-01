@@ -9,7 +9,6 @@ import {
   createCartWorkflow,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import { loggerStep } from "@/workflows/logger-step";
 
 type WorkflowInput = {
   auth_context?: {
@@ -42,9 +41,6 @@ export const customCreateCartWorkflow = createWorkflow(
       { isSignedInCustomer, hasRegionAndSalesChannel },
       (data) => data.isSignedInCustomer && data.hasRegionAndSalesChannel,
     ).then(() => {
-      loggerStep({
-        input: { message: "Finding existing customer cart" },
-      }).config({ name: "find-existing-cart-logger" });
       const { data: existingCarts } = useQueryGraphStep({
         entity: "cart",
         fields: ["id"],
@@ -67,15 +63,6 @@ export const customCreateCartWorkflow = createWorkflow(
         !data.hasRegionAndSalesChannel ||
         !data.existingCart,
     ).then(() => {
-      loggerStep({
-        input: {
-          message: "Creating new customer cart",
-          isSignedInCustomer,
-          hasRegionAndSalesChannel,
-        },
-      }).config({
-        name: "create-new-cart-logger",
-      });
       return createCartWorkflow.runAsStep({
         input: {
           ...input.create_cart_input,
