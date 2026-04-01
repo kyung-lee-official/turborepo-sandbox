@@ -9,6 +9,7 @@ import {
   createCartWorkflow,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
+import { HttpError } from "@repo/types";
 
 type WorkflowInput = {
   auth_context?: {
@@ -16,6 +17,10 @@ type WorkflowInput = {
     actor_type?: string;
   };
   create_cart_input: CreateCartWorkflowInputDTO;
+};
+
+type WorkflowOutput = {
+  id: string;
 };
 
 export const customCreateCartWorkflow = createWorkflow(
@@ -43,7 +48,7 @@ export const customCreateCartWorkflow = createWorkflow(
     ).then(() => {
       const { data: existingCarts } = useQueryGraphStep({
         entity: "cart",
-        fields: ["id"],
+        fields: ["id", "created_at"],
         filters: {
           customer_id: input.auth_context?.actor_id,
           region_id: input.create_cart_input.region_id,
@@ -52,7 +57,20 @@ export const customCreateCartWorkflow = createWorkflow(
         },
       });
 
-      return existingCarts[0];
+      const latestCart = transform({ existingCarts }, (data) =>
+        data.existingCarts.reduce((latest, current) => {
+          if (!latest) {
+            return current;
+          }
+
+          const latestTime = new Date(latest.created_at).getTime();
+          const currentTime = new Date(current.created_at).getTime();
+
+          return currentTime > latestTime ? current : latest;
+        }, data.existingCarts[0]),
+      );
+
+      return latestCart;
     });
 
     const createdCart = when(
@@ -71,9 +89,21 @@ export const customCreateCartWorkflow = createWorkflow(
       });
     });
 
-    const resultCart = transform({ existingCart, createdCart }, (data) => {
-      return data.existingCart ?? data.createdCart;
-    });
+    const resultCart = transform(
+      { existingCart, createdCart },
+      (data): WorkflowOutput => {
+        const cart = data.existingCart ?? data.createdCart;
+
+        if (!cart?.id) {
+          throw new HttpError(
+            "SYSTEM.WORKFLOW_INVARIANT",
+            "Cart resolution failed in custom-create-cart workflow",
+          );
+        }
+
+        return { id: cart.id };
+      },
+    );
 
     return new WorkflowResponse(resultCart);
   },
