@@ -20,7 +20,7 @@ export const POST = async (
   const workflowInput = {
     ...req.validatedBody,
     customer_id: req.auth_context?.actor_id,
-    metadata: {},
+    metadata: { unselected: {} },
   } as CreateCartWorkflowInputDTO;
 
   const { result } = await createCartWorkflow(req.scope).run({
