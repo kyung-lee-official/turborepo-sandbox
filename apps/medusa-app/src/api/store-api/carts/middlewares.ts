@@ -31,7 +31,7 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
       ),
       validateAndTransformBody(StoreCreateCart),
       authenticate("customer", ["session", "bearer"], {
-        allowUnregistered: true, // allows guest customers too
+        allowUnauthenticated: true, // allows guest customers too
       }),
     ],
   },
