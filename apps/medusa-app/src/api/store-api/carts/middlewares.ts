@@ -18,6 +18,7 @@ import {
   StoreAddCartLineItem,
   StoreGetOrCreateCustomerCart,
   StoreSelectCartLineItem,
+  StoreUpdateCartNoMetadata,
   UpdateLineItemRequest,
 } from "./validators";
 
@@ -47,6 +48,17 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
       }),
     ],
   },
+  {
+    method: ["POST"],
+    matcher: "/store-api/carts/:id",
+    middlewares: [
+      validateAndTransformBody(StoreUpdateCartNoMetadata),
+      validateAndTransformQuery(
+        StoreGetCartsCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
+    ],
+  },
   // block the old route for carts to avoid confusion
   {
     method: ["POST"],
@@ -56,6 +68,18 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
         throw new HttpError(
           "AUTH.FORBIDDEN",
           "This route has been disabled because the metadata was not initialized properly. Please use `POST /store-api/carts` instead.",
+        );
+      },
+    ],
+  },
+  {
+    method: ["POST"],
+    matcher: "/store/carts/:id",
+    middlewares: [
+      (req: MedusaRequest, res: MedusaResponse, next: NextFunction) => {
+        throw new HttpError(
+          "AUTH.FORBIDDEN",
+          "This route has been disabled. Cart updates must not accept cart `metadata` from the client. Please use `POST /store-api/carts/:id` instead.",
         );
       },
     ],

@@ -1,6 +1,15 @@
 import { z } from "@medusajs/framework/zod";
+import { UpdateCart } from "@medusajs/medusa/api/store/carts/validators";
 import { AddressPayload } from "@/api/utils/common-validators";
 import { createSelectParams, WithAdditionalData } from "@/api/utils/validators";
+
+/** Same as Medusa `StoreUpdateCart`, but rejects cart-level `metadata` (use workflows for that). */
+export const StoreUpdateCartNoMetadata = WithAdditionalData(
+  UpdateCart.omit({ metadata: true }),
+);
+export type StoreUpdateCartNoMetadataType = z.infer<
+  ReturnType<typeof StoreUpdateCartNoMetadata>
+>;
 
 export const StoreGetCartsCart = createSelectParams();
 export const StoreGetOrCreateCustomerCart = createSelectParams().extend({
