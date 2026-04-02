@@ -17,7 +17,6 @@ import {
 export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   const queryClient = useQueryClient();
   const cartId = useMIdStore((state) => state.cartId);
-  const regionId = useMIdStore((state) => state.regionId);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [pendingSelectionItemId, setPendingSelectionItemId] = useState<
     string | null
@@ -35,9 +34,9 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
       lineItemId: string;
     }) => removeLineItem(cartId, lineItemId),
     onSuccess: () => {
-      // Invalidate and refetch cart data after successful deletion
+      // Must match Content.tsx cart query key prefix: [GET_CART, regionId, customerId|guest]
       queryClient.invalidateQueries({
-        queryKey: [QK_CART.GET_CART, cartId, regionId],
+        queryKey: [QK_CART.GET_CART],
       });
     },
     onError: (error) => {
@@ -57,7 +56,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     }) => updateLineItem(cartId, lineItemId, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QK_CART.GET_CART, cartId, regionId],
+        queryKey: [QK_CART.GET_CART],
       });
     },
     onError: (error) => {
@@ -79,7 +78,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QK_CART.GET_CART, cartId, regionId],
+        queryKey: [QK_CART.GET_CART],
       });
     },
     onSettled: () => {
@@ -100,7 +99,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QK_CART.GET_CART, cartId, regionId],
+        queryKey: [QK_CART.GET_CART],
       });
     },
     onSettled: () => {
