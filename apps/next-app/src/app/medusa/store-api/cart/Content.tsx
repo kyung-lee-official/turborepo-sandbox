@@ -5,8 +5,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
+import { getMeOrNull } from "../customer/api";
 import { createPaymentCollection } from "../payment/api";
-import { createCart, getCart, QK_CART } from "./api";
+import { createCart, getCart, getOrCreateCustomerCart, QK_CART } from "./api";
 import { CartAddresses } from "./cart-address/CartAddress";
 import { CartCreation } from "./cart-creation/CartCreation";
 import { CartInfo } from "./cart-info/CartInfo";
@@ -15,6 +16,8 @@ import CartPromotions from "./cart-promotions/CartPromotions";
 import { CartShipping } from "./cart-shipping/CartShipping";
 import { CartSummary } from "./cart-summary/CartSummary";
 
+const SALES_CHANNEL_ID = process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID;
+
 export const Content = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -22,14 +25,28 @@ export const Content = () => {
   const regionId = useMIdStore((state) => state.regionId);
   const cartId = useMIdStore((state) => state.cartId);
   const setCartId = useMIdStore((state) => state.setCartId);
+  const clearCartId = useMIdStore((state) => state.clearCartId);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+  const sessionQuery = useQuery({
+    queryKey: ["store", "customers", "me"],
+    queryFn: getMeOrNull,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const isCustomerSession = !!sessionQuery.data?.customer;
+
   const createCartMutation = useMutation({
-    mutationFn: (regionId: string) => createCart(regionId),
+    mutationFn: (rid: string) => createCart(rid),
     onSuccess: (data) => {
       setCartId(data.cart.id);
       queryClient.invalidateQueries({
-        queryKey: [QK_CART.GET_CART, data.cart.id, regionId],
+        queryKey: [
+          QK_CART.GET_CART,
+          regionId,
+          sessionQuery.data?.customer?.id ?? "guest",
+        ],
       });
     },
   });
@@ -58,23 +75,52 @@ export const Content = () => {
   };
 
   const cartQuery = useQuery({
-    queryKey: [QK_CART.GET_CART, cartId, regionId],
-    queryFn: async () => {
-      let cart: StoreCart;
-      if (!cartId) {
-        if (!regionId) {
-          throw new Error("Region ID is required to create a cart");
-        }
-        const cartRes = await createCart(regionId);
-        cart = cartRes.cart;
-      } else {
-        const cartRes = await getCart(cartId);
-        cart = cartRes.cart;
+    queryKey: [
+      QK_CART.GET_CART,
+      regionId,
+      sessionQuery.data?.customer?.id ?? "guest",
+    ],
+    queryFn: async (): Promise<StoreCart> => {
+      if (!regionId) {
+        throw new Error("Region ID is required");
       }
-      setCartId(cart.id);
-      return cart;
+
+      const me = sessionQuery.data;
+
+      if (me?.customer) {
+        const res = await getOrCreateCustomerCart({
+          regionId,
+          salesChannelId: SALES_CHANNEL_ID,
+        });
+        setCartId(res.cart.id);
+        return res.cart;
+      }
+
+      const storedId = useMIdStore.getState().cartId;
+      if (storedId) {
+        try {
+          const res = await getCart(storedId);
+          if (res.cart.completed_at) {
+            clearCartId();
+            const created = await createCart(regionId);
+            setCartId(created.cart.id);
+            return created.cart;
+          }
+          setCartId(res.cart.id);
+          return res.cart;
+        } catch {
+          clearCartId();
+          const created = await createCart(regionId);
+          setCartId(created.cart.id);
+          return created.cart;
+        }
+      }
+
+      const created = await createCart(regionId);
+      setCartId(created.cart.id);
+      return created.cart;
     },
-    enabled: hasHydrated && !!regionId,
+    enabled: hasHydrated && !!regionId && sessionQuery.isSuccess,
   });
 
   if (!regionId) {
@@ -86,6 +132,34 @@ export const Content = () => {
           </h2>
           <p className="text-yellow-700">
             Please select a region on the region page to view cart information.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionQuery.isLoading || !hasHydrated) {
+    return (
+      <div className="mx-auto max-w-4xl p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-1/4 rounded bg-gray-200"></div>
+          <div className="h-64 rounded bg-gray-200"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionQuery.isError) {
+    return (
+      <div className="mx-auto max-w-4xl p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <h2 className="mb-2 font-semibold text-lg text-red-800">
+            Session Error
+          </h2>
+          <p className="text-red-700">
+            {sessionQuery.error instanceof Error
+              ? sessionQuery.error.message
+              : "Could not resolve customer session"}
           </p>
         </div>
       </div>
@@ -115,10 +189,10 @@ export const Content = () => {
               ? cartQuery.error.message
               : "Unknown error"}
           </p>
-          {/* Cart Creation UI */}
           <CartCreation
             cartId={cartId}
             regionId={regionId}
+            isCustomerSession={isCustomerSession}
             onCreateCart={handleCreateCart}
             createCartMutation={createCartMutation}
           />
@@ -133,10 +207,10 @@ export const Content = () => {
       <div className="mx-auto max-w-4xl p-6">
         <p className="text-gray-500">No cart data available</p>
 
-        {/* Cart Creation UI */}
         <CartCreation
           cartId={cartId}
           regionId={regionId}
+          isCustomerSession={isCustomerSession}
           onCreateCart={handleCreateCart}
           createCartMutation={createCartMutation}
         />
@@ -158,6 +232,7 @@ export const Content = () => {
       <CartCreation
         cartId={cartId}
         regionId={regionId}
+        isCustomerSession={isCustomerSession}
         onCreateCart={handleCreateCart}
         createCartMutation={createCartMutation}
       />

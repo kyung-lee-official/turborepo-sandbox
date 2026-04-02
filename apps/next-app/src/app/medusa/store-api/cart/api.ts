@@ -6,8 +6,9 @@ export enum QK_CART {
   CREATE_CART = "create_cart",
 }
 
+/** Medusa native retrieve cart (guest or any cart id). */
 export async function getCart(id: string) {
-  const data = await api.post<StoreCartResponse>(`/store/carts/${id}`);
+  const data = await api.get<StoreCartResponse>(`/store/carts/${id}`);
   return data;
 }
 
@@ -18,12 +19,28 @@ export async function createCart(regionId?: string) {
   return data;
 }
 
+/** Signed-in only: backend returns existing active cart for region or creates one. */
+export async function getOrCreateCustomerCart(options: {
+  regionId: string;
+  salesChannelId?: string;
+}) {
+  const data = await api.get<StoreCartResponse>(`/store-api/carts`, {
+    params: {
+      region_id: options.regionId,
+      ...(options.salesChannelId
+        ? { sales_channel_id: options.salesChannelId }
+        : {}),
+    },
+  });
+  return data;
+}
+
 export async function updateACart(
   cartId: string,
   updates: Record<string, unknown>,
 ) {
   const data = await api.post<StoreCartResponse>(
-    `/store/carts/${cartId}`,
+    `/store-api/carts/${cartId}`,
     updates,
   );
   return data;
