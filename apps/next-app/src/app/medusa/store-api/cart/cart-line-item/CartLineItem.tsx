@@ -284,56 +284,55 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
             );
           })}
 
-          {unselectedItems.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
-                Unselected Items ({unselectedItems.length})
-              </h4>
-              {unselectedItems.map((item) => (
-                <div
-                  key={item.variantId}
-                  className="rounded-lg border border-gray-200 bg-gray-50 p-4"
-                >
-                  {(() => {
-                    const isRestorePending =
-                      pendingRestoreVariantId === item.variantId;
-                    return (
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium text-gray-700 text-sm">
-                            Variant ID
-                          </p>
-                          <p className="font-mono text-gray-500 text-xs">
-                            {item.variantId}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium text-gray-700 text-sm">
-                            Quantity: {item.quantity}
-                          </p>
-                          <p className="text-gray-500 text-xs">Not selected</p>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              selectLineItemMutation.mutate({
-                                variantId: item.variantId,
-                              })
-                            }
-                            disabled={isRestorePending}
-                            className="mt-2 rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                          >
-                            {isRestorePending
-                              ? "Bringing back..."
-                              : "Bring back"}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })()}
+          {unselectedItems.map((item) => {
+            const isRestorePending =
+              pendingRestoreVariantId === item.variantId;
+            return (
+              <div key={item.variantId} className="rounded-lg border p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="mb-2 flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={false}
+                        onChange={() =>
+                          selectLineItemMutation.mutate({
+                            variantId: item.variantId,
+                          })
+                        }
+                        disabled={isRestorePending}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <label className="font-medium text-gray-700 text-sm">
+                        Not selected
+                      </label>
+                    </div>
+                    <h4 className="font-medium text-gray-500">Variant ID</h4>
+                    <p className="font-mono text-gray-400 text-sm">
+                      {item.variantId}
+                    </p>
+                  </div>
+                  <div className="space-y-2 text-right">
+                    <div className="text-gray-500 text-sm">
+                      Quantity: {item.quantity}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        selectLineItemMutation.mutate({
+                          variantId: item.variantId,
+                        })
+                      }
+                      disabled={isRestorePending}
+                      className="rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+                    >
+                      {isRestorePending ? "Bringing back..." : "Bring back"}
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="py-8 text-center text-gray-500">Your cart is empty</p>
