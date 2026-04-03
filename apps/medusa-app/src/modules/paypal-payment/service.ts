@@ -342,6 +342,9 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     }
   }
 
+  /**
+   * Designed for canceling authorized but not yet captured payments.
+   */
   async cancelPayment(input: CancelPaymentInput): Promise<CancelPaymentOutput> {
     const externalId = input.data?.id;
 
@@ -440,6 +443,12 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
 
   async createAccountHolder({ context, data }: CreateAccountHolderInput) {
     const { account_holder, customer } = context;
+
+    console.log(
+      ">>>>>>>>>>>>>> create account holder",
+      account_holder,
+      customer,
+    );
 
     if (account_holder?.data?.id) {
       return { id: account_holder.data.id as string };

@@ -1,0 +1,154 @@
+import {
+  createWorkflow,
+  transform,
+  WorkflowResponse,
+  when,
+} from "@medusajs/framework/workflows-sdk";
+import {
+  acquireLockStep,
+  type CreatePaymentSessionsWorkflowInput,
+  createPaymentCollectionForCartWorkflow,
+  createPaymentSessionsWorkflow,
+  refreshPaymentCollectionForCartWorkflow,
+  releaseLockStep,
+  useQueryGraphStep,
+} from "@medusajs/medusa/core-flows";
+import { HttpError } from "@repo/types";
+
+export type CreatePaymentSessionsForCartWorkflowInput = {
+  cart_id: string;
+  provider_id: string;
+  data?: Record<string, unknown>;
+};
+
+export const createPaymentSessionsForCartWorkflow = createWorkflow(
+  "create-payment-sessions-for-cart",
+  (input: CreatePaymentSessionsForCartWorkflowInput) => {
+    acquireLockStep({
+      key: input.cart_id,
+      timeout: 30,
+      ttl: 120,
+    });
+
+    const { data: initialCarts } = useQueryGraphStep({
+      entity: "cart",
+      fields: ["id", "payment_collection.id", "shipping_address.*"],
+      filters: {
+        id: input.cart_id,
+      },
+    }).config({ name: "load-cart-for-payment-sessions" });
+
+    const hasExistingCollection = transform(
+      { initialCarts },
+      ({ initialCarts }) => {
+        const cart = initialCarts[0];
+        if (!cart) {
+          throw new HttpError("PAYMENT.RESOURCE_NOT_FOUND", "Cart not found");
+        }
+        return !!cart.payment_collection?.id;
+      },
+    );
+
+    const refreshed = when(
+      "refresh-payment-collection-for-cart",
+      { hasExistingCollection, initialCarts },
+      ({ hasExistingCollection: exists }) => exists,
+    ).then(() =>
+      refreshPaymentCollectionForCartWorkflow.runAsStep({
+        input: {
+          cart_id: input.cart_id,
+        },
+      }),
+    );
+
+    const created = when(
+      "create-payment-collection-for-cart",
+      { hasExistingCollection },
+      ({ hasExistingCollection: exists }) => !exists,
+    ).then(() =>
+      createPaymentCollectionForCartWorkflow.runAsStep({
+        input: {
+          cart_id: input.cart_id,
+        },
+      }),
+    );
+
+	// Synchronization Barrier, ensures that the workflow waits for either the refresh or create step to complete before proceeding
+    const cartIdForReload = transform(
+      { refreshed, created, input },
+      ({ refreshed: _r, created: _c, input: workflowInput }) => {
+        void _r;
+        void _c;
+        return workflowInput.cart_id;
+      },
+    );
+
+    const { data: cartsAfterEnsure } = useQueryGraphStep({
+      entity: "cart",
+      fields: ["id", "payment_collection.id", "shipping_address.*"],
+      filters: {
+        id: cartIdForReload,
+      },
+    }).config({ name: "reload-cart-after-payment-collection" });
+
+    const paymentCollectionId = transform(
+      { cartsAfterEnsure },
+      ({ cartsAfterEnsure }) => {
+        const cart = cartsAfterEnsure[0];
+        const id = cart?.payment_collection?.id;
+        if (!id) {
+          throw new HttpError(
+            "PAYMENT.RESOURCE_NOT_FOUND",
+            "Payment collection is missing after ensure step",
+          );
+        }
+        return id;
+      },
+    );
+
+    const createSessionsInput = transform(
+      { paymentCollectionId, cartsAfterEnsure, input },
+      ({
+        paymentCollectionId: collectionId,
+        cartsAfterEnsure: carts,
+        input: workflowInput,
+      }): CreatePaymentSessionsWorkflowInput => {
+        const cart = carts[0];
+        if (!cart) {
+          throw new HttpError(
+            "PAYMENT.RESOURCE_NOT_FOUND",
+            "Cart not found after payment collection ensure",
+          );
+        }
+        return {
+          provider_id: workflowInput.provider_id,
+          payment_collection_id: collectionId,
+          data: workflowInput.data,
+          context: {
+            payment_collection_id: collectionId,
+            shipping_address: cart.shipping_address,
+            custom_id: cart.id,
+          },
+        };
+      },
+    );
+
+    const paymentSessions = createPaymentSessionsWorkflow.runAsStep({
+      input: createSessionsInput,
+    });
+
+    const result = transform(
+      { paymentCollectionId, paymentSessions },
+      ({ paymentCollectionId: collectionId, paymentSessions: sessions }) => ({
+        payment_collection_id: collectionId,
+        payment_sessions: sessions,
+      }),
+    );
+
+    releaseLockStep({
+      key: input.cart_id,
+    });
+
+    return new WorkflowResponse(result);
+  },
+);

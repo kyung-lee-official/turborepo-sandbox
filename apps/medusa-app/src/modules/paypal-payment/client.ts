@@ -83,7 +83,7 @@ export class PayPalClient {
   }
 
   /**
-   * Cancel/void an authorized payment
+   * Designed for canceling authorized but not yet captured payments.
    */
   async cancelPayment(authorizationId: string): Promise<any> {
     // const response = await this.axiosInstance.post(
