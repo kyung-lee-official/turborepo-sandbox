@@ -3,6 +3,7 @@ import {
   remoteQueryObjectFromString,
 } from "@medusajs/framework/utils";
 import type { MedusaContainer, RemoteQueryFunction } from "@medusajs/types";
+import type { CartMetadata } from "@repo/types";
 import { HttpError } from "@repo/types";
 
 export const refetchCart = async (
@@ -23,6 +24,26 @@ export const refetchCart = async (
 
   if (!cart) {
     throw new HttpError("MEDUSA.NOT_FOUND", `Cart with id '${id}' not found`);
+  }
+
+  if (Array.isArray(cart.items)) {
+    cart.items.sort(
+      (a: { created_at?: string }, b: { created_at?: string }) =>
+        new Date(b.created_at || 0).getTime() -
+        new Date(a.created_at || 0).getTime(),
+    );
+  }
+
+  if (cart.metadata) {
+    const unselected =
+      (cart.metadata as unknown as CartMetadata)?.unselected || {};
+    (cart.metadata as unknown as CartMetadata).unselected = Object.fromEntries(
+      Object.entries(unselected).sort(
+        ([, a], [, b]) =>
+          new Date((b as { created_at?: string }).created_at || 0).getTime() -
+          new Date((a as { created_at?: string }).created_at || 0).getTime(),
+      ),
+    ) as CartMetadata["unselected"];
   }
 
   return cart;

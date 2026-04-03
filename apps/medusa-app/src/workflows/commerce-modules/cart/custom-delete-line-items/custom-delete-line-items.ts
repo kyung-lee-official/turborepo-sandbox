@@ -74,6 +74,7 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
         return {
           location: "items" as const,
           lineItemId: lineItem.id,
+          variantId: lineItem.variant_id as string | undefined,
           existingMetadata,
         };
       }
@@ -89,6 +90,7 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
         return {
           location: "metadata" as const,
           lineItemId: null,
+          variantId: variant_id,
           existingMetadata,
         };
       }
@@ -115,6 +117,38 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
       });
     });
 
+    // Conditionally clean up item_original_created_at when permanently deleting a cart item (path A)
+    const metadataCleanupForItemDelete = when(
+      "prepare-metadata-cleanup-for-deleted-item",
+      itemInfo,
+      (info) => info.location === "items",
+    ).then(() => {
+      return transform(itemInfo, (info) => {
+        const updatedOriginalCreatedAt = {
+          ...(info.existingMetadata.item_original_created_at || {}),
+        };
+        if (info.variantId) {
+          delete updatedOriginalCreatedAt[info.variantId];
+        }
+        return { item_original_created_at: updatedOriginalCreatedAt };
+      });
+    });
+    when(
+      "update-metadata-cleanup-for-deleted-item",
+      itemInfo,
+      (info) => info.location === "items",
+    ).then(() => {
+      return updateCartsStep([
+        {
+          id: input.cart_id,
+          metadata: metadataCleanupForItemDelete as unknown as Record<
+            string,
+            unknown
+          >,
+        },
+      ]).config({ name: "metadata-cleanup-for-deleted-item" });
+    });
+
     // Conditionally update metadata for unselected items
     const updatedMetadata = when(
       "prepare-metadata-for-unselected-item",
@@ -127,8 +161,16 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
         // Remove the variant_id from unselected metadata
         delete updatedUnselected[input.variant_id!];
 
+        const updatedOriginalCreatedAt = {
+          ...(itemInfo.existingMetadata.item_original_created_at || {}),
+        };
+        if (itemInfo.variantId) {
+          delete updatedOriginalCreatedAt[itemInfo.variantId];
+        }
+
         const metadata: CartMetadata = {
           unselected: updatedUnselected,
+          item_original_created_at: updatedOriginalCreatedAt,
         };
 
         return metadata;
@@ -145,7 +187,7 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
           id: input.cart_id,
           metadata: updatedMetadata as unknown as Record<string, unknown>,
         },
-      ]);
+      ]).config({ name: "update-metadata-for-unselected-item" });
     });
 
     // Refetch the updated cart
@@ -168,9 +210,31 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
     // Transform to StoreCartResponse format
     const storeCartResponse = transform(
       finalCartData,
-      (data): StoreCartResponse => ({
-        cart: data[0] as unknown as StoreCart,
-      }),
+      (data): StoreCartResponse => {
+        const cart = data[0] as unknown as Record<string, unknown>;
+        if (Array.isArray(cart.items)) {
+          (cart.items as { created_at?: string }[]).sort(
+            (a, b) =>
+              new Date(b.created_at || 0).getTime() -
+              new Date(a.created_at || 0).getTime(),
+          );
+        }
+        if (cart.metadata) {
+          const unselected =
+            (cart.metadata as unknown as CartMetadata)?.unselected || {};
+          (cart.metadata as unknown as CartMetadata).unselected =
+            Object.fromEntries(
+              Object.entries(unselected).sort(
+                ([, a], [, b]) =>
+                  new Date(b.created_at || 0).getTime() -
+                  new Date(a.created_at || 0).getTime(),
+              ),
+            ) as CartMetadata["unselected"];
+        }
+        return {
+          cart: cart as unknown as StoreCart,
+        };
+      },
     );
 
     // Release the lock after the workflow completes

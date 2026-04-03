@@ -15,6 +15,7 @@ import type {
   StoreCart,
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
+import type { CartMetadata } from "@repo/types";
 import { HttpError } from "@repo/types";
 
 // Custom input type for the update line item workflow
@@ -115,9 +116,31 @@ export const customUpdateLineItemWorkflow = createWorkflow(
     // Transform to StoreCartResponse format
     const storeCartResponse = transform(
       finalCartData,
-      (data): StoreCartResponse => ({
-        cart: data[0] as unknown as StoreCart,
-      }),
+      (data): StoreCartResponse => {
+        const cart = data[0] as unknown as Record<string, unknown>;
+        if (Array.isArray(cart.items)) {
+          (cart.items as { created_at?: string }[]).sort(
+            (a, b) =>
+              new Date(b.created_at || 0).getTime() -
+              new Date(a.created_at || 0).getTime(),
+          );
+        }
+        if (cart.metadata) {
+          const unselected =
+            (cart.metadata as unknown as CartMetadata)?.unselected || {};
+          (cart.metadata as unknown as CartMetadata).unselected =
+            Object.fromEntries(
+              Object.entries(unselected).sort(
+                ([, a], [, b]) =>
+                  new Date(b.created_at || 0).getTime() -
+                  new Date(a.created_at || 0).getTime(),
+              ),
+            ) as CartMetadata["unselected"];
+        }
+        return {
+          cart: cart as unknown as StoreCart,
+        };
+      },
     );
 
     // Release the lock after the workflow completes

@@ -38,6 +38,12 @@ export const customUnselectCartItemWorkflow = createWorkflow(
         (updatedCart?.metadata as unknown as CartMetadata) || {};
       const existingUnselected = existingMetadata.unselected || {};
 
+      // Persistent write-once map that tracks the true first-add timestamp for each variant.
+      // Using this instead of item.created_at means the timestamp survives re-select cycles.
+      const existingOriginalCreatedAt =
+        existingMetadata.item_original_created_at ?? {};
+      const updatedOriginalCreatedAt = { ...existingOriginalCreatedAt };
+
       const lineItemsToUnselect = (updatedCart.items || []).filter(
         (item) => !!item?.id && transformData.input.ids.includes(item.id),
       );
@@ -45,13 +51,27 @@ export const customUnselectCartItemWorkflow = createWorkflow(
       const newlyUnselected = lineItemsToUnselect.reduce(
         (acc, item) => {
           if (item?.variant_id) {
+            // Use the persisted original created_at if available (survives re-select cycles),
+            // otherwise fall back to the line item's own created_at (correct for first unselect).
+            const originalCreatedAt =
+              existingOriginalCreatedAt[item.variant_id] ??
+              (item.created_at
+                ? new Date(item.created_at).toISOString()
+                : new Date().toISOString());
+
             acc[item.variant_id] = {
               quantity: item.quantity,
+              created_at: originalCreatedAt,
             };
+
+            // Write-once: record if not already stored
+            if (!updatedOriginalCreatedAt[item.variant_id]) {
+              updatedOriginalCreatedAt[item.variant_id] = originalCreatedAt;
+            }
           }
           return acc;
         },
-        {} as Record<string, { quantity: number }>,
+        {} as Record<string, { quantity: number; created_at: string }>,
       );
 
       const metadata: CartMetadata = {
@@ -59,6 +79,7 @@ export const customUnselectCartItemWorkflow = createWorkflow(
           ...existingUnselected,
           ...newlyUnselected,
         },
+        item_original_created_at: updatedOriginalCreatedAt,
       };
       return metadata;
     });
@@ -97,9 +118,31 @@ export const customUnselectCartItemWorkflow = createWorkflow(
     // Transform to StoreCartResponse format with type assertion
     const storeCartResponse = transform(
       finalCartData,
-      (data): StoreCartResponse => ({
-        cart: data[0] as unknown as StoreCart,
-      }),
+      (data): StoreCartResponse => {
+        const cart = data[0] as unknown as Record<string, unknown>;
+        if (Array.isArray(cart.items)) {
+          (cart.items as { created_at?: string }[]).sort(
+            (a, b) =>
+              new Date(b.created_at || 0).getTime() -
+              new Date(a.created_at || 0).getTime(),
+          );
+        }
+        if (cart.metadata) {
+          const unselected =
+            (cart.metadata as unknown as CartMetadata)?.unselected || {};
+          (cart.metadata as unknown as CartMetadata).unselected =
+            Object.fromEntries(
+              Object.entries(unselected).sort(
+                ([, a], [, b]) =>
+                  new Date(b.created_at || 0).getTime() -
+                  new Date(a.created_at || 0).getTime(),
+              ),
+            ) as CartMetadata["unselected"];
+        }
+        return {
+          cart: cart as unknown as StoreCart,
+        };
+      },
     );
 
     // Release the lock after the nested workflow completes
