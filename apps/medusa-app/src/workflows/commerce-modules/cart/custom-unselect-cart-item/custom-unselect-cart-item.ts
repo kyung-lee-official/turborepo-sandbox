@@ -62,6 +62,12 @@ export const customUnselectCartItemWorkflow = createWorkflow(
             acc[item.variant_id] = {
               quantity: item.quantity,
               created_at: originalCreatedAt,
+              title: item.title,
+              subtitle: item.subtitle ?? null,
+              variant_title: item.variant_title ?? null,
+              variant_sku: item.variant_sku ?? null,
+              unit_price: Number(item.unit_price),
+              thumbnail: item.thumbnail ?? null,
             };
 
             // Write-once: record if not already stored
@@ -71,7 +77,19 @@ export const customUnselectCartItemWorkflow = createWorkflow(
           }
           return acc;
         },
-        {} as Record<string, { quantity: number; created_at: string }>,
+        {} as Record<
+          string,
+          {
+            quantity: number;
+            created_at: string;
+            title: string;
+            subtitle: string | null;
+            variant_title: string | null;
+            variant_sku: string | null;
+            unit_price: number;
+            thumbnail: string | null;
+          }
+        >,
       );
 
       const metadata: CartMetadata = {

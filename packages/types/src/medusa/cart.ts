@@ -3,6 +3,12 @@
     [key: string]: {
       quantity: number;
       created_at: string;
+      title: string;
+      subtitle: string | null;
+      variant_title: string | null;
+      variant_sku: string | null;
+      unit_price: number;
+      thumbnail: string | null;
     };
   };
   /**
