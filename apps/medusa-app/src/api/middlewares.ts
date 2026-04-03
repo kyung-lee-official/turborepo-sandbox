@@ -24,6 +24,7 @@ import cors from "cors";
 import { authenticateJwt } from "@/api/utils/middleware/authenticate-jwt";
 import { medusaAuthBlocker } from "@/api/utils/middleware/medusa-auth-blocker";
 import { storeCartRoutesMiddlewares } from "./store-api/carts/middlewares";
+import { storePaymentSessionsRoutesMiddlewares } from "./store-api/payment-sessions/middlewares";
 
 const originalErrorHandler = errorHandler();
 
@@ -99,6 +100,7 @@ export default defineMiddlewares({
     //   middlewares: [authenticateJwt("customer", ["bearer"])],
     // },
     ...storeCartRoutesMiddlewares,
+    ...storePaymentSessionsRoutesMiddlewares,
     /* custom routes middlewares */
     {
       method: ["POST"],
