@@ -24,3 +24,17 @@
   /** Optional: on the rescue cart, links back to the checkout cart that owned the unselected payload. */
   source_checkout_cart_id?: string;
 }
+
+/** One row in `metadata.unselected` (keyed by variant_id). */
+export type CartUnselectedEntry = CartMetadata["unselected"][string];
+
+/**
+ * Response-only ordering for storefront cart UI (not persisted).
+ * Built server-side by `applyStoreCartDisplayOrder`.
+ */
+export type CartDisplayLine =
+  | { kind: "line_item"; item: Record<string, unknown> }
+  | ({
+      kind: "unselected";
+      variant_id: string;
+    } & CartUnselectedEntry);

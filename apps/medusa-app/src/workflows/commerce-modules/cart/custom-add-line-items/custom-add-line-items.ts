@@ -16,6 +16,7 @@ import type {
   StoreCart,
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
+import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import type { CartMetadata } from "@repo/types";
 
 export const customAddToCartWorkflow = createWorkflow(
@@ -132,25 +133,7 @@ export const customAddToCartWorkflow = createWorkflow(
       finalCartData,
       (data): StoreCartResponse => {
         const cart = data[0] as unknown as Record<string, unknown>;
-        if (Array.isArray(cart.items)) {
-          (cart.items as { created_at?: string }[]).sort(
-            (a, b) =>
-              new Date(b.created_at || 0).getTime() -
-              new Date(a.created_at || 0).getTime(),
-          );
-        }
-        if (cart.metadata) {
-          const unselected =
-            (cart.metadata as unknown as CartMetadata)?.unselected || {};
-          (cart.metadata as unknown as CartMetadata).unselected =
-            Object.fromEntries(
-              Object.entries(unselected).sort(
-                ([, a], [, b]) =>
-                  new Date(b.created_at || 0).getTime() -
-                  new Date(a.created_at || 0).getTime(),
-              ),
-            ) as CartMetadata["unselected"];
-        }
+        applyStoreCartDisplayOrder(cart);
         return {
           cart: cart as unknown as StoreCart,
         };

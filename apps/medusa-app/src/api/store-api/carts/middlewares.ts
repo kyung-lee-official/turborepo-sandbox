@@ -49,6 +49,16 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
     ],
   },
   {
+    method: ["GET"],
+    matcher: "/store-api/carts/:id",
+    middlewares: [
+      validateAndTransformQuery(
+        StoreGetCartsCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
+    ],
+  },
+  {
     method: ["POST"],
     matcher: "/store-api/carts/:id",
     middlewares: [
