@@ -248,7 +248,7 @@
               "id": "d5mSu",
               "name": "capC",
               "fill": "#57534e",
-              "content": "variant: primary/danger · size: compact (cart actions)",
+              "content": "variant: primary/danger · size: compact (dense CTAs)",
               "fontFamily": "Inter",
               "fontSize": 10,
               "fontWeight": "normal"
@@ -274,7 +274,7 @@
                   "id": "f7oVw",
                   "name": "txtC",
                   "fill": "#FFFFFF",
-                  "content": "Bring back",
+                  "content": "Apply",
                   "fontFamily": "Inter",
                   "fontSize": 12,
                   "fontWeight": "600"
