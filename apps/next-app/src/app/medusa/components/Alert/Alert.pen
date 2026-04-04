@@ -1,0 +1,91 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "AlRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Medusa Alert",
+      "width": 400,
+      "fill": "#e7e5e4",
+      "layout": "vertical",
+      "gap": 24,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "AlTx1",
+          "name": "hdr",
+          "fill": "#44403c",
+          "content": "Alert.tsx — error / success",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "AlEr1",
+          "name": "errorSample",
+          "width": "fill_container",
+          "fill": "#fef2f2",
+          "cornerRadius": 6,
+          "padding": 16,
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "text",
+              "id": "AlEt1",
+              "fill": "#991b1b",
+              "content": "variant: error",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "AlEb1",
+              "fill": "#b91c1c",
+              "content": "Body copy uses text-red-700",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AlOk1",
+          "name": "successSample",
+          "width": "fill_container",
+          "fill": "#f0fdf4",
+          "cornerRadius": 6,
+          "padding": 16,
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
+            {
+              "type": "text",
+              "id": "AlSt1",
+              "fill": "#166534",
+              "content": "variant: success",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "500"
+            },
+            {
+              "type": "text",
+              "id": "AlSb1",
+              "fill": "#15803d",
+              "content": "Body copy uses text-green-700",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

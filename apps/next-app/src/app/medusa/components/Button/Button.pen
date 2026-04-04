@@ -18,7 +18,7 @@
           "id": "kRhLS",
           "name": "hdr",
           "fill": "#44403c",
-          "content": "Pixel UI — from Button.tsx (primary / danger)",
+          "content": "Pixel UI — Button.tsx (primary / danger / outline · sizes)",
           "fontFamily": "Inter",
           "fontSize": 12,
           "fontWeight": "normal"
@@ -180,6 +180,104 @@
                       "letterSpacing": 1
                     }
                   ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "p7kQx",
+          "name": "rowOutline",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "vN2rT",
+              "name": "capO",
+              "fill": "#57534e",
+              "content": "variant: outline · size: icon (cart +/-)",
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "mK8sL",
+              "name": "faceO",
+              "width": 32,
+              "height": 32,
+              "fill": "#ffffff",
+              "stroke": {
+                "align": "center",
+                "thickness": 1,
+                "fill": "#d1d5db"
+              },
+              "cornerRadius": 6,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "bY3wZ",
+                  "name": "txtO",
+                  "fill": "#111827",
+                  "content": "+",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "c4nRt",
+          "name": "rowCompact",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "d5mSu",
+              "name": "capC",
+              "fill": "#57534e",
+              "content": "variant: primary/danger · size: compact (cart actions)",
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "e6nUv",
+              "name": "faceC",
+              "width": 120,
+              "height": 32,
+              "fill": "#4f46e5",
+              "stroke": {
+                "align": "center",
+                "thickness": 2,
+                "fill": "#1e1b84"
+              },
+              "cornerRadius": 6,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "f7oVw",
+                  "name": "txtC",
+                  "fill": "#FFFFFF",
+                  "content": "Bring back",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
                 }
               ]
             }

@@ -1,0 +1,40 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "PsRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Medusa PageShell",
+      "width": 480,
+      "height": 320,
+      "fill": "#f9fafb",
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 24,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "PsTx1",
+          "fill": "#44403c",
+          "content": "PageShell.tsx",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "PsTx2",
+          "fill": "#78716c",
+          "content": "min-h-screen · flex center · bg-gray-50 · gap-3",
+          "fontFamily": "Inter",
+          "fontSize": 10,
+          "fontWeight": "normal"
+        }
+      ]
+    }
+  ]
+}
