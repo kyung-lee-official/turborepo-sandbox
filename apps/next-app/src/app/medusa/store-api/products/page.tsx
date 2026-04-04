@@ -121,8 +121,10 @@ const Page = async () => {
                     <Link
                       href={`/medusa/store-api/products/${product.id}`}
                       className={cn(
-                        medusaButtonClassName("primary"),
-                        "inline-flex w-auto shrink-0 no-underline",
+                        medusaButtonClassName("primary", {
+                          fullWidth: false,
+                        }),
+                        "inline-flex shrink-0 no-underline",
                       )}
                     >
                       View Details

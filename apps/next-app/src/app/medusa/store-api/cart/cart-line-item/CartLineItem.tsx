@@ -3,10 +3,8 @@
 import type { StoreCart } from "@medusajs/types";
 import type { CartDisplayLine } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
 import { useState } from "react";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
-import { formatCurrency } from "@/utils/currency";
 import {
   QK_CART,
   removeLineItem,
@@ -14,12 +12,25 @@ import {
   unselectLineItem,
   updateLineItem,
 } from "../api";
+import { SelectedCartLineRow } from "./SelectedCartLineRow";
+import {
+  UnselectedCartLineRow,
+  type UnselectedLineSnapshot,
+} from "./UnselectedCartLineRow";
 
 type StoreCartLine = NonNullable<StoreCart["items"]>[number];
 
 type CartWithDisplayLines = StoreCart & {
   display_lines?: CartDisplayLine[];
 };
+
+type UpdateLineVars = {
+  cartId: string;
+  lineItemId: string;
+  quantity: number;
+};
+
+type RemoveLineVars = { cartId: string; lineItemId: string };
 
 export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   const queryClient = useQueryClient();
@@ -28,20 +39,14 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   const [pendingSelectionItemId, setPendingSelectionItemId] = useState<
     string | null
   >(null);
-  const [pendingRestoreVariantId, setPendingRestoreVariantId] = useState<
+  const [pendingSelectVariantId, setPendingSelectVariantId] = useState<
     string | null
   >(null);
 
   const removeLineItemMutation = useMutation({
-    mutationFn: ({
-      cartId,
-      lineItemId,
-    }: {
-      cartId: string;
-      lineItemId: string;
-    }) => removeLineItem(cartId, lineItemId),
+    mutationFn: ({ cartId: cid, lineItemId }: RemoveLineVars) =>
+      removeLineItem(cid, lineItemId),
     onSuccess: () => {
-      // Must match Content.tsx cart query key prefix: [GET_CART, regionId, customerId|guest]
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART],
       });
@@ -52,15 +57,8 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   });
 
   const updateLineItemMutation = useMutation({
-    mutationFn: ({
-      cartId,
-      lineItemId,
-      quantity,
-    }: {
-      cartId: string;
-      lineItemId: string;
-      quantity: number;
-    }) => updateLineItem(cartId, lineItemId, quantity),
+    mutationFn: ({ cartId: cid, lineItemId, quantity }: UpdateLineVars) =>
+      updateLineItem(cid, lineItemId, quantity),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART],
@@ -102,7 +100,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
       return selectLineItem(cartId, variantId);
     },
     onMutate: async ({ variantId }) => {
-      setPendingRestoreVariantId(variantId);
+      setPendingSelectVariantId(variantId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -110,36 +108,19 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
       });
     },
     onSettled: () => {
-      setPendingRestoreVariantId(null);
+      setPendingSelectVariantId(null);
     },
     onError: (error) => {
-      console.error("Failed to bring back unselected item:", error);
+      console.error("Failed to add unselected line to checkout:", error);
     },
   });
 
   const unselectedMap = ((cart.metadata as Record<string, unknown>)
-    ?.unselected ?? {}) as Record<
-    string,
-    {
-      quantity: number;
-      title: string;
-      subtitle: string | null;
-      variant_title: string | null;
-      variant_sku: string | null;
-      unit_price: number;
-      thumbnail: string | null;
-    }
-  >;
+    ?.unselected ?? {}) as Record<string, UnselectedLineSnapshot>;
   const unselectedItems = Object.entries(unselectedMap).map(
     ([variantId, details]) => ({
       variantId,
-      quantity: details.quantity,
-      title: details.title,
-      subtitle: details.subtitle,
-      variant_title: details.variant_title,
-      variant_sku: details.variant_sku,
-      unit_price: details.unit_price,
-      thumbnail: details.thumbnail,
+      ...details,
     }),
   );
 
@@ -184,6 +165,14 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     }
   };
 
+  const isLineUpdating = (lineItemId: string) =>
+    updateLineItemMutation.isPending &&
+    updateLineItemMutation.variables?.lineItemId === lineItemId;
+
+  const isLineRemoving = (lineItemId: string) =>
+    removeLineItemMutation.isPending &&
+    removeLineItemMutation.variables?.lineItemId === lineItemId;
+
   const allItems = cart.items || [];
   const displayLines = (cart as CartWithDisplayLines).display_lines;
   const useDisplayLines = Boolean(displayLines?.length);
@@ -194,432 +183,78 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     ? (displayLines?.length ?? 0)
     : allItems.length + unselectedItems.length;
 
+  const renderSelectedRow = (item: StoreCartLine) => {
+    const qty = getCurrentQuantity(item.id, item.quantity);
+    const updating = isLineUpdating(item.id);
+    const removing = isLineRemoving(item.id);
+
+    return (
+      <SelectedCartLineRow
+        key={item.id}
+        cart={cart}
+        item={item}
+        isSelectionPending={pendingSelectionItemId === item.id}
+        isUpdatingLine={updating}
+        isRemovingLine={removing}
+        displayQuantity={qty}
+        disableMinus={updating || qty <= 1}
+        onToggleUnselect={() => {
+          toggleItemSelectionMutation.mutate({
+            itemId: item.id,
+            select: false,
+          });
+        }}
+        onDecrement={() => updateQuantity(item.id, qty - 1)}
+        onIncrement={() => updateQuantity(item.id, qty + 1)}
+        onQuantityChange={(v) => handleQuantityChange(item.id, v)}
+        onQuantityBlur={() => handleQuantityBlur(item.id)}
+        onRemove={() => handleRemoveItem(item.id)}
+      />
+    );
+  };
+
+  const renderUnselectedRow = (
+    variantId: string,
+    line: UnselectedLineSnapshot,
+  ) => (
+    <UnselectedCartLineRow
+      key={variantId}
+      currencyCode={cart.currency_code}
+      variantId={variantId}
+      line={line}
+      isSelectPending={pendingSelectVariantId === variantId}
+      onSelect={() => selectLineItemMutation.mutate({ variantId })}
+    />
+  );
+
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-xl">Cart Items ({visibleCount})</h3>
+      <h3 className="font-bold text-gray-800 text-xl">
+        Cart items ({visibleCount})
+      </h3>
       {hasVisibleItems ? (
         <div className="space-y-4">
           {useDisplayLines && displayLines
             ? displayLines.map((line) => {
                 if (line.kind === "line_item") {
                   const item = line.item as unknown as StoreCartLine;
-                  const isSelected = true;
-                  const isSelectionPending = pendingSelectionItemId === item.id;
-                  return (
-                    <div key={item.id} className="rounded-lg border p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="mb-2 flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => {
-                                toggleItemSelectionMutation.mutate({
-                                  itemId: item.id,
-                                  select: !isSelected,
-                                });
-                              }}
-                              disabled={isSelectionPending}
-                              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <label className="font-medium text-gray-700 text-sm">
-                              {isSelected
-                                ? "Selected for checkout"
-                                : "Not selected"}
-                            </label>
-                          </div>
-                          <h4 className="font-medium">{item.title}</h4>
-                          {item.subtitle && (
-                            <p className="text-gray-600 text-sm">
-                              {item.subtitle}
-                            </p>
-                          )}
-                          {item.variant_title && (
-                            <p className="text-gray-500 text-sm">
-                              Variant: {item.variant_title}
-                            </p>
-                          )}
-                          <p className="mt-1 font-medium text-gray-700 text-sm">
-                            {formatCurrency(
-                              Number(item.unit_price),
-                              cart.currency_code,
-                            )}
-                          </p>
-                          {item.variant_sku && (
-                            <p className="text-gray-400 text-xs">
-                              SKU: {item.variant_sku}
-                            </p>
-                          )}
-                        </div>
-                        <div className="space-y-2 text-right">
-                          {isSelected ? (
-                            <>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    updateQuantity(
-                                      item.id,
-                                      getCurrentQuantity(
-                                        item.id,
-                                        item.quantity,
-                                      ) - 1,
-                                    )
-                                  }
-                                  disabled={
-                                    updateLineItemMutation.isPending ||
-                                    getCurrentQuantity(
-                                      item.id,
-                                      item.quantity,
-                                    ) <= 1
-                                  }
-                                  className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  -
-                                </button>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={getCurrentQuantity(
-                                    item.id,
-                                    item.quantity,
-                                  )}
-                                  onChange={(e) =>
-                                    handleQuantityChange(
-                                      item.id,
-                                      e.target.value,
-                                    )
-                                  }
-                                  onBlur={() => handleQuantityBlur(item.id)}
-                                  className="w-16 rounded border border-gray-300 px-2 py-1 text-center"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    updateQuantity(
-                                      item.id,
-                                      getCurrentQuantity(
-                                        item.id,
-                                        item.quantity,
-                                      ) + 1,
-                                    )
-                                  }
-                                  disabled={updateLineItemMutation.isPending}
-                                  className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  +
-                                </button>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveItem(item.id)}
-                                disabled={removeLineItemMutation.isPending}
-                                className="rounded bg-red-500 px-3 py-1 text-white text-xs hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-gray-400"
-                              >
-                                {removeLineItemMutation.isPending
-                                  ? "Removing..."
-                                  : "Delete"}
-                              </button>
-                            </>
-                          ) : (
-                            <div className="text-gray-500 text-sm">
-                              Quantity: {item.quantity}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      {item.thumbnail && (
-                        <Image
-                          width={300}
-                          height={300}
-                          src={item.thumbnail}
-                          alt={item.title ?? ""}
-                          className="mt-2 h-16 w-16 rounded object-cover"
-                        />
-                      )}
-                    </div>
-                  );
+                  return renderSelectedRow(item);
                 }
-                const variantId = line.variant_id;
-                const isRestorePending = pendingRestoreVariantId === variantId;
-                return (
-                  <div key={variantId} className="rounded-lg border p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={false}
-                            onChange={() =>
-                              selectLineItemMutation.mutate({
-                                variantId,
-                              })
-                            }
-                            disabled={isRestorePending}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <label className="font-medium text-gray-700 text-sm">
-                            Not selected
-                          </label>
-                        </div>
-                        <h4 className="font-medium">{line.title}</h4>
-                        {line.subtitle && (
-                          <p className="text-gray-600 text-sm">
-                            {line.subtitle}
-                          </p>
-                        )}
-                        {line.variant_title && (
-                          <p className="text-gray-500 text-sm">
-                            Variant: {line.variant_title}
-                          </p>
-                        )}
-                        <p className="mt-1 font-medium text-gray-700 text-sm">
-                          {formatCurrency(line.unit_price, cart.currency_code)}
-                        </p>
-                        {line.variant_sku && (
-                          <p className="text-gray-400 text-xs">
-                            SKU: {line.variant_sku}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2 text-right">
-                        <div className="text-gray-500 text-sm">
-                          Quantity: {line.quantity}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            selectLineItemMutation.mutate({
-                              variantId,
-                            })
-                          }
-                          disabled={isRestorePending}
-                          className="rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                        >
-                          {isRestorePending ? "Bringing back..." : "Bring back"}
-                        </button>
-                      </div>
-                    </div>
-                    {line.thumbnail && (
-                      <Image
-                        width={300}
-                        height={300}
-                        src={line.thumbnail}
-                        alt={line.title}
-                        className="mt-2 h-16 w-16 rounded object-cover"
-                      />
-                    )}
-                  </div>
-                );
+                const { kind: _k, variant_id, ...snap } = line;
+                return renderUnselectedRow(variant_id, snap);
               })
             : null}
           {!useDisplayLines ? (
             <>
-              {allItems.map((item) => {
-                const isSelected = true;
-                const isSelectionPending = pendingSelectionItemId === item.id;
-                return (
-                  <div key={item.id} className="rounded-lg border p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {
-                              toggleItemSelectionMutation.mutate({
-                                itemId: item.id,
-                                select: !isSelected,
-                              });
-                            }}
-                            disabled={isSelectionPending}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <label className="font-medium text-gray-700 text-sm">
-                            {isSelected
-                              ? "Selected for checkout"
-                              : "Not selected"}
-                          </label>
-                        </div>
-                        <h4 className="font-medium">{item.title}</h4>
-                        {item.subtitle && (
-                          <p className="text-gray-600 text-sm">
-                            {item.subtitle}
-                          </p>
-                        )}
-                        {item.variant_title && (
-                          <p className="text-gray-500 text-sm">
-                            Variant: {item.variant_title}
-                          </p>
-                        )}
-                        <p className="mt-1 font-medium text-gray-700 text-sm">
-                          {formatCurrency(item.unit_price, cart.currency_code)}
-                        </p>
-                        {item.variant_sku && (
-                          <p className="text-gray-400 text-xs">
-                            SKU: {item.variant_sku}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2 text-right">
-                        {isSelected ? (
-                          <>
-                            <div className="flex items-center space-x-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateQuantity(
-                                    item.id,
-                                    getCurrentQuantity(item.id, item.quantity) -
-                                      1,
-                                  )
-                                }
-                                disabled={
-                                  updateLineItemMutation.isPending ||
-                                  getCurrentQuantity(item.id, item.quantity) <=
-                                    1
-                                }
-                                className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                -
-                              </button>
-                              <input
-                                type="number"
-                                min="1"
-                                value={getCurrentQuantity(
-                                  item.id,
-                                  item.quantity,
-                                )}
-                                onChange={(e) =>
-                                  handleQuantityChange(item.id, e.target.value)
-                                }
-                                onBlur={() => handleQuantityBlur(item.id)}
-                                className="w-16 rounded border border-gray-300 px-2 py-1 text-center"
-                              />
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateQuantity(
-                                    item.id,
-                                    getCurrentQuantity(item.id, item.quantity) +
-                                      1,
-                                  )
-                                }
-                                disabled={updateLineItemMutation.isPending}
-                                className="flex h-8 w-8 items-center justify-center rounded border border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                +
-                              </button>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveItem(item.id)}
-                              disabled={removeLineItemMutation.isPending}
-                              className="rounded bg-red-500 px-3 py-1 text-white text-xs hover:bg-red-600 disabled:cursor-not-allowed disabled:bg-gray-400"
-                            >
-                              {removeLineItemMutation.isPending
-                                ? "Removing..."
-                                : "Delete"}
-                            </button>
-                          </>
-                        ) : (
-                          <div className="text-gray-500 text-sm">
-                            Quantity: {item.quantity}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {item.thumbnail && (
-                      <Image
-                        width={300}
-                        height={300}
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="mt-2 h-16 w-16 rounded object-cover"
-                      />
-                    )}
-                  </div>
-                );
-              })}
-
-              {unselectedItems.map((item) => {
-                const isRestorePending =
-                  pendingRestoreVariantId === item.variantId;
-                return (
-                  <div key={item.variantId} className="rounded-lg border p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="mb-2 flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={false}
-                            onChange={() =>
-                              selectLineItemMutation.mutate({
-                                variantId: item.variantId,
-                              })
-                            }
-                            disabled={isRestorePending}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <label className="font-medium text-gray-700 text-sm">
-                            Not selected
-                          </label>
-                        </div>
-                        <h4 className="font-medium">{item.title}</h4>
-                        {item.subtitle && (
-                          <p className="text-gray-600 text-sm">
-                            {item.subtitle}
-                          </p>
-                        )}
-                        {item.variant_title && (
-                          <p className="text-gray-500 text-sm">
-                            Variant: {item.variant_title}
-                          </p>
-                        )}
-                        <p className="mt-1 font-medium text-gray-700 text-sm">
-                          {formatCurrency(item.unit_price, cart.currency_code)}
-                        </p>
-                        {item.variant_sku && (
-                          <p className="text-gray-400 text-xs">
-                            SKU: {item.variant_sku}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2 text-right">
-                        <div className="text-gray-500 text-sm">
-                          Quantity: {item.quantity}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            selectLineItemMutation.mutate({
-                              variantId: item.variantId,
-                            })
-                          }
-                          disabled={isRestorePending}
-                          className="rounded bg-blue-600 px-3 py-1 font-medium text-white text-xs hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
-                        >
-                          {isRestorePending ? "Bringing back..." : "Bring back"}
-                        </button>
-                      </div>
-                    </div>
-                    {item.thumbnail && (
-                      <Image
-                        width={300}
-                        height={300}
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="mt-2 h-16 w-16 rounded object-cover"
-                      />
-                    )}
-                  </div>
-                );
-              })}
+              {allItems.map((item) => renderSelectedRow(item))}
+              {unselectedItems.map(({ variantId, ...rest }) =>
+                renderUnselectedRow(variantId, rest),
+              )}
             </>
           ) : null}
         </div>
       ) : (
-        <p className="py-8 text-center text-gray-500">Your cart is empty</p>
+        <p className="py-8 text-center text-gray-600">Your cart is empty</p>
       )}
     </div>
   );
