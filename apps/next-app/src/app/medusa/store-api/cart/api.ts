@@ -6,9 +6,9 @@ export enum QK_CART {
   CREATE_CART = "create_cart",
 }
 
-/** Medusa native retrieve cart (guest or any cart id). */
+/** Retrieve cart with store ordering/metadata via custom store API. */
 export async function getCart(id: string) {
-  const data = await api.get<StoreCartResponse>(`/store/carts/${id}`);
+  const data = await api.get<StoreCartResponse>(`/store-api/carts/${id}`);
   return data;
 }
 
@@ -93,8 +93,9 @@ export async function selectLineItem(cartId: string, variantId: string) {
 }
 
 export async function removeLineItem(cartId: string, lineItemId: string) {
-  const data = await api.del<StoreCartResponse>(
-    `/store/carts/${cartId}/line-items/${lineItemId}`,
+  const data = await api.post<StoreCartResponse>(
+    `/store-api/carts/${cartId}/delete-line-item`,
+    { item_id: lineItemId },
   );
   return data;
 }
@@ -103,6 +104,7 @@ export async function updateCartShippingMethod(
   cartId: string,
   optionId: string,
 ) {
+  // No `/store-api/carts/.../shipping-methods` route in medusa-app yet.
   const data = await api.post<StoreCartResponse>(
     `/store/carts/${cartId}/shipping-methods`,
     {
@@ -113,6 +115,7 @@ export async function updateCartShippingMethod(
 }
 
 export async function addPromotions(cartId: string, code: string) {
+  // No `/store-api/carts/.../promotions` route in medusa-app yet.
   const data = await api.post<StoreCartResponse>(
     `/store/carts/${cartId}/promotions`,
     {
@@ -123,6 +126,7 @@ export async function addPromotions(cartId: string, code: string) {
 }
 
 export async function removePromotions(cartId: string, code: string) {
+  // No `/store-api/carts/.../promotions` route in medusa-app yet.
   const data = await api.del<StoreCartResponse>(
     `/store/carts/${cartId}/promotions`,
     {

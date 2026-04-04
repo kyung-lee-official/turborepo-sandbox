@@ -44,7 +44,7 @@ export const CartCreation = ({
             </code>{" "}
             (Zustand persist). We reuse{" "}
             <code className="rounded bg-gray-100 px-1 text-xs">
-              GET /store/carts/:id
+              GET /store-api/carts/:id
             </code>{" "}
             when possible, otherwise{" "}
             <code className="rounded bg-gray-100 px-1 text-xs">
