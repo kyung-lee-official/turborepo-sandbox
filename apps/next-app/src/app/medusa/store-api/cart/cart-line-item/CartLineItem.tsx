@@ -111,11 +111,28 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
   });
 
   const unselectedMap = ((cart.metadata as Record<string, unknown>)
-    ?.unselected ?? {}) as Record<string, { quantity?: number }>;
+    ?.unselected ?? {}) as Record<
+    string,
+    {
+      quantity: number;
+      title: string;
+      subtitle: string | null;
+      variant_title: string | null;
+      variant_sku: string | null;
+      unit_price: number;
+      thumbnail: string | null;
+    }
+  >;
   const unselectedItems = Object.entries(unselectedMap).map(
     ([variantId, details]) => ({
       variantId,
-      quantity: details.quantity ?? 0,
+      quantity: details.quantity,
+      title: details.title,
+      subtitle: details.subtitle,
+      variant_title: details.variant_title,
+      variant_sku: details.variant_sku,
+      unit_price: details.unit_price,
+      thumbnail: details.thumbnail,
     }),
   );
 
@@ -307,10 +324,23 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
                         Not selected
                       </label>
                     </div>
-                    <h4 className="font-medium text-gray-500">Variant ID</h4>
-                    <p className="font-mono text-gray-400 text-sm">
-                      {item.variantId}
+                    <h4 className="font-medium">{item.title}</h4>
+                    {item.subtitle && (
+                      <p className="text-gray-600 text-sm">{item.subtitle}</p>
+                    )}
+                    {item.variant_title && (
+                      <p className="text-gray-500 text-sm">
+                        Variant: {item.variant_title}
+                      </p>
+                    )}
+                    <p className="mt-1 font-medium text-gray-700 text-sm">
+                      {formatCurrency(item.unit_price, cart.currency_code)}
                     </p>
+                    {item.variant_sku && (
+                      <p className="text-gray-400 text-xs">
+                        SKU: {item.variant_sku}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2 text-right">
                     <div className="text-gray-500 text-sm">
@@ -330,6 +360,15 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
                     </button>
                   </div>
                 </div>
+                {item.thumbnail && (
+                  <Image
+                    width={300}
+                    height={300}
+                    src={item.thumbnail}
+                    alt={item.title}
+                    className="mt-2 h-16 w-16 rounded object-cover"
+                  />
+                )}
               </div>
             );
           })}
