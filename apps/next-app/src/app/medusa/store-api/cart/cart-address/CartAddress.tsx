@@ -1,5 +1,9 @@
+"use client";
+
 import type { StoreCart, StoreCustomerAddress } from "@medusajs/types";
 import { useEffect, useState } from "react";
+import { Button } from "@/app/medusa/components/Button";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { getMyAddresses } from "../../customer/api";
 import { updateACart } from "../api";
 
@@ -56,52 +60,66 @@ export const CartAddresses = ({ cart }: { cart: StoreCart }) => {
         setShowBillingSelector(false);
       }
 
-      // You might want to trigger a cart refresh here
-      window.location.reload(); // Simple approach - you might want to use a more sophisticated state management
+      window.location.reload();
     } catch (error) {
       console.error(`Failed to update ${type} address:`, error);
     }
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-8 md:grid-cols-2">
       <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-lg">Shipping Address</h3>
-          <button
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="font-bold text-gray-900 text-lg">Shipping address</h3>
+          <Button
+            type="button"
+            variant="outline"
+            size="compact"
+            fullWidth={false}
             onClick={() => setShowShippingSelector(!showShippingSelector)}
-            className="rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600 disabled:opacity-50"
             disabled={isLoading || customerAddresses.length === 0}
           >
             {showShippingSelector ? "Cancel" : "Change"}
-          </button>
+          </Button>
         </div>
 
         {showShippingSelector ? (
           <div className="max-h-60 space-y-2 overflow-y-auto">
             {customerAddresses.map((address) => (
-              <div
+              <PixelSurface
                 key={address.id}
-                className="cursor-pointer rounded border p-3 hover:bg-gray-50"
+                shadow="sm"
+                className="cursor-pointer p-3 transition-colors hover:bg-stone-50"
                 onClick={() => handleAddressSelection(address, "shipping")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleAddressSelection(address, "shipping");
+                  }
+                }}
+                role="button"
+                tabIndex={0}
               >
                 <div className="text-sm">
-                  <p className="font-medium">
+                  <p className="font-semibold text-gray-900">
                     {address.first_name} {address.last_name}
                   </p>
-                  {address.company && <p>{address.company}</p>}
-                  <p>{address.address_1}</p>
-                  {address.address_2 && <p>{address.address_2}</p>}
-                  <p>
+                  {address.company && <p className="text-gray-800">{address.company}</p>}
+                  <p className="text-gray-800">{address.address_1}</p>
+                  {address.address_2 && (
+                    <p className="text-gray-800">{address.address_2}</p>
+                  )}
+                  <p className="text-gray-800">
                     {address.city}, {address.province} {address.postal_code}
                   </p>
-                  <p>{address.country_code?.toUpperCase()}</p>
+                  <p className="text-gray-800">
+                    {address.country_code?.toUpperCase()}
+                  </p>
                 </div>
-              </div>
+              </PixelSurface>
             ))}
           </div>
         ) : cart.shipping_address ? (
-          <div className="space-y-1 text-sm">
+          <div className="space-y-1 text-gray-800 text-sm">
             {cart.shipping_address.first_name && (
               <p>
                 {cart.shipping_address.first_name}{" "}
@@ -130,47 +148,62 @@ export const CartAddresses = ({ cart }: { cart: StoreCart }) => {
             )}
           </div>
         ) : (
-          <p className="text-gray-500">No shipping address set</p>
+          <p className="text-gray-600">No shipping address set</p>
         )}
       </div>
 
       <div>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-semibold text-lg">Billing Address</h3>
-          <button
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="font-bold text-gray-900 text-lg">Billing address</h3>
+          <Button
+            type="button"
+            variant="outline"
+            size="compact"
+            fullWidth={false}
             onClick={() => setShowBillingSelector(!showBillingSelector)}
-            className="rounded bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600 disabled:opacity-50"
             disabled={isLoading || customerAddresses.length === 0}
           >
             {showBillingSelector ? "Cancel" : "Change"}
-          </button>
+          </Button>
         </div>
 
         {showBillingSelector ? (
           <div className="max-h-60 space-y-2 overflow-y-auto">
             {customerAddresses.map((address) => (
-              <div
+              <PixelSurface
                 key={address.id}
-                className="cursor-pointer rounded border p-3 hover:bg-gray-50"
+                shadow="sm"
+                className="cursor-pointer p-3 transition-colors hover:bg-stone-50"
                 onClick={() => handleAddressSelection(address, "billing")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleAddressSelection(address, "billing");
+                  }
+                }}
+                role="button"
+                tabIndex={0}
               >
                 <div className="text-sm">
-                  <p className="font-medium">
+                  <p className="font-semibold text-gray-900">
                     {address.first_name} {address.last_name}
                   </p>
-                  {address.company && <p>{address.company}</p>}
-                  <p>{address.address_1}</p>
-                  {address.address_2 && <p>{address.address_2}</p>}
-                  <p>
+                  {address.company && <p className="text-gray-800">{address.company}</p>}
+                  <p className="text-gray-800">{address.address_1}</p>
+                  {address.address_2 && (
+                    <p className="text-gray-800">{address.address_2}</p>
+                  )}
+                  <p className="text-gray-800">
                     {address.city}, {address.province} {address.postal_code}
                   </p>
-                  <p>{address.country_code?.toUpperCase()}</p>
+                  <p className="text-gray-800">
+                    {address.country_code?.toUpperCase()}
+                  </p>
                 </div>
-              </div>
+              </PixelSurface>
             ))}
           </div>
         ) : cart.billing_address ? (
-          <div className="space-y-1 text-sm">
+          <div className="space-y-1 text-gray-800 text-sm">
             {cart.billing_address.first_name && (
               <p>
                 {cart.billing_address.first_name}{" "}
@@ -198,7 +231,7 @@ export const CartAddresses = ({ cart }: { cart: StoreCart }) => {
             )}
           </div>
         ) : (
-          <p className="text-gray-500">No billing address set</p>
+          <p className="text-gray-600">No billing address set</p>
         )}
       </div>
     </div>

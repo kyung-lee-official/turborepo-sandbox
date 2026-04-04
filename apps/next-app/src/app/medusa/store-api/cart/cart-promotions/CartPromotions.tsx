@@ -2,6 +2,10 @@
 
 import type { StoreCartPromotion, StoreCartResponse } from "@medusajs/types";
 import { useState } from "react";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Button } from "@/app/medusa/components/Button";
+import { Card } from "@/app/medusa/components/Card";
+import { TextInput } from "@/app/medusa/components/TextInput";
 import { addPromotions, removePromotions } from "../api";
 
 interface CartPromotionsProps {
@@ -62,63 +66,64 @@ export default function CartPromotions({
   const appliedPromotions: StoreCartPromotion[] = cart.cart.promotions || [];
 
   return (
-    <div className="space-y-4 rounded-lg bg-gray-50 p-4">
-      <h3 className="font-semibold text-gray-900 text-lg">Promotional Codes</h3>
+    <Card variant="pixel" className="max-w-none bg-stone-50">
+      <h3 className="font-bold text-gray-900 text-lg">Promotional codes</h3>
 
-      {/* Add Promo Code */}
-      <div className="flex flex-col space-y-2">
+      <div className="flex flex-col gap-2">
         <label
           htmlFor="promo-code"
-          className="font-medium text-gray-700 text-sm"
+          className="font-semibold text-gray-800 text-sm"
         >
-          Enter Promo Code
+          Enter promo code
         </label>
-        <div className="flex space-x-2">
-          <input
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+          <TextInput
             id="promo-code"
             type="text"
             value={promoCode}
             onChange={(e) => setPromoCode(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Enter promo code"
-            className="flex-1 rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Promo code"
             disabled={isLoading}
+            className="min-w-0 flex-1"
           />
-          <button
+          <Button
+            type="button"
+            variant="primary"
+            size="compact"
+            fullWidth={false}
+            className="sm:self-start"
             onClick={handleAddPromotion}
             disabled={isLoading || !promoCode.trim()}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading ? "Adding..." : "Apply"}
-          </button>
+            {isLoading ? "Adding…" : "Apply"}
+          </Button>
         </div>
       </div>
 
-      {/* Error Message */}
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3">
-          <p className="text-red-700 text-sm">{error}</p>
-        </div>
+        <Alert title="Promo code" variant="error" appearance="pixel">
+          {error}
+        </Alert>
       )}
 
-      {/* Applied Promotions */}
       {appliedPromotions.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-700 text-sm">
-            Applied Promotions:
+          <h4 className="font-semibold text-gray-800 text-sm">
+            Applied promotions
           </h4>
           <div className="space-y-2">
             {appliedPromotions.map((promotion) => (
               <div
                 key={promotion.id}
-                className="flex items-center justify-between rounded-md border border-green-200 bg-green-50 p-3"
+                className="flex items-center justify-between gap-3 border-2 border-green-800 bg-green-50 p-3 shadow-[4px_4px_0_0_#14532d]"
               >
-                <div className="flex-1">
-                  <p className="font-medium text-green-800 text-sm">
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-green-900 text-sm">
                     {promotion.code}
                   </p>
                   {promotion.application_method && (
-                    <p className="text-green-600 text-xs capitalize">
+                    <p className="text-green-800 text-xs capitalize">
                       {promotion.application_method.type} discount of{" "}
                       {promotion.application_method.type === "fixed"
                         ? `${promotion.application_method.currency_code.toUpperCase()} ${promotion.application_method.value}`
@@ -126,27 +131,29 @@ export default function CartPromotions({
                     </p>
                   )}
                 </div>
-                <button
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="compact"
+                  fullWidth={false}
                   onClick={() =>
                     promotion.code && handleRemovePromotion(promotion.code)
                   }
                   disabled={isLoading}
-                  className="ml-2 rounded bg-red-600 px-3 py-1 text-white text-xs hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* No Promotions Message */}
       {appliedPromotions.length === 0 && (
-        <div className="py-4 text-center">
-          <p className="text-gray-500 text-sm">No promotional codes applied</p>
+        <div className="py-2 text-center">
+          <p className="text-gray-600 text-sm">No promotional codes applied</p>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

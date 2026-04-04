@@ -2,6 +2,10 @@
 
 import type { StoreCartResponse } from "@medusajs/types";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Button } from "@/app/medusa/components/Button";
+import { Card } from "@/app/medusa/components/Card";
+import { InlineCode } from "@/app/medusa/components/InlineCode";
 
 type CartCreationProps = {
   cartId: string | null;
@@ -25,39 +29,28 @@ export const CartCreation = ({
   createCartMutation,
 }: CartCreationProps) => {
   return (
-    <div className="rounded-lg border bg-white p-6 shadow-sm">
-      <h2 className="mb-4 font-semibold text-xl">Cart Management</h2>
-      <p className="mb-3 text-gray-600 text-sm">
+    <Card variant="pixel" className="max-w-none">
+      <h2 className="font-bold text-gray-900 text-xl">Cart management</h2>
+      <p className="text-gray-600 text-sm leading-relaxed">
         {isCustomerSession ? (
           <>
             Signed-in: cart is loaded via{" "}
-            <code className="rounded bg-gray-100 px-1 text-xs">
-              GET /store-api/carts
-            </code>{" "}
-            (server picks an active cart for this region or creates one).
+            <InlineCode>GET /store-api/carts</InlineCode> (server picks an active
+            cart for this region or creates one).
           </>
         ) : (
           <>
             Guest: cart id is kept in{" "}
-            <code className="rounded bg-gray-100 px-1 text-xs">
-              localStorage
-            </code>{" "}
-            (Zustand persist). We reuse{" "}
-            <code className="rounded bg-gray-100 px-1 text-xs">
-              GET /store-api/carts/:id
-            </code>{" "}
-            when possible, otherwise{" "}
-            <code className="rounded bg-gray-100 px-1 text-xs">
-              POST /store-api/carts
-            </code>
-            .
+            <InlineCode>localStorage</InlineCode> (Zustand persist). We reuse{" "}
+            <InlineCode>GET /store-api/carts/:id</InlineCode> when possible,
+            otherwise <InlineCode>POST /store-api/carts</InlineCode>.
           </>
         )}
       </p>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-gray-700 text-sm">
-            {cartId ? `Current Cart ID: ${cartId}` : "No cart available"}
+          <p className="text-gray-800 text-sm">
+            {cartId ? `Current cart ID: ${cartId}` : "No cart available"}
           </p>
           <p className="mt-1 text-gray-600 text-xs">
             {isCustomerSession
@@ -66,51 +59,30 @@ export const CartCreation = ({
           </p>
         </div>
         {!isCustomerSession && (
-          <button
+          <Button
+            type="button"
+            variant="primary"
+            size="compact"
+            fullWidth={false}
             onClick={onCreateCart}
             disabled={!regionId || createCartMutation.isPending}
-            className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400"
           >
-            {createCartMutation.isPending ? (
-              <span className="flex items-center">
-                <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  />
-                </svg>
-                Creating...
-              </span>
-            ) : (
-              "Create New Cart"
-            )}
-          </button>
+            {createCartMutation.isPending ? "Creating..." : "Create new cart"}
+          </Button>
         )}
       </div>
 
       {createCartMutation.isError && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
-          <p className="text-red-700 text-sm">
-            Failed to create cart. Please try again.
-          </p>
-        </div>
+        <Alert title="Could not create cart" variant="error" appearance="pixel">
+          Please try again.
+        </Alert>
       )}
 
       {createCartMutation.isSuccess && (
-        <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3">
-          <p className="text-green-700 text-sm">Cart created successfully!</p>
-        </div>
+        <Alert title="Cart created" variant="success" appearance="pixel">
+          Cart created successfully.
+        </Alert>
       )}
-    </div>
+    </Card>
   );
 };

@@ -1,0 +1,62 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "PhRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Medusa PageHeading",
+      "width": 480,
+      "fill": "#e7e5e4",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "PhTx1",
+          "fill": "#44403c",
+          "content": "PageHeading.tsx — title + optional description",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "PhBd1",
+          "name": "headingBlock",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [0, 0, 16, 0],
+          "stroke": {
+            "align": "inside",
+            "thickness": 2,
+            "fill": "#1e1b84"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "PhTi1",
+              "fill": "#1c1917",
+              "content": "Shopping Cart",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "PhDs1",
+              "fill": "#57534e",
+              "content": "Review items and checkout — shadow-[0_4px_0_0_#0f172a] under border",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

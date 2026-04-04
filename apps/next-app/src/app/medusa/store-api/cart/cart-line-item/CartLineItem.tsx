@@ -229,9 +229,11 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-gray-800 text-xl">
-        Cart items ({visibleCount})
-      </h3>
+      <div className="border-b-2 border-[#1e1b84] pb-3 shadow-[0_4px_0_0_#0f172a]">
+        <h3 className="font-bold text-gray-800 text-xl">
+          Cart items ({visibleCount})
+        </h3>
+      </div>
       {hasVisibleItems ? (
         <div className="space-y-4">
           {useDisplayLines && displayLines

@@ -7,10 +7,10 @@
       "x": 0,
       "y": 0,
       "name": "Medusa Alert",
-      "width": 400,
+      "width": 440,
       "fill": "#e7e5e4",
       "layout": "vertical",
-      "gap": 24,
+      "gap": 20,
       "padding": 32,
       "children": [
         {
@@ -18,7 +18,7 @@
           "id": "AlTx1",
           "name": "hdr",
           "fill": "#44403c",
-          "content": "Alert.tsx — error / success",
+          "content": "Alert.tsx — error / success / warning · appearance soft | pixel",
           "fontFamily": "Inter",
           "fontSize": 12,
           "fontWeight": "normal"
@@ -26,7 +26,7 @@
         {
           "type": "frame",
           "id": "AlEr1",
-          "name": "errorSample",
+          "name": "errorSoft",
           "width": "fill_container",
           "fill": "#fef2f2",
           "cornerRadius": 6,
@@ -38,50 +38,64 @@
               "type": "text",
               "id": "AlEt1",
               "fill": "#991b1b",
-              "content": "variant: error",
+              "content": "error · soft",
               "fontFamily": "Inter",
               "fontSize": 14,
               "fontWeight": "500"
-            },
-            {
-              "type": "text",
-              "id": "AlEb1",
-              "fill": "#b91c1c",
-              "content": "Body copy uses text-red-700",
-              "fontFamily": "Inter",
-              "fontSize": 14,
-              "fontWeight": "normal"
             }
           ]
         },
         {
           "type": "frame",
-          "id": "AlOk1",
-          "name": "successSample",
+          "id": "AlErP",
+          "name": "errorPixel",
           "width": "fill_container",
-          "fill": "#f0fdf4",
-          "cornerRadius": 6,
+          "fill": "#fef2f2",
+          "cornerRadius": 0,
           "padding": 16,
+          "stroke": {
+            "align": "center",
+            "thickness": 2,
+            "fill": "#7f1d1d"
+          },
           "layout": "vertical",
           "gap": 8,
           "children": [
             {
               "type": "text",
-              "id": "AlSt1",
-              "fill": "#166534",
-              "content": "variant: success",
+              "id": "AlEtP",
+              "fill": "#991b1b",
+              "content": "error · pixel",
               "fontFamily": "Inter",
               "fontSize": 14,
               "fontWeight": "500"
-            },
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AlWr1",
+          "name": "warningPixel",
+          "width": "fill_container",
+          "fill": "#fffbeb",
+          "cornerRadius": 0,
+          "padding": 16,
+          "stroke": {
+            "align": "center",
+            "thickness": 2,
+            "fill": "#78350f"
+          },
+          "layout": "vertical",
+          "gap": 8,
+          "children": [
             {
               "type": "text",
-              "id": "AlSb1",
-              "fill": "#15803d",
-              "content": "Body copy uses text-green-700",
+              "id": "AlWt1",
+              "fill": "#78350f",
+              "content": "warning · pixel",
               "fontFamily": "Inter",
               "fontSize": 14,
-              "fontWeight": "normal"
+              "fontWeight": "500"
             }
           ]
         }

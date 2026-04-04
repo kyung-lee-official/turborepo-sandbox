@@ -1,64 +1,76 @@
 import type { StoreCart } from "@medusajs/types";
+import { Button } from "@/app/medusa/components/Button";
+import { Card } from "@/app/medusa/components/Card";
 import { formatCurrency } from "@/utils/currency";
 
 export const CartSummary = ({
   cart,
   onCheckout,
+  checkoutBusy = false,
 }: {
   cart: StoreCart;
   onCheckout: () => void;
+  checkoutBusy?: boolean;
 }) => {
+  const canCheckout =
+    Boolean(cart.shipping_address) &&
+    Boolean(cart.shipping_methods?.length) &&
+    Boolean(cart.items?.length);
+
   return (
-    <div className="rounded-lg bg-gray-50 p-6">
-      <h3 className="mb-4 font-semibold text-xl">Cart Summary</h3>
-      <div className="space-y-2">
-        <div className="flex justify-between">
-          <span>Subtotal:</span>
-          <span className="font-medium">
+    <Card variant="pixel" className="max-w-none bg-stone-50">
+      <h3 className="font-bold text-gray-900 text-xl">Cart summary</h3>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between gap-4">
+          <span className="text-gray-700">Subtotal</span>
+          <span className="font-semibold text-gray-900">
             {formatCurrency(cart.subtotal, cart.currency_code)}
           </span>
         </div>
         {cart.tax_total > 0 && (
-          <div className="flex justify-between">
-            <span>Tax:</span>
-            <span className="font-medium">
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-700">Tax</span>
+            <span className="font-semibold text-gray-900">
               {formatCurrency(cart.tax_total, cart.currency_code)}
             </span>
           </div>
         )}
         {cart.shipping_total > 0 && (
-          <div className="flex justify-between">
-            <span>Shipping:</span>
-            <span className="font-medium">
+          <div className="flex justify-between gap-4">
+            <span className="text-gray-700">Shipping</span>
+            <span className="font-semibold text-gray-900">
               {formatCurrency(cart.shipping_total, cart.currency_code)}
             </span>
           </div>
         )}
         {cart.discount_total > 0 && (
-          <div className="flex justify-between text-green-600">
-            <span>Discount:</span>
-            <span className="font-medium">
+          <div className="flex justify-between gap-4 text-green-700">
+            <span>Discount</span>
+            <span className="font-semibold">
               -{formatCurrency(cart.discount_total, cart.currency_code)}
             </span>
           </div>
         )}
-        <div className="flex justify-between border-t pt-2 font-bold text-lg">
-          <span>Total:</span>
+        <div className="flex justify-between gap-4 border-t-2 border-[#1e1b84] pt-3 font-bold text-base text-gray-900">
+          <span>Total</span>
           <span>{formatCurrency(cart.total, cart.currency_code)}</span>
         </div>
       </div>
-      <button
+      <Button
+        type="button"
+        variant="primary"
+        disabled={!canCheckout || checkoutBusy}
         onClick={onCheckout}
-        className="mt-4 w-full rounded bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
-        disabled={!cart.shipping_address || !cart.shipping_methods?.length || !cart.items?.length}
       >
-        Proceed to Checkout
-      </button>
-      {(!cart.shipping_address || !cart.shipping_methods?.length || !cart.items?.length) && (
-        <p className="mt-2 text-center text-gray-500 text-sm">
-          {!cart.items?.length ? "Please select items to checkout" : "Please add shipping address and select shipping method"}
+        {checkoutBusy ? "Starting checkout…" : "Proceed to checkout"}
+      </Button>
+      {!canCheckout && (
+        <p className="text-center text-gray-600 text-sm">
+          {!cart.items?.length
+            ? "Select items to checkout"
+            : "Add shipping address and a shipping method"}
         </p>
       )}
-    </div>
+    </Card>
   );
 };

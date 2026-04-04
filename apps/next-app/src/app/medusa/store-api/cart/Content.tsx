@@ -4,6 +4,10 @@ import type { StoreCart } from "@medusajs/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Card } from "@/app/medusa/components/Card";
+import { PageHeading } from "@/app/medusa/components/PageHeading";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { getMeOrNull } from "../customer/api";
 import { createPaymentCollection } from "../payment/api";
@@ -126,14 +130,9 @@ export const Content = () => {
   if (!regionId) {
     return (
       <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-yellow-800">
-            Region Required
-          </h2>
-          <p className="text-yellow-700">
-            Please select a region on the region page to view cart information.
-          </p>
-        </div>
+        <Alert title="Region required" variant="warning" appearance="pixel">
+          Please select a region on the region page to view cart information.
+        </Alert>
       </div>
     );
   }
@@ -141,10 +140,12 @@ export const Content = () => {
   if (sessionQuery.isLoading || !hasHydrated) {
     return (
       <div className="mx-auto max-w-4xl p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/4 rounded bg-gray-200"></div>
-          <div className="h-64 rounded bg-gray-200"></div>
-        </div>
+        <PixelSurface className="p-6" shadow="md">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-1/4 bg-stone-200" />
+            <div className="h-64 bg-stone-200" />
+          </div>
+        </PixelSurface>
       </div>
     );
   }
@@ -152,16 +153,11 @@ export const Content = () => {
   if (sessionQuery.isError) {
     return (
       <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-red-800">
-            Session Error
-          </h2>
-          <p className="text-red-700">
-            {sessionQuery.error instanceof Error
-              ? sessionQuery.error.message
-              : "Could not resolve customer session"}
-          </p>
-        </div>
+        <Alert title="Session error" variant="error" appearance="pixel">
+          {sessionQuery.error instanceof Error
+            ? sessionQuery.error.message
+            : "Could not resolve customer session"}
+        </Alert>
       </div>
     );
   }
@@ -169,34 +165,31 @@ export const Content = () => {
   if (cartQuery.isLoading) {
     return (
       <div className="mx-auto max-w-4xl p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/4 rounded bg-gray-200"></div>
-          <div className="h-64 rounded bg-gray-200"></div>
-        </div>
+        <PixelSurface className="p-6" shadow="md">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-1/4 bg-stone-200" />
+            <div className="h-64 bg-stone-200" />
+          </div>
+        </PixelSurface>
       </div>
     );
   }
 
   if (cartQuery.isError) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-red-800">
-            Error Loading Cart
-          </h2>
-          <p className="text-red-700">
-            {cartQuery.error instanceof Error
-              ? cartQuery.error.message
-              : "Unknown error"}
-          </p>
-          <CartCreation
-            cartId={cartId}
-            regionId={regionId}
-            isCustomerSession={isCustomerSession}
-            onCreateCart={handleCreateCart}
-            createCartMutation={createCartMutation}
-          />
-        </div>
+      <div className="mx-auto max-w-4xl space-y-6 p-6">
+        <Alert title="Error loading cart" variant="error" appearance="pixel">
+          {cartQuery.error instanceof Error
+            ? cartQuery.error.message
+            : "Unknown error"}
+        </Alert>
+        <CartCreation
+          cartId={cartId}
+          regionId={regionId}
+          isCustomerSession={isCustomerSession}
+          onCreateCart={handleCreateCart}
+          createCartMutation={createCartMutation}
+        />
       </div>
     );
   }
@@ -204,9 +197,8 @@ export const Content = () => {
   const cart = cartQuery.data;
   if (!cart) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <p className="text-gray-500">No cart data available</p>
-
+      <div className="mx-auto max-w-4xl space-y-6 p-6">
+        <p className="text-gray-600">No cart data available</p>
         <CartCreation
           cartId={cartId}
           regionId={regionId}
@@ -220,13 +212,15 @@ export const Content = () => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
-      <details>
-        <summary className="cursor-pointer text-gray-500 text-sm">
-          Raw Cart Data (for debugging)
+      <details className="group">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+          Raw cart data (debug)
         </summary>
-        <pre className="mt-2 overflow-auto rounded bg-gray-100 p-4 text-xs">
-          {JSON.stringify(cart, null, 2)}
-        </pre>
+        <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
+          <pre className="font-mono text-xs text-gray-800">
+            {JSON.stringify(cart, null, 2)}
+          </pre>
+        </PixelSurface>
       </details>
 
       <CartCreation
@@ -237,12 +231,10 @@ export const Content = () => {
         createCartMutation={createCartMutation}
       />
 
-      <div className="border-b pb-4">
-        <h1 className="font-bold text-3xl">Shopping Cart</h1>
-        <p className="mt-2 text-gray-600">
-          Review your cart items and proceed to checkout
-        </p>
-      </div>
+      <PageHeading
+        title="Shopping cart"
+        description="Review your cart items and proceed to checkout"
+      />
 
       <div className="grid gap-8 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
@@ -252,7 +244,11 @@ export const Content = () => {
         </div>
 
         <div className="space-y-6">
-          <CartSummary cart={cart} onCheckout={handleCheckout} />
+          <CartSummary
+            cart={cart}
+            onCheckout={handleCheckout}
+            checkoutBusy={isCheckingOut}
+          />
           <CartInfo cart={cart} />
         </div>
       </div>

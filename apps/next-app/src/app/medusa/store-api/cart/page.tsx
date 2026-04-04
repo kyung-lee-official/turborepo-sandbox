@@ -3,10 +3,11 @@ import { Content } from "./Content";
 
 const Page = () => {
   return (
-    <div>
+    <div className="min-h-screen bg-stone-100">
       <Content />
-      <hr />
-      <CartForm />
+      <div className="border-t-2 border-[#1e1b84] bg-stone-200/50">
+        <CartForm />
+      </div>
     </div>
   );
 };

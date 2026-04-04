@@ -1,0 +1,47 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "IcRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Medusa InlineCode",
+      "width": 420,
+      "fill": "#e7e5e4",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "IcTx1",
+          "fill": "#44403c",
+          "content": "InlineCode.tsx — mono · border · 2×2 shadow",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "IcSm1",
+          "name": "sample",
+          "layout": "horizontal",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "IcBd1",
+              "fill": "#292524",
+              "content": "GET /store-api/carts",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

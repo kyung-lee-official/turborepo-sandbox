@@ -2,6 +2,10 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Button } from "@/app/medusa/components/Button";
+import { Card } from "@/app/medusa/components/Card";
+import { TextInput } from "@/app/medusa/components/TextInput";
 import { getCart } from "./api";
 
 type FormData = {
@@ -20,8 +24,8 @@ export const CartForm = () => {
   });
 
   const getCartMutation = useMutation({
-    mutationFn: async (cartId: string) => {
-      return await getCart(cartId);
+    mutationFn: async (id: string) => {
+      return await getCart(id);
     },
     onSuccess: async (data) => {
       console.log("Cart data:", data);
@@ -36,78 +40,56 @@ export const CartForm = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow">
+    <div className="flex justify-center py-12">
+      <Card variant="pixel" className="max-w-md">
         <div>
-          <h2 className="mt-6 text-center font-extrabold text-3xl text-gray-900">
-            Get Cart by ID
+          <h2 className="text-center font-bold text-2xl text-gray-900 tracking-tight">
+            Get cart by ID
           </h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div>
             <label htmlFor="cartId" className="sr-only">
               Cart ID
             </label>
-            <input
+            <TextInput
+              id="cartId"
+              type="text"
+              placeholder="Enter cart ID"
               {...register("cartId", {
                 required: "Cart ID is required",
               })}
-              type="text"
-              className="relative block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-              placeholder="Enter Cart ID"
             />
             {errors.cartId && (
-              <p className="mt-1 text-red-600 text-sm">
-                {errors.cartId.message}
-              </p>
+              <p className="mt-2 text-red-700 text-sm">{errors.cartId.message}</p>
             )}
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
+              variant="primary"
               disabled={getCartMutation.isPending}
-              className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {getCartMutation.isPending ? "Loading..." : "Get Cart"}
-            </button>
+              {getCartMutation.isPending ? "Loading..." : "Get cart"}
+            </Button>
           </div>
 
           {getCartMutation.isError && (
-            <div className="rounded-md bg-red-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="font-medium text-red-800 text-sm">
-                    Failed to get cart
-                  </h3>
-                  <div className="mt-2 text-red-700 text-sm">
-                    <p>
-                      {getCartMutation.error instanceof Error
-                        ? getCartMutation.error.message
-                        : "An error occurred while fetching the cart"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <Alert title="Failed to get cart" variant="error" appearance="pixel">
+              {getCartMutation.error instanceof Error
+                ? getCartMutation.error.message
+                : "An error occurred while fetching the cart"}
+            </Alert>
           )}
 
           {getCartMutation.isSuccess && (
-            <div className="rounded-md bg-green-50 p-4">
-              <div className="flex">
-                <div className="ml-3">
-                  <h3 className="font-medium text-green-800 text-sm">
-                    Cart retrieved successfully!
-                  </h3>
-                  <div className="mt-2 text-green-700 text-sm">
-                    <p>Cart data has been fetched successfully.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <Alert title="Cart retrieved" variant="success" appearance="pixel">
+              Cart data has been fetched successfully.
+            </Alert>
           )}
         </form>
-      </div>
+      </Card>
     </div>
   );
 };

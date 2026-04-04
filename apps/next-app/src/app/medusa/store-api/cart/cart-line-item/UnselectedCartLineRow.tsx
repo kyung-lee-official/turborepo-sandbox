@@ -24,7 +24,7 @@ export const UnselectedCartLineRow = ({
   onSelect,
 }: UnselectedCartLineRowProps) => {
   return (
-    <Card className="max-w-none space-y-0 border p-4 shadow-none">
+    <Card variant="pixel" className="max-w-none space-y-0 p-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="mb-2 flex items-center space-x-2">
