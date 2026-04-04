@@ -10,7 +10,7 @@ export const PageShell = ({ children, className }: PageShellProps) => {
   return (
     <div
       className={cn(
-        "flex min-h-screen flex-col items-center justify-center gap-3 bg-gray-50",
+        "flex min-h-screen flex-col items-center justify-center gap-3 bg-stone-100",
         className,
       )}
     >

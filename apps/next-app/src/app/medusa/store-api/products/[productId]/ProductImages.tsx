@@ -1,5 +1,6 @@
 import type { StoreProduct } from "@medusajs/types";
 import Image from "next/image";
+import { Card } from "@/app/medusa/components/Card";
 import { DisplayDate } from "./DisplayDate";
 
 interface ProductImagesProps {
@@ -12,8 +13,8 @@ export const ProductImages = ({ product }: ProductImagesProps) => {
   }
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-md">
-      <h2 className="mb-4 font-semibold text-xl">Images</h2>
+    <Card variant="pixel" className="max-w-none space-y-4 p-6">
+      <h2 className="mb-4 font-bold text-gray-900 text-xl">Images</h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {product.images.map((image, index) => (
           <div key={image.id} className="space-y-2">
@@ -23,7 +24,7 @@ export const ProductImages = ({ product }: ProductImagesProps) => {
                 alt={`${product.title} ${index + 1}`}
                 width={400}
                 height={300}
-                className="h-48 w-full rounded-lg bg-gray-100 object-cover"
+                className="h-48 w-full rounded-none border-2 border-[#1e1b84] bg-gray-100 object-cover shadow-[4px_4px_0_0_#0f172a]"
               />
               <div className="absolute top-2 right-2">
                 <span className="rounded-full bg-black bg-opacity-50 px-2 py-1 text-white text-xs">
@@ -54,6 +55,6 @@ export const ProductImages = ({ product }: ProductImagesProps) => {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 };

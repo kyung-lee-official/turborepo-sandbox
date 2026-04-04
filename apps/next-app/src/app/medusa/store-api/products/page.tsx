@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Alert } from "@/app/medusa/components/Alert";
 import { medusaButtonClassName } from "@/app/medusa/components/Button/Button";
 import { Card } from "@/app/medusa/components/Card";
+import { PageHeading } from "@/app/medusa/components/PageHeading";
+import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/currency";
 import { getProduts } from "./api";
@@ -14,11 +16,11 @@ type ProductFromList = Awaited<
 function statusBadgeClass(status: string | undefined) {
   switch (status) {
     case "published":
-      return "bg-green-100 text-green-800";
+      return "border border-green-800 bg-green-100 text-green-900 shadow-[2px_2px_0_0_#14532d]";
     case "draft":
-      return "bg-yellow-100 text-yellow-800";
+      return "border border-amber-800 bg-amber-100 text-amber-950 shadow-[2px_2px_0_0_#78350f]";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "border border-gray-600 bg-gray-100 text-gray-900 shadow-[2px_2px_0_0_#0f172a]";
   }
 }
 
@@ -29,26 +31,27 @@ const Page = async () => {
 
     if (products.length === 0) {
       return (
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="mb-8 font-bold text-3xl text-gray-800">Products</h1>
-          <Card className="mx-auto max-w-md space-y-4 p-8 text-center shadow-sm">
-            <div className="text-6xl text-gray-400" aria-hidden>
+        <StoreApiScaffold>
+          <PageHeading title="Products" />
+          <Card variant="pixel" className="mx-auto max-w-md space-y-4 p-8 text-center">
+            <div className="text-5xl text-gray-500" aria-hidden>
               🛒
             </div>
-            <h2 className="font-semibold text-gray-600 text-xl">
-              No products found
-            </h2>
-            <p className="text-gray-500">
+            <h2 className="font-bold text-gray-800 text-xl">No products found</h2>
+            <p className="text-gray-600">
               There are no products available at the moment.
             </p>
           </Card>
-        </div>
+        </StoreApiScaffold>
       );
     }
 
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="mb-8 font-bold text-3xl text-gray-800">Products</h1>
+      <StoreApiScaffold>
+        <PageHeading
+          title="Products"
+          description="Browse the catalog and open a product for details."
+        />
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products.map((product: ProductFromList) => {
@@ -60,11 +63,13 @@ const Page = async () => {
             return (
               <Card
                 key={product.id}
+                variant="pixel"
                 className={cn(
-                  "max-w-none space-y-0 overflow-hidden p-0 shadow-md ring-1 ring-gray-200 transition-shadow duration-300 hover:shadow-lg",
+                  "max-w-none space-y-0 overflow-hidden p-0 transition-shadow duration-200",
+                  "hover:shadow-[12px_12px_0_0_#0f172a]",
                 )}
               >
-                <div className="relative h-48 w-full bg-gray-100">
+                <div className="relative h-48 w-full bg-stone-200">
                   {imageUrl ? (
                     <Image
                       src={imageUrl}
@@ -74,14 +79,14 @@ const Page = async () => {
                       className="max-h-48 w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-gray-400">
+                    <div className="flex h-full items-center justify-center text-gray-500">
                       No image
                     </div>
                   )}
                   <div className="absolute top-2 left-2">
                     <span
                       className={cn(
-                        "rounded-full px-2 py-1 font-semibold text-xs",
+                        "rounded-none px-2 py-1 font-semibold text-xs",
                         statusBadgeClass(product.status),
                       )}
                     >
@@ -91,7 +96,7 @@ const Page = async () => {
                 </div>
 
                 <div className="space-y-2 p-4">
-                  <h2 className="line-clamp-1 font-semibold text-gray-800 text-lg">
+                  <h2 className="line-clamp-1 font-bold text-gray-900 text-lg">
                     {product.title}
                   </h2>
 
@@ -102,7 +107,7 @@ const Page = async () => {
                   )}
 
                   {product.description && (
-                    <p className="line-clamp-2 text-gray-500 text-sm">
+                    <p className="line-clamp-2 text-gray-600 text-sm">
                       {product.description}
                     </p>
                   )}
@@ -113,9 +118,7 @@ const Page = async () => {
                         {formatCurrency(amount, currencyCode)}
                       </p>
                     ) : (
-                      <p className="text-gray-500 text-sm">
-                        Price not available
-                      </p>
+                      <p className="text-gray-600 text-sm">Price not available</p>
                     )}
 
                     <Link
@@ -123,15 +126,16 @@ const Page = async () => {
                       className={cn(
                         medusaButtonClassName("primary", {
                           fullWidth: false,
+                          size: "compact",
                         }),
                         "inline-flex shrink-0 no-underline",
                       )}
                     >
-                      View Details
+                      View details
                     </Link>
                   </div>
 
-                  <div className="flex justify-between border-gray-100 border-t pt-4 text-gray-500 text-xs">
+                  <div className="flex justify-between border-[#1e1b84] border-t-2 pt-4 text-gray-600 text-xs">
                     <span className="truncate">ID: {product.id}</span>
                     {product.variants && (
                       <span className="shrink-0">
@@ -144,22 +148,23 @@ const Page = async () => {
             );
           })}
         </div>
-      </div>
+      </StoreApiScaffold>
     );
   } catch (error) {
     console.error(error);
     return (
-      <div className="container mx-auto px-4 py-8">
+      <StoreApiScaffold>
         <Alert
           title="Error loading products"
           variant="error"
+          appearance="pixel"
           className="mx-auto max-w-lg"
         >
           <p>
             There was a problem loading the products. Please try again later.
           </p>
         </Alert>
-      </div>
+      </StoreApiScaffold>
     );
   }
 };

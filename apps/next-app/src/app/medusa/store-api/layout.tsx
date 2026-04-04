@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { jwtDecode } from "jwt-decode";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { CookieKey } from "../cookie-keys";
 
 type LayoutProps = {
@@ -21,37 +22,42 @@ type DecodedToken = {
 const layout = async (props: LayoutProps) => {
   const { children } = props;
 
-  /* read cookies - access any cookie by name */
   const cookieStore = await cookies();
-  /* default to "us" if undefined */
   const customerFPToken = cookieStore.get(CookieKey.CUSTOMER_TOKEN)?.value;
 
   if (!customerFPToken) {
-    return <div>{children}</div>;
+    return <div className="min-h-screen bg-stone-100">{children}</div>;
   }
-  /* decode token with base64 */
+
   const decoded = jwtDecode(customerFPToken) as DecodedToken;
 
   return (
-    <div>
-      <div className="border-b border-dashed p-4">
-        <div className="wrap-anywhere">
-          Signed in customer: {customerFPToken}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <div className="border px-1">actor_id: {decoded.actor_id}</div>
-          <div className="border px-1">actor_type: {decoded.actor_type}</div>
-          <div className="border px-1">
+    <div className="min-h-screen bg-stone-100">
+      <PixelSurface
+        shadow="sm"
+        className="border-b-2 border-[#1e1b84] p-3 font-mono text-xs text-stone-800"
+      >
+        <p className="wrap-anywhere break-all text-[10px] leading-snug opacity-90">
+          Signed-in customer token: {customerFPToken}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className="border border-[#1e1b84] bg-white px-2 py-0.5 shadow-[2px_2px_0_0_#0f172a]">
+            actor_id: {decoded.actor_id}
+          </span>
+          <span className="border border-[#1e1b84] bg-white px-2 py-0.5 shadow-[2px_2px_0_0_#0f172a]">
+            actor_type: {decoded.actor_type}
+          </span>
+          <span className="border border-[#1e1b84] bg-white px-2 py-0.5 shadow-[2px_2px_0_0_#0f172a]">
             auth_identity_id: {decoded.auth_identity_id}
-          </div>
-          <div className="border px-1">
+          </span>
+          <span className="border border-[#1e1b84] bg-white px-2 py-0.5 shadow-[2px_2px_0_0_#0f172a]">
             iat: {dayjs(decoded.iat * 1000).format("YYYY-MM-DD HH:mm:ss")}
-          </div>
-          <div className="border px-1">
+          </span>
+          <span className="border border-[#1e1b84] bg-white px-2 py-0.5 shadow-[2px_2px_0_0_#0f172a]">
             exp: {dayjs(decoded.exp * 1000).format("YYYY-MM-DD HH:mm:ss")}
-          </div>
+          </span>
         </div>
-      </div>
+      </PixelSurface>
       {children}
     </div>
   );

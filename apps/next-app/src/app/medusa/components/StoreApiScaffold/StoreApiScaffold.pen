@@ -1,0 +1,55 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "SaRt1",
+      "x": 0,
+      "y": 0,
+      "name": "StoreApiScaffold",
+      "width": 560,
+      "height": 320,
+      "fill": "#e7e5e4",
+      "layout": "vertical",
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "SaTx1",
+          "fill": "#44403c",
+          "content": "StoreApiScaffold.tsx — min-h-screen bg-stone-100 · centered column",
+          "fontFamily": "Inter",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "SaIn1",
+          "name": "inner",
+          "width": "fill_container",
+          "height": 200,
+          "fill": "#fafaf9",
+          "layout": "vertical",
+          "padding": 16,
+          "stroke": {
+            "align": "center",
+            "thickness": 2,
+            "fill": "#d6d3d1"
+          },
+          "cornerRadius": 0,
+          "children": [
+            {
+              "type": "text",
+              "id": "SaLb1",
+              "fill": "#78716c",
+              "content": "mx-auto max-w-6xl (or narrow) · px-4 py-8",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

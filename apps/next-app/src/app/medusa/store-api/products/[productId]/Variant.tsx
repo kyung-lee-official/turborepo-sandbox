@@ -1,5 +1,6 @@
 import type { StoreProductVariant } from "@medusajs/types";
 import Image from "next/image";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { AddToCartButton } from "./AddToCartButton";
 import { DisplayDate } from "./DisplayDate";
 
@@ -9,7 +10,7 @@ interface VariantProps {
 
 export const Variant = ({ variant }: VariantProps) => {
   return (
-    <div key={variant.id} className="rounded-lg border p-4">
+    <PixelSurface shadow="sm" className="p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
         <h3 className="font-medium text-lg">
           {variant.title || `Variant ${variant.id}`}
@@ -241,6 +242,6 @@ export const Variant = ({ variant }: VariantProps) => {
           </details>
         </div>
       )}
-    </div>
+    </PixelSurface>
   );
 };

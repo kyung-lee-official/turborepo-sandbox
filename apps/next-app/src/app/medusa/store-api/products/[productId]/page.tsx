@@ -1,4 +1,8 @@
 import Image from "next/image";
+import { Card } from "@/app/medusa/components/Card";
+import { PageHeading } from "@/app/medusa/components/PageHeading";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
+import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
 import { getProductById } from "../api";
 import { DisplayDate } from "./DisplayDate";
 import { ProductImages } from "./ProductImages";
@@ -16,23 +20,25 @@ const Page = async (props: PageProps) => {
   const { product } = await getProductById(productId);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <StoreApiScaffold>
       <details className="mb-6">
-        <summary className="mb-4 cursor-pointer text-blue-600 hover:underline">
-          Raw Data (for debugging)
+        <summary className="mb-2 cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+          Raw product JSON (debug)
         </summary>
-        <pre className="overflow-auto rounded-lg bg-gray-100 p-4 text-gray-800 text-sm">
-          {JSON.stringify(product, null, 2)}
-        </pre>
+        <PixelSurface className="overflow-auto p-4" shadow="sm">
+          <pre className="font-mono text-xs text-gray-800">
+            {JSON.stringify(product, null, 2)}
+          </pre>
+        </PixelSurface>
       </details>
 
-      <div className="grid gap-6">
+      <PageHeading title={product.title} />
+
+      <div className="mt-8 grid gap-6">
         {/* Product Header */}
-        <div className="rounded-lg bg-white p-6 shadow-md">
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-            <h1 className="font-bold text-3xl text-gray-800">
-              {product.title}
-            </h1>
+            <p className="font-bold text-gray-800 text-lg">Product overview</p>
             <div className="flex items-center gap-2">
               <span
                 className={`rounded-full px-3 py-1 font-medium text-sm ${
@@ -134,7 +140,7 @@ const Page = async (props: PageProps) => {
           </div>
 
           {/* Timestamps */}
-          <div className="mt-4 grid gap-2 border-gray-200 border-t pt-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-2 border-[#1e1b84] border-t-2 pt-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
             {product.created_at && (
               <div>
                 <span className="font-medium text-gray-600">Created:</span>{" "}
@@ -160,14 +166,14 @@ const Page = async (props: PageProps) => {
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Product Images */}
         <ProductImages product={product} />
 
         {/* Thumbnail */}
         {product.thumbnail && (
-          <div className="rounded-lg bg-white p-6 shadow-md">
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
             <h2 className="mb-4 font-semibold text-xl">Thumbnail</h2>
             <div className="w-48">
               <Image
@@ -175,15 +181,15 @@ const Page = async (props: PageProps) => {
                 alt={`${product.title} thumbnail`}
                 width={200}
                 height={200}
-                className="rounded-lg bg-gray-100 object-cover"
+                className="rounded-none border-2 border-[#1e1b84] bg-gray-100 object-cover shadow-[4px_4px_0_0_#0f172a]"
               />
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Collection */}
         {product.collection && (
-          <div className="rounded-lg bg-white p-6 shadow-md">
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
             <h2 className="mb-4 font-semibold text-xl">Collection</h2>
             <div className="space-y-2">
               <h3 className="font-medium text-lg">
@@ -213,16 +219,19 @@ const Page = async (props: PageProps) => {
                 </details>
               )}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Categories */}
         {product.categories && product.categories.length > 0 && (
-          <div className="rounded-lg bg-white p-6 shadow-md">
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
             <h2 className="mb-4 font-semibold text-xl">Categories</h2>
             <div className="space-y-3">
               {product.categories.map((category) => (
-                <div key={category.id} className="rounded-lg border p-3">
+                <div
+                  key={category.id}
+                  className="border-2 border-[#1e1b84] bg-stone-50 p-3 shadow-[4px_4px_0_0_#0f172a]"
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-medium">{category.name}</h3>
@@ -246,12 +255,12 @@ const Page = async (props: PageProps) => {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Product Type */}
         {product.type && (
-          <div className="rounded-lg bg-white p-6 shadow-md">
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
             <h2 className="mb-4 font-semibold text-xl">Product Type</h2>
             <div className="space-y-2">
               <p className="font-medium">{product.type.value}</p>
@@ -272,12 +281,12 @@ const Page = async (props: PageProps) => {
                 </details>
               )}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Tags */}
         {product.tags && product.tags.length > 0 && (
-          <div className="rounded-lg bg-white p-6 shadow-md">
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
             <h2 className="mb-4 font-semibold text-xl">Tags</h2>
             <div className="flex flex-wrap gap-2">
               {product.tags.map((tag) => (
@@ -297,7 +306,7 @@ const Page = async (props: PageProps) => {
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Product Options */}
@@ -307,7 +316,7 @@ const Page = async (props: PageProps) => {
         <ProductVariants product={product} />
 
         {/* Product IDs */}
-        <div className="rounded-lg bg-white p-6 shadow-md">
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
           <h2 className="mb-4 font-semibold text-xl">Product IDs</h2>
           <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
             <div>
@@ -329,19 +338,19 @@ const Page = async (props: PageProps) => {
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Product Metadata */}
         {product.metadata && (
-          <div className="rounded-lg bg-white p-6 shadow-md">
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
             <h2 className="mb-4 font-semibold text-xl">Product Metadata</h2>
-            <pre className="rounded bg-gray-50 p-4 text-gray-700 text-sm">
+            <pre className="border border-gray-300 bg-stone-50 p-4 text-gray-800 text-sm shadow-[4px_4px_0_0_#0f172a]">
               {JSON.stringify(product.metadata, null, 2)}
             </pre>
-          </div>
+          </Card>
         )}
       </div>
-    </div>
+    </StoreApiScaffold>
   );
 };
 

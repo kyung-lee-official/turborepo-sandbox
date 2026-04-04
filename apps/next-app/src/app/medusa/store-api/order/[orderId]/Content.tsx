@@ -2,6 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Card } from "@/app/medusa/components/Card";
+import { PageHeading } from "@/app/medusa/components/PageHeading";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
+import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
 import { formatCurrency } from "@/utils/currency";
 import { getOrder } from "../api";
 
@@ -17,292 +22,262 @@ const Content = ({ orderId }: ContentProps) => {
 
   if (orderQuery.isLoading) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/3 rounded bg-gray-200"></div>
-          <div className="h-4 w-1/4 rounded bg-gray-200"></div>
-          <div className="h-64 rounded bg-gray-200"></div>
-        </div>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <PixelSurface className="p-6" shadow="md">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-1/3 bg-stone-200" />
+            <div className="h-4 w-1/4 bg-stone-200" />
+            <div className="h-64 bg-stone-200" />
+          </div>
+        </PixelSurface>
+      </StoreApiScaffold>
     );
   }
 
   if (orderQuery.isError) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-red-800">
-            Error Loading Order
-          </h2>
-          <p className="text-red-700">
-            {orderQuery.error instanceof Error
-              ? orderQuery.error.message
-              : "Failed to load order details"}
-          </p>
-        </div>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <Alert title="Error loading order" variant="error" appearance="pixel">
+          {orderQuery.error instanceof Error
+            ? orderQuery.error.message
+            : "Failed to load order details"}
+        </Alert>
+      </StoreApiScaffold>
     );
   }
 
   const order = orderQuery.data?.order;
   if (!order) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <p className="text-gray-500">No order data available</p>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <p className="text-gray-600">No order data available</p>
+      </StoreApiScaffold>
     );
   }
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "border border-amber-800 bg-amber-100 text-amber-950 shadow-[2px_2px_0_0_#78350f]";
       case "completed":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "border border-green-800 bg-green-100 text-green-900 shadow-[2px_2px_0_0_#14532d]";
       case "canceled":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "border border-red-800 bg-red-100 text-red-900 shadow-[2px_2px_0_0_#450a0a]";
       case "requires_action":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "border border-orange-800 bg-orange-100 text-orange-950 shadow-[2px_2px_0_0_#7c2d12]";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "border border-gray-600 bg-gray-100 text-gray-900 shadow-[2px_2px_0_0_#0f172a]";
     }
   };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
       case "captured":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "border border-green-800 bg-green-100 text-green-900 shadow-[2px_2px_0_0_#14532d]";
       case "awaiting":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "border border-amber-800 bg-amber-100 text-amber-950 shadow-[2px_2px_0_0_#78350f]";
       case "not_paid":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "border border-red-800 bg-red-100 text-red-900 shadow-[2px_2px_0_0_#450a0a]";
       case "refunded":
-        return "bg-purple-100 text-purple-800 border-purple-200";
+        return "border border-purple-800 bg-purple-100 text-purple-900 shadow-[2px_2px_0_0_#4c1d95]";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "border border-gray-600 bg-gray-100 text-gray-900 shadow-[2px_2px_0_0_#0f172a]";
     }
   };
 
   const getFulfillmentStatusColor = (status: string) => {
     switch (status) {
       case "fulfilled":
-        return "bg-green-100 text-green-800 border-green-200";
+        return "border border-green-800 bg-green-100 text-green-900 shadow-[2px_2px_0_0_#14532d]";
       case "partially_fulfilled":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "border border-amber-800 bg-amber-100 text-amber-950 shadow-[2px_2px_0_0_#78350f]";
       case "not_fulfilled":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "border border-red-800 bg-red-100 text-red-900 shadow-[2px_2px_0_0_#450a0a]";
       case "shipped":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "border border-blue-800 bg-blue-100 text-blue-900 shadow-[2px_2px_0_0_#1e3a8a]";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "border border-gray-600 bg-gray-100 text-gray-900 shadow-[2px_2px_0_0_#0f172a]";
     }
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
-      {/* Raw Data (Debug) */}
-      <details>
-        <summary className="cursor-pointer text-gray-500 text-sm">
-          Raw Order Data (for debugging)
+    <StoreApiScaffold maxWidth="narrow">
+      <details className="mb-6">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+          Raw order JSON (debug)
         </summary>
-        <pre className="mt-2 overflow-auto rounded bg-gray-100 p-4 text-xs">
-          {JSON.stringify(order, null, 2)}
-        </pre>
+        <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
+          <pre className="font-mono text-xs text-gray-800">
+            {JSON.stringify(order, null, 2)}
+          </pre>
+        </PixelSurface>
       </details>
 
-      {/* Order Header */}
-      <div className="border-b pb-4">
-        <h1 className="font-bold text-3xl">Order Details</h1>
-        <p className="mt-2 text-gray-600">
-          Order #{order.display_id || order.id}
-        </p>
-      </div>
+      <PageHeading
+        title="Order details"
+        description={`Order #${order.display_id || order.id}`}
+      />
 
-      {/* Order Status */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">Order Status</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
-              Order Status
-            </label>
-            <span
-              className={`inline-flex rounded-full border px-3 py-1 font-medium text-sm ${getStatusBadgeColor(order.status)}`}
-            >
-              {order.status.replace("_", " ").toUpperCase()}
-            </span>
+      <div className="mt-8 space-y-8">
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <h2 className="font-bold text-gray-900 text-xl">Order status</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <p className="mb-2 font-semibold text-gray-700 text-sm">
+                Order status
+              </p>
+              <span
+                className={`inline-flex rounded-none px-3 py-1 font-semibold text-sm ${getStatusBadgeColor(order.status)}`}
+              >
+                {order.status.replace("_", " ").toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <p className="mb-2 font-semibold text-gray-700 text-sm">
+                Payment status
+              </p>
+              <span
+                className={`inline-flex rounded-none px-3 py-1 font-semibold text-sm ${getPaymentStatusColor(order.payment_status)}`}
+              >
+                {order.payment_status.replace("_", " ").toUpperCase()}
+              </span>
+            </div>
+            <div>
+              <p className="mb-2 font-semibold text-gray-700 text-sm">
+                Fulfillment status
+              </p>
+              <span
+                className={`inline-flex rounded-none px-3 py-1 font-semibold text-sm ${getFulfillmentStatusColor(order.fulfillment_status)}`}
+              >
+                {order.fulfillment_status.replace("_", " ").toUpperCase()}
+              </span>
+            </div>
           </div>
-          <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
-              Payment Status
-            </label>
-            <span
-              className={`inline-flex rounded-full border px-3 py-1 font-medium text-sm ${getPaymentStatusColor(order.payment_status)}`}
-            >
-              {order.payment_status.replace("_", " ").toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <label className="mb-2 block font-medium text-gray-700 text-sm">
-              Fulfillment Status
-            </label>
-            <span
-              className={`inline-flex rounded-full border px-3 py-1 font-medium text-sm ${getFulfillmentStatusColor(order.fulfillment_status)}`}
-            >
-              {order.fulfillment_status.replace("_", " ").toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </div>
+        </Card>
 
-      {/* Order Information */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">Order Information</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Order ID
-            </label>
-            <p className="mt-1 font-mono text-gray-900 text-sm">{order.id}</p>
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <h2 className="font-bold text-gray-900 text-xl">Order information</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Order ID</p>
+              <p className="mt-1 font-mono text-gray-900 text-sm">{order.id}</p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Currency</p>
+              <p className="mt-1 text-gray-900">
+                {order.currency_code.toUpperCase()}
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Created</p>
+              <p className="mt-1 text-gray-900 text-sm">
+                {dayjs(order.created_at).format("YYYY-MM-DD HH:mm:ss")}
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Updated</p>
+              <p className="mt-1 text-gray-900 text-sm">
+                {dayjs(order.updated_at).format("YYYY-MM-DD HH:mm:ss")}
+              </p>
+            </div>
           </div>
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Currency
-            </label>
-            <p className="mt-1 text-gray-900">
-              {order.currency_code.toUpperCase()}
-            </p>
-          </div>
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Created At
-            </label>
-            <p className="mt-1 text-gray-900 text-sm">
-              {dayjs(order.created_at).format("YYYY-MM-DD HH:mm:ss")}
-            </p>
-          </div>
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Updated At
-            </label>
-            <p className="mt-1 text-gray-900 text-sm">
-              {dayjs(order.updated_at).format("YYYY-MM-DD HH:mm:ss")}
-            </p>
-          </div>
-        </div>
-      </div>
+        </Card>
 
-      {/* Order Summary */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">Order Summary</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border-blue-500 border-l-4 bg-blue-50 p-4">
-            <label className="block font-medium text-blue-700 text-sm">
-              Subtotal
-            </label>
-            <p className="mt-1 font-semibold text-blue-900 text-lg">
-              {formatCurrency(order.subtotal ?? 0, order.currency_code)}
-            </p>
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <h2 className="font-bold text-gray-900 text-xl">Order summary</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="border-l-4 border-blue-600 bg-blue-50 p-4 shadow-[4px_4px_0_0_#1e3a8a]">
+              <p className="font-semibold text-blue-900 text-sm">Subtotal</p>
+              <p className="mt-1 font-bold text-blue-950 text-lg">
+                {formatCurrency(order.subtotal ?? 0, order.currency_code)}
+              </p>
+            </div>
+            <div className="border-l-4 border-green-600 bg-green-50 p-4 shadow-[4px_4px_0_0_#14532d]">
+              <p className="font-semibold text-green-900 text-sm">Tax total</p>
+              <p className="mt-1 font-bold text-green-950 text-lg">
+                {formatCurrency(order.tax_total ?? 0, order.currency_code)}
+              </p>
+            </div>
+            <div className="border-l-4 border-purple-600 bg-purple-50 p-4 shadow-[4px_4px_0_0_#4c1d95]">
+              <p className="font-semibold text-purple-900 text-sm">Shipping</p>
+              <p className="mt-1 font-bold text-lg text-purple-950">
+                {formatCurrency(order.shipping_total ?? 0, order.currency_code)}
+              </p>
+            </div>
+            <div className="border-l-4 border-orange-600 bg-orange-50 p-4 shadow-[4px_4px_0_0_#7c2d12]">
+              <p className="font-semibold text-orange-900 text-sm">Total</p>
+              <p className="mt-1 font-bold text-lg text-orange-950">
+                {formatCurrency(order.total ?? 0, order.currency_code)}
+              </p>
+            </div>
           </div>
-          <div className="rounded-lg border-green-500 border-l-4 bg-green-50 p-4">
-            <label className="block font-medium text-green-700 text-sm">
-              Tax Total
-            </label>
-            <p className="mt-1 font-semibold text-green-900 text-lg">
-              {formatCurrency(order.tax_total ?? 0, order.currency_code)}
-            </p>
-          </div>
-          <div className="rounded-lg border-purple-500 border-l-4 bg-purple-50 p-4">
-            <label className="block font-medium text-purple-700 text-sm">
-              Shipping Total
-            </label>
-            <p className="mt-1 font-semibold text-lg text-purple-900">
-              {formatCurrency(order.shipping_total ?? 0, order.currency_code)}
-            </p>
-          </div>
-          <div className="rounded-lg border-orange-500 border-l-4 bg-orange-50 p-4">
-            <label className="block font-medium text-orange-700 text-sm">
-              Total
-            </label>
-            <p className="mt-1 font-semibold text-lg text-orange-900">
-              {formatCurrency(order.total ?? 0, order.currency_code)}
-            </p>
-          </div>
-        </div>
-      </div>
+        </Card>
 
-      {/* Order Items */}
-      {order.items && order.items.length > 0 && (
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-xl">Order Items</h2>
-          <div className="space-y-3">
-            {order.items.map((item) => (
-              <div key={item.id} className="rounded border bg-gray-50 p-4">
-                <div className="flex justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">
-                      {item.title || item.product_title}
-                    </h3>
-                    {item.variant_title && (
-                      <p className="text-gray-600 text-sm">
-                        {item.variant_title}
-                      </p>
-                    )}
-                    <div className="mt-2 flex items-center gap-4 text-gray-600 text-sm">
-                      <span>Quantity: {item.quantity}</span>
-                      <span>
-                        Unit Price:{" "}
-                        {formatCurrency(
-                          item.unit_price ?? 0,
-                          order.currency_code,
-                        )}
-                      </span>
+        {order.items && order.items.length > 0 && (
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
+            <h2 className="font-bold text-gray-900 text-xl">Order items</h2>
+            <div className="space-y-3">
+              {order.items.map((item) => (
+                <PixelSurface key={item.id} shadow="sm" className="p-4">
+                  <div className="flex justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-gray-900">
+                        {item.title || item.product_title}
+                      </h3>
+                      {item.variant_title && (
+                        <p className="text-gray-600 text-sm">
+                          {item.variant_title}
+                        </p>
+                      )}
+                      <div className="mt-2 flex flex-wrap gap-4 text-gray-600 text-sm">
+                        <span>Qty: {item.quantity}</span>
+                        <span>
+                          Unit:{" "}
+                          {formatCurrency(
+                            item.unit_price ?? 0,
+                            order.currency_code,
+                          )}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900">
+                    <p className="shrink-0 font-bold text-gray-900">
                       {formatCurrency(
                         (item.unit_price ?? 0) * (item.quantity ?? 1),
                         order.currency_code,
                       )}
                     </p>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Customer Information */}
-      {order.customer && (
-        <div className="rounded-lg border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-xl">Customer Information</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block font-medium text-gray-700 text-sm">
-                Email
-              </label>
-              <p className="mt-1 text-gray-900">
-                {order.customer.email || order.email}
-              </p>
+                </PixelSurface>
+              ))}
             </div>
-            {(order.customer.first_name || order.customer.last_name) && (
+          </Card>
+        )}
+
+        {order.customer && (
+          <Card variant="pixel" className="max-w-none space-y-4 p-6">
+            <h2 className="font-bold text-gray-900 text-xl">Customer</h2>
+            <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block font-medium text-gray-700 text-sm">
-                  Name
-                </label>
+                <p className="font-semibold text-gray-700 text-sm">Email</p>
                 <p className="mt-1 text-gray-900">
-                  {[order.customer.first_name, order.customer.last_name]
-                    .filter(Boolean)
-                    .join(" ")}
+                  {order.customer.email || order.email}
                 </p>
               </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+              {(order.customer.first_name || order.customer.last_name) && (
+                <div>
+                  <p className="font-semibold text-gray-700 text-sm">Name</p>
+                  <p className="mt-1 text-gray-900">
+                    {[order.customer.first_name, order.customer.last_name]
+                      .filter(Boolean)
+                      .join(" ")}
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
+      </div>
+    </StoreApiScaffold>
   );
 };
 

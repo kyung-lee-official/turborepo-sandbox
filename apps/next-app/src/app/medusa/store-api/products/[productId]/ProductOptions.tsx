@@ -1,4 +1,5 @@
 import type { StoreProduct } from "@medusajs/types";
+import { Card } from "@/app/medusa/components/Card";
 import { DisplayDate } from "./DisplayDate";
 
 interface ProductOptionsProps {
@@ -11,13 +12,13 @@ export const ProductOptions = ({ product }: ProductOptionsProps) => {
   }
 
   return (
-    <div className="rounded-lg bg-white p-6 shadow-md">
-      <h2 className="mb-4 font-semibold text-xl">Product Options</h2>
+    <Card variant="pixel" className="max-w-none space-y-4 p-6">
+      <h2 className="mb-4 font-bold text-gray-900 text-xl">Product options</h2>
       <div className="space-y-4">
         {product.options.map((option) => (
           <div
             key={option.id}
-            className="border-gray-200 border-b pb-4 last:border-b-0"
+            className="border-[#1e1b84] border-b-2 pb-4 last:border-b-0"
           >
             <div className="mb-2 flex items-center justify-between">
               <h3 className="font-medium">{option.title}</h3>
@@ -61,6 +62,6 @@ export const ProductOptions = ({ product }: ProductOptionsProps) => {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 };

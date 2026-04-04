@@ -52,7 +52,7 @@ export const Content = () => {
       }
       return await getSession(jwt);
     },
-    onSuccess: async (data) => {},
+    onSuccess: async () => {},
     onError: (error) => {
       console.error("Authentication failed:", error);
     },
@@ -73,12 +73,12 @@ export const Content = () => {
 
   return (
     <PageShell>
-      <Card>
-        <h2 className="mt-6 text-center font-extrabold text-3xl text-gray-900">
+      <Card variant="pixel">
+        <h2 className="text-center font-bold text-2xl text-gray-900">
           Sign in to your account
         </h2>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="-space-y-px rounded-md shadow-sm">
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <div className="-space-y-px shadow-sm">
             <div>
               <label htmlFor="email" className="sr-only">
                 Email address
@@ -96,7 +96,7 @@ export const Content = () => {
                 radius="top"
               />
               {errors.email && (
-                <p className="mt-1 text-red-600 text-sm">
+                <p className="mt-1 text-red-700 text-sm">
                   {errors.email.message}
                 </p>
               )}
@@ -118,7 +118,7 @@ export const Content = () => {
                 radius="bottom"
               />
               {errors.password && (
-                <p className="mt-1 text-red-600 text-sm">
+                <p className="mt-1 text-red-700 text-sm">
                   {errors.password.message}
                 </p>
               )}
@@ -137,7 +137,7 @@ export const Content = () => {
           </div>
 
           {authenticateCustomerMutation.isError && (
-            <Alert title="Sign in failed" variant="error">
+            <Alert title="Sign in failed" variant="error" appearance="pixel">
               <p>
                 {authenticateCustomerMutation.error instanceof Error
                   ? authenticateCustomerMutation.error.message
@@ -147,7 +147,7 @@ export const Content = () => {
           )}
 
           {authenticateCustomerMutation.isSuccess && (
-            <Alert title="Sign in successful!" variant="success">
+            <Alert title="Sign in successful" variant="success" appearance="pixel">
               <p>
                 You have been authenticated successfully and session has been
                 loaded.
@@ -156,8 +156,8 @@ export const Content = () => {
           )}
         </form>
       </Card>
-      <Card>
-        <h2 className="mt-6 text-center font-extrabold text-3xl text-gray-900">
+      <Card variant="pixel">
+        <h2 className="text-center font-bold text-2xl text-gray-900">
           Sign out
         </h2>
         <Button

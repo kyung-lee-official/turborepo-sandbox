@@ -3,7 +3,13 @@
 import { StoreCart } from "@medusajs/types/dist/http/cart/store/entities";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Card } from "@/app/medusa/components/Card";
+import { PageHeading } from "@/app/medusa/components/PageHeading";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
+import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/currency";
 import { createCart, getCart, QK_CART } from "../../api";
 import { PaymentSession } from "./PaymentSession";
@@ -35,53 +41,45 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
 
   if (!regionId) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-yellow-800">
-            Region Required
-          </h2>
-          <p className="text-yellow-700">
-            Please select a region on the region page to view cart information.
-          </p>
-        </div>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <Alert title="Region required" variant="warning" appearance="pixel">
+          Select a region on the region page first.
+        </Alert>
+      </StoreApiScaffold>
     );
   }
 
   if (cartQuery.isLoading) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-1/4 rounded bg-gray-200"></div>
-          <div className="h-64 rounded bg-gray-200"></div>
-        </div>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <PixelSurface className="p-6" shadow="md">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-1/4 bg-stone-200" />
+            <div className="h-64 bg-stone-200" />
+          </div>
+        </PixelSurface>
+      </StoreApiScaffold>
     );
   }
 
   if (cartQuery.isError) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-red-800">
-            Error Loading Cart
-          </h2>
-          <p className="text-red-700">
-            {cartQuery.error instanceof Error
-              ? cartQuery.error.message
-              : "Unknown error"}
-          </p>
-        </div>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <Alert title="Error loading cart" variant="error" appearance="pixel">
+          {cartQuery.error instanceof Error
+            ? cartQuery.error.message
+            : "Unknown error"}
+        </Alert>
+      </StoreApiScaffold>
     );
   }
 
   const cart = cartQuery.data;
   if (!cart) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <p className="text-gray-500">No cart data available</p>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <p className="text-gray-600">No cart data available</p>
+      </StoreApiScaffold>
     );
   }
 
@@ -89,236 +87,216 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
 
   if (!paymentCollection) {
     return (
-      <div className="mx-auto max-w-4xl p-6">
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-          <h2 className="mb-2 font-semibold text-lg text-yellow-800">
-            No Payment Collection
-          </h2>
-          <p className="text-yellow-700">
-            No payment collection found for this cart.
-          </p>
-        </div>
-      </div>
+      <StoreApiScaffold maxWidth="narrow">
+        <Alert title="No payment collection" variant="warning" appearance="pixel">
+          No payment collection found for this cart.
+        </Alert>
+      </StoreApiScaffold>
     );
   }
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case "not_paid":
-        return "bg-red-100 text-red-800 border-red-200";
+        return "border border-red-800 bg-red-100 text-red-900 shadow-[2px_2px_0_0_#450a0a]";
       case "awaiting":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        return "border border-amber-800 bg-amber-100 text-amber-950 shadow-[2px_2px_0_0_#78350f]";
       case "authorized":
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "border border-blue-800 bg-blue-100 text-blue-900 shadow-[2px_2px_0_0_#1e3a8a]";
       case "partially_authorized":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "border border-orange-800 bg-orange-100 text-orange-950 shadow-[2px_2px_0_0_#7c2d12]";
       case "canceled":
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "border border-gray-600 bg-gray-100 text-gray-900 shadow-[2px_2px_0_0_#0f172a]";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "border border-gray-600 bg-gray-100 text-gray-900 shadow-[2px_2px_0_0_#0f172a]";
     }
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
-      {/* Raw Data (Debug) */}
-      <details>
-        <summary className="cursor-pointer text-gray-500 text-sm">
-          Raw Cart Collection Data (for debugging)
+    <StoreApiScaffold maxWidth="narrow">
+      <details className="mb-6">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+          Raw cart JSON (debug)
         </summary>
-        <pre className="mt-2 overflow-auto rounded bg-gray-100 p-4 text-xs">
-          {JSON.stringify(cart, null, 2)}
-        </pre>
+        <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
+          <pre className="font-mono text-xs text-gray-800">
+            {JSON.stringify(cart, null, 2)}
+          </pre>
+        </PixelSurface>
       </details>
 
-      <div className="border-b pb-4">
-        <h1 className="font-bold text-3xl">Payment Collection</h1>
-        <p className="mt-2 text-gray-600">Payment details for cart {cart.id}</p>
-      </div>
-
-      {/* Payment Collection Status */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold text-xl">Payment Status</h2>
-          <span
-            className={`rounded-full border px-3 py-1 font-medium text-sm ${getStatusBadgeColor(paymentCollection.status)}`}
-          >
-            {paymentCollection.status.replace("_", " ").toUpperCase()}
-          </span>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Payment Collection ID
-            </label>
-            <p className="mt-1 font-mono text-gray-900 text-sm">
-              {paymentCollection.id}
-            </p>
-          </div>
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Currency
-            </label>
-            <p className="mt-1 text-gray-900">
-              {paymentCollection.currency_code.toUpperCase()}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Amount Details */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">Amount Details</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border-blue-500 border-l-4 bg-blue-50 p-4">
-            <label className="block font-medium text-blue-700 text-sm">
-              Total Amount
-            </label>
-            <p className="mt-1 font-semibold text-blue-900 text-lg">
-              {formatCurrency(
-                paymentCollection.amount ?? 0,
-                paymentCollection.currency_code,
-              )}
-            </p>
-          </div>
-          <div className="rounded-lg border-green-500 border-l-4 bg-green-50 p-4">
-            <label className="block font-medium text-green-700 text-sm">
-              Authorized Amount
-            </label>
-            <p className="mt-1 font-semibold text-green-900 text-lg">
-              {formatCurrency(
-                paymentCollection.authorized_amount ?? 0,
-                paymentCollection.currency_code,
-              )}
-            </p>
-          </div>
-          <div className="rounded-lg border-purple-500 border-l-4 bg-purple-50 p-4">
-            <label className="block font-medium text-purple-700 text-sm">
-              Captured Amount
-            </label>
-            <p className="mt-1 font-semibold text-lg text-purple-900">
-              {formatCurrency(
-                paymentCollection.captured_amount ?? 0,
-                paymentCollection.currency_code,
-              )}
-            </p>
-          </div>
-          <div className="rounded-lg border-orange-500 border-l-4 bg-orange-50 p-4">
-            <label className="block font-medium text-orange-700 text-sm">
-              Refunded Amount
-            </label>
-            <p className="mt-1 font-semibold text-lg text-orange-900">
-              {formatCurrency(
-                paymentCollection.refunded_amount ?? 0,
-                paymentCollection.currency_code,
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Timestamps */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">Timeline</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Created At
-            </label>
-            <p className="mt-1 text-gray-900 text-sm">
-              {dayjs(paymentCollection.created_at).format(
-                "YYYY-MM-DD HH:mm:ss",
-              )}
-            </p>
-          </div>
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Last Updated
-            </label>
-            <p className="mt-1 text-gray-900 text-sm">
-              {dayjs(paymentCollection.updated_at).format(
-                "YYYY-MM-DD HH:mm:ss",
-              )}
-            </p>
-          </div>
-          <div>
-            <label className="block font-medium text-gray-700 text-sm">
-              Completed At
-            </label>
-            <p className="mt-1 text-gray-900 text-sm">
-              {dayjs(paymentCollection.completed_at).format(
-                "YYYY-MM-DD HH:mm:ss",
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Sessions */}
-      <div className="rounded-lg border bg-white p-6 shadow-sm">
-        <h2 className="mb-4 font-semibold text-xl">Payment Sessions</h2>
-        {paymentCollection.payment_sessions &&
-        paymentCollection.payment_sessions.length > 0 ? (
-          <div className="space-y-3">
-            {paymentCollection.payment_sessions.map(
-              (session: any, index: number) => (
-                <div
-                  key={session.id || index}
-                  className="rounded border bg-gray-50 p-4"
-                >
-                  <div className="grid gap-2 md:grid-cols-3">
-                    <div>
-                      <span className="font-medium text-gray-700 text-sm">
-                        Provider:
-                      </span>
-                      <span className="ml-2 text-gray-900">
-                        {session.provider_id || "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700 text-sm">
-                        Status:
-                      </span>
-                      <span className="ml-2 text-gray-900">
-                        {session.status || "N/A"}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-gray-700 text-sm">
-                        Amount:
-                      </span>
-                      <span className="ml-2 text-gray-900">
-                        {formatCurrency(
-                          session.amount ?? 0,
-                          paymentCollection.currency_code,
-                        )}
-                      </span>
-                    </div>
-                  </div>
-
-                  {session.id && (
-                    <div className="mt-2 text-gray-600 text-sm">
-                      Session ID:{" "}
-                      <span className="font-mono text-xs">{session.id}</span>
-                    </div>
-                  )}
-                </div>
-              ),
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-500">No payment sessions found</p>
-        )}
-      </div>
-
-      {/* Payment Provider Selection */}
-      <PaymentSession
-        paymentCollectionId={paymentCollection.id}
-        regionId={regionId}
-        cartId={cartId}
-        hasHydrated={hasHydrated}
+      <PageHeading
+        title="Payment collection"
+        description={`Cart ${cart.id}`}
       />
-    </div>
+
+      <div className="mt-8 space-y-8">
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="font-bold text-gray-900 text-xl">Payment status</h2>
+            <span
+              className={cn(
+                "rounded-none px-3 py-1 font-semibold text-sm",
+                getStatusBadgeColor(paymentCollection.status),
+              )}
+            >
+              {paymentCollection.status.replace("_", " ").toUpperCase()}
+            </span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">
+                Payment collection ID
+              </p>
+              <p className="mt-1 font-mono text-gray-900 text-sm">
+                {paymentCollection.id}
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Currency</p>
+              <p className="mt-1 text-gray-900">
+                {paymentCollection.currency_code.toUpperCase()}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <h2 className="font-bold text-gray-900 text-xl">Amounts</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="border-l-4 border-blue-600 bg-blue-50 p-4 shadow-[4px_4px_0_0_#1e3a8a]">
+              <p className="font-semibold text-blue-900 text-sm">Total</p>
+              <p className="mt-1 font-bold text-blue-950 text-lg">
+                {formatCurrency(
+                  paymentCollection.amount ?? 0,
+                  paymentCollection.currency_code,
+                )}
+              </p>
+            </div>
+            <div className="border-l-4 border-green-600 bg-green-50 p-4 shadow-[4px_4px_0_0_#14532d]">
+              <p className="font-semibold text-green-900 text-sm">Authorized</p>
+              <p className="mt-1 font-bold text-green-950 text-lg">
+                {formatCurrency(
+                  paymentCollection.authorized_amount ?? 0,
+                  paymentCollection.currency_code,
+                )}
+              </p>
+            </div>
+            <div className="border-l-4 border-purple-600 bg-purple-50 p-4 shadow-[4px_4px_0_0_#4c1d95]">
+              <p className="font-semibold text-purple-900 text-sm">Captured</p>
+              <p className="mt-1 font-bold text-lg text-purple-950">
+                {formatCurrency(
+                  paymentCollection.captured_amount ?? 0,
+                  paymentCollection.currency_code,
+                )}
+              </p>
+            </div>
+            <div className="border-l-4 border-orange-600 bg-orange-50 p-4 shadow-[4px_4px_0_0_#7c2d12]">
+              <p className="font-semibold text-orange-900 text-sm">Refunded</p>
+              <p className="mt-1 font-bold text-lg text-orange-950">
+                {formatCurrency(
+                  paymentCollection.refunded_amount ?? 0,
+                  paymentCollection.currency_code,
+                )}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <h2 className="font-bold text-gray-900 text-xl">Timeline</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Created</p>
+              <p className="mt-1 text-gray-900 text-sm">
+                {dayjs(paymentCollection.created_at).format(
+                  "YYYY-MM-DD HH:mm:ss",
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Updated</p>
+              <p className="mt-1 text-gray-900 text-sm">
+                {dayjs(paymentCollection.updated_at).format(
+                  "YYYY-MM-DD HH:mm:ss",
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold text-gray-700 text-sm">Completed</p>
+              <p className="mt-1 text-gray-900 text-sm">
+                {dayjs(paymentCollection.completed_at).format(
+                  "YYYY-MM-DD HH:mm:ss",
+                )}
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        <Card variant="pixel" className="max-w-none space-y-4 p-6">
+          <h2 className="font-bold text-gray-900 text-xl">Payment sessions</h2>
+          {paymentCollection.payment_sessions &&
+          paymentCollection.payment_sessions.length > 0 ? (
+            <div className="space-y-3">
+              {paymentCollection.payment_sessions.map(
+                (session: { id?: string; provider_id?: string; status?: string; amount?: number }, index: number) => (
+                  <PixelSurface
+                    key={session.id || String(index)}
+                    shadow="sm"
+                    className="p-4"
+                  >
+                    <div className="grid gap-2 md:grid-cols-3">
+                      <div>
+                        <span className="font-semibold text-gray-700 text-sm">
+                          Provider:
+                        </span>
+                        <span className="ml-2 text-gray-900">
+                          {session.provider_id || "N/A"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700 text-sm">
+                          Status:
+                        </span>
+                        <span className="ml-2 text-gray-900">
+                          {session.status || "N/A"}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-gray-700 text-sm">
+                          Amount:
+                        </span>
+                        <span className="ml-2 text-gray-900">
+                          {formatCurrency(
+                            session.amount ?? 0,
+                            paymentCollection.currency_code,
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    {session.id && (
+                      <div className="mt-2 text-gray-600 text-sm">
+                        Session ID:{" "}
+                        <span className="font-mono text-xs">{session.id}</span>
+                      </div>
+                    )}
+                  </PixelSurface>
+                ),
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-600">No payment sessions found</p>
+          )}
+        </Card>
+
+        <PaymentSession
+          paymentCollectionId={paymentCollection.id}
+          regionId={regionId}
+          cartId={cartId}
+          hasHydrated={hasHydrated}
+        />
+      </div>
+    </StoreApiScaffold>
   );
 };
 

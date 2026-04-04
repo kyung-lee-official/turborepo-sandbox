@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/app/medusa/components/Button";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { addLineItem } from "../../cart/api";
 
@@ -25,7 +26,6 @@ export const AddToCartButton = ({
       return addLineItem(cartId, variantId, 1);
     },
     onSuccess: () => {
-      // Invalidate cart queries to refetch cart data
       queryClient.invalidateQueries({ queryKey: ["get_cart"] });
     },
   });
@@ -37,35 +37,33 @@ export const AddToCartButton = ({
   if (!hasHydrated) {
     return (
       <div className="flex items-center gap-2">
-        <div className="h-8 w-24 animate-pulse rounded bg-gray-200"></div>
+        <div className="h-8 w-24 animate-pulse bg-stone-200 shadow-[4px_4px_0_0_#0f172a]" />
       </div>
     );
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <button
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <Button
+        type="button"
+        variant="primary"
+        size="compact"
+        fullWidth={false}
         onClick={handleAddToCart}
         disabled={!cartId || addToCartMutation.isPending}
-        className={`rounded px-4 py-2 font-medium text-sm transition-colors ${
-          !cartId
-            ? "cursor-not-allowed bg-gray-300 text-gray-500"
-            : addToCartMutation.isPending
-              ? "cursor-not-allowed bg-blue-400 text-white"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-        }`}
       >
-        {addToCartMutation.isPending ? "Adding..." : "Add to Cart"}
-      </button>
+        {addToCartMutation.isPending ? "Adding…" : "Add to cart"}
+      </Button>
+      <span className="sr-only">Variant: {variantTitle}</span>
       {addToCartMutation.isError && (
-        <div className="text-red-600 text-xs">
+        <span className="text-red-700 text-xs">
           {addToCartMutation.error instanceof Error
             ? addToCartMutation.error.message
             : "Failed to add to cart"}
-        </div>
+        </span>
       )}
       {addToCartMutation.isSuccess && (
-        <div className="text-green-600 text-xs">Added to cart!</div>
+        <span className="text-green-800 text-xs">Added to cart.</span>
       )}
     </div>
   );

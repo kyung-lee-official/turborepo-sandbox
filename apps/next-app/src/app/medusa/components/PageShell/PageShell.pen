@@ -9,7 +9,7 @@
       "name": "Medusa PageShell",
       "width": 480,
       "height": 320,
-      "fill": "#f9fafb",
+      "fill": "#fafaf9",
       "layout": "vertical",
       "gap": 12,
       "padding": 24,
@@ -29,7 +29,7 @@
           "type": "text",
           "id": "PsTx2",
           "fill": "#78716c",
-          "content": "min-h-screen · flex center · bg-gray-50 · gap-3",
+          "content": "min-h-screen · flex center · bg-stone-100 · gap-3",
           "fontFamily": "Inter",
           "fontSize": 10,
           "fontWeight": "normal"

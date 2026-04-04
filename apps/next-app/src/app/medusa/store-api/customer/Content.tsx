@@ -1,6 +1,12 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
+import { Alert } from "@/app/medusa/components/Alert";
+import { Button } from "@/app/medusa/components/Button";
+import { Card } from "@/app/medusa/components/Card";
+import { PageHeading } from "@/app/medusa/components/PageHeading";
+import { PixelSurface } from "@/app/medusa/components/PixelSurface";
+import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
 import { getMe } from "./api";
 
 export const Content = () => {
@@ -17,40 +23,47 @@ export const Content = () => {
   });
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-      {/* Raw data for debugging */}
-      <details className="mt-6 w-full">
-        <summary className="cursor-pointer text-gray-600 hover:text-gray-800">
-          Show Raw Data
+    <StoreApiScaffold maxWidth="narrow">
+      <PageHeading
+        title="Customer profile"
+        description="Fetch the current customer with the session token."
+      />
+
+      <details className="group mb-8">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+          Raw response (debug)
         </summary>
-        <pre className="mt-2 overflow-auto rounded bg-gray-100 p-4 text-sm">
-          {JSON.stringify(getMeMutation.data, null, 2)}
-        </pre>
+        <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
+          <pre className="font-mono text-xs text-gray-800">
+            {JSON.stringify(getMeMutation.data, null, 2)}
+          </pre>
+        </PixelSurface>
       </details>
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow">
-        <h2 className="mt-6 text-center font-extrabold text-3xl text-gray-900">
-          Get Me by Token
+
+      <Card variant="pixel" className="max-w-md">
+        <h2 className="text-center font-bold text-2xl text-gray-900">
+          GET /customers/me
         </h2>
-        <div className="mt-4">
-          <button
-            type="button"
-            onClick={() => getMeMutation.mutate()}
-            className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 font-medium text-sm text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
-            Get Me
-          </button>
-          {getMeMutation.isError && (
-            <p className="mt-2 text-red-600 text-sm">
-              Error: {(getMeMutation.error as Error).message}
-            </p>
-          )}
-          {getMeMutation.isSuccess && (
-            <p className="mt-2 text-green-600 text-sm">
-              Profile loaded successfully!
-            </p>
-          )}
-        </div>
-      </div>
-    </div>
+        <Button
+          type="button"
+          onClick={() => getMeMutation.mutate()}
+          disabled={getMeMutation.isPending}
+        >
+          {getMeMutation.isPending ? "Loading…" : "Load profile"}
+        </Button>
+
+        {getMeMutation.isError && (
+          <Alert title="Request failed" variant="error" appearance="pixel">
+            {(getMeMutation.error as Error).message}
+          </Alert>
+        )}
+
+        {getMeMutation.isSuccess && (
+          <Alert title="Success" variant="success" appearance="pixel">
+            Profile loaded.
+          </Alert>
+        )}
+      </Card>
+    </StoreApiScaffold>
   );
 };
