@@ -8,8 +8,8 @@ import { Card } from "@/app/medusa/components/Card";
 import { PageHeading } from "@/app/medusa/components/PageHeading";
 import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
-import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { cn } from "@/lib/utils";
+import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { formatCurrency } from "@/utils/currency";
 import { createCart, getCart, QK_CART } from "../../api";
 import { PaymentSession } from "./PaymentSession";
@@ -88,7 +88,11 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
   if (!paymentCollection) {
     return (
       <StoreApiScaffold maxWidth="narrow">
-        <Alert title="No payment collection" variant="warning" appearance="pixel">
+        <Alert
+          title="No payment collection"
+          variant="warning"
+          appearance="pixel"
+        >
           No payment collection found for this cart.
         </Alert>
       </StoreApiScaffold>
@@ -115,20 +119,17 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
   return (
     <StoreApiScaffold maxWidth="narrow">
       <details className="mb-6">
-        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-2 decoration-[#1e1b84] underline-offset-2">
           Raw cart JSON (debug)
         </summary>
         <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
-          <pre className="font-mono text-xs text-gray-800">
+          <pre className="font-mono text-gray-800 text-xs">
             {JSON.stringify(cart, null, 2)}
           </pre>
         </PixelSurface>
       </details>
 
-      <PageHeading
-        title="Payment collection"
-        description={`Cart ${cart.id}`}
-      />
+      <PageHeading title="Payment collection" description={`Cart ${cart.id}`} />
 
       <div className="mt-8 space-y-8">
         <Card variant="pixel" className="max-w-none space-y-4 p-6">
@@ -164,7 +165,7 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
         <Card variant="pixel" className="max-w-none space-y-4 p-6">
           <h2 className="font-bold text-gray-900 text-xl">Amounts</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="border-l-4 border-blue-600 bg-blue-50 p-4 shadow-[4px_4px_0_0_#1e3a8a]">
+            <div className="border-blue-600 border-l-4 bg-blue-50 p-4 shadow-[4px_4px_0_0_#1e3a8a]">
               <p className="font-semibold text-blue-900 text-sm">Total</p>
               <p className="mt-1 font-bold text-blue-950 text-lg">
                 {formatCurrency(
@@ -173,7 +174,7 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
                 )}
               </p>
             </div>
-            <div className="border-l-4 border-green-600 bg-green-50 p-4 shadow-[4px_4px_0_0_#14532d]">
+            <div className="border-green-600 border-l-4 bg-green-50 p-4 shadow-[4px_4px_0_0_#14532d]">
               <p className="font-semibold text-green-900 text-sm">Authorized</p>
               <p className="mt-1 font-bold text-green-950 text-lg">
                 {formatCurrency(
@@ -182,7 +183,7 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
                 )}
               </p>
             </div>
-            <div className="border-l-4 border-purple-600 bg-purple-50 p-4 shadow-[4px_4px_0_0_#4c1d95]">
+            <div className="border-purple-600 border-l-4 bg-purple-50 p-4 shadow-[4px_4px_0_0_#4c1d95]">
               <p className="font-semibold text-purple-900 text-sm">Captured</p>
               <p className="mt-1 font-bold text-lg text-purple-950">
                 {formatCurrency(
@@ -191,7 +192,7 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
                 )}
               </p>
             </div>
-            <div className="border-l-4 border-orange-600 bg-orange-50 p-4 shadow-[4px_4px_0_0_#7c2d12]">
+            <div className="border-orange-600 border-l-4 bg-orange-50 p-4 shadow-[4px_4px_0_0_#7c2d12]">
               <p className="font-semibold text-orange-900 text-sm">Refunded</p>
               <p className="mt-1 font-bold text-lg text-orange-950">
                 {formatCurrency(
@@ -239,7 +240,15 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
           paymentCollection.payment_sessions.length > 0 ? (
             <div className="space-y-3">
               {paymentCollection.payment_sessions.map(
-                (session: { id?: string; provider_id?: string; status?: string; amount?: number }, index: number) => (
+                (
+                  session: {
+                    id?: string;
+                    provider_id?: string;
+                    status?: string;
+                    amount?: number;
+                  },
+                  index: number,
+                ) => (
                   <PixelSurface
                     key={session.id || String(index)}
                     shadow="sm"
