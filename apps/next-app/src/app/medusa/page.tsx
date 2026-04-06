@@ -112,6 +112,10 @@ export default function Page() {
             text: "Customer",
           },
           {
+            link: "medusa/store-api/order",
+            text: "Order",
+          },
+          {
             link: "medusa/store-api/products",
             text: "Products",
           },

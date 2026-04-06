@@ -13,6 +13,7 @@ const routes = [
   { href: "/medusa/store-api/region", label: "Region" },
   { href: "/medusa/store-api/auth", label: "Auth" },
   { href: "/medusa/store-api/customer", label: "Customer" },
+  { href: "/medusa/store-api/order", label: "Order" },
 ] as const;
 
 export const Content = () => {
