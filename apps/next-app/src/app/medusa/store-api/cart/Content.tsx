@@ -5,7 +5,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Alert } from "@/app/medusa/components/Alert";
-import { Card } from "@/app/medusa/components/Card";
 import { PageHeading } from "@/app/medusa/components/PageHeading";
 import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
@@ -213,11 +212,11 @@ export const Content = () => {
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
       <details className="group">
-        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-2 decoration-[#1e1b84] underline-offset-2">
           Raw cart data (debug)
         </summary>
         <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
-          <pre className="font-mono text-xs text-gray-800">
+          <pre className="font-mono text-gray-800 text-xs">
             {JSON.stringify(cart, null, 2)}
           </pre>
         </PixelSurface>
