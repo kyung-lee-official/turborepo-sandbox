@@ -9,7 +9,6 @@ import {
   type CreatePaymentSessionsWorkflowInput,
   createPaymentCollectionForCartWorkflow,
   createPaymentSessionsWorkflow,
-  refreshPaymentCollectionForCartWorkflow,
   releaseLockStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
@@ -49,18 +48,8 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
       },
     );
 
-    const refreshed = when(
-      "refresh-payment-collection-for-cart",
-      { hasExistingCollection, initialCarts },
-      ({ hasExistingCollection: exists }) => exists,
-    ).then(() =>
-      refreshPaymentCollectionForCartWorkflow.runAsStep({
-        input: {
-          cart_id: input.cart_id,
-        },
-      }),
-    );
-
+    // if the cart already has a payment collection,
+    // do not call createPaymentCollectionForCartWorkflow (and do not refresh).
     const created = when(
       "create-payment-collection-for-cart",
       { hasExistingCollection },
@@ -73,11 +62,10 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
       }),
     );
 
-    // Synchronization Barrier, ensures that the workflow waits for either the refresh or create step to complete before proceeding
+    // Wait for the create step when it runs; if a collection already exists, only cart_id is needed.
     const cartIdForReload = transform(
-      { refreshed, created, input },
-      ({ refreshed: _r, created: _c, input: workflowInput }) => {
-        void _r;
+      { created, input },
+      ({ created: _c, input: workflowInput }) => {
         void _c;
         return workflowInput.cart_id;
       },
