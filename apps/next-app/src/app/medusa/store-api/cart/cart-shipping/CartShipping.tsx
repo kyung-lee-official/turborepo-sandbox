@@ -1,12 +1,13 @@
 "use client";
 
 import type { StoreCart } from "@medusajs/types";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { Button } from "@/app/medusa/components/Button";
 import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { formatCurrency } from "@/utils/currency";
 import { getShippingOptions } from "../../shipping-option/api";
-import { updateCartShippingMethod } from "../api";
+import { QK_CART, updateCartShippingMethod } from "../api";
 
 type ShippingOption = {
   id: string;
@@ -15,48 +16,60 @@ type ShippingOption = {
   description?: string;
 };
 
+function shippingAddressQueryKeySegment(cart: StoreCart) {
+  const a = cart.shipping_address;
+  if (!a) return "none";
+  const joined =
+    [a.address_1, a.postal_code, a.country_code].filter(Boolean).join("|") ||
+    "addr";
+  return a.id ?? joined;
+}
+
 export const CartShipping = ({ cart }: { cart: StoreCart }) => {
-  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [showShippingSelector, setShowShippingSelector] = useState(false);
 
-  useEffect(() => {
-    const fetchShippingOptions = async () => {
-      try {
-        setIsLoading(true);
-        if (!cart.shipping_address) {
-          setShippingOptions([]);
-          return;
-        }
+  const addressKey = useMemo(
+    () => shippingAddressQueryKeySegment(cart),
+    [cart],
+  );
 
-        const response = await getShippingOptions(cart.id);
-        setShippingOptions(response.shipping_options || []);
-      } catch (error) {
-        console.error("Failed to fetch shipping options:", error);
-        setShippingOptions([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const shippingOptionsQuery = useQuery({
+    queryKey: ["store", "shipping-options", cart.id, addressKey] as const,
+    queryFn: async () => {
+      const response = await getShippingOptions(cart.id);
+      return (response.shipping_options ?? []) as ShippingOption[];
+    },
+    enabled: !!cart.shipping_address,
+  });
 
-    fetchShippingOptions();
-  }, [cart.shipping_address, cart.id]);
+  const shippingOptions = shippingOptionsQuery.data ?? [];
 
-  const handleShippingMethodSelection = async (option: ShippingOption) => {
-    try {
-      await updateCartShippingMethod(cart.id, option.id);
+  const updateShippingMethodMutation = useMutation({
+    mutationFn: (optionId: string) =>
+      updateCartShippingMethod(cart.id, optionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QK_CART.GET_CART] });
       setShowShippingSelector(false);
-
-      window.location.reload();
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error("Failed to update shipping method:", error);
-    }
+    },
+  });
+
+  const handleShippingMethodSelection = (option: ShippingOption) => {
+    updateShippingMethodMutation.mutate(option.id);
   };
+
+  const isLoadingOptions = shippingOptionsQuery.isLoading;
+  const isUpdating = updateShippingMethodMutation.isPending;
 
   if (!cart.shipping_address) {
     return (
       <div>
-        <h3 className="mb-3 font-bold text-gray-900 text-lg">Shipping methods</h3>
+        <h3 className="mb-3 font-bold text-gray-900 text-lg">
+          Shipping methods
+        </h3>
         <p className="text-gray-600">Select a shipping address first</p>
       </div>
     );
@@ -72,7 +85,9 @@ export const CartShipping = ({ cart }: { cart: StoreCart }) => {
           size="compact"
           fullWidth={false}
           onClick={() => setShowShippingSelector(!showShippingSelector)}
-          disabled={isLoading || shippingOptions.length === 0}
+          disabled={
+            isLoadingOptions || isUpdating || shippingOptions.length === 0
+          }
         >
           {showShippingSelector ? "Cancel" : "Change"}
         </Button>
@@ -84,9 +99,12 @@ export const CartShipping = ({ cart }: { cart: StoreCart }) => {
             <PixelSurface
               key={option.id}
               shadow="sm"
-              className="cursor-pointer p-3 transition-colors hover:bg-stone-50"
-              onClick={() => handleShippingMethodSelection(option)}
+              className={`p-3 transition-colors ${isUpdating ? "cursor-wait opacity-70" : "cursor-pointer hover:bg-stone-50"}`}
+              onClick={() => {
+                if (!isUpdating) handleShippingMethodSelection(option);
+              }}
               onKeyDown={(e) => {
+                if (isUpdating) return;
                 if (e.key === "Enter" || e.key === " ") {
                   handleShippingMethodSelection(option);
                 }
@@ -98,7 +116,9 @@ export const CartShipping = ({ cart }: { cart: StoreCart }) => {
                 <div>
                   <h4 className="font-semibold text-gray-900">{option.name}</h4>
                   {option.description && (
-                    <p className="text-gray-600 text-sm">{option.description}</p>
+                    <p className="text-gray-600 text-sm">
+                      {option.description}
+                    </p>
                   )}
                 </div>
                 <p className="shrink-0 font-semibold text-gray-900">
@@ -116,7 +136,9 @@ export const CartShipping = ({ cart }: { cart: StoreCart }) => {
                 <div>
                   <h4 className="font-semibold text-gray-900">{method.name}</h4>
                   {method.description && (
-                    <p className="text-gray-600 text-sm">{method.description}</p>
+                    <p className="text-gray-600 text-sm">
+                      {method.description}
+                    </p>
                   )}
                 </div>
                 <p className="shrink-0 font-semibold text-gray-900">
