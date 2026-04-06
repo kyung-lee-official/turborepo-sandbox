@@ -73,7 +73,7 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
       }),
     );
 
-	// Synchronization Barrier, ensures that the workflow waits for either the refresh or create step to complete before proceeding
+    // Synchronization Barrier, ensures that the workflow waits for either the refresh or create step to complete before proceeding
     const cartIdForReload = transform(
       { refreshed, created, input },
       ({ refreshed: _r, created: _c, input: workflowInput }) => {
@@ -137,12 +137,13 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
       input: createSessionsInput,
     });
 
+    // Same JSON shape as legacy POST /store-api/payment/initialize-payment-session/:id:
+    // raw `createPaymentSessionsWorkflow` result (do not nest or add extra top-level fields).
     const result = transform(
-      { paymentCollectionId, paymentSessions },
-      ({ paymentCollectionId: collectionId, paymentSessions: sessions }) => ({
-        payment_collection_id: collectionId,
-        payment_sessions: sessions,
-      }),
+      { paymentSessions },
+      ({ paymentSessions: workflowResult }) => {
+        return workflowResult as unknown as Record<string, unknown>;
+      },
     );
 
     releaseLockStep({

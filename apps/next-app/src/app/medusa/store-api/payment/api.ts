@@ -4,10 +4,8 @@ import {
 } from "@medusajs/types";
 import api from "../../axios-error-handling-for-medusa/axios-client";
 
-export type CreatePaymentSessionsForCartResponse = {
-  payment_collection_id: string;
-  payment_sessions: unknown;
-};
+/** Same shape as legacy `initialize-payment-session`: raw `createPaymentSessionsWorkflow` result. */
+export type CreatePaymentSessionsForCartResponse = Record<string, unknown>;
 
 export async function createPaymentSessionsForCart(body: {
   cart_id: string;
