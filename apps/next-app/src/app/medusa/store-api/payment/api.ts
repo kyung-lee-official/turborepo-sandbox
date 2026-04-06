@@ -4,6 +4,23 @@ import {
 } from "@medusajs/types";
 import api from "../../axios-error-handling-for-medusa/axios-client";
 
+export type CreatePaymentSessionsForCartResponse = {
+  payment_collection_id: string;
+  payment_sessions: unknown;
+};
+
+export async function createPaymentSessionsForCart(body: {
+  cart_id: string;
+  provider_id: string;
+  data?: { intent: "CAPTURE" };
+}) {
+  const data = await api.post<CreatePaymentSessionsForCartResponse>(
+    `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store-api/payment-sessions`,
+    body,
+  );
+  return data;
+}
+
 export async function createPaymentCollection(cartId: string) {
   const data = await api.post<StorePaymentCollectionResponse>(
     `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store-api/payment/create-payment-collection`,

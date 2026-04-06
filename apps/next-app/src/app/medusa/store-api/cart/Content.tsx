@@ -9,7 +9,14 @@ import { PageHeading } from "@/app/medusa/components/PageHeading";
 import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import { getMeOrNull } from "../customer/api";
-import { createPaymentCollection } from "../payment/api";
+import {
+  createPaymentCollection,
+  createPaymentSessionsForCart,
+} from "../payment/api";
+import {
+  getProviderConfig,
+  handlePostInitialization,
+} from "./cart-checkout/[cartId]/PaymentProviderService";
 import { createCart, getCart, getOrCreateCustomerCart, QK_CART } from "./api";
 import { CartAddresses } from "./cart-address/CartAddress";
 import { CartCreation } from "./cart-creation/CartCreation";
@@ -17,7 +24,10 @@ import { CartInfo } from "./cart-info/CartInfo";
 import { CartLineItem } from "./cart-line-item/CartLineItem";
 import CartPromotions from "./cart-promotions/CartPromotions";
 import { CartShipping } from "./cart-shipping/CartShipping";
-import { CartSummary } from "./cart-summary/CartSummary";
+import {
+  type CheckoutFlowMode,
+  CartSummary,
+} from "./cart-summary/CartSummary";
 
 const SALES_CHANNEL_ID = process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID;
 
@@ -30,6 +40,8 @@ export const Content = () => {
   const setCartId = useMIdStore((state) => state.setCartId);
   const clearCartId = useMIdStore((state) => state.clearCartId);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutMode, setCheckoutMode] = useState<CheckoutFlowMode>("one-step");
+  const [selectedProviderId, setSelectedProviderId] = useState("");
 
   const sessionQuery = useQuery({
     queryKey: ["store", "customers", "me"],
@@ -63,16 +75,49 @@ export const Content = () => {
     }
   };
 
+  const handleCheckoutModeChange = (mode: CheckoutFlowMode) => {
+    setCheckoutMode(mode);
+    if (mode === "two-step") {
+      setSelectedProviderId("");
+    }
+  };
+
   const handleCheckout = async () => {
+    if (!cartId) {
+      console.error("Cart ID is required for checkout");
+      return;
+    }
+    setIsCheckingOut(true);
     try {
-      if (!cartId) {
-        throw new Error("Cart ID is required for checkout");
+      if (checkoutMode === "two-step") {
+        await createPaymentCollection(cartId);
+        router.push(`/medusa/store-api/cart/cart-checkout/${cartId}`);
+        return;
       }
-      setIsCheckingOut(true);
-      await createPaymentCollection(cartId);
-      router.push(`/medusa/store-api/cart/cart-checkout/${cartId}`);
+
+      if (!selectedProviderId) {
+        return;
+      }
+
+      const result = await createPaymentSessionsForCart({
+        cart_id: cartId,
+        provider_id: selectedProviderId,
+        data: { intent: "CAPTURE" },
+      });
+
+      const customerKey = sessionQuery.data?.customer?.id ?? "guest";
+      await queryClient.invalidateQueries({
+        queryKey: [QK_CART.GET_CART, regionId, customerKey],
+      });
+
+      handlePostInitialization(result, selectedProviderId);
+      const config = getProviderConfig(selectedProviderId);
+      if (!config.handleRedirect) {
+        router.push(`/medusa/store-api/cart/cart-checkout/${cartId}`);
+      }
     } catch (error) {
-      console.error("Failed to create payment collection:", error);
+      console.error("Failed checkout:", error);
+    } finally {
       setIsCheckingOut(false);
     }
   };
@@ -245,6 +290,11 @@ export const Content = () => {
         <div className="space-y-6">
           <CartSummary
             cart={cart}
+            regionId={regionId}
+            checkoutMode={checkoutMode}
+            onCheckoutModeChange={handleCheckoutModeChange}
+            selectedProviderId={selectedProviderId}
+            onSelectedProviderIdChange={setSelectedProviderId}
             onCheckout={handleCheckout}
             checkoutBusy={isCheckingOut}
           />
