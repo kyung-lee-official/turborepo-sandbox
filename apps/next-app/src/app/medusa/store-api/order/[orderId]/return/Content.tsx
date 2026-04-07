@@ -319,7 +319,7 @@ function ReturnRequestForm({
                 shippingOptions.length === 0
               }
               className={cn(
-                "rounded-none border-4 border-[#1e1b84] bg-[#4f46e5] px-5 py-[10px] font-bold font-sans text-white text-xs tracking-[1px]",
+                "rounded-none border-4 border-[#1e1b84] bg-[#4f46e5] px-5 py-2.5 font-bold font-sans text-white text-xs tracking-[1px]",
                 "hover:bg-[#4338ca] disabled:cursor-not-allowed disabled:opacity-50",
               )}
             >
