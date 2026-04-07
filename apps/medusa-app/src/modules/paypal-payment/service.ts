@@ -469,53 +469,22 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     }
   }
 
+  /**
+   * PayPal webhooks are handled in `src/api/hooks/payment/paypal_paypal/route.ts`
+   * (verified signature + `CHECKOUT.ORDER.APPROVED` / `PAYMENT.*` cases). The
+   * Medusa payment-module webhook pipeline is not used for this provider, so this
+   * hook always reports unsupported events.
+   */
   async getWebhookActionAndData(
-    payload: ProviderWebhookPayload["payload"],
+    _payload: ProviderWebhookPayload["payload"],
   ): Promise<WebhookActionResult> {
-    const { data, rawData, headers } = payload;
-
-    try {
-      switch (data.event_type) {
-        case "authorized_amount":
-          return {
-            action: "authorized",
-            data: {
-              // assuming the session_id is stored in the metadata of the payment
-              // in the third-party provider
-              session_id: (data.metadata as Record<string, any>).session_id,
-              amount: new BigNumber(data.amount as number),
-            },
-          };
-        case "success":
-          return {
-            action: "captured",
-            data: {
-              // assuming the session_id is stored in the metadata of the payment
-              // in the third-party provider
-              session_id: (data.metadata as Record<string, any>).session_id,
-              amount: new BigNumber(data.amount as number),
-            },
-          };
-        default:
-          return {
-            action: "not_supported",
-            data: {
-              session_id: "",
-              amount: new BigNumber(0),
-            },
-          };
-      }
-    } catch (e) {
-      return {
-        action: "failed",
-        data: {
-          // assuming the session_id is stored in the metadata of the payment
-          // in the third-party provider
-          session_id: (data.metadata as Record<string, any>).session_id,
-          amount: new BigNumber(data.amount as number),
-        },
-      };
-    }
+    return {
+      action: "not_supported",
+      data: {
+        session_id: "",
+        amount: new BigNumber(0),
+      },
+    };
   }
 
   async createAccountHolder({ context, data }: CreateAccountHolderInput) {
