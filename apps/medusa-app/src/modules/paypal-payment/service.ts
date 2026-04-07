@@ -204,8 +204,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
           approval_url: approvalLink,
         },
       };
-    } catch (error) {
-      this.logger_.error("PayPal create order failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal create order failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_FAILED_TO_CREATE_ORDER",
         "Failed to create PayPal order",
@@ -253,8 +253,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
           "PayPal payment is neither authorized nor captured",
         );
       }
-    } catch (error) {
-      this.logger_.error("PayPal authorize payment failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal authorize payment failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_AUTHORIZATION_FAILED",
         "Failed to authorize PayPal payment",
@@ -292,8 +292,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
           },
         },
       };
-    } catch (error) {
-      this.logger_.error("PayPal capture payment failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal capture payment failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_ORDER_CANNOT_BE_CAPTURED",
         "Failed to capture PayPal payment",
@@ -338,11 +338,11 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
           last_paypal_refund: newData,
         },
       };
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof HttpError) {
         throw error;
       }
-      this.logger_.error("PayPal refund payment failed:", error as any);
+      this.logger_.error("PayPal refund payment failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_REFUND_FAILED",
         "Failed to refund PayPal payment",
@@ -383,8 +383,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
       return {
         data: input.data,
       };
-    } catch (error) {
-      this.logger_.error("PayPal delete payment failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal delete payment failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_DELETE_FAILED",
         "Failed to delete PayPal payment",
@@ -410,8 +410,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
 
     try {
       return await this.client.getOrder(paypalOrderId as string);
-    } catch (error) {
-      this.logger_.error("PayPal retrieve payment failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal retrieve payment failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_RETRIEVE_FAILED",
         "Failed to retrieve PayPal payment",
@@ -428,8 +428,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     try {
       const paymentData = await this.client.cancelPayment(externalId as string);
       return { data: paymentData };
-    } catch (error) {
-      this.logger_.error("PayPal cancel payment failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal cancel payment failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_CANCEL_FAILED",
         "Failed to cancel PayPal payment",
@@ -460,8 +460,8 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
         default:
           return { status: "pending" };
       }
-    } catch (error) {
-      this.logger_.error("PayPal get payment status failed:", error as any);
+    } catch (error: any) {
+      this.logger_.error("PayPal get payment status failed:", error);
       throw new HttpError(
         "PAYMENT.PAYPAL_STATUS_CHECK_FAILED",
         "Failed to check PayPal payment status",
