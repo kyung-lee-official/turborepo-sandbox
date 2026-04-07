@@ -1,5 +1,4 @@
 import { HttpError, type PayPalTokenResponse } from "@repo/types";
-import axios from "axios";
 import { PayPalConfig } from "./config";
 
 class PayPalTokenManager {
@@ -24,18 +23,21 @@ class PayPalTokenManager {
 
     const paypalBaseURL = PayPalConfig.getBaseURL();
 
-    const response = await axios.post<PayPalTokenResponse>(
-      `${paypalBaseURL}/v1/oauth2/token`,
-      "grant_type=client_credentials",
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${credentials}`,
-        },
+    const response = await fetch(`${paypalBaseURL}/v1/oauth2/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${credentials}`,
       },
-    );
+      body: "grant_type=client_credentials",
+    });
 
-    const tokenData = response.data;
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || `HTTP ${response.status}`);
+    }
+
+    const tokenData = (await response.json()) as PayPalTokenResponse;
     this.accessToken = tokenData.access_token;
     this.tokenIssuedAt = new Date();
     this.tokenExpiresIn = tokenData.expires_in;

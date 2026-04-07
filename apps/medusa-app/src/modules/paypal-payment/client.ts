@@ -3,27 +3,41 @@ import type {
   IntentType,
   PayPalOrderResponse,
 } from "@repo/types";
-import axios, { type AxiosInstance } from "axios";
 import { PayPalConfig } from "./config";
 import { paypalTokenManager } from "./token-manager";
 
 export class PayPalClient {
-  private axiosInstance: AxiosInstance;
+  private async request<T>(
+    path: string,
+    init: {
+      method?: string;
+      body?: unknown;
+    } = {},
+  ): Promise<T> {
+    const accessToken = await paypalTokenManager.getAccessToken();
+    const url = `${PayPalConfig.getBaseURL()}${path}`;
+    const method = init.method ?? "GET";
 
-  constructor() {
-    this.axiosInstance = axios.create({
-      baseURL: PayPalConfig.getBaseURL(),
+    const requestInit: RequestInit = {
+      method,
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
       },
-    });
+    };
 
-    // Add request interceptor to automatically include auth token
-    this.axiosInstance.interceptors.request.use(async (config) => {
-      const accessToken = await paypalTokenManager.getAccessToken();
-      config.headers.Authorization = `Bearer ${accessToken}`;
-      return config;
-    });
+    if (init.body !== undefined) {
+      requestInit.body = JSON.stringify(init.body);
+    }
+
+    const response = await fetch(url, requestInit);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || `HTTP ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
   }
 
   /**
@@ -32,31 +46,26 @@ export class PayPalClient {
   async createOrder(
     orderData: CreateOrderRequest,
   ): Promise<PayPalOrderResponse> {
-    const response = await this.axiosInstance.post<PayPalOrderResponse>(
-      "/v2/checkout/orders",
-      orderData,
-    );
-    return response.data;
+    return this.request<PayPalOrderResponse>("/v2/checkout/orders", {
+      method: "POST",
+      body: orderData,
+    });
   }
 
   /**
    * Capture a PayPal order
    */
   async captureOrder(authId: string): Promise<any> {
-    const response = await this.axiosInstance.post(
-      `/v2/payments/authorizations/${authId}/capture`,
-    );
-    return response.data;
+    return this.request(`/v2/payments/authorizations/${authId}/capture`, {
+      method: "POST",
+    });
   }
 
   /**
    * Get order details
    */
   async getOrder(orderId: string): Promise<any> {
-    const response = await this.axiosInstance.get(
-      `/v2/checkout/orders/${orderId}`,
-    );
-    return response.data;
+    return this.request(`/v2/checkout/orders/${orderId}`);
   }
 
   /**
@@ -66,16 +75,14 @@ export class PayPalClient {
     switch (intent) {
       /* customer has approved the PayPal checkout order, now authorize/capture the payment from backend */
       case "AUTHORIZE": {
-        const response = await this.axiosInstance.post(
-          `/v2/checkout/orders/${orderId}/authorize`,
-        );
-        return response.data;
+        return this.request(`/v2/checkout/orders/${orderId}/authorize`, {
+          method: "POST",
+        });
       }
       case "CAPTURE": {
-        const response = await this.axiosInstance.post(
-          `/v2/checkout/orders/${orderId}/capture`,
-        );
-        return response.data;
+        return this.request(`/v2/checkout/orders/${orderId}/capture`, {
+          method: "POST",
+        });
       }
       default:
         break;
@@ -86,10 +93,11 @@ export class PayPalClient {
    * Designed for canceling authorized but not yet captured payments.
    */
   async cancelPayment(authorizationId: string): Promise<any> {
-    // const response = await this.axiosInstance.post(
+    // const response = await this.request(
     //   `/v2/payments/authorizations/${authorizationId}/void`,
+    //   { method: "POST" },
     // );
-    // return response.data;
+    // return response;
     console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  cancelPayment ");
   }
 
@@ -97,20 +105,19 @@ export class PayPalClient {
    * Refund a captured payment
    */
   async refundPayment(captureId: string, amount?: string): Promise<any> {
-    const response = await this.axiosInstance.post(
-      `/v2/payments/captures/${captureId}/refund`,
-      amount ? { amount } : {},
-    );
-    return response.data;
+    return this.request(`/v2/payments/captures/${captureId}/refund`, {
+      method: "POST",
+      body: amount ? { amount } : {},
+    });
   }
 
   /**
    * Get payment status
    */
   async getPaymentStatus(paymentId: string): Promise<string> {
-    const response = await this.axiosInstance.get(
+    const data = await this.request<{ status: string }>(
       `/v2/checkout/orders/${paymentId}`,
     );
-    return response.data.status;
+    return data.status;
   }
 }
