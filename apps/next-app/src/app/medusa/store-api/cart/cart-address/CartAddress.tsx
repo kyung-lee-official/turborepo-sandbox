@@ -1,6 +1,7 @@
 "use client";
 
-import type { StoreCart, StoreCustomerAddress } from "@medusajs/types";
+import type { StoreCustomerAddress } from "@medusajs/types";
+import type { StoreApiCart } from "@repo/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/app/medusa/components/Button";
@@ -15,7 +16,7 @@ const QK_CUSTOMER_ADDRESSES = [
   "addresses",
 ] as const;
 
-export const CartAddresses = ({ cart }: { cart: StoreCart }) => {
+export const CartAddresses = ({ cart }: { cart: StoreApiCart }) => {
   const queryClient = useQueryClient();
   const [showShippingSelector, setShowShippingSelector] = useState(false);
   const [showBillingSelector, setShowBillingSelector] = useState(false);

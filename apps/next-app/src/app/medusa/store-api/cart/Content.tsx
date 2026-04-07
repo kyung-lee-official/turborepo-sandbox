@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCart } from "@medusajs/types";
+import type { StoreApiCart } from "@repo/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,21 +13,18 @@ import {
   createPaymentCollection,
   createPaymentSessionsForCart,
 } from "../payment/api";
+import { createCart, getCart, getOrCreateCustomerCart, QK_CART } from "./api";
+import { CartAddresses } from "./cart-address/CartAddress";
 import {
   getProviderConfig,
   handlePostInitialization,
 } from "./cart-checkout/[cartId]/PaymentProviderService";
-import { createCart, getCart, getOrCreateCustomerCart, QK_CART } from "./api";
-import { CartAddresses } from "./cart-address/CartAddress";
 import { CartCreation } from "./cart-creation/CartCreation";
 import { CartInfo } from "./cart-info/CartInfo";
 import { CartLineItem } from "./cart-line-item/CartLineItem";
 import CartPromotions from "./cart-promotions/CartPromotions";
 import { CartShipping } from "./cart-shipping/CartShipping";
-import {
-  type CheckoutFlowMode,
-  CartSummary,
-} from "./cart-summary/CartSummary";
+import { CartSummary, type CheckoutFlowMode } from "./cart-summary/CartSummary";
 
 const SALES_CHANNEL_ID = process.env.NEXT_PUBLIC_MEDUSA_SALES_CHANNEL_ID;
 
@@ -40,7 +37,8 @@ export const Content = () => {
   const setCartId = useMIdStore((state) => state.setCartId);
   const clearCartId = useMIdStore((state) => state.clearCartId);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [checkoutMode, setCheckoutMode] = useState<CheckoutFlowMode>("one-step");
+  const [checkoutMode, setCheckoutMode] =
+    useState<CheckoutFlowMode>("one-step");
   const [selectedProviderId, setSelectedProviderId] = useState("");
 
   const sessionQuery = useQuery({
@@ -128,7 +126,7 @@ export const Content = () => {
       regionId,
       sessionQuery.data?.customer?.id ?? "guest",
     ],
-    queryFn: async (): Promise<StoreCart> => {
+    queryFn: async (): Promise<StoreApiCart> => {
       if (!regionId) {
         throw new Error("Region ID is required");
       }

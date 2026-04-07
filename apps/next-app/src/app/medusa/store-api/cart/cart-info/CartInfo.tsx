@@ -1,13 +1,13 @@
-import type { StoreCart } from "@medusajs/types";
+import type { StoreApiCart } from "@repo/types";
 import { Card } from "@/app/medusa/components/Card";
 
-export const CartInfo = ({ cart }: { cart: StoreCart }) => (
+export const CartInfo = ({ cart }: { cart: StoreApiCart }) => (
   <Card variant="pixel" className="max-w-none bg-indigo-50/80">
     <h3 className="font-bold text-gray-900 text-lg">Cart information</h3>
     <div className="grid grid-cols-2 gap-4 text-sm">
       <div>
         <span className="font-semibold text-gray-800">Cart ID</span>
-        <p className="break-all font-mono text-xs text-gray-700">{cart.id}</p>
+        <p className="break-all font-mono text-gray-700 text-xs">{cart.id}</p>
       </div>
       <div>
         <span className="font-semibold text-gray-800">Currency</span>

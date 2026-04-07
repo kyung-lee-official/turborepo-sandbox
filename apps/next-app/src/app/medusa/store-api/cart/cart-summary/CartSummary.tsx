@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCart } from "@medusajs/types";
+import type { StoreApiCart } from "@repo/types";
 import { useQuery } from "@tanstack/react-query";
 import { Alert } from "@/app/medusa/components/Alert";
 import { Button } from "@/app/medusa/components/Button";
@@ -20,7 +20,7 @@ export const CartSummary = ({
   onCheckout,
   checkoutBusy = false,
 }: {
-  cart: StoreCart;
+  cart: StoreApiCart;
   regionId: string;
   checkoutMode: CheckoutFlowMode;
   onCheckoutModeChange: (mode: CheckoutFlowMode) => void;
@@ -82,13 +82,13 @@ export const CartSummary = ({
             </span>
           </div>
         )}
-        <div className="flex justify-between gap-4 border-t-2 border-[#1e1b84] pt-3 font-bold text-base text-gray-900">
+        <div className="flex justify-between gap-4 border-[#1e1b84] border-t-2 pt-3 font-bold text-base text-gray-900">
           <span>Total</span>
           <span>{formatCurrency(cart.total, cart.currency_code)}</span>
         </div>
       </div>
 
-      <div className="space-y-3 border-t-2 border-stone-200 pt-4">
+      <div className="space-y-3 border-stone-200 border-t-2 pt-4">
         <div>
           <label
             htmlFor="checkout-flow"
@@ -102,7 +102,7 @@ export const CartSummary = ({
             onChange={(e) =>
               onCheckoutModeChange(e.target.value as CheckoutFlowMode)
             }
-            className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-sm text-gray-900 shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-gray-900 text-sm shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             disabled={checkoutBusy}
           >
             <option value="one-step">One-step (merged API)</option>
@@ -132,7 +132,7 @@ export const CartSummary = ({
                 id="cart-payment-provider"
                 value={selectedProviderId}
                 onChange={(e) => onSelectedProviderIdChange(e.target.value)}
-                className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-sm text-gray-900 shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-gray-900 text-sm shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 disabled={checkoutBusy}
               >
                 <option value="">Select a payment provider</option>
@@ -140,7 +140,9 @@ export const CartSummary = ({
                   (provider: { id: string; display_name?: string }) => (
                     <option key={provider.id} value={provider.id}>
                       {provider.id}
-                      {provider.display_name ? ` — ${provider.display_name}` : ""}
+                      {provider.display_name
+                        ? ` — ${provider.display_name}`
+                        : ""}
                     </option>
                   ),
                 )}

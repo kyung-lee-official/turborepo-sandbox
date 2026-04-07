@@ -1,7 +1,10 @@
 "use client";
 
-import type { StoreCart } from "@medusajs/types";
-import type { CartDisplayLine } from "@repo/types";
+import type {
+  CartDisplayLine,
+  StoreApiCart,
+  StoreApiCartLineItem,
+} from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
@@ -18,9 +21,7 @@ import {
   type UnselectedLineSnapshot,
 } from "./UnselectedCartLineRow";
 
-type StoreCartLine = NonNullable<StoreCart["items"]>[number];
-
-type CartWithDisplayLines = StoreCart & {
+type CartWithDisplayLines = StoreApiCart & {
   display_lines?: CartDisplayLine[];
 };
 
@@ -32,7 +33,7 @@ type UpdateLineVars = {
 
 type RemoveLineVars = { cartId: string; lineItemId: string };
 
-export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
+export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
   const queryClient = useQueryClient();
   const cartId = useMIdStore((state) => state.cartId);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -115,8 +116,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     },
   });
 
-  const unselectedMap = ((cart.metadata as Record<string, unknown>)
-    ?.unselected ?? {}) as Record<string, UnselectedLineSnapshot>;
+  const unselectedMap = cart.metadata?.unselected ?? {};
   const unselectedItems = Object.entries(unselectedMap).map(
     ([variantId, details]) => ({
       variantId,
@@ -183,7 +183,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
     ? (displayLines?.length ?? 0)
     : allItems.length + unselectedItems.length;
 
-  const renderSelectedRow = (item: StoreCartLine) => {
+  const renderSelectedRow = (item: StoreApiCartLineItem) => {
     const qty = getCurrentQuantity(item.id, item.quantity);
     const updating = isLineUpdating(item.id);
     const removing = isLineRemoving(item.id);
@@ -229,7 +229,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
 
   return (
     <div className="space-y-4">
-      <div className="border-b-2 border-[#1e1b84] pb-3 shadow-[0_4px_0_0_#0f172a]">
+      <div className="border-[#1e1b84] border-b-2 pb-3 shadow-[0_4px_0_0_#0f172a]">
         <h3 className="font-bold text-gray-800 text-xl">
           Cart items ({visibleCount})
         </h3>
@@ -239,7 +239,7 @@ export const CartLineItem = ({ cart }: { cart: StoreCart }) => {
           {useDisplayLines && displayLines
             ? displayLines.map((line) => {
                 if (line.kind === "line_item") {
-                  const item = line.item as unknown as StoreCartLine;
+                  const item = line.item;
                   return renderSelectedRow(item);
                 }
                 const { kind: _k, variant_id, ...snap } = line;

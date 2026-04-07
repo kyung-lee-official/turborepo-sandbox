@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCart } from "@medusajs/types";
+import type { StoreApiCart, StoreApiCartLineItem } from "@repo/types";
 import Image from "next/image";
 import { Button } from "@/app/medusa/components/Button";
 import { Card } from "@/app/medusa/components/Card";
@@ -8,11 +8,9 @@ import { Checkbox } from "@/app/medusa/components/Checkbox";
 import { formatCurrency } from "@/utils/currency";
 import { CartQuantityControl } from "./CartQuantityControl";
 
-type StoreCartLine = NonNullable<StoreCart["items"]>[number];
-
 export type SelectedCartLineRowProps = {
-  cart: StoreCart;
-  item: StoreCartLine;
+  cart: StoreApiCart;
+  item: StoreApiCartLineItem;
   isSelectionPending: boolean;
   isUpdatingLine: boolean;
   isRemovingLine: boolean;

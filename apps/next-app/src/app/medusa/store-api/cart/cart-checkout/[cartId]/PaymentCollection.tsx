@@ -1,6 +1,6 @@
 "use client";
 
-import { StoreCart } from "@medusajs/types/dist/http/cart/store/entities";
+import type { StoreApiCart } from "@repo/types";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { Alert } from "@/app/medusa/components/Alert";
@@ -22,7 +22,7 @@ const PaymentCollection = ({ cartId }: { cartId: string }) => {
   const cartQuery = useQuery({
     queryKey: [QK_CART.GET_CART, cartId, regionId],
     queryFn: async () => {
-      let cart: StoreCart;
+      let cart: StoreApiCart;
       if (!cartId) {
         if (!regionId) {
           throw new Error("Region ID is required to create a cart");

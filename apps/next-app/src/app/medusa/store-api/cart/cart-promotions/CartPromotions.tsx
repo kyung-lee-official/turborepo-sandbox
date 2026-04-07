@@ -1,6 +1,7 @@
 "use client";
 
-import type { StoreCartPromotion, StoreCartResponse } from "@medusajs/types";
+import type { StoreCartResponse } from "@medusajs/types";
+import type { StoreApiCartPromotion, StoreApiCartResponse } from "@repo/types";
 import { useState } from "react";
 import { Alert } from "@/app/medusa/components/Alert";
 import { Button } from "@/app/medusa/components/Button";
@@ -9,7 +10,8 @@ import { TextInput } from "@/app/medusa/components/TextInput";
 import { addPromotions, removePromotions } from "../api";
 
 interface CartPromotionsProps {
-  cart: StoreCartResponse;
+  cart: StoreApiCartResponse;
+  /** Standard Medusa `POST/DELETE /store/carts/:id/promotions` payload (no `display_lines`). */
   onCartUpdate?: (updatedCart: StoreCartResponse) => void;
 }
 
@@ -63,7 +65,7 @@ export default function CartPromotions({
     }
   };
 
-  const appliedPromotions: StoreCartPromotion[] = cart.cart.promotions || [];
+  const appliedPromotions: StoreApiCartPromotion[] = cart.cart.promotions ?? [];
 
   return (
     <Card variant="pixel" className="max-w-none bg-stone-50">

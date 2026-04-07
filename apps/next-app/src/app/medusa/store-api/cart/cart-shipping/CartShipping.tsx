@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCart } from "@medusajs/types";
+import type { StoreApiCart } from "@repo/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Button } from "@/app/medusa/components/Button";
@@ -16,7 +16,7 @@ type ShippingOption = {
   description?: string;
 };
 
-function shippingAddressQueryKeySegment(cart: StoreCart) {
+function shippingAddressQueryKeySegment(cart: StoreApiCart) {
   const a = cart.shipping_address;
   if (!a) return "none";
   const joined =
@@ -25,7 +25,7 @@ function shippingAddressQueryKeySegment(cart: StoreCart) {
   return a.id ?? joined;
 }
 
-export const CartShipping = ({ cart }: { cart: StoreCart }) => {
+export const CartShipping = ({ cart }: { cart: StoreApiCart }) => {
   const queryClient = useQueryClient();
   const [showShippingSelector, setShowShippingSelector] = useState(false);
 

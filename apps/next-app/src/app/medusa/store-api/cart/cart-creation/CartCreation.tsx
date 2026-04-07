@@ -1,6 +1,6 @@
 "use client";
 
-import type { StoreCartResponse } from "@medusajs/types";
+import type { StoreApiCartResponse } from "@repo/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Alert } from "@/app/medusa/components/Alert";
 import { Button } from "@/app/medusa/components/Button";
@@ -14,7 +14,7 @@ type CartCreationProps = {
   isCustomerSession: boolean;
   onCreateCart: () => void;
   createCartMutation: UseMutationResult<
-    StoreCartResponse,
+    StoreApiCartResponse,
     Error,
     string,
     unknown
@@ -35,13 +35,13 @@ export const CartCreation = ({
         {isCustomerSession ? (
           <>
             Signed-in: cart is loaded via{" "}
-            <InlineCode>GET /store-api/carts</InlineCode> (server picks an active
-            cart for this region or creates one).
+            <InlineCode>GET /store-api/carts</InlineCode> (server picks an
+            active cart for this region or creates one).
           </>
         ) : (
           <>
-            Guest: cart id is kept in{" "}
-            <InlineCode>localStorage</InlineCode> (Zustand persist). We reuse{" "}
+            Guest: cart id is kept in <InlineCode>localStorage</InlineCode>{" "}
+            (Zustand persist). We reuse{" "}
             <InlineCode>GET /store-api/carts/:id</InlineCode> when possible,
             otherwise <InlineCode>POST /store-api/carts</InlineCode>.
           </>
