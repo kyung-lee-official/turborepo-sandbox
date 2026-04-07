@@ -1,4 +1,5 @@
 import type { StoreCartResponse } from "@medusajs/types";
+import type { StoreApiCartResponse } from "@repo/types";
 import api from "../../axios-error-handling-for-medusa/axios-client";
 
 export enum QK_CART {
@@ -8,12 +9,12 @@ export enum QK_CART {
 
 /** Retrieve cart with store ordering/metadata via custom store API. */
 export async function getCart(id: string) {
-  const data = await api.get<StoreCartResponse>(`/store-api/carts/${id}`);
+  const data = await api.get<StoreApiCartResponse>(`/store-api/carts/${id}`);
   return data;
 }
 
 export async function createCart(regionId?: string) {
-  const data = await api.post<StoreCartResponse>("/store-api/carts", {
+  const data = await api.post<StoreApiCartResponse>("/store-api/carts", {
     region_id: regionId,
   });
   return data;
@@ -24,7 +25,7 @@ export async function getOrCreateCustomerCart(options: {
   regionId: string;
   salesChannelId?: string;
 }) {
-  const data = await api.get<StoreCartResponse>(`/store-api/carts`, {
+  const data = await api.get<StoreApiCartResponse>(`/store-api/carts`, {
     params: {
       region_id: options.regionId,
       ...(options.salesChannelId
@@ -39,7 +40,7 @@ export async function updateACart(
   cartId: string,
   updates: Record<string, unknown>,
 ) {
-  const data = await api.post<StoreCartResponse>(
+  const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}`,
     updates,
   );
@@ -51,7 +52,7 @@ export async function addLineItem(
   variantId: string,
   quantity: number = 1,
 ) {
-  const data = await api.post<StoreCartResponse>(
+  const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/line-items`,
     {
       variant_id: variantId,
@@ -66,7 +67,7 @@ export async function updateLineItem(
   lineItemId: string,
   quantity: number,
 ) {
-  const data = await api.post<StoreCartResponse>(
+  const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/line-items/${lineItemId}`,
     {
       quantity: quantity,
@@ -76,14 +77,14 @@ export async function updateLineItem(
 }
 
 export async function unselectLineItem(cartId: string, lineId: string) {
-  const data = await api.del<StoreCartResponse>(
+  const data = await api.del<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/line-items/${lineId}/unselect`,
   );
   return data;
 }
 
 export async function selectLineItem(cartId: string, variantId: string) {
-  const data = await api.post<StoreCartResponse>(
+  const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/line-items/select`,
     {
       variant_id: variantId,
@@ -93,7 +94,7 @@ export async function selectLineItem(cartId: string, variantId: string) {
 }
 
 export async function removeLineItem(cartId: string, lineItemId: string) {
-  const data = await api.post<StoreCartResponse>(
+  const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/delete-line-item`,
     { item_id: lineItemId },
   );

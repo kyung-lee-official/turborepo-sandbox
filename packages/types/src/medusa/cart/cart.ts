@@ -1,4 +1,4 @@
-﻿export interface CartMetadata {
+export interface CartMetadata {
   unselected: {
     [key: string]: {
       quantity: number;
@@ -29,12 +29,7 @@
 export type CartUnselectedEntry = CartMetadata["unselected"][string];
 
 /**
- * Response-only ordering for storefront cart UI (not persisted).
- * Built server-side by `applyStoreCartDisplayOrder`.
+ * Alias of {@link StoreApiCartDisplayLine}. Response-only ordering for storefront
+ * cart UI (not persisted); built server-side by `applyStoreCartDisplayOrder`.
  */
-export type CartDisplayLine =
-  | { kind: "line_item"; item: Record<string, unknown> }
-  | ({
-      kind: "unselected";
-      variant_id: string;
-    } & CartUnselectedEntry);
+export type { StoreApiCartDisplayLine as CartDisplayLine } from "./store-api-cart";
