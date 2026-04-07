@@ -1,10 +1,6 @@
 "use client";
 
-import type {
-  CartDisplayLine,
-  StoreApiCart,
-  StoreApiCartLineItem,
-} from "@repo/types";
+import type { StoreApiCart, StoreApiCartLineItem } from "@repo/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
@@ -20,10 +16,6 @@ import {
   UnselectedCartLineRow,
   type UnselectedLineSnapshot,
 } from "./UnselectedCartLineRow";
-
-type CartWithDisplayLines = StoreApiCart & {
-  display_lines?: CartDisplayLine[];
-};
 
 type UpdateLineVars = {
   cartId: string;
@@ -174,13 +166,13 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
     removeLineItemMutation.variables?.lineItemId === lineItemId;
 
   const allItems = cart.items || [];
-  const displayLines = (cart as CartWithDisplayLines).display_lines;
-  const useDisplayLines = Boolean(displayLines?.length);
+  const displayLines = cart.display_lines;
+  const useDisplayLines = displayLines.length > 0;
   const hasVisibleItems = useDisplayLines
-    ? (displayLines?.length ?? 0) > 0
+    ? displayLines.length > 0
     : allItems.length > 0 || unselectedItems.length > 0;
   const visibleCount = useDisplayLines
-    ? (displayLines?.length ?? 0)
+    ? displayLines.length
     : allItems.length + unselectedItems.length;
 
   const renderSelectedRow = (item: StoreApiCartLineItem) => {
@@ -239,10 +231,9 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
           {useDisplayLines && displayLines
             ? displayLines.map((line) => {
                 if (line.kind === "line_item") {
-                  const item = line.item;
-                  return renderSelectedRow(item);
+                  return renderSelectedRow(line.item);
                 }
-                const { kind: _k, variant_id, ...snap } = line;
+                const { variant_id, ...snap } = line.item;
                 return renderUnselectedRow(variant_id, snap);
               })
             : null}

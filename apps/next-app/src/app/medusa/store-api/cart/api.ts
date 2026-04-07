@@ -2,6 +2,10 @@ import type { StoreCartResponse } from "@medusajs/types";
 import type { StoreApiCartResponse } from "@repo/types";
 import api from "../../axios-error-handling-for-medusa/axios-client";
 
+/**
+ * Custom `/store-api/carts` responses are typed as `StoreApiCartResponse`. Each
+ * `cart.display_lines` row is `{ kind, item }` (line item vs unselected snapshot).
+ */
 export enum QK_CART {
   GET_CART = "get_cart",
   CREATE_CART = "create_cart",
