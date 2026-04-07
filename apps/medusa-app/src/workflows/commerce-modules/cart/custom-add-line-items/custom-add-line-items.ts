@@ -16,7 +16,7 @@ import type {
   StoreCart,
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
-import type { CartMetadata } from "@repo/types";
+import { type CartMetadata, HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 
 export const customAddToCartWorkflow = createWorkflow(
@@ -40,9 +40,13 @@ export const customAddToCartWorkflow = createWorkflow(
     const incomingAndUnselectedQty = transform(
       { existingCartData, input },
       (transformData) => {
+        const cart = transformData.existingCartData[0];
+        if (!cart) {
+          throw new HttpError("CART.NOT_FOUND", "Cart not found");
+        }
+
         const { quantity, variant_id } = transformData.input.items[0];
-        const metadata = transformData.existingCartData[0]
-          ?.metadata as unknown as CartMetadata;
+        const metadata = cart.metadata as unknown as CartMetadata;
         if (!metadata?.unselected || !metadata.unselected[variant_id!]) {
           return (quantity as IBigNumber).valueOf();
         }
