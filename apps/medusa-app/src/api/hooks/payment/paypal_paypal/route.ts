@@ -3,7 +3,7 @@ import type {
   AdminPayment,
   AdminPaymentSession,
 } from "@medusajs/framework/types";
-import { Modules } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { capturePaymentWorkflow } from "@medusajs/medusa/core-flows";
 import {
   HttpError,
@@ -12,8 +12,62 @@ import {
   type PayPalCheckoutOrderApprovedEvent,
   type PayPalWebhookEvent,
 } from "@repo/types";
+import { mergePayPalWebhookRefundIntoProviderData } from "@/modules/paypal-payment/paypal-payment-data";
+import { findPayPalPaymentForRefundWebhook } from "@/modules/paypal-payment/paypal-webhook-find-payment";
 import { customCompleteCartWorkflow } from "@/workflows/commerce-modules/cart/custom-complete-cart/custom-complete-cart";
 import { verifyWebhookSignature } from "./verify-webhook-signature";
+
+function extractCaptureIdFromRefundResource(
+  resource: Record<string, unknown>,
+): string | undefined {
+  const links = resource.links as
+    | Array<{ rel?: string; href?: string }>
+    | undefined;
+  const up = links?.find((l) => l.rel === "up");
+  const href = up?.href;
+  if (typeof href === "string") {
+    const m = href.match(/\/captures\/([^/]+)/);
+    return m?.[1];
+  }
+  return undefined;
+}
+
+async function syncPayPalWebhookRefundToMedusaPayment(
+  req: MedusaRequest,
+  body: { event_type: string; resource: Record<string, unknown> },
+): Promise<void> {
+  const query = req.scope.resolve(ContainerRegistrationKeys.QUERY) as Query;
+  const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER);
+  const paymentModule = req.scope.resolve(Modules.PAYMENT) as {
+    updatePayment: (input: {
+      id: string;
+      data: Record<string, unknown>;
+    }) => Promise<unknown>;
+  };
+
+  const resource = body.resource;
+  const found = await findPayPalPaymentForRefundWebhook(query, resource);
+  if (!found) {
+    logger.warn(
+      `[PayPal webhook] No Medusa payment matched ${body.event_type}. Check order/capture ids in the payload and PAYPAL_MEDUSA_PAYMENT_PROVIDER_ID.`,
+    );
+    return;
+  }
+
+  const merged = mergePayPalWebhookRefundIntoProviderData(found.data, {
+    event_type: body.event_type,
+    resource,
+  });
+
+  await paymentModule.updatePayment({
+    id: found.id,
+    data: merged,
+  });
+
+  logger.info(
+    `[PayPal webhook] Merged ${body.event_type} into payment.data for payment ${found.id}`,
+  );
+}
 
 /**
  * If PayPal webhook failed to hit this endpoint, PayPal marks the webhook event as FAIL_SOFT,
@@ -29,7 +83,10 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     if (!isValid) {
       throw new HttpError("PAYMENT.PAYPAL_INVALID_WEBHOOK_SIGNATURE");
     }
-    console.log(`Webhook received and verified: ${body.event_type}`);
+    const logger = req.scope.resolve(ContainerRegistrationKeys.LOGGER);
+    logger.info(
+      `[PayPal webhook] Received and verified event: ${body.event_type}`,
+    );
 
     switch (body.event_type) {
       case "CHECKOUT.ORDER.APPROVED": {
@@ -60,10 +117,13 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
           );
         }
         const paymentModuleService = req.scope.resolve(Modules.PAYMENT);
-        const payment = await paymentModuleService.authorizePaymentSession(id, {
+        await paymentModuleService.authorizePaymentSession(id, {
           ...context,
           data,
         });
+        logger.info(
+          `[PayPal webhook] CHECKOUT.ORDER.APPROVED — authorized payment_session=${id} paypal_order_id=${event.resource.id}`,
+        );
         break;
       }
       case "PAYMENT.AUTHORIZATION.CREATED": {
@@ -92,6 +152,9 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             payment_id: payment.id,
           },
         });
+        logger.info(
+          `[PayPal webhook] PAYMENT.AUTHORIZATION.CREATED — ran capture workflow payment_id=${payment.id} paypal_order_id=${paypalOrderId}`,
+        );
         res.status(200).send(result);
         break;
       }
@@ -110,13 +173,33 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             id: cartId,
           },
         });
+        logger.info(
+          `[PayPal webhook] PAYMENT.CAPTURE.COMPLETED — completed cart cart_id=${cartId}`,
+        );
         res.status(200).send(result);
+        break;
+      }
+      case "PAYMENT.CAPTURE.REFUNDED": {
+        const resource = body.resource as Record<string, unknown>;
+        const refundId = resource.id;
+        const captureId = extractCaptureIdFromRefundResource(resource);
+        logger.info(
+          `[PayPal webhook] PAYMENT.CAPTURE.REFUNDED (Payments v2 refund API succeeded) refund_id=${String(refundId)} capture_id=${captureId ?? "unknown"}`,
+        );
+        break;
+      }
+      case "CUSTOMER.DISPUTE.RESOLVED":
+      case "PAYMENT.CAPTURE.REVERSED": {
+        await syncPayPalWebhookRefundToMedusaPayment(req, {
+          event_type: body.event_type,
+          resource: body.resource as Record<string, unknown>,
+        });
         break;
       }
       default:
         /* ignore unknown event types */
-        console.warn(
-          `Ignoring unknown PayPal webhook event type: ${body.event_type}`,
+        logger.warn(
+          `[PayPal webhook] Ignoring unknown event type: ${body.event_type}`,
         );
         break;
     }

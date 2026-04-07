@@ -6,6 +6,9 @@ import type {
   payPalCheckoutOrderApprovedEventSchema,
 } from "../..";
 import type { payPalAuthorizePaymentResponseSchema } from "./schemas/authorize-payment-response.schemas";
+import type { payPalCustomerDisputeResolvedWebhookEventSchema } from "./schemas/webhook/CUSTOMER.DISPUTE.RESOLVED.schemas";
+import type { payPalCaptureRefundedWebhookEventSchema } from "./schemas/webhook/PAYMENT.CAPTURE.REFUNDED.schemas";
+import type { payPalCaptureReversedWebhookEventSchema } from "./schemas/webhook/PAYMENT.CAPTURE.REVERSED.schemas";
 
 export enum PayPalOrderQK {
   GET_ORDER_BY_ID = "get_order_by_id",
@@ -135,11 +138,23 @@ export type PayPalAuthorizationEvent = z.infer<
 export type PayPalCaptureCompletedEvent = z.infer<
   typeof payPalCaptureWebhookEventSchema
 >;
+export type PayPalCaptureRefundedEvent = z.infer<
+  typeof payPalCaptureRefundedWebhookEventSchema
+>;
+export type PayPalCaptureReversedEvent = z.infer<
+  typeof payPalCaptureReversedWebhookEventSchema
+>;
+export type PayPalCustomerDisputeResolvedEvent = z.infer<
+  typeof payPalCustomerDisputeResolvedWebhookEventSchema
+>;
 
 export type PayPalWebhookEvent =
   | PayPalCheckoutOrderApprovedEvent
   | PayPalAuthorizationEvent
-  | PayPalCaptureCompletedEvent;
+  | PayPalCaptureCompletedEvent
+  | PayPalCaptureRefundedEvent
+  | PayPalCaptureReversedEvent
+  | PayPalCustomerDisputeResolvedEvent;
 
 export type PayPalAuthorizePaymentResponse = z.infer<
   typeof payPalAuthorizePaymentResponseSchema

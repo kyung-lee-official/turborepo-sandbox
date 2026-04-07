@@ -36,6 +36,10 @@ import {
   type PayPalAuthorizePaymentResponse,
 } from "@repo/types";
 import { PayPalClient } from "./client";
+import {
+  getPayPalCaptureIdFromPaymentData,
+  type PayPalPaymentData,
+} from "./paypal-payment-data";
 
 type Options = {
   clientId: string;
@@ -45,30 +49,6 @@ type Options = {
 type InjectedDependencies = {
   logger: Logger;
 };
-
-/** Payment `data` after capture may include PayPal's capture API response under context. */
-type PayPalPaymentData = PayPalAuthorizePaymentResponse & {
-  context?: {
-    captureOrderData?: {
-      id?: string;
-      amount?: { currency_code: string; value: string };
-    };
-    idempotency_key?: string;
-  };
-};
-
-function getPayPalCaptureId(
-  data: PayPalPaymentData | undefined,
-): string | undefined {
-  if (!data) {
-    return undefined;
-  }
-  const fromOrderCapture = data.context?.captureOrderData?.id;
-  if (fromOrderCapture) {
-    return fromOrderCapture;
-  }
-  return data.purchase_units?.[0]?.payments?.captures?.[0]?.id;
-}
 
 function getPayPalRefundCurrencyCode(
   data: PayPalPaymentData,
@@ -301,9 +281,14 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
     }
   }
 
+  /**
+   * Merchant-initiated refund via Medusa (calls PayPal Refund API). Merges the API
+   * response into `data.last_paypal_refund`. Webhook-driven refund/dispute updates use
+   * `mergePayPalWebhookRefundIntoProviderData` in `paypal-payment-data.ts`.
+   */
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
     const paymentData = input.data as PayPalPaymentData | undefined;
-    const captureId = getPayPalCaptureId(paymentData);
+    const captureId = getPayPalCaptureIdFromPaymentData(paymentData);
 
     if (!captureId) {
       throw new HttpError(
