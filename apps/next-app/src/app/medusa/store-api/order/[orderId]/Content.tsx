@@ -2,13 +2,37 @@
 
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import Link from "next/link";
 import { Alert } from "@/app/medusa/components/Alert";
+import { medusaButtonClassName } from "@/app/medusa/components/Button/Button";
 import { Card } from "@/app/medusa/components/Card";
 import { PageHeading } from "@/app/medusa/components/PageHeading";
 import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { StoreApiScaffold } from "@/app/medusa/components/StoreApiScaffold";
+import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/utils/currency";
-import { getOrder } from "../api";
+import { getOrder, type StoreOrderWithCartId } from "../api";
+
+function buildReturnRequestHref(
+  orderId: string,
+  lineItemId: string,
+  order: StoreOrderWithCartId,
+) {
+  const qs = new URLSearchParams({ itemId: lineItemId });
+  const fromOrder =
+    typeof order.cart_id === "string" && order.cart_id.length > 0
+      ? order.cart_id
+      : null;
+  const fromMeta =
+    order.metadata && typeof order.metadata.cart_id === "string"
+      ? order.metadata.cart_id
+      : null;
+  const cartId = fromOrder ?? fromMeta;
+  if (typeof cartId === "string" && cartId.length > 0) {
+    qs.set("cartId", cartId);
+  }
+  return `/medusa/store-api/order/${orderId}/return?${qs.toString()}`;
+}
 
 type ContentProps = {
   orderId: string;
@@ -17,7 +41,7 @@ type ContentProps = {
 const Content = ({ orderId }: ContentProps) => {
   const orderQuery = useQuery({
     queryKey: ["order", orderId],
-    queryFn: () => getOrder(orderId),
+    queryFn: () => getOrder(orderId, { fields: "+metadata" }),
   });
 
   if (orderQuery.isLoading) {
@@ -103,11 +127,11 @@ const Content = ({ orderId }: ContentProps) => {
   return (
     <StoreApiScaffold maxWidth="narrow">
       <details className="mb-6">
-        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-[#1e1b84] decoration-2 underline-offset-2">
+        <summary className="cursor-pointer font-mono text-gray-600 text-sm underline decoration-2 decoration-[#1e1b84] underline-offset-2">
           Raw order JSON (debug)
         </summary>
         <PixelSurface className="mt-3 overflow-auto p-4" shadow="sm">
-          <pre className="font-mono text-xs text-gray-800">
+          <pre className="font-mono text-gray-800 text-xs">
             {JSON.stringify(order, null, 2)}
           </pre>
         </PixelSurface>
@@ -186,25 +210,25 @@ const Content = ({ orderId }: ContentProps) => {
         <Card variant="pixel" className="max-w-none space-y-4 p-6">
           <h2 className="font-bold text-gray-900 text-xl">Order summary</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <div className="border-l-4 border-blue-600 bg-blue-50 p-4 shadow-[4px_4px_0_0_#1e3a8a]">
+            <div className="border-blue-600 border-l-4 bg-blue-50 p-4 shadow-[4px_4px_0_0_#1e3a8a]">
               <p className="font-semibold text-blue-900 text-sm">Subtotal</p>
               <p className="mt-1 font-bold text-blue-950 text-lg">
                 {formatCurrency(order.subtotal ?? 0, order.currency_code)}
               </p>
             </div>
-            <div className="border-l-4 border-green-600 bg-green-50 p-4 shadow-[4px_4px_0_0_#14532d]">
+            <div className="border-green-600 border-l-4 bg-green-50 p-4 shadow-[4px_4px_0_0_#14532d]">
               <p className="font-semibold text-green-900 text-sm">Tax total</p>
               <p className="mt-1 font-bold text-green-950 text-lg">
                 {formatCurrency(order.tax_total ?? 0, order.currency_code)}
               </p>
             </div>
-            <div className="border-l-4 border-purple-600 bg-purple-50 p-4 shadow-[4px_4px_0_0_#4c1d95]">
+            <div className="border-purple-600 border-l-4 bg-purple-50 p-4 shadow-[4px_4px_0_0_#4c1d95]">
               <p className="font-semibold text-purple-900 text-sm">Shipping</p>
               <p className="mt-1 font-bold text-lg text-purple-950">
                 {formatCurrency(order.shipping_total ?? 0, order.currency_code)}
               </p>
             </div>
-            <div className="border-l-4 border-orange-600 bg-orange-50 p-4 shadow-[4px_4px_0_0_#7c2d12]">
+            <div className="border-orange-600 border-l-4 bg-orange-50 p-4 shadow-[4px_4px_0_0_#7c2d12]">
               <p className="font-semibold text-orange-900 text-sm">Total</p>
               <p className="mt-1 font-bold text-lg text-orange-950">
                 {formatCurrency(order.total ?? 0, order.currency_code)}
@@ -219,7 +243,7 @@ const Content = ({ orderId }: ContentProps) => {
             <div className="space-y-3">
               {order.items.map((item) => (
                 <PixelSurface key={item.id} shadow="sm" className="p-4">
-                  <div className="flex justify-between gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold text-gray-900">
                         {item.title || item.product_title}
@@ -240,12 +264,26 @@ const Content = ({ orderId }: ContentProps) => {
                         </span>
                       </div>
                     </div>
-                    <p className="shrink-0 font-bold text-gray-900">
-                      {formatCurrency(
-                        (item.unit_price ?? 0) * (item.quantity ?? 1),
-                        order.currency_code,
-                      )}
-                    </p>
+                    <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+                      <p className="text-right font-bold text-gray-900">
+                        {formatCurrency(
+                          (item.unit_price ?? 0) * (item.quantity ?? 1),
+                          order.currency_code,
+                        )}
+                      </p>
+                      <Link
+                        href={buildReturnRequestHref(order.id, item.id, order)}
+                        className={cn(
+                          medusaButtonClassName("outline", {
+                            fullWidth: false,
+                            size: "compact",
+                          }),
+                          "inline-flex justify-center no-underline",
+                        )}
+                      >
+                        Request Return
+                      </Link>
+                    </div>
                   </div>
                 </PixelSurface>
               ))}

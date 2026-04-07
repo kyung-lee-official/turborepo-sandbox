@@ -36,7 +36,7 @@ export const Content = () => {
       <StoreApiScaffold>
         <PageHeading
           title="Orders"
-          description="GET /store/orders — orders for the signed-in customer."
+          description="GET /store-api/orders — orders for the signed-in customer."
         />
         <Alert title="Could not load orders" variant="error" appearance="pixel">
           {ordersQuery.error instanceof Error
@@ -53,7 +53,7 @@ export const Content = () => {
     <StoreApiScaffold>
       <PageHeading
         title="Orders"
-        description="GET /store/orders — orders for the signed-in customer."
+        description="GET /store-api/orders — orders for the signed-in customer."
       />
 
       <details className="group mb-8">
