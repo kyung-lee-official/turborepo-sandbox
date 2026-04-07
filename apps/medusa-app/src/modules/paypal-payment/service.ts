@@ -28,7 +28,7 @@ import type {
   UpdatePaymentOutput,
   WebhookActionResult,
 } from "@medusajs/framework/types";
-import { AbstractPaymentProvider } from "@medusajs/framework/utils";
+import { AbstractPaymentProvider, BigNumber } from "@medusajs/framework/utils";
 import {
   type CreateOrderRequest,
   HttpError,
@@ -45,6 +45,57 @@ type Options = {
 type InjectedDependencies = {
   logger: Logger;
 };
+
+/** Payment `data` after capture may include PayPal's capture API response under context. */
+type PayPalPaymentData = PayPalAuthorizePaymentResponse & {
+  context?: {
+    captureOrderData?: {
+      id?: string;
+      amount?: { currency_code: string; value: string };
+    };
+    idempotency_key?: string;
+  };
+};
+
+function getPayPalCaptureId(
+  data: PayPalPaymentData | undefined,
+): string | undefined {
+  if (!data) {
+    return undefined;
+  }
+  const fromOrderCapture = data.context?.captureOrderData?.id;
+  if (fromOrderCapture) {
+    return fromOrderCapture;
+  }
+  return data.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+}
+
+function getPayPalRefundCurrencyCode(
+  data: PayPalPaymentData,
+): string | undefined {
+  const fromCaptured = data.context?.captureOrderData?.amount?.currency_code;
+  if (fromCaptured) {
+    return fromCaptured;
+  }
+  const fromCaptureList =
+    data.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.currency_code;
+  if (fromCaptureList) {
+    return fromCaptureList;
+  }
+  return data.purchase_units?.[0]?.payments?.authorizations?.[0]?.amount
+    ?.currency_code;
+}
+
+function formatPayPalRefundValue(
+  amount: NonNullable<RefundPaymentInput["amount"]>,
+): string {
+  const bn = new BigNumber(amount);
+  const n = bn.numeric;
+  if (n !== undefined && Number.isFinite(n)) {
+    return n.toFixed(2);
+  }
+  return bn.toString();
+}
 
 class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
   static identifier = "paypal";
@@ -251,20 +302,46 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
   }
 
   async refundPayment(input: RefundPaymentInput): Promise<RefundPaymentOutput> {
-    const externalId = input.data?.id;
+    const paymentData = input.data as PayPalPaymentData | undefined;
+    const captureId = getPayPalCaptureId(paymentData);
+
+    if (!captureId) {
+      throw new HttpError(
+        "PAYMENT.PAYPAL_MISSING_CAPTURE_ID",
+        "Cannot refund: no PayPal capture id found on payment data. Expected capture after authorize, or purchase_units[0].payments.captures[0].id.",
+      );
+    }
 
     try {
-      const refundAmount = input.amount ? input.amount.toString() : undefined;
+      let partial: { currency_code: string; value: string } | undefined;
+      if (input.amount != null) {
+        const currency_code = paymentData
+          ? getPayPalRefundCurrencyCode(paymentData)
+          : undefined;
+        if (!currency_code) {
+          throw new HttpError(
+            "PAYMENT.PAYPAL_MISSING_CURRENCY",
+            "Cannot issue partial refund: currency_code not found on payment data.",
+          );
+        }
+        partial = {
+          currency_code,
+          value: formatPayPalRefundValue(input.amount),
+        };
+      }
 
-      const newData = await this.client.refundPayment(
-        externalId as string,
-        refundAmount,
-      );
+      const newData = await this.client.refundPayment(captureId, partial);
 
       return {
-        data: input.data,
+        data: {
+          ...(paymentData as object),
+          last_paypal_refund: newData,
+        },
       };
     } catch (error) {
+      if (error instanceof HttpError) {
+        throw error;
+      }
       this.logger_.error("PayPal refund payment failed:", error as any);
       throw new HttpError(
         "PAYMENT.PAYPAL_REFUND_FAILED",

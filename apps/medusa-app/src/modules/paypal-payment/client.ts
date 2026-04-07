@@ -102,12 +102,23 @@ export class PayPalClient {
   }
 
   /**
-   * Refund a captured payment
+   * Refund a captured payment.
+   * Full refund: omit `partial`. Partial refund: PayPal expects `amount.currency_code` + `amount.value`.
    */
-  async refundPayment(captureId: string, amount?: string): Promise<any> {
+  async refundPayment(
+    captureId: string,
+    partial?: { currency_code: string; value: string },
+  ): Promise<any> {
     return this.request(`/v2/payments/captures/${captureId}/refund`, {
       method: "POST",
-      body: amount ? { amount } : {},
+      body: partial
+        ? {
+            amount: {
+              currency_code: partial.currency_code,
+              value: partial.value,
+            },
+          }
+        : {},
     });
   }
 
