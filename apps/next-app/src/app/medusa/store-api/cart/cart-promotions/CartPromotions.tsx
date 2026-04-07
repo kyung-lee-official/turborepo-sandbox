@@ -65,7 +65,10 @@ export default function CartPromotions({
     }
   };
 
-  const appliedPromotions: StoreApiCartPromotion[] = cart.cart.promotions ?? [];
+  const appliedPromotions = (cart.cart.promotions ?? []).filter(
+    (p): p is StoreApiCartPromotion =>
+      p != null && typeof p === "object" && "id" in p,
+  );
 
   return (
     <Card variant="pixel" className="max-w-none bg-stone-50">
@@ -115,38 +118,50 @@ export default function CartPromotions({
             Applied promotions
           </h4>
           <div className="space-y-2">
-            {appliedPromotions.map((promotion) => (
-              <div
-                key={promotion.id}
-                className="flex items-center justify-between gap-3 border-2 border-green-800 bg-green-50 p-3 shadow-[4px_4px_0_0_#14532d]"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-green-900 text-sm">
-                    {promotion.code}
-                  </p>
-                  {promotion.application_method && (
-                    <p className="text-green-800 text-xs capitalize">
-                      {promotion.application_method.type} discount of{" "}
-                      {promotion.application_method.type === "fixed"
-                        ? `${promotion.application_method.currency_code.toUpperCase()} ${promotion.application_method.value}`
-                        : `${promotion.application_method.value}%`}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  type="button"
-                  variant="danger"
-                  size="compact"
-                  fullWidth={false}
-                  onClick={() =>
-                    promotion.code && handleRemovePromotion(promotion.code)
-                  }
-                  disabled={isLoading}
+            {appliedPromotions.map((promotion) => {
+              const label =
+                (promotion.code ?? "").trim() ||
+                (promotion.is_automatic ? "Automatic promotion" : promotion.id);
+              const canRemoveByCode = (promotion.code ?? "").trim().length > 0;
+              return (
+                <div
+                  key={promotion.id}
+                  className="flex items-center justify-between gap-3 border-2 border-green-800 bg-green-50 p-3 shadow-[4px_4px_0_0_#14532d]"
                 >
-                  Remove
-                </Button>
-              </div>
-            ))}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-green-900 text-sm">
+                      {label}
+                    </p>
+                    {promotion.application_method && (
+                      <p className="text-green-800 text-xs capitalize">
+                        {promotion.application_method.type} discount of{" "}
+                        {promotion.application_method.type === "fixed"
+                          ? `${promotion.application_method.currency_code.toUpperCase()} ${promotion.application_method.value}`
+                          : `${promotion.application_method.value}%`}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="compact"
+                    fullWidth={false}
+                    onClick={() => {
+                      const code = (promotion.code ?? "").trim();
+                      if (code) handleRemovePromotion(code);
+                    }}
+                    disabled={isLoading || !canRemoveByCode}
+                    title={
+                      canRemoveByCode
+                        ? undefined
+                        : "This promotion has no code; remove it in admin or clear cart line adjustments"
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

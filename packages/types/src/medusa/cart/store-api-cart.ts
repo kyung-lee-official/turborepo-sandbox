@@ -79,7 +79,8 @@ export interface StoreApiCart {
 
 export interface StoreApiCartPromotion {
   id: string;
-  code: string;
+  /** May be null for some automatic promotions or stale cart relations. */
+  code: string | null;
   is_automatic: boolean;
   is_tax_inclusive: boolean;
   application_method: StoreApiPromotionApplicationMethod | null;
