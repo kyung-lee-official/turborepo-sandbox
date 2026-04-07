@@ -15,8 +15,8 @@ import type {
   StoreCart,
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
-import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import { HttpError } from "@repo/types";
+import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 
 // Custom input type for the update line item workflow
 type CustomUpdateLineItemInput = {

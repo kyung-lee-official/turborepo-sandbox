@@ -16,8 +16,8 @@ import type {
   StoreCart,
   StoreCartResponse,
 } from "@medusajs/types/dist/http/cart/store";
-import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import type { CartMetadata } from "@repo/types";
+import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 
 export const customAddToCartWorkflow = createWorkflow(
   "custom-add-to-cart",

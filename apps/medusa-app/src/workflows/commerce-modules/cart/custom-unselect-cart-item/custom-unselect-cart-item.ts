@@ -12,8 +12,8 @@ import {
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
 import type { StoreCart, StoreCartResponse } from "@medusajs/types";
-import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import type { CartMetadata } from "@repo/types";
+import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 
 export const customUnselectCartItemWorkflow = createWorkflow(
   "custom-unselect-cart-item",
