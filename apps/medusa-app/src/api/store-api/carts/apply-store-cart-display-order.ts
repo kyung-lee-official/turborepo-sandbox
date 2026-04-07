@@ -37,7 +37,8 @@ function compareRows(a: SortableRow, b: SortableRow): number {
 
 /**
  * Mutates cart JSON in place: sorts `items`, reorders `metadata.unselected` key order,
- * and sets `display_lines` for interleaved storefront rendering.
+ * and sets `display_lines` for interleaved storefront rendering
+ * (`{ kind, item }` for both line items and unselected snapshots).
  */
 export function applyStoreCartDisplayOrder(cart: Record<string, unknown>): void {
   const metadata = (cart.metadata ?? {}) as unknown as CartMetadata;
@@ -108,17 +109,17 @@ export function applyStoreCartDisplayOrder(cart: Record<string, unknown>): void 
 
   cart.metadata = metadata as unknown as Record<string, unknown>;
 
-  const displayLines: CartDisplayLine[] = rows.map((r) => {
+  cart.display_lines = rows.map((r) => {
     if (r.kind === "line_item") {
-      return { kind: "line_item", item: r.item };
+      return { kind: "line_item" as const, item: r.item };
     }
     const { variantId, snapshot } = r;
     return {
-      kind: "unselected",
-      variant_id: variantId,
-      ...snapshot,
+      kind: "unselected" as const,
+      item: {
+        variant_id: variantId,
+        ...snapshot,
+      },
     };
-  });
-
-  cart.display_lines = displayLines;
+  }) as CartDisplayLine[];
 }

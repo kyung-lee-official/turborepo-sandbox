@@ -155,15 +155,17 @@ export interface StoreApiCartLineItem {
   adjustments: StoreApiCartLineAdjustment[];
 }
 
-export type StoreApiCartDisplayLine =
-  | { kind: "line_item"; item: StoreApiCartLineItem }
-  | StoreApiCartUnselectedDisplayRow;
-
-/** Same keys as an `metadata.unselected` entry plus `kind` and `variant_id` for rendering. */
-export type StoreApiCartUnselectedDisplayRow = {
-  kind: "unselected";
+/** Payload for a `display_lines` row when `kind` is `"unselected"` (variant id + snapshot fields). */
+export type StoreApiCartUnselectedSnapshot = {
   variant_id: string;
 } & CartUnselectedEntry;
+
+/**
+ * Interleaved cart UI rows: same top-level shape for both kinds — always `kind` + `item`.
+ */
+export type StoreApiCartDisplayLine =
+  | { kind: "line_item"; item: StoreApiCartLineItem }
+  | { kind: "unselected"; item: StoreApiCartUnselectedSnapshot };
 
 export interface StoreApiCartCustomer {
   id: string;
