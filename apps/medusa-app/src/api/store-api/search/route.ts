@@ -1,45 +1,40 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { MEILISEARCH_MODULE } from "@/modules/meilisearch";
 import type MeilisearchModuleService from "@/modules/meilisearch/service";
-import type { StoreSearchRequest } from "./validators";
+import type { StoreSearchQueryParams } from "./validators";
 
 /**
- * POST /store-api/search
- * Search for products in Meilisearch index.
- *
- * Request body:
- * {
- *   "query": "search term",
- *   "limit": 20,            // Default: 20
- *   "offset": 0,            // Default: 0
- *   "filter": ["status:published"]  // Optional filters
- * }
+ * GET /store-api/search?q=...&hybridEmbedder=0.5|default
+ * Hybrid / vector-blended product search against the configured product index.
  */
-export async function POST(
-  req: MedusaRequest<StoreSearchRequest>,
+export async function GET(
+  req: MedusaRequest<unknown, StoreSearchQueryParams>,
   res: MedusaResponse,
-) {
+): Promise<void> {
   const logger = req.scope.resolve("logger");
-  const { query, limit, offset, filter } = req.validatedBody;
+  const { q, hybrid } = req.validatedQuery;
 
   try {
     const meilisearchService =
       req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
 
     const results = await meilisearchService.search(
-      query, // Already trimmed by validation schema
-      { limit, offset, filter },
+      q,
+      {
+        hybrid,
+      },
       "product",
     );
 
     res.json({
-      query,
+      query: q,
+      hybrid,
       pagination: {
-        limit,
-        offset,
-        total: results.estimatedTotalHits || 0,
+        limit: results.limit ?? 20,
+        offset: results.offset ?? 0,
+        total: results.estimatedTotalHits ?? 0,
       },
-      hits: results.hits || [],
+      hits: results.hits ?? [],
       processingTimeMs: results.processingTimeMs,
     });
   } catch (error) {

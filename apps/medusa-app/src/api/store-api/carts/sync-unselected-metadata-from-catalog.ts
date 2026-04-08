@@ -1,7 +1,5 @@
-import {
-  ContainerRegistrationKeys,
-  Modules,
-} from "@medusajs/framework/utils";
+import type { Query } from "@medusajs/framework";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import type { ICartModuleService, MedusaContainer } from "@medusajs/types";
 import type { CartMetadata, CartUnselectedEntry } from "@repo/types";
 
@@ -42,7 +40,7 @@ export async function syncUnselectedMetadataFromCatalog(
   scope: MedusaContainer,
 ): Promise<void> {
   const cartModule = scope.resolve(Modules.CART) as ICartModuleService;
-  const query = scope.resolve(ContainerRegistrationKeys.QUERY);
+  const query = scope.resolve(ContainerRegistrationKeys.QUERY) as Query;
 
   const cart = await cartModule.retrieveCart(cartId);
   const rawMeta = cart.metadata as Record<string, unknown> | null | undefined;

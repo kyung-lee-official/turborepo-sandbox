@@ -1,13 +1,19 @@
 import {
   type MiddlewareRoute,
-  validateAndTransformBody,
+  validateAndTransformQuery,
 } from "@medusajs/framework/http";
-import { StoreSearch } from "./validators";
+import { storeSearchTransformQueryConfig } from "./query-config";
+import { StoreSearchQuery } from "./validators";
 
 export const storeApiSearchRoutesMiddlewares: MiddlewareRoute[] = [
   {
-    method: ["POST"],
+    method: ["GET"],
     matcher: "/store-api/search",
-    middlewares: [validateAndTransformBody(StoreSearch)],
+    middlewares: [
+      validateAndTransformQuery(
+        StoreSearchQuery,
+        storeSearchTransformQueryConfig,
+      ),
+    ],
   },
 ];

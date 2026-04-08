@@ -23,6 +23,7 @@ import {
 import cors from "cors";
 import { authenticateJwt } from "@/api/utils/middleware/authenticate-jwt";
 import { medusaAuthBlocker } from "@/api/utils/middleware/medusa-auth-blocker";
+import { adminMeilisearchRoutesMiddlewares } from "./admin/meilisearch/middlewares";
 import { storeCartRoutesMiddlewares } from "./store-api/carts/middlewares";
 import { storeApiOrdersRoutesMiddlewares } from "./store-api/orders/middlewares";
 import { storePaymentSessionsRoutesMiddlewares } from "./store-api/payment-sessions/middlewares";
@@ -105,6 +106,7 @@ export default defineMiddlewares({
     ...storeApiOrdersRoutesMiddlewares,
     ...storePaymentSessionsRoutesMiddlewares,
     ...storeApiSearchRoutesMiddlewares,
+    ...adminMeilisearchRoutesMiddlewares,
     /* custom routes middlewares */
     {
       method: ["POST"],
