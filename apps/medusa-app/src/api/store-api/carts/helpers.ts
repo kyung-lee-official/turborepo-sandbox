@@ -2,6 +2,7 @@ import {
   ContainerRegistrationKeys,
   remoteQueryObjectFromString,
 } from "@medusajs/framework/utils";
+import { refreshCartItemsWorkflow } from "@medusajs/medusa/core-flows";
 import type { MedusaContainer, RemoteQueryFunction } from "@medusajs/types";
 import { HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "./apply-store-cart-display-order";
@@ -11,6 +12,13 @@ export const refetchCart = async (
   scope: MedusaContainer,
   fields: string[],
 ) => {
+  await refreshCartItemsWorkflow(scope).run({
+    input: {
+      cart_id: id,
+      force_refresh: true,
+    },
+  });
+
   const remoteQuery = scope.resolve(
     ContainerRegistrationKeys.REMOTE_QUERY,
   ) as RemoteQueryFunction;

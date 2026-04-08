@@ -10,6 +10,7 @@ import {
   addToCartWorkflow,
   completeCartWorkflow,
   createCartWorkflow,
+  refreshCartItemsWorkflow,
   releaseLockStep,
 } from "@medusajs/medusa/core-flows";
 import type { CompleteCartWorkflowInputDTO } from "@medusajs/types/dist/cart/workflows";
@@ -94,6 +95,13 @@ export const customCompleteCartWorkflow = createWorkflow(
       );
 
       linkCheckoutToRescueCartStep(linkInput);
+    });
+
+    refreshCartItemsWorkflow.runAsStep({
+      input: {
+        cart_id: input.id,
+        force_refresh: true,
+      },
     });
 
     const result = completeCartWorkflow.runAsStep({

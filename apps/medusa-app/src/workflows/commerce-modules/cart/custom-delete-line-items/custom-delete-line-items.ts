@@ -7,6 +7,7 @@ import {
 import {
   acquireLockStep,
   deleteLineItemsWorkflow,
+  refreshCartItemsWorkflow,
   releaseLockStep,
   updateCartsStep,
   useQueryGraphStep,
@@ -189,6 +190,13 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
           metadata: updatedMetadata as unknown as Record<string, unknown>,
         },
       ]).config({ name: "update-metadata-for-unselected-item" });
+    });
+
+    refreshCartItemsWorkflow.runAsStep({
+      input: {
+        cart_id: input.cart_id,
+        force_refresh: true,
+      },
     });
 
     // Refetch the updated cart

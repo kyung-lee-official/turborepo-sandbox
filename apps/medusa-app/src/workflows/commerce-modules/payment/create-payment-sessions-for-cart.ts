@@ -9,6 +9,7 @@ import {
   type CreatePaymentSessionsWorkflowInput,
   createPaymentCollectionForCartWorkflow,
   createPaymentSessionsWorkflow,
+  refreshCartItemsWorkflow,
   releaseLockStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
@@ -27,6 +28,13 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
       key: input.cart_id,
       timeout: 30,
       ttl: 120,
+    });
+
+    refreshCartItemsWorkflow.runAsStep({
+      input: {
+        cart_id: input.cart_id,
+        force_refresh: true,
+      },
     });
 
     const { data: initialCarts } = useQueryGraphStep({
@@ -125,8 +133,6 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
       input: createSessionsInput,
     });
 
-    // Same JSON shape as legacy POST /store-api/payment/initialize-payment-session/:id:
-    // raw `createPaymentSessionsWorkflow` result (do not nest or add extra top-level fields).
     const result = transform(
       { paymentSessions },
       ({ paymentSessions: workflowResult }) => {

@@ -7,6 +7,7 @@ import {
 import {
   acquireLockStep,
   deleteLineItemsWorkflow,
+  refreshCartItemsWorkflow,
   releaseLockStep,
   updateLineItemInCartWorkflow,
   useQueryGraphStep,
@@ -94,6 +95,13 @@ export const customUpdateLineItemWorkflow = createWorkflow(
           ids: [updateData.line_item_id],
         },
       });
+    });
+
+    refreshCartItemsWorkflow.runAsStep({
+      input: {
+        cart_id: input.cart_id,
+        force_refresh: true,
+      },
     });
 
     // Refetch the updated cart with the new line item quantities

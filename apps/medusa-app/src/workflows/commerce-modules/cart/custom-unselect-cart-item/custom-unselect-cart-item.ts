@@ -7,6 +7,7 @@ import type { DeleteLineItemsWorkflowInput } from "@medusajs/medusa/core-flows";
 import {
   acquireLockStep,
   deleteLineItemsWorkflow,
+  refreshCartItemsWorkflow,
   releaseLockStep,
   updateCartsStep,
   useQueryGraphStep,
@@ -114,6 +115,13 @@ export const customUnselectCartItemWorkflow = createWorkflow(
       input: {
         cart_id: input.cart_id,
         ids: input.ids,
+      },
+    });
+
+    refreshCartItemsWorkflow.runAsStep({
+      input: {
+        cart_id: input.cart_id,
+        force_refresh: true,
       },
     });
 

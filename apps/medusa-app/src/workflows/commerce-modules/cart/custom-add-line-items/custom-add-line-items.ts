@@ -6,6 +6,7 @@ import {
 import {
   acquireLockStep,
   addToCartWorkflow,
+  refreshCartItemsWorkflow,
   releaseLockStep,
   updateCartsStep,
   useQueryGraphStep,
@@ -114,6 +115,13 @@ export const customAddToCartWorkflow = createWorkflow(
         metadata: metadataToUpdate as unknown as Record<string, unknown>,
       },
     ]);
+
+    refreshCartItemsWorkflow.runAsStep({
+      input: {
+        cart_id: input.cart_id,
+        force_refresh: true,
+      },
+    });
 
     // Refetch the updated cart with the new metadata
     const { data: finalCartData } = useQueryGraphStep({
