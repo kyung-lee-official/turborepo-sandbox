@@ -15,6 +15,7 @@ import {
 import type { StoreCart, StoreCartResponse } from "@medusajs/types";
 import type { CartMetadata } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 export const customUnselectCartItemWorkflow = createWorkflow(
   "custom-unselect-cart-item",
@@ -124,6 +125,8 @@ export const customUnselectCartItemWorkflow = createWorkflow(
         force_refresh: true,
       },
     });
+
+    syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
     // Refetch the updated cart with the new metadata
     const { data: finalCartData } = useQueryGraphStep({

@@ -14,6 +14,7 @@ import {
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
 import { HttpError } from "@repo/types";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 export type CreatePaymentSessionsForCartWorkflowInput = {
   cart_id: string;
@@ -36,6 +37,8 @@ export const createPaymentSessionsForCartWorkflow = createWorkflow(
         force_refresh: true,
       },
     });
+
+    syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
     const { data: initialCarts } = useQueryGraphStep({
       entity: "cart",

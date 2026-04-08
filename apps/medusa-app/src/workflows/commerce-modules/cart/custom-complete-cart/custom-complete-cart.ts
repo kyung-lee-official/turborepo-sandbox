@@ -15,6 +15,7 @@ import {
 } from "@medusajs/medusa/core-flows";
 import type { CompleteCartWorkflowInputDTO } from "@medusajs/types/dist/cart/workflows";
 import { HttpError } from "@repo/types";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 import { linkCheckoutToRescueCartStep } from "./steps/link-checkout-to-rescue-cart-step";
 import { prepareMigrateUnselectedToRescueCartStep } from "./steps/prepare-migrate-unselected-to-rescue-cart";
 
@@ -103,6 +104,8 @@ export const customCompleteCartWorkflow = createWorkflow(
         force_refresh: true,
       },
     });
+
+    syncUnselectedMetadataFromCatalogStep({ cart_id: input.id });
 
     const result = completeCartWorkflow.runAsStep({
       input: {

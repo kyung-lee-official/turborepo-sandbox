@@ -19,6 +19,7 @@ import type {
 } from "@medusajs/types/dist/http/cart/store";
 import { type CartMetadata, HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 export const customAddToCartWorkflow = createWorkflow(
   "custom-add-to-cart",
@@ -122,6 +123,8 @@ export const customAddToCartWorkflow = createWorkflow(
         force_refresh: true,
       },
     });
+
+    syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
     // Refetch the updated cart with the new metadata
     const { data: finalCartData } = useQueryGraphStep({

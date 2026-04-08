@@ -15,6 +15,7 @@ import {
 import type { StoreCart, StoreCartResponse } from "@medusajs/types";
 import type { CartMetadata } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 // Custom input type for the new API design
 type CustomRemoveCartItemInput = {
@@ -198,6 +199,8 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
         force_refresh: true,
       },
     });
+
+    syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
     // Refetch the updated cart
     const { data: finalCartData } = useQueryGraphStep({

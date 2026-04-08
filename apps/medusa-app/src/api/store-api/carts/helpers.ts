@@ -6,6 +6,7 @@ import { refreshCartItemsWorkflow } from "@medusajs/medusa/core-flows";
 import type { MedusaContainer, RemoteQueryFunction } from "@medusajs/types";
 import { HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "./apply-store-cart-display-order";
+import { syncUnselectedMetadataFromCatalog } from "./sync-unselected-metadata-from-catalog";
 
 export const refetchCart = async (
   id: string,
@@ -18,6 +19,8 @@ export const refetchCart = async (
       force_refresh: true,
     },
   });
+
+  await syncUnselectedMetadataFromCatalog(id, scope);
 
   const remoteQuery = scope.resolve(
     ContainerRegistrationKeys.REMOTE_QUERY,

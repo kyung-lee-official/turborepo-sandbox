@@ -18,6 +18,7 @@ import type {
 } from "@medusajs/types/dist/http/cart/store";
 import { HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 // Custom input type for the update line item workflow
 type CustomUpdateLineItemInput = {
@@ -103,6 +104,8 @@ export const customUpdateLineItemWorkflow = createWorkflow(
         force_refresh: true,
       },
     });
+
+    syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
     // Refetch the updated cart with the new line item quantities
     const { data: finalCartData } = useQueryGraphStep({
