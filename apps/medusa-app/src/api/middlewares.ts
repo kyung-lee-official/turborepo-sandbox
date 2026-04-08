@@ -26,6 +26,7 @@ import { medusaAuthBlocker } from "@/api/utils/middleware/medusa-auth-blocker";
 import { storeCartRoutesMiddlewares } from "./store-api/carts/middlewares";
 import { storeApiOrdersRoutesMiddlewares } from "./store-api/orders/middlewares";
 import { storePaymentSessionsRoutesMiddlewares } from "./store-api/payment-sessions/middlewares";
+import { storeApiSearchRoutesMiddlewares } from "./store-api/search/middlewares";
 
 const originalErrorHandler = errorHandler();
 
@@ -103,6 +104,7 @@ export default defineMiddlewares({
     ...storeCartRoutesMiddlewares,
     ...storeApiOrdersRoutesMiddlewares,
     ...storePaymentSessionsRoutesMiddlewares,
+    ...storeApiSearchRoutesMiddlewares,
     /* custom routes middlewares */
     {
       method: ["POST"],

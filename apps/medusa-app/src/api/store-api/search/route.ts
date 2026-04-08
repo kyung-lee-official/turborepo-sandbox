@@ -1,16 +1,10 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { MEILISEARCH_MODULE } from "@/modules/meilisearch";
 import type MeilisearchModuleService from "@/modules/meilisearch/service";
-
-type SearchRequestBody = {
-  query?: string;
-  limit?: number;
-  offset?: number;
-  filter?: string[];
-};
+import type { StoreSearchRequest } from "./validators";
 
 /**
- * POST /store/products/search
+ * POST /store-api/search
  * Search for products in Meilisearch index.
  *
  * Request body:
@@ -21,44 +15,19 @@ type SearchRequestBody = {
  *   "filter": ["status:published"]  // Optional filters
  * }
  */
-export async function POST(req: MedusaRequest, res: MedusaResponse) {
+export async function POST(
+  req: MedusaRequest<StoreSearchRequest>,
+  res: MedusaResponse,
+) {
   const logger = req.scope.resolve("logger");
-  const {
-    query,
-    limit = 20,
-    offset = 0,
-    filter,
-  } = req.body as SearchRequestBody;
+  const { query, limit, offset, filter } = req.validatedBody;
 
   try {
-    // Validate query
-    if (!query || typeof query !== "string" || query.trim().length < 1) {
-      return res.status(400).json({
-        message: "Search query is required and must be a non-empty string",
-        code: "INVALID_QUERY",
-      });
-    }
-
-    // Validate pagination parameters
-    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
-      return res.status(400).json({
-        message: "Limit must be an integer between 1 and 100",
-        code: "INVALID_LIMIT",
-      });
-    }
-
-    if (!Number.isInteger(offset) || offset < 0) {
-      return res.status(400).json({
-        message: "Offset must be a non-negative integer",
-        code: "INVALID_OFFSET",
-      });
-    }
-
     const meilisearchService =
       req.scope.resolve<MeilisearchModuleService>(MEILISEARCH_MODULE);
 
     const results = await meilisearchService.search(
-      query.trim(),
+      query, // Already trimmed by validation schema
       { limit, offset, filter },
       "product",
     );
