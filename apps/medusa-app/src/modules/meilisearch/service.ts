@@ -1,5 +1,4 @@
 import { MedusaError } from "@medusajs/framework/utils";
-import axios, { type AxiosInstance } from "axios";
 
 type MeilisearchOptions = {
   host: string;
@@ -29,9 +28,15 @@ type MeilisearchSearchHitResponse = {
   processingTimeMs?: number;
 };
 
+type MeilisearchTasksListResponse = {
+  results?: Record<string, unknown>[];
+} & Record<string, unknown>;
+
+type QueryParams = Record<string, string | number | boolean | undefined>;
+
 export default class MeilisearchModuleService {
-  private http: AxiosInstance;
-  private options: MeilisearchOptions;
+  private readonly baseUrl: string;
+  private readonly options: MeilisearchOptions;
 
   constructor(_: unknown, options: MeilisearchOptions) {
     if (!options.host || !options.apiKey || !options.productIndexName) {
@@ -40,15 +45,78 @@ export default class MeilisearchModuleService {
         "Meilisearch configuration options are required: host, apiKey, productIndexName",
       );
     }
-    const baseURL = options.host.replace(/\/$/, "");
-    this.http = axios.create({
-      baseURL,
-      headers: {
-        Authorization: `Bearer ${options.apiKey}`,
-        "Content-Type": "application/json",
-      },
-    });
+    this.baseUrl = options.host.replace(/\/$/, "");
     this.options = options;
+  }
+
+  private defaultHeaders(jsonBody: boolean): Headers {
+    const h = new Headers();
+    h.set("Authorization", `Bearer ${this.options.apiKey}`);
+    if (jsonBody) {
+      h.set("Content-Type", "application/json");
+    }
+    return h;
+  }
+
+  private buildUrl(path: string, query?: QueryParams): string {
+    const p = path.startsWith("/") ? path : `/${path}`;
+    const url = `${this.baseUrl}${p}`;
+    if (!query) return url;
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(query)) {
+      if (v === undefined) continue;
+      sp.set(k, String(v));
+    }
+    const qs = sp.toString();
+    return qs ? `${url}?${qs}` : url;
+  }
+
+  private async parseResponseBody<T>(res: Response): Promise<T> {
+    const text = await res.text();
+    if (!text) {
+      return undefined as T;
+    }
+    return JSON.parse(text) as T;
+  }
+
+  private async requestJson<T>(
+    method: string,
+    path: string,
+    opts?: { query?: QueryParams; body?: unknown },
+  ): Promise<T> {
+    const hasBody =
+      opts?.body !== undefined && method !== "GET" && method !== "HEAD";
+    const url = this.buildUrl(path, opts?.query);
+    const res = await fetch(url, {
+      method,
+      headers: this.defaultHeaders(hasBody),
+      body: hasBody ? JSON.stringify(opts?.body) : undefined,
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || res.statusText || `Meilisearch ${res.status}`);
+    }
+    return this.parseResponseBody<T>(res);
+  }
+
+  private async getJsonAllow404<T>(path: string): Promise<T | null> {
+    const url = this.buildUrl(path);
+    const res = await fetch(url, {
+      method: "GET",
+      headers: this.defaultHeaders(false),
+    });
+    if (res.status === 404) {
+      return null;
+    }
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(errText || res.statusText || `Meilisearch ${res.status}`);
+    }
+    const text = await res.text();
+    if (!text) {
+      return null;
+    }
+    return JSON.parse(text) as T;
   }
 
   /**
@@ -80,8 +148,9 @@ export default class MeilisearchModuleService {
       id: item.id,
     }));
 
-    await this.http.post(`/indexes/${indexName}/documents`, documents, {
-      params: { primaryKey: "id" },
+    await this.requestJson("POST", `/indexes/${indexName}/documents`, {
+      query: { primaryKey: "id" },
+      body: documents,
     });
   }
 
@@ -99,16 +168,11 @@ export default class MeilisearchModuleService {
     const indexName = await this.getIndexName(type);
 
     const results = await Promise.all(
-      documentIds.map(async (id) => {
-        try {
-          const { data } = await this.http.get<Record<string, unknown>>(
-            `/indexes/${indexName}/documents/${encodeURIComponent(id)}`,
-          );
-          return data;
-        } catch {
-          return null;
-        }
-      }),
+      documentIds.map((id) =>
+        this.getJsonAllow404<Record<string, unknown>>(
+          `/indexes/${indexName}/documents/${encodeURIComponent(id)}`,
+        ),
+      ),
     );
 
     return results.filter(
@@ -129,8 +193,8 @@ export default class MeilisearchModuleService {
 
     const indexName = await this.getIndexName(type);
 
-    await this.http.post(`/indexes/${indexName}/documents/delete-batch`, {
-      ids: documentIds,
+    await this.requestJson("POST", `/indexes/${indexName}/documents/delete-batch`, {
+      body: { ids: documentIds },
     });
   }
 
@@ -157,30 +221,31 @@ export default class MeilisearchModuleService {
 
     const indexName = await this.getIndexName(type);
 
-    const { data } = await this.http.post<MeilisearchSearchHitResponse>(
+    return await this.requestJson<MeilisearchSearchHitResponse>(
+      "POST",
       `/indexes/${indexName}/search`,
       {
-        q: query,
-        limit,
-        offset,
-        ...(options.filter && { filter: options.filter }),
-        ...(options.hybrid && { hybrid: options.hybrid }),
+        body: {
+          q: query,
+          limit,
+          offset,
+          ...(options.filter && { filter: options.filter }),
+          ...(options.hybrid && { hybrid: options.hybrid }),
+        },
       },
     );
-
-    return data;
   }
 
-  async listLatestTasks(limit: number) {
-    const { data } = await this.http.get("/tasks", {
-      params: { limit, reverse: true },
+  async listLatestTasks(limit: number): Promise<MeilisearchTasksListResponse> {
+    return await this.requestJson<MeilisearchTasksListResponse>("GET", "/tasks", {
+      query: { limit, reverse: true },
     });
-    return data;
   }
 
   async listIndexesRaw(params?: { limit?: number; offset?: number }) {
-    const { data } = await this.http.get("/indexes", { params });
-    return data;
+    return await this.requestJson("GET", "/indexes", {
+      query: params,
+    });
   }
 
   async createIndex(uid: string, options?: { primaryKey?: string }) {
@@ -188,33 +253,32 @@ export default class MeilisearchModuleService {
     if (options?.primaryKey) {
       body.primaryKey = options.primaryKey;
     }
-    const { data } = await this.http.post("/indexes", body);
-    return data;
+    return await this.requestJson("POST", "/indexes", { body });
   }
 
   async getEmbeddersForIndex(indexUid: string) {
-    const { data } = await this.http.get(
+    return await this.requestJson(
+      "GET",
       `/indexes/${encodeURIComponent(indexUid)}/settings/embedders`,
     );
-    return data;
   }
 
   async updateEmbeddersForIndex(
     indexUid: string,
     embedders: Record<string, unknown>,
   ) {
-    const { data } = await this.http.patch(
+    return await this.requestJson(
+      "PATCH",
       `/indexes/${encodeURIComponent(indexUid)}/settings/embedders`,
-      embedders,
+      { body: embedders },
     );
-    return data;
   }
 
   async resetEmbeddersForIndex(indexUid: string) {
-    const { data } = await this.http.delete(
+    return await this.requestJson(
+      "DELETE",
       `/indexes/${encodeURIComponent(indexUid)}/settings/embedders`,
     );
-    return data;
   }
 
   async getDocumentsForIndex(
@@ -227,38 +291,40 @@ export default class MeilisearchModuleService {
       retrieveVectors?: boolean;
     },
   ) {
-    const params: Record<string, string | number | boolean | undefined> = {
+    const queryParams: QueryParams = {
       limit: query?.limit,
       offset: query?.offset,
       filter: query?.filter,
       retrieveVectors: query?.retrieveVectors,
     };
     if (query?.fields?.length) {
-      params.fields = query.fields.join(",");
+      queryParams.fields = query.fields.join(",");
     }
-    const { data } = await this.http.get(
+    return await this.requestJson(
+      "GET",
       `/indexes/${encodeURIComponent(indexUid)}/documents`,
-      { params },
+      { query: queryParams },
     );
-    return data;
   }
 
   async addOrReplaceDocumentsForIndex(
     indexUid: string,
     documents: Record<string, unknown>[],
   ) {
-    const { data } = await this.http.post(
+    return await this.requestJson(
+      "POST",
       `/indexes/${encodeURIComponent(indexUid)}/documents`,
-      documents,
-      { params: { primaryKey: "id" } },
+      {
+        query: { primaryKey: "id" },
+        body: documents,
+      },
     );
-    return data;
   }
 
   async deleteAllDocumentsForIndex(indexUid: string) {
-    const { data } = await this.http.delete(
+    return await this.requestJson(
+      "DELETE",
       `/indexes/${encodeURIComponent(indexUid)}/documents`,
     );
-    return data;
   }
 }
