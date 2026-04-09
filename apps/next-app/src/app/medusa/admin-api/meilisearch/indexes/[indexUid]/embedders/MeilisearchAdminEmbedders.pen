@@ -1,0 +1,118 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "EbRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Admin — index embedders",
+      "width": 640,
+      "fill": "#f5f5f4",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "EbLb",
+          "fill": "#57534e",
+          "content": "GET · PATCH (JSON) · DELETE reset",
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "600"
+        },
+        {
+          "type": "frame",
+          "id": "EbGet",
+          "width": "fill_container",
+          "height": 140,
+          "fill": "#fafaf9",
+          "padding": 10,
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#d6d3d1"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "EbGt",
+              "fill": "#44403c",
+              "content": "{ \"default\": { \"source\": \"openAi\", … } }",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 10,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "EbPatch",
+          "width": "fill_container",
+          "height": 120,
+          "fill": "#ffffff",
+          "padding": 10,
+          "stroke": {
+            "align": "center",
+            "thickness": 1,
+            "fill": "#818cf8"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "EbPt",
+              "fill": "#6366f1",
+              "content": "PATCH body (editor)",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "EbAct",
+          "layout": "horizontal",
+          "gap": 10,
+          "children": [
+            {
+              "type": "frame",
+              "id": "EbA1",
+              "fill": "#4f46e5",
+              "padding": [10, 18],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EbA1t",
+                  "fill": "#ffffff",
+                  "content": "PATCH",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "EbA2",
+              "fill": "#dc2626",
+              "padding": [10, 18],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "EbA2t",
+                  "fill": "#ffffff",
+                  "content": "RESET",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "MsRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Admin — Meilisearch hub (search)",
+      "width": 900,
+      "fill": "#f5f5f4",
+      "layout": "horizontal",
+      "gap": 24,
+      "padding": 24,
+      "children": [
+        {
+          "type": "frame",
+          "id": "MsNav",
+          "name": "sidebar",
+          "width": 200,
+          "layout": "vertical",
+          "gap": 8,
+          "fill": "#fafaf9",
+          "padding": 16,
+          "stroke": {
+            "align": "inside",
+            "thickness": 2,
+            "fill": "#d6d3d1"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "MsNvT",
+              "fill": "#78716c",
+              "content": "MEILISEARCH",
+              "fontFamily": "Inter",
+              "fontSize": 10,
+              "fontWeight": "700"
+            },
+            {
+              "type": "frame",
+              "id": "MsNv1",
+              "width": "fill_container",
+              "fill": "#eef2ff",
+              "padding": [8, 10],
+              "stroke": {
+                "align": "inside",
+                "thickness": 2,
+                "fill": "#1e1b84"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MsNv1t",
+                  "fill": "#312e81",
+                  "content": "Search preview",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "MsNv2",
+              "width": "fill_container",
+              "fill": "#ffffff",
+              "padding": [8, 10],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MsNv2t",
+                  "fill": "#44403c",
+                  "content": "Tasks",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "MsNv3",
+              "width": "fill_container",
+              "fill": "#ffffff",
+              "padding": [8, 10],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MsNv3t",
+                  "fill": "#44403c",
+                  "content": "Indexes",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "MsMain",
+          "name": "main",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "children": [
+            {
+              "type": "frame",
+              "id": "MsHd1",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [0, 0, 12, 0],
+              "stroke": {
+                "align": "inside",
+                "thickness": 2,
+                "fill": "#1e1b84"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MsTi1",
+                  "fill": "#1c1917",
+                  "content": "Search preview",
+                  "fontFamily": "Inter",
+                  "fontSize": 24,
+                  "fontWeight": "700"
+                },
+                {
+                  "type": "text",
+                  "id": "MsDs1",
+                  "fill": "#57534e",
+                  "content": "Same store hybrid search — requires admin session cookie for other tabs.",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "MsFn1",
+              "fill": "#a8a29e",
+              "content": "MeilisearchSearchPanel · GET /store-api/search",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "500"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

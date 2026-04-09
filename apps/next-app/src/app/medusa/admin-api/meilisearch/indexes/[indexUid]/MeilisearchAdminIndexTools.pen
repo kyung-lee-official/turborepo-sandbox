@@ -1,0 +1,128 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "ItRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Admin — index documents / embedders",
+      "width": 760,
+      "fill": "#f5f5f4",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "frame",
+          "id": "ItTb",
+          "layout": "horizontal",
+          "gap": 12,
+          "width": "fill_container",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ItTb1",
+              "fill": "#eef2ff",
+              "padding": [8, 14],
+              "stroke": {
+                "align": "inside",
+                "thickness": 2,
+                "fill": "#1e1b84"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ItTb1t",
+                  "fill": "#312e81",
+                  "content": "Documents",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ItTb2",
+              "fill": "#ffffff",
+              "padding": [8, 14],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ItTb2t",
+                  "fill": "#44403c",
+                  "content": "Embedders",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ItEd",
+          "width": "fill_container",
+          "height": 200,
+          "fill": "#1c1917",
+          "padding": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "ItEdt",
+              "fill": "#e7e5e4",
+              "content": "{ \"results\": [ … ] }  // GET JSON",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ItAr",
+          "layout": "horizontal",
+          "gap": 10,
+          "children": [
+            {
+              "type": "frame",
+              "id": "ItB1",
+              "fill": "#4f46e5",
+              "padding": [10, 16],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ItB1t",
+                  "fill": "#ffffff",
+                  "content": "Apply / POST",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ItB2",
+              "fill": "#dc2626",
+              "padding": [10, 16],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ItB2t",
+                  "fill": "#ffffff",
+                  "content": "DELETE ALL",
+                  "fontFamily": "Inter",
+                  "fontSize": 11,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

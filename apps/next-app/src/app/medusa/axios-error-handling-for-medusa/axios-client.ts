@@ -108,8 +108,26 @@ async function del<T>(
   return res.data;
 }
 
+async function patch<T>(
+  url: string,
+  data?: any,
+  options?: {
+    withoutApiKey?: boolean;
+    apiKey?: string;
+    headers?: AxiosHeaders;
+  },
+): Promise<T> {
+  const res = await request<T>("PATCH", url, {
+    data,
+    withoutApiKey: options?.withoutApiKey,
+    apiKey: options?.apiKey,
+    headers: options?.headers,
+  });
+  return res.data;
+}
+
 async function request<T>(
-  method: "GET" | "POST" | "PUT" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   url: string,
   options?: {
     data?: any;
@@ -134,5 +152,5 @@ async function request<T>(
   });
 }
 
-const http = { get, post, del, request };
+const http = { get, post, patch, del, request };
 export default http;

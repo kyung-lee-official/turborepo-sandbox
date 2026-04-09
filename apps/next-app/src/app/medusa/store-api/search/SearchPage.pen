@@ -1,0 +1,266 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "SrRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Store — Meilisearch hybrid search",
+      "width": 960,
+      "fill": "#f5f5f4",
+      "layout": "vertical",
+      "gap": 24,
+      "padding": 32,
+      "children": [
+        {
+          "type": "text",
+          "id": "SrLb1",
+          "fill": "#57534e",
+          "content": "store-api/search — GET · q + hybridEmbedder (default 0.5)",
+          "fontFamily": "Inter",
+          "fontSize": 11,
+          "fontWeight": "500"
+        },
+        {
+          "type": "frame",
+          "id": "SrHd1",
+          "name": "PageHeading",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [0, 0, 16, 0],
+          "stroke": {
+            "align": "inside",
+            "thickness": 2,
+            "fill": "#1e1b84"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "SrTi1",
+              "fill": "#1c1917",
+              "content": "Product search",
+              "fontFamily": "Inter",
+              "fontSize": 28,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "SrDs1",
+              "fill": "#57534e",
+              "content": "Keyword + hybrid vector blend against the configured product index.",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "SrFrm1",
+          "name": "searchForm",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "frame",
+              "id": "SrRw1",
+              "layout": "horizontal",
+              "gap": 12,
+              "width": "fill_container",
+              "alignItems": "end",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SrQcol",
+                  "layout": "vertical",
+                  "gap": 6,
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SrQl1",
+                      "fill": "#44403c",
+                      "content": "Query (q)",
+                      "fontFamily": "Inter",
+                      "fontSize": 12,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SrQin",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "#ffffff",
+                      "stroke": {
+                        "align": "center",
+                        "thickness": 1,
+                        "fill": "#d1d5db"
+                      },
+                      "cornerRadius": 6,
+                      "padding": [8, 12],
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "SrQph",
+                          "fill": "#9ca3af",
+                          "content": "e.g. wool sweater",
+                          "fontFamily": "Inter",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "SrBtn1",
+                  "width": 140,
+                  "height": 44,
+                  "fill": "#4f46e5",
+                  "cornerRadius": 0,
+                  "stroke": {
+                    "align": "center",
+                    "thickness": 4,
+                    "fill": "#1e1b84"
+                  },
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SrBtnTx",
+                      "fill": "#ffffff",
+                      "content": "SEARCH",
+                      "fontFamily": "Inter",
+                      "fontSize": 11,
+                      "fontWeight": "700"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "SrRw2",
+              "layout": "vertical",
+              "gap": 6,
+              "width": "fill_container",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SrHl1",
+                  "fill": "#44403c",
+                  "content": "hybridEmbedder — omit (→ 0.5), default, or 0–1",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "SrHin",
+                  "width": 360,
+                  "height": 40,
+                  "fill": "#ffffff",
+                  "stroke": {
+                    "align": "center",
+                    "thickness": 1,
+                    "fill": "#d1d5db"
+                  },
+                  "cornerRadius": 6,
+                  "padding": [8, 12],
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SrHph",
+                      "fill": "#9ca3af",
+                      "content": "0.5",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "SrRes1",
+          "name": "resultsCard",
+          "width": "fill_container",
+          "fill": "#ffffff",
+          "cornerRadius": 0,
+          "padding": 24,
+          "layout": "vertical",
+          "gap": 12,
+          "stroke": {
+            "align": "center",
+            "thickness": 2,
+            "fill": "#1e1b84"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "SrRtT",
+              "fill": "#1c1917",
+              "content": "Results",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "SrRtM",
+              "fill": "#57534e",
+              "content": "hits[] · pagination.total · processingTimeMs · hybrid echo",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "SrHit1",
+              "width": "fill_container",
+              "fill": "#fafaf9",
+              "padding": 12,
+              "layout": "vertical",
+              "gap": 4,
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "#e7e5e4"
+              },
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SrH1t",
+                  "fill": "#1c1917",
+                  "content": "Product title · id …",
+                  "fontFamily": "Inter",
+                  "fontSize": 14,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "text",
+                  "id": "SrH1s",
+                  "fill": "#78716c",
+                  "content": "handle · snippet",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

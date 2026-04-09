@@ -123,6 +123,19 @@ export default function Page() {
             link: "medusa/store-api/region",
             text: "Region",
           },
+          {
+            link: "medusa/store-api/search",
+            text: "Search (Meilisearch)",
+          },
+        ]}
+      />
+      <Block
+        title="Admin API"
+        list={[
+          {
+            link: "medusa/admin-api/meilisearch/search",
+            text: "Meilisearch (admin)",
+          },
         ]}
       />
       <Block

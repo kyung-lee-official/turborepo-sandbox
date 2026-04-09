@@ -1,0 +1,1 @@
+export { MeilisearchSearchPanel } from "./MeilisearchSearchPanel";

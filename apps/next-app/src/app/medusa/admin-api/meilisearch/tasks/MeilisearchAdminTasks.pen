@@ -1,0 +1,86 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "TkRt1",
+      "x": 0,
+      "y": 0,
+      "name": "Admin — Meilisearch tasks",
+      "width": 640,
+      "fill": "#f5f5f4",
+      "layout": "vertical",
+      "gap": 20,
+      "padding": 24,
+      "children": [
+        {
+          "type": "frame",
+          "id": "TkHd1",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "padding": [0, 0, 12, 0],
+          "stroke": {
+            "align": "inside",
+            "thickness": 2,
+            "fill": "#1e1b84"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "TkTi1",
+              "fill": "#1c1917",
+              "content": "Tasks",
+              "fontFamily": "Inter",
+              "fontSize": 24,
+              "fontWeight": "700"
+            },
+            {
+              "type": "text",
+              "id": "TkDs1",
+              "fill": "#57534e",
+              "content": "GET /admin/meilisearch/management/tasks — newest 3",
+              "fontFamily": "Inter",
+              "fontSize": 12,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TkC1",
+          "width": "fill_container",
+          "fill": "#ffffff",
+          "padding": 14,
+          "layout": "vertical",
+          "gap": 6,
+          "stroke": {
+            "align": "center",
+            "thickness": 2,
+            "fill": "#1e1b84"
+          },
+          "children": [
+            {
+              "type": "text",
+              "id": "TkC1s",
+              "fill": "#16a34a",
+              "content": "succeeded · indexUid: products",
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "600"
+            },
+            {
+              "type": "text",
+              "id": "TkC1d",
+              "fill": "#78716c",
+              "content": "taskUid · type · enqueuedAt",
+              "fontFamily": "Inter",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
