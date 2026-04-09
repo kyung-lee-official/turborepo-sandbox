@@ -4,6 +4,7 @@ import {
   container,
   defineMiddlewares,
   errorHandler,
+  logger,
   type MedusaNextFunction,
   type MedusaRequest,
   type MedusaResponse,
