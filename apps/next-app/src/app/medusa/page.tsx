@@ -133,6 +133,10 @@ export default function Page() {
         title="Admin API"
         list={[
           {
+            link: "medusa/admin-api/auth",
+            text: "Auth",
+          },
+          {
             link: "medusa/admin-api/meilisearch/search",
             text: "Meilisearch (admin)",
           },

@@ -46,6 +46,11 @@ export const adminMeilisearchRoutesMiddlewares: MiddlewareRoute[] = [
     ],
   },
   {
+    method: ["DELETE"],
+    matcher: "/admin/meilisearch/management/indexes/:indexUid",
+    middlewares: [authenticate("user", ["session", "bearer"])],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/meilisearch/management/indexes/:indexUid/embedders",
     middlewares: [authenticate("user", ["session", "bearer"])],

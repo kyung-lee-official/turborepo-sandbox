@@ -29,6 +29,12 @@ export async function createMeilisearchIndex(body: {
   return await http.post<Record<string, unknown>>(`${BASE}/indexes`, body);
 }
 
+export async function deleteMeilisearchIndex(indexUid: string) {
+  return await http.del<Record<string, unknown>>(
+    `${BASE}/indexes/${encodeURIComponent(indexUid)}`,
+  );
+}
+
 export async function getMeilisearchEmbedders(indexUid: string) {
   return await http.get<Record<string, unknown>>(
     `${BASE}/indexes/${encodeURIComponent(indexUid)}/embedders`,

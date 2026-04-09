@@ -10,6 +10,7 @@ import { PixelSurface } from "@/app/medusa/components/PixelSurface";
 import { TextInput } from "@/app/medusa/components/TextInput";
 import {
   createMeilisearchIndex,
+  deleteMeilisearchIndex,
   getMeilisearchIndexes,
   QK_MEILISEARCH_ADMIN,
 } from "../api";
@@ -52,6 +53,14 @@ const Content = () => {
     onSuccess: async () => {
       setNewUid("");
       await qc.invalidateQueries({ queryKey: [QK_MEILISEARCH_ADMIN.INDEXES] });
+    },
+  });
+
+  const deleteIndexM = useMutation({
+    mutationFn: (uid: string) => deleteMeilisearchIndex(uid),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: [QK_MEILISEARCH_ADMIN.INDEXES] });
+      await qc.invalidateQueries({ queryKey: [QK_MEILISEARCH_ADMIN.TASKS] });
     },
   });
 
@@ -130,6 +139,19 @@ const Content = () => {
         </div>
       )}
 
+      {deleteIndexM.isError && (
+        <Alert
+          title="Delete index failed"
+          variant="error"
+          appearance="pixel"
+          className="mt-8"
+        >
+          {deleteIndexM.error instanceof Error
+            ? deleteIndexM.error.message
+            : "Unknown error"}
+        </Alert>
+      )}
+
       {listQ.isSuccess && (
         <ul className="mt-8 flex flex-col gap-3">
           {indexRows(listQ.data).length === 0 ? (
@@ -144,7 +166,7 @@ const Content = () => {
                       primaryKey: {row.primaryKey ?? "—"}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Link
                       href={`${ROOT}/${encodeURIComponent(row.uid)}/documents`}
                       className={medusaButtonClassName("outline", {
@@ -163,6 +185,25 @@ const Content = () => {
                     >
                       Embedders
                     </Link>
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="compact"
+                      fullWidth={false}
+                      disabled={deleteIndexM.isPending}
+                      onClick={() => {
+                        if (
+                          typeof window !== "undefined" &&
+                          window.confirm(
+                            `Delete the entire Meilisearch index "${row.uid}"? This removes the index and all settings; it cannot be undone.`,
+                          )
+                        ) {
+                          deleteIndexM.mutate(row.uid);
+                        }
+                      }}
+                    >
+                      Delete index
+                    </Button>
                   </div>
                 </PixelSurface>
               </li>

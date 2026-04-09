@@ -256,6 +256,13 @@ export default class MeilisearchModuleService {
     return await this.requestJson("POST", "/indexes", { body });
   }
 
+  async deleteIndex(indexUid: string) {
+    return await this.requestJson(
+      "DELETE",
+      `/indexes/${encodeURIComponent(indexUid)}`,
+    );
+  }
+
   async getEmbeddersForIndex(indexUid: string) {
     return await this.requestJson(
       "GET",
