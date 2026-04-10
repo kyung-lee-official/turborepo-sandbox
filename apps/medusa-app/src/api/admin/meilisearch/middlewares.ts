@@ -51,6 +51,12 @@ export const adminMeilisearchRoutesMiddlewares: MiddlewareRoute[] = [
     middlewares: [authenticate("user", ["session", "bearer"])],
   },
   {
+    method: ["POST"],
+    matcher:
+      "/admin/meilisearch/management/indexes/:indexUid/embedders/preset",
+    middlewares: [authenticate("user", ["session", "bearer"])],
+  },
+  {
     method: ["GET"],
     matcher: "/admin/meilisearch/management/indexes/:indexUid/embedders",
     middlewares: [authenticate("user", ["session", "bearer"])],

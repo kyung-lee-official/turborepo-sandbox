@@ -1,4 +1,5 @@
 import { MedusaError } from "@medusajs/framework/utils";
+import { MEILISEARCH_REST_OLLAMA_BGE_PRESET } from "./rest-embedder-preset";
 
 type MeilisearchOptions = {
   host: string;
@@ -236,9 +237,13 @@ export default class MeilisearchModuleService {
     );
   }
 
+  /**
+   * Latest tasks: Meilisearch returns tasks in descending uid order by default
+   * (newest first). Passing reverse=true would flip to oldest-first.
+   */
   async listLatestTasks(limit: number): Promise<MeilisearchTasksListResponse> {
     return await this.requestJson<MeilisearchTasksListResponse>("GET", "/tasks", {
-      query: { limit, reverse: true },
+      query: { limit },
     });
   }
 
@@ -278,6 +283,16 @@ export default class MeilisearchModuleService {
       "PATCH",
       `/indexes/${encodeURIComponent(indexUid)}/settings/embedders`,
       { body: embedders },
+    );
+  }
+
+  /**
+   * PATCH embedders with the built-in Ollama REST preset (bge-m3 @ 127.0.0.1:11434).
+   */
+  async applyRestOllamaBgeEmbedderPreset(indexUid: string) {
+    return await this.updateEmbeddersForIndex(
+      indexUid,
+      MEILISEARCH_REST_OLLAMA_BGE_PRESET as unknown as Record<string, unknown>,
     );
   }
 

@@ -12,6 +12,7 @@ import {
   deleteMeilisearchEmbedders,
   getMeilisearchEmbedders,
   patchMeilisearchEmbedders,
+  postMeilisearchEmbeddersPreset,
   QK_MEILISEARCH_ADMIN,
 } from "../../../api";
 
@@ -52,6 +53,16 @@ const Content = () => {
       await qc.invalidateQueries({
         queryKey: [QK_MEILISEARCH_ADMIN.EMBEDDERS, indexUid],
       });
+    },
+  });
+
+  const presetM = useMutation({
+    mutationFn: () => postMeilisearchEmbeddersPreset(indexUid),
+    onSuccess: async () => {
+      await qc.invalidateQueries({
+        queryKey: [QK_MEILISEARCH_ADMIN.EMBEDDERS, indexUid],
+      });
+      await qc.invalidateQueries({ queryKey: [QK_MEILISEARCH_ADMIN.TASKS] });
     },
   });
 
@@ -107,6 +118,36 @@ const Content = () => {
           onClick={() => getQ.refetch()}
         >
           Refresh
+        </Button>
+      </PixelSurface>
+
+      <PixelSurface shadow="md" className="mt-8 p-6">
+        <h2 className="font-bold text-gray-900">Preset: Ollama REST (bge-m3)</h2>
+        <p className="mt-1 text-gray-600 text-sm">
+          Applies the server-defined embedder: REST →{" "}
+          <code className="font-mono text-xs">
+            http://127.0.0.1:11434/api/embed
+          </code>{" "}
+          with model <code className="font-mono text-xs">bge-m3:latest</code>,
+          dimensions 1024, and the default document template.
+        </p>
+        {presetM.isError && (
+          <Alert
+            title="Preset failed"
+            variant="error"
+            appearance="pixel"
+            className="mt-3"
+          >
+            {presetM.error instanceof Error ? presetM.error.message : "Error"}
+          </Alert>
+        )}
+        <Button
+          type="button"
+          className="mt-4"
+          disabled={presetM.isPending}
+          onClick={() => presetM.mutate()}
+        >
+          {presetM.isPending ? "Applying…" : "Apply Ollama bge-m3 preset"}
         </Button>
       </PixelSurface>
 

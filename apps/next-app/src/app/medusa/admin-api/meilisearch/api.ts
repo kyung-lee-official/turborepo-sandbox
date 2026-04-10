@@ -57,6 +57,13 @@ export async function deleteMeilisearchEmbedders(indexUid: string) {
   );
 }
 
+/** Built-in REST embedder: Ollama bge-m3 @ 127.0.0.1:11434 */
+export async function postMeilisearchEmbeddersPreset(indexUid: string) {
+  return await http.post<Record<string, unknown>>(
+    `${BASE}/indexes/${encodeURIComponent(indexUid)}/embedders/preset`,
+  );
+}
+
 export async function getMeilisearchDocuments(
   indexUid: string,
   params?: {
