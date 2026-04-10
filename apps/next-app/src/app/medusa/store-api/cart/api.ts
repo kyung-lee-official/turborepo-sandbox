@@ -87,11 +87,16 @@ export async function unselectLineItem(cartId: string, lineId: string) {
   return data;
 }
 
-export async function selectLineItem(cartId: string, variantId: string) {
+export async function selectLineItem(
+  cartId: string,
+  variantId: string,
+  quantity?: number,
+) {
   const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/line-items/select`,
     {
       variant_id: variantId,
+      ...(quantity != null ? { quantity } : {}),
     },
   );
   return data;

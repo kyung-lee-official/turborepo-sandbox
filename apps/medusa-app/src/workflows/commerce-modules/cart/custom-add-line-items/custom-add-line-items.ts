@@ -21,9 +21,58 @@ import { type CartMetadata, HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
+type CustomAddToCartWorkflowInput = AddToCartWorkflowInputDTO &
+  AdditionalData & {
+    /** Set only by `POST .../line-items/select`; do not merge with normal add-line-item semantics. */
+    from_unselected_only?: boolean;
+  };
+
+function resolveAddToCartQuantity(params: {
+  from_unselected_only: boolean | undefined;
+  cart: { metadata?: unknown };
+  variantId: string;
+  inputQuantity: number;
+}): number {
+  const { from_unselected_only, cart, variantId, inputQuantity } = params;
+  const metadata = cart.metadata as unknown as CartMetadata;
+
+  if (!from_unselected_only) {
+    if (!metadata?.unselected || !metadata.unselected[variantId]) {
+      return inputQuantity;
+    }
+    const unselectedQty = metadata.unselected[variantId].quantity || 0;
+    return inputQuantity + unselectedQty;
+  }
+
+  const entry = metadata?.unselected?.[variantId];
+  if (!entry) {
+    throw new HttpError(
+      "CART.VARIANT_NOT_UNSELECTED",
+      "Variant is not present in cart unselected metadata",
+    );
+  }
+  const unselectedQty = entry.quantity || 0;
+  if (unselectedQty <= 0) {
+    throw new HttpError(
+      "CART.VARIANT_NOT_UNSELECTED",
+      "No unselected quantity for this variant",
+    );
+  }
+  if (inputQuantity === 0) {
+    return unselectedQty;
+  }
+  if (inputQuantity > unselectedQty) {
+    throw new HttpError(
+      "CART.UNSELECTED_QUANTITY_EXCEEDED",
+      "Requested quantity exceeds unselected quantity for this variant",
+    );
+  }
+  return inputQuantity;
+}
+
 export const customAddToCartWorkflow = createWorkflow(
   "custom-add-to-cart",
-  (input: AddToCartWorkflowInputDTO & AdditionalData) => {
+  (input: CustomAddToCartWorkflowInput) => {
     // Acquire the lock before running the nested workflow
     acquireLockStep({
       key: input.cart_id,
@@ -38,7 +87,6 @@ export const customAddToCartWorkflow = createWorkflow(
       filters: { id: input.cart_id },
     }).config({ name: "get-existing-cart-metadata" });
 
-    // Check if the cart has unselected items in metadata and if the input contains those items, if yes, remove them from unselected metadata, and add up quantity from input and existing unselected cart items
     const incomingAndUnselectedQty = transform(
       { existingCartData, input },
       (transformData) => {
@@ -48,13 +96,14 @@ export const customAddToCartWorkflow = createWorkflow(
         }
 
         const { quantity, variant_id } = transformData.input.items[0];
-        const metadata = cart.metadata as unknown as CartMetadata;
-        if (!metadata?.unselected || !metadata.unselected[variant_id!]) {
-          return (quantity as IBigNumber).valueOf();
-        }
-        const unselectedQty = metadata?.unselected[variant_id!].quantity || 0;
-        const total = (quantity as IBigNumber).valueOf() + unselectedQty;
-        return total;
+        const inputQty = (quantity as IBigNumber).valueOf();
+
+        return resolveAddToCartQuantity({
+          from_unselected_only: transformData.input.from_unselected_only,
+          cart,
+          variantId: variant_id!,
+          inputQuantity: inputQty,
+        });
       },
     );
 
@@ -94,9 +143,26 @@ export const customAddToCartWorkflow = createWorkflow(
         // Create a copy of existing unselected items
         const updatedUnselected = { ...existingUnselected };
 
-        // Remove newly added items from unselected if they exist
-        // The input contains the items being added to cart
-        if (addToCartInput.items) {
+        if (addToCartInput.from_unselected_only && addToCartInput.items?.[0]) {
+          const item = addToCartInput.items[0];
+          const vid = item.variant_id;
+          if (vid && updatedUnselected[vid]) {
+            const inputQty = (item.quantity as IBigNumber).valueOf();
+            const amountMoved = resolveAddToCartQuantity({
+              from_unselected_only: true,
+              cart: existingCart,
+              variantId: vid,
+              inputQuantity: inputQty,
+            });
+            const row = updatedUnselected[vid];
+            const nextQty = (row.quantity || 0) - amountMoved;
+            if (nextQty <= 0) {
+              delete updatedUnselected[vid];
+            } else {
+              updatedUnselected[vid] = { ...row, quantity: nextQty };
+            }
+          }
+        } else if (addToCartInput.items) {
           for (const item of addToCartInput.items) {
             if (item.variant_id && updatedUnselected[item.variant_id]) {
               delete updatedUnselected[item.variant_id];

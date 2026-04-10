@@ -3,7 +3,7 @@ import type { CartMetadata, CartUnselectedEntry } from "./cart";
 /**
  * JSON returned by every handler under `apps/medusa-app/src/api/store-api/carts`:
  * `POST/GET /store-api/carts`, `GET/POST /store-api/carts/:id`,
- * `POST .../line-items`, `.../line-items/:line_id`, `.../line-items/select`,
+ * `POST .../line-items`, `.../line-items/:line_id`, `.../line-items/select` (optional `quantity` for partial restore from `metadata.unselected`),
  * `POST .../delete-line-item`, `DELETE .../line-items/:line_id/unselect`.
  *
  * Shaped like Medusa’s store cart payload but defined here so consumers do not

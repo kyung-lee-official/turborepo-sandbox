@@ -49,11 +49,12 @@ export const StoreAddCartLineItem = z.object({
 });
 
 /**
- * "Select" can restore items from metadata.unselected.
- * The API contract only requires variant_id.
+ * Restore units from `metadata.unselected` into cart line items.
+ * Omit `quantity` to move the full unselected amount; when set, must not exceed unselected quantity (enforced in workflow).
  */
 export const StoreSelectCartLineItem = z.object({
   variant_id: z.string(),
+  quantity: z.number().int().gt(0).optional(),
 });
 
 export const UpdateLineItemRequest = z.object({
