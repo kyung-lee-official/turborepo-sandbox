@@ -47,7 +47,7 @@ export function e2eFetch(
   return fetch(input, {
     ...init,
     tls: { rejectUnauthorized: false },
-  });
+  } as any);
 }
 
 type AdminApiKeyRow = {
