@@ -2,6 +2,7 @@
 
 import type { CartUnselectedEntry } from "@repo/types";
 import Image from "next/image";
+import { Button } from "@/app/medusa/components/Button";
 import { Card } from "@/app/medusa/components/Card";
 import { Checkbox } from "@/app/medusa/components/Checkbox";
 import { formatCurrency } from "@/utils/currency";
@@ -14,12 +15,15 @@ export type UnselectedCartLineRowProps = {
   variantId: string;
   line: UnselectedLineSnapshot;
   isQuantityPending: boolean;
+  isRemovingVariant: boolean;
   displayQuantity: number;
   onSelectAll: () => void;
   onDecrement: () => void;
   onIncrement: () => void;
   onQuantityChange: (value: string) => void;
   onQuantityBlur: () => void;
+  onRemove: () => void;
+  disableMinus: boolean;
 };
 
 export const UnselectedCartLineRow = ({
@@ -27,15 +31,16 @@ export const UnselectedCartLineRow = ({
   variantId,
   line,
   isQuantityPending,
+  isRemovingVariant,
   displayQuantity,
   onSelectAll,
   onDecrement,
   onIncrement,
   onQuantityChange,
   onQuantityBlur,
+  onRemove,
+  disableMinus,
 }: UnselectedCartLineRowProps) => {
-  const disableQty = isQuantityPending;
-
   return (
     <Card variant="pixel" className="max-w-none space-y-0 p-4">
       <div className="flex items-start justify-between">
@@ -46,13 +51,13 @@ export const UnselectedCartLineRow = ({
               checked={false}
               onChange={onSelectAll}
               disabled={isQuantityPending}
-              aria-label="Move all held-aside units to checkout"
+              aria-label="Not in checkout — check to add all units"
             />
             <label
               htmlFor={`cart-unsel-cb-${variantId}`}
               className="cursor-pointer font-medium text-gray-700 text-sm"
             >
-              Not selected — check to move all to checkout
+              Not in checkout
             </label>
           </div>
           <h4 className="font-medium">{line.title}</h4>
@@ -72,11 +77,6 @@ export const UnselectedCartLineRow = ({
           )}
         </div>
         <div className="space-y-2 text-right">
-          <p className="text-left text-gray-500 text-xs">
-            Held aside: + adds one to cart total and moves all units to
-            checkout; − at quantity 1 removes the variant; manual entry sets
-            absolute quantity (0 removes).
-          </p>
           <CartQuantityControl
             lineItemId={`unsel-${variantId}`}
             displayQuantity={displayQuantity}
@@ -85,16 +85,20 @@ export const UnselectedCartLineRow = ({
             onIncrement={onIncrement}
             onChange={onQuantityChange}
             onBlur={onQuantityBlur}
-            disableMinus={disableQty || displayQuantity < 1}
-            disablePlus={disableQty || displayQuantity < 1}
-            disableInput={disableQty}
-            incrementAriaLabel="Add one to cart and move to checkout"
-            decrementAriaLabel={
-              displayQuantity <= 1
-                ? "Remove variant from cart"
-                : "Remove one from cart total and move to checkout"
-            }
+            disableMinus={disableMinus}
+            disablePlus={isQuantityPending}
+            disableInput={isQuantityPending}
           />
+          <Button
+            type="button"
+            variant="danger"
+            size="compact"
+            fullWidth={false}
+            disabled={isRemovingVariant}
+            onClick={onRemove}
+          >
+            {isRemovingVariant ? "Removing..." : "Delete"}
+          </Button>
         </div>
       </div>
       {line.thumbnail && (

@@ -275,7 +275,20 @@ export const Content = () => {
 
       <PageHeading
         title="Shopping cart"
-        description="Review your cart items and proceed to checkout"
+        description={
+          <p className="max-w-2xl text-pretty text-gray-600 text-sm leading-relaxed">
+            Items marked{" "}
+            <span className="font-medium text-gray-800">
+              Selected for checkout
+            </span>{" "}
+            count toward your order. Items marked{" "}
+            <span className="font-medium text-gray-800">Not in checkout</span>{" "}
+            stay in your cart but are set aside: use +/− or the quantity field
+            to change how many are held aside (0 removes the variant). Check
+            the box on a set-aside row to move all of its units back into
+            checkout. Delete removes a line entirely.
+          </p>
+        }
       />
 
       <div className="grid gap-8 lg:grid-cols-3">

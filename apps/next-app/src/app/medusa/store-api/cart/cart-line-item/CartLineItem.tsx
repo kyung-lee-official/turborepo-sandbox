@@ -242,6 +242,11 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
     setVariantQuantityMutation.isPending &&
     setVariantQuantityMutation.variables?.variantId === variantId;
 
+  const isVariantRemoving = (variantId: string) =>
+    setVariantQuantityMutation.isPending &&
+    setVariantQuantityMutation.variables?.variantId === variantId &&
+    setVariantQuantityMutation.variables?.quantity === 0;
+
   const allItems = cart.items || [];
   const displayLines = cart.display_lines;
   const useDisplayLines = displayLines.length > 0;
@@ -289,6 +294,7 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
     const displayQty = getUnselectedDisplayQty(variantId, line.quantity);
     const pending =
       pendingVariantId === variantId || isVariantPending(variantId);
+    const removing = isVariantRemoving(variantId);
 
     const mutateVariant = (quantity: number) => {
       if (!cartId) return;
@@ -311,7 +317,9 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
         variantId={variantId}
         line={line}
         isQuantityPending={pending}
+        isRemovingVariant={removing}
         displayQuantity={displayQty}
+        disableMinus={pending || displayQty < 1}
         onSelectAll={() => mutateVariant(line.quantity)}
         onDecrement={() =>
           mutateVariant(displayQty <= 1 ? 0 : displayQty - 1)
@@ -319,6 +327,7 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
         onIncrement={() => mutateVariant(displayQty + 1)}
         onQuantityChange={(v) => handleUnselectedQuantityChange(variantId, v)}
         onQuantityBlur={() => handleUnselectedQuantityBlur(variantId, line.quantity)}
+        onRemove={() => mutateVariant(0)}
       />
     );
   };
