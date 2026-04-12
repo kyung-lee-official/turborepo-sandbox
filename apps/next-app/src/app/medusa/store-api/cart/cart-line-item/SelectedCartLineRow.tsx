@@ -78,6 +78,7 @@ export const SelectedCartLineRow = ({
           <CartQuantityControl
             lineItemId={item.id}
             displayQuantity={displayQuantity}
+            minQuantity={0}
             onDecrement={onDecrement}
             onIncrement={onIncrement}
             onChange={onQuantityChange}

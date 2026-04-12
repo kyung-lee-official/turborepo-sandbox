@@ -19,6 +19,7 @@ import type {
 import { HttpError } from "@repo/types";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
+import { stripUnselectedForLineVariantStep } from "./steps/strip-unselected-for-line-variant";
 
 // Custom input type for the update line item workflow
 type CustomUpdateLineItemInput = {
@@ -35,6 +36,11 @@ export const customUpdateLineItemWorkflow = createWorkflow(
       key: input.cart_id,
       timeout: 2,
       ttl: 10,
+    });
+
+    stripUnselectedForLineVariantStep({
+      cart_id: input.cart_id,
+      line_item_id: input.line_item_id,
     });
 
     // Get existing cart with line items to validate the line item exists

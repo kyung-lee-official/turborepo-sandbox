@@ -17,7 +17,7 @@ import {
   DeleteLineItemRequest,
   StoreAddCartLineItem,
   StoreGetOrCreateCustomerCart,
-  StoreSelectCartLineItem,
+  StoreSetVariantQuantity,
   StoreUpdateCartNoMetadata,
   UpdateLineItemRequest,
 } from "./validators";
@@ -107,9 +107,9 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
   },
   {
     method: ["POST"],
-    matcher: "/store-api/carts/:id/line-items/select",
+    matcher: "/store-api/carts/:id/variants/:variant_id/quantity",
     middlewares: [
-      validateAndTransformBody(StoreSelectCartLineItem),
+      validateAndTransformBody(StoreSetVariantQuantity),
       validateAndTransformQuery(
         StoreGetCartsCart,
         QueryConfig.retrieveTransformQueryConfig,

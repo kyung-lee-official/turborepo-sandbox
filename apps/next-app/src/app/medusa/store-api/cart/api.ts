@@ -87,17 +87,15 @@ export async function unselectLineItem(cartId: string, lineId: string) {
   return data;
 }
 
-export async function selectLineItem(
+/** Absolute quantity for a variant: line item only, `metadata.unselected` cleared for that variant. */
+export async function setVariantQuantity(
   cartId: string,
   variantId: string,
-  quantity?: number,
+  quantity: number,
 ) {
   const data = await api.post<StoreApiCartResponse>(
-    `/store-api/carts/${cartId}/line-items/select`,
-    {
-      variant_id: variantId,
-      ...(quantity != null ? { quantity } : {}),
-    },
+    `/store-api/carts/${cartId}/variants/${variantId}/quantity`,
+    { quantity },
   );
   return data;
 }

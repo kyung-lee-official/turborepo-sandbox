@@ -7,7 +7,7 @@ import { useMIdStore } from "@/stores/medusa/medusa-entity-id";
 import {
   QK_CART,
   removeLineItem,
-  selectLineItem,
+  setVariantQuantity,
   unselectLineItem,
   updateLineItem,
 } from "../api";
@@ -25,6 +25,10 @@ type UpdateLineVars = {
 
 type RemoveLineVars = { cartId: string; lineItemId: string };
 
+type SetVariantVars = { cartId: string; variantId: string; quantity: number };
+
+const unselectedKey = (variantId: string) => `u:${variantId}`;
+
 export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
   const queryClient = useQueryClient();
   const cartId = useMIdStore((state) => state.cartId);
@@ -32,9 +36,9 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
   const [pendingSelectionItemId, setPendingSelectionItemId] = useState<
     string | null
   >(null);
-  const [pendingSelectVariantId, setPendingSelectVariantId] = useState<
-    string | null
-  >(null);
+  const [pendingVariantId, setPendingVariantId] = useState<string | null>(
+    null,
+  );
 
   const removeLineItemMutation = useMutation({
     mutationFn: ({ cartId: cid, lineItemId }: RemoveLineVars) =>
@@ -59,6 +63,19 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
     },
     onError: (error) => {
       console.error("Failed to update line item:", error);
+    },
+  });
+
+  const setVariantQuantityMutation = useMutation({
+    mutationFn: ({ cartId: cid, variantId, quantity }: SetVariantVars) =>
+      setVariantQuantity(cid, variantId, quantity),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QK_CART.GET_CART],
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to set variant quantity:", error);
     },
   });
 
@@ -87,27 +104,6 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
     },
   });
 
-  const selectLineItemMutation = useMutation({
-    mutationFn: ({ variantId }: { variantId: string }) => {
-      if (!cartId) throw new Error("Cart ID is required");
-      return selectLineItem(cartId, variantId);
-    },
-    onMutate: async ({ variantId }) => {
-      setPendingSelectVariantId(variantId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QK_CART.GET_CART],
-      });
-    },
-    onSettled: () => {
-      setPendingSelectVariantId(null);
-    },
-    onError: (error) => {
-      console.error("Failed to add unselected line to checkout:", error);
-    },
-  });
-
   const unselectedMap = cart.metadata?.unselected ?? {};
   const unselectedItems = Object.entries(unselectedMap).map(
     ([variantId, details]) => ({
@@ -127,34 +123,111 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
       : defaultQuantity;
   };
 
+  const getUnselectedDisplayQty = (variantId: string, defaultQuantity: number) => {
+    const k = unselectedKey(variantId);
+    return quantities[k] !== undefined ? quantities[k] : defaultQuantity;
+  };
+
+  const clearUnselectedLocal = (variantId: string) => {
+    const k = unselectedKey(variantId);
+    setQuantities((prev) => {
+      const next = { ...prev };
+      delete next[k];
+      return next;
+    });
+  };
+
   const updateQuantity = (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
-    if (cartId) {
+    if (newQuantity < 0 || !cartId) return;
+    if (newQuantity === 0) {
+      setQuantities((prev) => ({ ...prev, [itemId]: 0 }));
       updateLineItemMutation.mutate({
         cartId,
         lineItemId: itemId,
-        quantity: newQuantity,
+        quantity: 0,
       });
+      return;
     }
+    setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
+    updateLineItemMutation.mutate({
+      cartId,
+      lineItemId: itemId,
+      quantity: newQuantity,
+    });
   };
 
   const handleQuantityChange = (itemId: string, value: string) => {
     const newQuantity = parseInt(value, 10);
-    if (!Number.isNaN(newQuantity) && newQuantity >= 1) {
+    if (!Number.isNaN(newQuantity) && newQuantity >= 0) {
       setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
     }
   };
 
   const handleQuantityBlur = (itemId: string) => {
     const currentQuantity = quantities[itemId];
-    if (currentQuantity !== undefined && cartId) {
+    if (currentQuantity === undefined || !cartId) return;
+    if (currentQuantity <= 0) {
       updateLineItemMutation.mutate({
         cartId,
         lineItemId: itemId,
-        quantity: currentQuantity,
+        quantity: 0,
       });
+      setQuantities((prev) => {
+        const next = { ...prev };
+        delete next[itemId];
+        return next;
+      });
+      return;
     }
+    updateLineItemMutation.mutate({
+      cartId,
+      lineItemId: itemId,
+      quantity: currentQuantity,
+    });
+  };
+
+  const handleUnselectedQuantityChange = (variantId: string, value: string) => {
+    const n = parseInt(value, 10);
+    if (!Number.isNaN(n) && n >= 0) {
+      setQuantities((prev) => ({
+        ...prev,
+        [unselectedKey(variantId)]: n,
+      }));
+    }
+  };
+
+  const handleUnselectedQuantityBlur = (
+    variantId: string,
+    serverQty: number,
+  ) => {
+    const k = unselectedKey(variantId);
+    const raw = quantities[k];
+    if (raw === undefined || !cartId) return;
+
+    let n = Math.floor(raw);
+    if (Number.isNaN(n) || n < 0) {
+      clearUnselectedLocal(variantId);
+      return;
+    }
+    if (n > serverQty) {
+      n = serverQty;
+      setQuantities((prev) => ({ ...prev, [k]: n }));
+    }
+    if (n === serverQty) {
+      clearUnselectedLocal(variantId);
+      return;
+    }
+
+    setPendingVariantId(variantId);
+    setVariantQuantityMutation.mutate(
+      { cartId, variantId, quantity: n },
+      {
+        onSettled: () => {
+          setPendingVariantId(null);
+          clearUnselectedLocal(variantId);
+        },
+      },
+    );
   };
 
   const isLineUpdating = (lineItemId: string) =>
@@ -164,6 +237,10 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
   const isLineRemoving = (lineItemId: string) =>
     removeLineItemMutation.isPending &&
     removeLineItemMutation.variables?.lineItemId === lineItemId;
+
+  const isVariantPending = (variantId: string) =>
+    setVariantQuantityMutation.isPending &&
+    setVariantQuantityMutation.variables?.variantId === variantId;
 
   const allItems = cart.items || [];
   const displayLines = cart.display_lines;
@@ -189,7 +266,7 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
         isUpdatingLine={updating}
         isRemovingLine={removing}
         displayQuantity={qty}
-        disableMinus={updating || qty <= 1}
+        disableMinus={updating || qty < 1}
         onToggleUnselect={() => {
           toggleItemSelectionMutation.mutate({
             itemId: item.id,
@@ -208,16 +285,43 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
   const renderUnselectedRow = (
     variantId: string,
     line: UnselectedLineSnapshot,
-  ) => (
-    <UnselectedCartLineRow
-      key={variantId}
-      currencyCode={cart.currency_code}
-      variantId={variantId}
-      line={line}
-      isSelectPending={pendingSelectVariantId === variantId}
-      onSelect={() => selectLineItemMutation.mutate({ variantId })}
-    />
-  );
+  ) => {
+    const displayQty = getUnselectedDisplayQty(variantId, line.quantity);
+    const pending =
+      pendingVariantId === variantId || isVariantPending(variantId);
+
+    const mutateVariant = (quantity: number) => {
+      if (!cartId) return;
+      setPendingVariantId(variantId);
+      setVariantQuantityMutation.mutate(
+        { cartId, variantId, quantity },
+        {
+          onSettled: () => {
+            setPendingVariantId(null);
+            clearUnselectedLocal(variantId);
+          },
+        },
+      );
+    };
+
+    return (
+      <UnselectedCartLineRow
+        key={variantId}
+        currencyCode={cart.currency_code}
+        variantId={variantId}
+        line={line}
+        isQuantityPending={pending}
+        displayQuantity={displayQty}
+        onSelectAll={() => mutateVariant(line.quantity)}
+        onDecrement={() =>
+          mutateVariant(displayQty <= 1 ? 0 : displayQty - 1)
+        }
+        onIncrement={() => mutateVariant(displayQty + 1)}
+        onQuantityChange={(v) => handleUnselectedQuantityChange(variantId, v)}
+        onQuantityBlur={() => handleUnselectedQuantityBlur(variantId, line.quantity)}
+      />
+    );
+  };
 
   return (
     <div className="space-y-4">

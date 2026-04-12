@@ -19,7 +19,7 @@ export const StoreGetOrCreateCustomerCart = createSelectParams().extend({
 
 const ItemSchema = z.object({
   variant_id: z.string(),
-  quantity: z.number().gt(0),
+  quantity: z.number().int().gt(0),
   metadata: z.record(z.unknown()).nullish(),
 });
 
@@ -45,20 +45,17 @@ export type StoreGetOrCreateCustomerCartType = z.infer<
 export type StoreAddCartLineItemType = z.infer<typeof StoreAddCartLineItem>;
 export const StoreAddCartLineItem = z.object({
   variant_id: z.string(),
-  quantity: z.number().gt(0),
+  quantity: z.number().int().gt(0),
 });
 
-/**
- * Restore units from `metadata.unselected` into cart line items.
- * Omit `quantity` to move the full unselected amount; when set, must not exceed unselected quantity (enforced in workflow).
- */
-export const StoreSelectCartLineItem = z.object({
-  variant_id: z.string(),
-  quantity: z.number().int().gt(0).optional(),
+/** Absolute quantity for a variant: selected line only, `metadata.unselected` cleared for that variant. */
+export const StoreSetVariantQuantity = z.object({
+  quantity: z.number().int().min(0),
 });
+export type StoreSetVariantQuantityType = z.infer<typeof StoreSetVariantQuantity>;
 
 export const UpdateLineItemRequest = z.object({
-  quantity: z.number().min(0),
+  quantity: z.number().int().min(0),
 });
 
 export const DeleteLineItemRequest = z

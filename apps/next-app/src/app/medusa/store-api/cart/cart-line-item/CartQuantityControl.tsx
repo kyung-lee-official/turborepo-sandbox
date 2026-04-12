@@ -14,6 +14,8 @@ type CartQuantityControlProps = {
   disableMinus: boolean;
   disablePlus: boolean;
   disableInput: boolean;
+  incrementAriaLabel?: string;
+  decrementAriaLabel?: string;
 };
 
 export const CartQuantityControl = ({
@@ -27,6 +29,8 @@ export const CartQuantityControl = ({
   disableMinus,
   disablePlus,
   disableInput,
+  incrementAriaLabel = "Increase quantity",
+  decrementAriaLabel = "Decrease quantity",
 }: CartQuantityControlProps) => {
   return (
     <div className="flex items-center space-x-2">
@@ -35,7 +39,7 @@ export const CartQuantityControl = ({
         variant="outline"
         size="icon"
         fullWidth={false}
-        aria-label="Decrease quantity"
+        aria-label={decrementAriaLabel}
         disabled={disableMinus}
         onClick={onDecrement}
       >
@@ -57,7 +61,7 @@ export const CartQuantityControl = ({
         variant="outline"
         size="icon"
         fullWidth={false}
-        aria-label="Increase quantity"
+        aria-label={incrementAriaLabel}
         disabled={disablePlus}
         onClick={onIncrement}
       >
