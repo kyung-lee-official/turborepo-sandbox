@@ -57,15 +57,10 @@ export type StoreSetVariantQuantityType = z.infer<typeof StoreSetVariantQuantity
 export const UpdateLineItemRequest = z.object({
   quantity: z.number().int().min(0),
 });
+export type UpdateLineItemBody = z.infer<typeof UpdateLineItemRequest>;
 
-export const DeleteLineItemRequest = z
-  .object({
-    item_id: z.string().optional(),
-    variant_id: z.string().optional(),
-  })
-  .refine((data) => data.item_id || data.variant_id, {
-    message: "Either item_id or variant_id must be provided",
-  })
-  .refine((data) => !(data.item_id && data.variant_id), {
-    message: "Only one of item_id or variant_id should be provided, not both",
-  });
+/** Remove a cart line item by Medusa line item id (for unselected rows use `POST .../variants/:variant_id/quantity` with `quantity: 0`). */
+export const DeleteLineItemRequest = z.object({
+  item_id: z.string(),
+});
+export type DeleteLineItemBody = z.infer<typeof DeleteLineItemRequest>;

@@ -34,6 +34,20 @@ function stripUnselectedVariant(
   return meta;
 }
 
+/** When the variant leaves the cart entirely (no line rows), drop write-once first-add timestamps too. */
+function clearItemOriginalCreatedAt(
+  raw: Record<string, unknown>,
+  variantId: string,
+): Record<string, unknown> {
+  const meta = { ...raw };
+  const original = {
+    ...((meta.item_original_created_at as Record<string, string>) ?? {}),
+  };
+  delete original[variantId];
+  meta.item_original_created_at = original;
+  return meta;
+}
+
 export const applySetCartVariantQuantityStep = createStep(
   "apply-set-cart-variant-quantity-step",
   async (input: ApplySetCartVariantQuantityInput, { container }) => {
@@ -86,7 +100,10 @@ export const applySetCartVariantQuantityStep = createStep(
       );
     }
 
-    const newMetadata = stripUnselectedVariant(meta, variant_id);
+    let newMetadata = stripUnselectedVariant(meta, variant_id);
+    if (quantity === 0 && lineIds.length === 0) {
+      newMetadata = clearItemOriginalCreatedAt(newMetadata, variant_id);
+    }
     await cartModule.updateCarts(cart_id, {
       metadata: newMetadata,
     });

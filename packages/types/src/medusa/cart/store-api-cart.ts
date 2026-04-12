@@ -4,7 +4,7 @@ import type { CartMetadata, CartUnselectedEntry } from "./cart";
  * JSON returned by every handler under `apps/medusa-app/src/api/store-api/carts`:
  * `POST/GET /store-api/carts`, `GET/POST /store-api/carts/:id`,
  * `POST .../line-items`, `.../line-items/:line_id`, `POST .../variants/:variant_id/quantity` (absolute quantity, clears unselected for that variant),
- * `POST .../delete-line-item`, `DELETE .../line-items/:line_id/unselect`.
+ * `POST .../delete-line-item` (body: `{ item_id }` — line items only), `DELETE .../line-items/:line_id/unselect`.
  *
  * Shaped like Medusa’s store cart payload but defined here so consumers do not
  * need `@medusajs/types` or wide unions from upstream.

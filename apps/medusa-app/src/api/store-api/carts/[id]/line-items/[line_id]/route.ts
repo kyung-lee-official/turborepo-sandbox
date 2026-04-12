@@ -1,13 +1,10 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import type { HttpTypes } from "@medusajs/framework/types";
+import type { UpdateLineItemBody } from "@/api/store-api/carts/validators";
 import { customUpdateLineItemWorkflow } from "@/workflows/commerce-modules/cart/custom-update-line-item/custom-update-line-item";
 
-type UpdateLineItemRequest = {
-  quantity: number;
-};
-
 export const POST = async (
-  req: MedusaRequest<UpdateLineItemRequest, HttpTypes.SelectParams>,
+  req: MedusaRequest<UpdateLineItemBody, HttpTypes.SelectParams>,
   res: MedusaResponse<HttpTypes.StoreCartResponse>,
 ) => {
   const cartId = req.params.id;
