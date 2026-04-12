@@ -20,6 +20,18 @@ function assertSafeDbName(name: string): string {
   return name;
 }
 
+const RESERVED_DB_NAMES = new Set(["postgres", "template0", "template1"]);
+
+function assertResettableDatabaseName(name: string): string {
+  const safe = assertSafeDbName(name);
+  if (RESERVED_DB_NAMES.has(safe.toLowerCase())) {
+    throw new Error(
+      `Refusing to reset reserved database "${safe}" (point DATABASE_URL at a dedicated test DB)`,
+    );
+  }
+  return safe;
+}
+
 /** Expands `$VAR` placeholders using `process.env` (values URL-encoded for postgres URLs). */
 function expandDollarEnvVars(template: string): string {
   return template.replace(/\$(\w+)/g, (_, name: string) => {
@@ -105,6 +117,41 @@ export async function createTestDatabaseIfMissing(): Promise<void> {
   }
 
   console.info(`[create-test-database] Created database "${dbName}".`);
+}
+
+/**
+ * Drops and recreates the app database from `DATABASE_URL` (empty schema).
+ * Stops other sessions on that DB first. Destructive — not a row-level truncate.
+ */
+export async function dropAndRecreateTestDatabase(): Promise<void> {
+  loadEnv("test", MEDUSA_APP_ROOT);
+
+  const testUrl = resolveApplicationDatabaseUrl();
+  const dbUrl = new URL(testUrl);
+  const rawName = decodeURIComponent(dbUrl.pathname.replace(/^\//, ""));
+  if (!rawName) {
+    throw new Error("DATABASE_URL must include a database name in the path");
+  }
+  const dbName = assertResettableDatabaseName(rawName);
+
+  const maintenanceUrl = resolveMaintenanceDatabaseUrl(testUrl);
+  const client = new pg.Client({ connectionString: maintenanceUrl });
+  await client.connect();
+
+  try {
+    await client.query(
+      "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid()",
+      [dbName],
+    );
+
+    const quoted = `"${dbName.replace(/"/g, '""')}"`;
+    await client.query(`DROP DATABASE IF EXISTS ${quoted}`);
+    await client.query(`CREATE DATABASE ${quoted}`);
+  } finally {
+    await client.end().catch(() => undefined);
+  }
+
+  console.info(`[reset-test-database] Dropped and recreated "${dbName}".`);
 }
 
 if (import.meta.main) {

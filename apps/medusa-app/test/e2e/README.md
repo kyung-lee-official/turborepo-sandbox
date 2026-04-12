@@ -2,7 +2,7 @@
 
 ## Layout
 
-- Shared helpers live here (`preload.ts`, `http-session.ts`, `create-test-database.ts`, `prepare-test-db.ts`).
+- Shared helpers live here (`preload.ts`, `http-session.ts`, `create-test-database.ts`, `reset-test-database.ts`, `prepare-test-db.ts`).
 - API specs are colocated under `src/**/__tests__/*.e2e.spec.ts` (for example store carts).
 
 ## One `.env.test` for dev + prepare + E2E
@@ -30,6 +30,17 @@ This will:
 5. Run `medusa user` for `USER_ACCOUNT` / `PASSWORD` when the admin is missing (duplicate errors are ignored).
 6. Run `medusa exec ./src/scripts/ensure-test-customer.ts` for `CUSTOMER_ACCOUNT` / `PASSWORD`.
 
+## Reset test database (drop + recreate)
+
+Wipes the database named in `DATABASE_URL` (terminates other connections, `DROP DATABASE`, `CREATE DATABASE`). Refuses `postgres` / `template0` / `template1`. Stop Medusa (or anything using that DB) first if you prefer a clean shutdown.
+
+```bash
+bun run test:db:reset
+bun run test:db:prepare
+```
+
+This is a full reset (empty DB), not a row-only `TRUNCATE`; `test:db:prepare` reapplies migrations and seed.
+
 ## Run Bun HTTP E2E
 
 1. Start Medusa with the same `.env.test` (e.g. `bun run test:dev`).
@@ -41,7 +52,7 @@ bun run test:e2e:bun
 
 E2E calls `MEDUSA_BACKEND_URL` (must match the server you started).
 
-`package.json` passes **`--env-file=.env.test`** for `test:db:prepare` and `test:e2e:bun`. See [Bun env files](https://bun.sh/docs/runtime/env).
+`package.json` passes **`--env-file=.env.test`** for `test:db:prepare`, `test:db:reset`, and `test:e2e:bun`. See [Bun env files](https://bun.sh/docs/runtime/env).
 
 `bunfig.toml` sets `test.root = "src"` and preloads `test/e2e/preload.ts` (`loadEnv("test", …)`, MikroORM metadata cleared).
 

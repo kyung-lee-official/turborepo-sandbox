@@ -24,6 +24,7 @@
     "tsoa:spec": "tsoa spec",
     "test:dev": "bun run --env-file=.env.test medusa develop",
     "test:db:prepare": "bun --env-file=.env.test ./test/e2e/prepare-test-db.ts",
+    "test:db:reset": "bun --env-file=.env.test ./test/e2e/reset-test-database.ts",
     "test:e2e:bun": "bun --env-file=.env.test test --timeout 120000"
   },
   "dependencies": {
