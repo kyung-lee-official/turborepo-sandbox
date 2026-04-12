@@ -2,7 +2,7 @@
 
 ## Layout
 
-- Shared helpers live here (`preload.ts`, `http-session.ts`, `create-test-database.ts`, `reset-test-database.ts`, `prepare-test-db.ts`).
+- Shared helpers live here (`preload.ts`, `http-session.ts`, `medusa-exec.ts`, `create-test-database.ts`, `reset-test-database.ts`, `prepare-test-db.ts`).
 - API specs are colocated under `src/**/__tests__/*.e2e.spec.ts` (for example store carts).
 
 ## One `.env.test` for dev + prepare + E2E
@@ -73,3 +73,5 @@ E2E calls `MEDUSA_BACKEND_URL` (must match the server you started).
 **Bootstrap (no manual ids):** admin login, `GET /admin/api-keys?type=publishable`, regions, sales channels, shipping profile, `POST /admin/products` for a disposable variant (deleted in `afterAll`).
 
 Session flow: `POST /auth/customer/emailpass` → `POST /auth/session` → `connect.sid` + `x-publishable-api-key`.
+
+The store cart E2E spec cleans up after itself: it runs `medusa exec ./src/scripts/delete-e2e-carts.ts` (uses `DATABASE_URL` from `.env.test`) to remove carts it created, then deletes the disposable product via the Admin API. Re-run requires the same DB Medusa uses.

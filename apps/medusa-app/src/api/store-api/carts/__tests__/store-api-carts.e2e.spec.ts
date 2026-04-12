@@ -7,9 +7,18 @@ import {
   type StoreCartE2EContext,
   storeFetch,
 } from "../../../../../test/e2e/http-session";
+import { deleteCartsByIdsViaMedusaExec } from "../../../../../test/e2e/medusa-exec";
 
 describe("store-api carts (HTTP E2E)", () => {
   let ctx: StoreCartE2EContext;
+  /** Carts created during tests — removed in afterAll so the DB stays clean. */
+  const createdCartIds = new Set<string>();
+
+  function rememberCart(id: string | undefined): void {
+    if (id?.startsWith("cart_")) {
+      createdCartIds.add(id);
+    }
+  }
 
   beforeAll(
     async () => {
@@ -18,15 +27,28 @@ describe("store-api carts (HTTP E2E)", () => {
     { timeout: 120_000 },
   );
 
-  afterAll(async () => {
-    if (ctx?.disposableProductId && ctx.adminJwt) {
-      await deleteAdminProduct(
-        ctx.baseUrl,
-        ctx.adminJwt,
-        ctx.disposableProductId,
-      );
-    }
-  });
+  afterAll(
+    async () => {
+      if (createdCartIds.size > 0) {
+        try {
+          deleteCartsByIdsViaMedusaExec([...createdCartIds]);
+        } catch (e) {
+          console.warn(
+            "[e2e] Cart cleanup (medusa exec) failed — you may need to delete carts manually:",
+            e,
+          );
+        }
+      }
+      if (ctx?.disposableProductId && ctx.adminJwt) {
+        await deleteAdminProduct(
+          ctx.baseUrl,
+          ctx.adminJwt,
+          ctx.disposableProductId,
+        );
+      }
+    },
+    { timeout: 120_000 },
+  );
 
   it("POST /store-api/carts creates a guest cart", async () => {
     const body: Record<string, string> = {
@@ -44,6 +66,7 @@ describe("store-api carts (HTTP E2E)", () => {
     expect(res.status).toBe(200);
     const json = (await res.json()) as { cart?: { id?: string } };
     expect(json.cart?.id).toMatch(/^cart_/);
+    rememberCart(json.cart?.id);
   });
 
   it("GET /store-api/carts returns cart for authenticated customer", async () => {
@@ -77,6 +100,7 @@ describe("store-api carts (HTTP E2E)", () => {
     expect(res.status).toBe(200);
     const json = (await res.json()) as { cart?: { id?: string } };
     expect(json.cart?.id).toMatch(/^cart_/);
+    rememberCart(json.cart?.id);
   });
 
   it("POST /store-api/carts/:id/line-items adds a line", async () => {
@@ -93,6 +117,7 @@ describe("store-api carts (HTTP E2E)", () => {
     });
     expect(createRes.status).toBe(200);
     const { cart } = (await createRes.json()) as { cart: { id: string } };
+    rememberCart(cart.id);
 
     const addRes = await storeFetch(
       ctx.baseUrl,
