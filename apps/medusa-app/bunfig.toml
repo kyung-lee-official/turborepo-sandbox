@@ -1,0 +1,4 @@
+[test]
+# Only discover tests under src/ so Jest specs in integration-tests/ are not picked up.
+root = "src"
+preload = ["./test/e2e/preload.ts"]

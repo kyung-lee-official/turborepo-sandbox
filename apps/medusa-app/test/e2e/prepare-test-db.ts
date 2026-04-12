@@ -7,7 +7,10 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnv } from "@medusajs/framework/utils";
-import { createTestDatabaseIfMissing } from "./create-test-database";
+import {
+  createTestDatabaseIfMissing,
+  resolveApplicationDatabaseUrl,
+} from "./create-test-database";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MEDUSA_APP_ROOT = path.resolve(__dirname, "..", "..");
@@ -24,17 +27,13 @@ function runMedusaArgs(args: string[], env: NodeJS.ProcessEnv): void {
 
 loadEnv("test", MEDUSA_APP_ROOT);
 
-const databaseUrlTest = process.env.DATABASE_URL_TEST;
-if (!databaseUrlTest) {
-  throw new Error("DATABASE_URL_TEST is not set");
-}
-
 const userAccount = process.env.USER_ACCOUNT;
 const password = process.env.PASSWORD;
 
+const databaseUrl = resolveApplicationDatabaseUrl();
 const medusaEnv: NodeJS.ProcessEnv = {
   ...process.env,
-  DATABASE_URL: databaseUrlTest,
+  DATABASE_URL: databaseUrl,
 };
 
 await createTestDatabaseIfMissing();

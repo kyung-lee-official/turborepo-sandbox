@@ -22,8 +22,9 @@
     "test:unit": "TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
     "medusa:next": "medusa develop",
     "tsoa:spec": "tsoa spec",
-    "test:db:prepare": "bun ./test/e2e/prepare-test-db.ts",
-    "test:e2e:bun": "bun test"
+    "test:dev": "bun run --env-file=.env.test medusa develop",
+    "test:db:prepare": "bun --env-file=.env.test ./test/e2e/prepare-test-db.ts",
+    "test:e2e:bun": "bun --env-file=.env.test test --timeout 120000"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.13.4",

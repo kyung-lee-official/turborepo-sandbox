@@ -1,6 +1,6 @@
 /**
- * Ensures the Postgres database from DATABASE_URL_TEST exists (no psql).
- * Run from apps/medusa-app: `bun ./test/e2e/create-test-database.ts`
+ * Ensures the Postgres database from DATABASE_URL exists (no psql).
+ * Run from apps/medusa-app: `bun --env-file=.env.test ./test/e2e/create-test-database.ts`
  */
 
 import path from "node:path";
@@ -20,39 +20,68 @@ function assertSafeDbName(name: string): string {
   return name;
 }
 
-function maintenanceConnectionString(
-  testUrl: string,
-  override?: string,
-): string {
-  if (override?.trim()) {
-    return override.trim();
+/** Expands `$VAR` placeholders using `process.env` (values URL-encoded for postgres URLs). */
+function expandDollarEnvVars(template: string): string {
+  return template.replace(/\$(\w+)/g, (_, name: string) => {
+    const val = process.env[name];
+    if (val === undefined || val === "") {
+      throw new Error(
+        `Cannot expand database URL: environment variable ${name} is unset`,
+      );
+    }
+    return encodeURIComponent(val);
+  });
+}
+
+/**
+ * Resolved app database URL (same as Medusa uses from `.env.test`).
+ */
+export function resolveApplicationDatabaseUrl(): string {
+  let url = process.env.DATABASE_URL?.trim();
+  if (!url) {
+    const user = process.env.DATABASE_USER;
+    const pass = process.env.DATABASE_PASSWORD;
+    const name = process.env.DATABASE_NAME;
+    if (!user || pass === undefined || !name) {
+      throw new Error(
+        "Set DATABASE_URL or DATABASE_USER, DATABASE_PASSWORD, and DATABASE_NAME",
+      );
+    }
+    const host = process.env.DATABASE_HOST ?? "localhost";
+    const port = process.env.DATABASE_PORT ?? "5432";
+    return `postgres://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${host}:${port}/${name}`;
   }
-  const u = new URL(testUrl);
+  if (url.includes("$")) {
+    url = expandDollarEnvVars(url);
+  }
+  return url;
+}
+
+export function resolveMaintenanceDatabaseUrl(appDatabaseUrl: string): string {
+  let m = process.env.DATABASE_URL_MAINTENANCE?.trim();
+  if (m) {
+    if (m.includes("$")) {
+      m = expandDollarEnvVars(m);
+    }
+    return m;
+  }
+  const u = new URL(appDatabaseUrl);
   u.pathname = "/postgres";
   return u.toString();
 }
 
 export async function createTestDatabaseIfMissing(): Promise<void> {
-  loadEnv(process.env.NODE_ENV ?? "test", MEDUSA_APP_ROOT);
+  loadEnv("test", MEDUSA_APP_ROOT);
 
-  const testUrl = process.env.DATABASE_URL_TEST;
-  if (!testUrl) {
-    throw new Error("DATABASE_URL_TEST is not set");
-  }
-
+  const testUrl = resolveApplicationDatabaseUrl();
   const dbUrl = new URL(testUrl);
   const rawName = decodeURIComponent(dbUrl.pathname.replace(/^\//, ""));
   if (!rawName) {
-    throw new Error(
-      "DATABASE_URL_TEST must include a database name in the path",
-    );
+    throw new Error("DATABASE_URL must include a database name in the path");
   }
   const dbName = assertSafeDbName(rawName);
 
-  const maintenanceUrl = maintenanceConnectionString(
-    testUrl,
-    process.env.DATABASE_URL_TEST_MAINTENANCE,
-  );
+  const maintenanceUrl = resolveMaintenanceDatabaseUrl(testUrl);
 
   const client = new pg.Client({ connectionString: maintenanceUrl });
   await client.connect();
