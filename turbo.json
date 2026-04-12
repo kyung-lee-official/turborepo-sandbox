@@ -21,6 +21,7 @@
     "typecheck": {
       "dependsOn": ["^build"]
     },
-    "medusa:next": {}
+    "medusa:next": {},
+    "test:dev": {}
   }
 }
