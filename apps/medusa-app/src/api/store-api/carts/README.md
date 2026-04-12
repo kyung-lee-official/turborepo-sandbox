@@ -87,9 +87,28 @@ Update cart fields allowed by Medusa’s store update DTO **except** top-level `
 
 ---
 
+## Quantity changes: `line-items` vs `line-items/:line_id` vs `variants/.../quantity`
+
+These three routes can all change how many units of a SKU appear in the cart, but they target different identities and states:
+
+| Goal                                                                                                                                                               | Endpoint                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| **Add** units of a variant using standard “add to cart” semantics (may merge with an existing **selected** line)                                                   | `POST .../line-items`                    |
+| **Set quantity** for one **existing cart line** by `line_id` (use when multiple lines per variant or UI is strictly line-keyed; otherwise prefer variant quantity) | `POST .../line-items/:line_id`           |
+| **Set one absolute total** for a **variant** everywhere it appears — selected line(s) **and/or** `metadata.unselected` (set-aside)                                 | `POST .../variants/:variant_id/quantity` |
+
+**Prefer `variants/.../quantity`** whenever you only need a **total per variant** (including set-aside), or the variant might be set-aside only. Use **`line-items/:line_id`** only when you must adjust a specific **row** by `line_id` (multiple lines per variant, or strict line-keyed UI). Use **`line-items`** when you are **adding** stock by variant, not replacing a known total.
+
+---
+
 ## `POST /store-api/carts/:id/line-items`
 
 Add **selected** line items (normal cart lines). `quantity` must be a positive integer.
+
+**When to use**
+
+- Product detail / listing **“Add to cart”** (and similar) where you add `n` units **by `variant_id`** and do not have a line id yet.
+- The variant must **not** exist only in `metadata.unselected`; if it does, use `POST .../variants/:variant_id/quantity` instead.
 
 **Body (JSON)**
 
@@ -110,6 +129,16 @@ Add **selected** line items (normal cart lines). `quantity` must be a positive i
 ## `POST /store-api/carts/:id/line-items/:line_id`
 
 Set **absolute quantity** for an existing **line item** (`line_id` = Medusa line item id). Unknown `line_id` returns **404** with `CART.ITEM_NOT_FOUND`.
+
+**Note**
+
+- **Prefer `POST .../variants/:variant_id/quantity` first** when you only need to set **how many units of a variant** the customer has in the cart (typical case: at most **one selected line** per variant). That route also covers **set-aside** (`metadata.unselected`) in one call.
+- **Use this route** when you must target a **specific cart row** by **`line_id`** — e.g. **multiple lines** for the same variant could exist, or the UI is strictly **line-keyed** and must not rely on variant-level aggregation (merge/split) behavior.
+
+**When to use**
+
+- Cart UI where each **checkout row** maps to `items[].id` **and** the cases above apply — quantity steppers, manual qty input, or **remove this row** via `quantity: 0`.
+- You are intentionally editing **that line record**, not declaring a global total for the variant (no direct handling of set-aside `metadata.unselected` for the same variant beyond workflow cleanup of invalid splits).
 
 **Body (JSON)**
 
@@ -143,6 +172,12 @@ Move the given **selected** line into `metadata.unselected` (same total quantity
 ## `POST /store-api/carts/:id/variants/:variant_id/quantity`
 
 Set **absolute quantity for a variant** across the cart: adjusts selected line(s) and/or set-aside (`unselected`) so the variant’s effective quantity matches the payload. `variant_id` is the path parameter.
+
+**When to use**
+
+- **Set-aside** rows keyed by `variant_id` in `metadata.unselected` (including increasing qty, or **`quantity: 0`** to drop the variant entirely from the cart).
+- Any time you want **one API** to mean “this variant’s total in the cart,” regardless of whether it is currently a line item, set-aside, or needs to move between those states.
+- After **unselect**, raising or lowering held-aside qty without a `line_id` — this is the supported path (adding via `line-items` is rejected with `CART.USE_VARIANT_QUANTITY_ENDPOINT`).
 
 **Body (JSON)**
 
@@ -197,11 +232,11 @@ Error payloads use `@repo/types` `HttpError` codes where thrown (e.g. `CART.*`, 
 
 These **Medusa default** paths respond with **403** and instruct callers to use `/store-api/carts` equivalents:
 
-| Method | Path |
-|--------|------|
-| `POST` | `/store/carts` |
-| `POST` | `/store/carts/:id` |
-| `POST` | `/store/carts/:id/line-items` |
+| Method | Path                                   |
+| ------ | -------------------------------------- |
+| `POST` | `/store/carts`                         |
+| `POST` | `/store/carts/:id`                     |
+| `POST` | `/store/carts/:id/line-items`          |
 | `POST` | `/store/carts/:id/line-items/:line_id` |
 
 They exist so clients do not accidentally use core store cart handlers that bypass this module’s metadata and workflows.
@@ -297,9 +332,28 @@ GET /store-api/carts/cart_01...?fields=*items,metadata
 
 ---
 
+### 数量变更：`line-items`、`line-items/:line_id` 与 `variants/.../quantity`
+
+三者都会改变购物车中某 SKU 的数量，但针对的**标识**与**状态**不同：
+
+| 目的                                                                                      | 接口                                     |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------- |
+| 按变体**追加**数量，语义等同常规「加入购物车」（可能与已有**已选中**行合并）              | `POST .../line-items`                    |
+| 按 Medusa **行 id** 为**某一行已选中行**设定**绝对数量**（多行同变体或强绑定行 id 时）    | `POST .../line-items/:line_id`           |
+| 按**变体**设定**整辆车里该 SKU 的绝对总数**（含已选中行与/或 `metadata.unselected` 暂存） | `POST .../variants/:variant_id/quantity` |
+
+若变体可能**仅**在暂存、或要用**一个数字**表示「该变体在购物车里的总量」，用 **`variants/.../quantity`**（多数场景应**优先**考虑）。仅当必须按 **`line_id`** 精确改**某一行**（多行同变体、UI 强绑定行 id）时用 **`line-items/:line_id`**。若是在**没有行 id** 的情况下按变体**加购**，用 **`line-items`**。
+
+---
+
 ### `POST /store-api/carts/:id/line-items`
 
 添加**已选中**的购物车行（普通行）。`quantity` 必须为正整数。
+
+**使用场景**
+
+- 商详 / 列表等 **「加入购物车」**：按 `variant_id` 增加 `n` 件，且尚未持有行 id。
+- 该变体不能**仅**存在于 `metadata.unselected`；若仅暂存，应改用 `POST .../variants/:variant_id/quantity`。
 
 **请求体（JSON）**
 
@@ -321,6 +375,16 @@ GET /store-api/carts/cart_01...?fields=*items,metadata
 
 为已有**行项目**设置**绝对数量**（`line_id` 为 Medusa 行 id）。未知 `line_id` 返回 **404**，错误码 `CART.ITEM_NOT_FOUND`。
 
+**说明**
+
+- **建议优先使用 `POST .../variants/:variant_id/quantity`**：若只需设定顾客购物车中某 **`variant_id`** 的**总件数**（常见情况：每个变体至多一条**已选中**行），用变体数量接口更合适，且**同一请求**可覆盖 **暂存**（`metadata.unselected`）。
+- **再使用本接口**：必须按 **`line_id`** 精确操作**某一行**时 — 例如同一变体可能存在**多条行项目**，或 UI **按行绑定**且不能接受按变体聚合时的合并/拆分语义。
+
+**使用场景**
+
+- 购物车 UI 中每一**结算行**对应 `items[].id`，且符合上述「按行」前提时：数量加减、手动输入，或 **`quantity: 0`** 删除**这一行**。
+- 明确在改**这一条行记录**的数量，而不是声明「该变体在整辆车的总量」（同一变体的暂存侧由工作流在非法拆分时清理，而非本接口的主要模型）。
+
 **请求体（JSON）**
 
 ```json
@@ -331,7 +395,7 @@ GET /store-api/carts/cart_01...?fields=*items,metadata
 
 `quantity` 为非负整数。
 
-**说明**
+**补充说明**
 
 - **`quantity: 0`** 会删除该行（等同于去掉该行）。
 - 若同一变体同时存在行与 `metadata.unselected`（非法拆分状态），工作流会在应用更新前清除该变体的未选中侧数据。
@@ -353,6 +417,12 @@ GET /store-api/carts/cart_01...?fields=*items,metadata
 ### `POST /store-api/carts/:id/variants/:variant_id/quantity`
 
 按**变体**在整辆购物车中设置**绝对数量**：调整已选行和/或暂存（`unselected`），使该变体的有效数量与请求体一致。`variant_id` 为路径参数。
+
+**使用场景**
+
+- `metadata.unselected` 中按 `variant_id` 存放的**暂存**行（提高/降低数量，或 **`quantity: 0`** 从购物车中彻底去掉该变体）。
+- 需要**一个接口**表达「该变体在购物车里的总量」，无论当前表现为行项目、暂存，还是要在两者之间迁移。
+- **取消选中（unselect）之后**，没有 `line_id` 却要改暂存数量 — 应走本接口（此时 `POST .../line-items` 会返回 `CART.USE_VARIANT_QUANTITY_ENDPOINT`）。
 
 **请求体（JSON）**
 
@@ -407,11 +477,11 @@ GET /store-api/carts/cart_01...?fields=*items,metadata
 
 以下 **Medusa 默认**路径返回 **403**，并提示调用方改用 `/store-api/carts` 对应接口：
 
-| 方法 | 路径 |
-|------|------|
-| `POST` | `/store/carts` |
-| `POST` | `/store/carts/:id` |
-| `POST` | `/store/carts/:id/line-items` |
+| 方法   | 路径                                   |
+| ------ | -------------------------------------- |
+| `POST` | `/store/carts`                         |
+| `POST` | `/store/carts/:id`                     |
+| `POST` | `/store/carts/:id/line-items`          |
 | `POST` | `/store/carts/:id/line-items/:line_id` |
 
 用于避免客户端误用核心店铺购物车接口，从而绕过本模块的 `metadata` 与工作流。
