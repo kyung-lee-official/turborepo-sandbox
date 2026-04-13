@@ -54,7 +54,7 @@ Integration tests call `MEDUSA_BACKEND_URL` (must match the server you started).
 
 `package.json` passes **`--env-file=.env.test`** for `test:db:prepare`, `test:db:reset`, and `test:integration:bun`. See [Bun env files](https://bun.sh/docs/runtime/env).
 
-`bunfig.toml` sets `test.root = "src"` and preloads `test/e2e/preload.ts` (`loadEnv("test", …)`, MikroORM metadata cleared).
+`bunfig.toml` sets `test.root = "src"` and preloads `test/integration/preload.ts` (`loadEnv("test", …)`, MikroORM metadata cleared).
 
 `test:integration:bun` uses **`--timeout 120000`**; the store cart integration test’s `beforeAll` also sets `{ timeout: 120_000 }`.
 
@@ -74,4 +74,4 @@ Integration tests call `MEDUSA_BACKEND_URL` (must match the server you started).
 
 Session flow: `POST /auth/customer/emailpass` → `POST /auth/session` → `connect.sid` + `x-publishable-api-key`.
 
-The store cart integration test cleans up after itself: it runs `medusa exec ./src/scripts/delete-e2e-carts.ts` (uses `DATABASE_URL` from `.env.test`) to remove carts it created, then deletes the disposable product via the Admin API. Re-run requires the same DB Medusa uses.
+The store cart integration test cleans up after itself: it runs `medusa exec ./src/scripts/delete-integration-test-carts.ts` (uses `DATABASE_URL` from `.env.test`) to remove carts it created, then deletes the disposable product via the Admin API. Re-run requires the same DB Medusa uses.

@@ -2,10 +2,11 @@ import type { ExecArgs } from "@medusajs/framework/types";
 import { Modules } from "@medusajs/framework/utils";
 
 /**
- * Deletes carts listed in E2E_CART_IDS (comma-separated). Used by Bun HTTP E2E cleanup.
+ * Deletes carts listed in INTEGRATION_TEST_CART_IDS (comma-separated).
+ * Used by Bun HTTP integration test cleanup.
  */
-export default async function deleteE2eCarts({ container }: ExecArgs) {
-  const raw = process.env.E2E_CART_IDS?.trim();
+export default async function deleteIntegrationTestCarts({ container }: ExecArgs) {
+  const raw = process.env.INTEGRATION_TEST_CART_IDS?.trim();
   if (!raw) {
     return;
   }

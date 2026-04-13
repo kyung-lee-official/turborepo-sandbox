@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import {
-  bootstrapStoreCartE2E,
+  bootstrapStoreCartIntegration,
   deleteAdminProduct,
   establishCustomerSession,
   medusaBackendBaseUrl,
-  type StoreCartE2EContext,
+  type StoreCartIntegrationContext,
   storeFetch,
-} from "../../../../../test/e2e/http-session";
-import { deleteCartsByIdsViaMedusaExec } from "../../../../../test/e2e/medusa-exec";
+} from "../../../../../test/integration/http-session";
+import { deleteCartsByIdsViaMedusaExec } from "../../../../../test/integration/medusa-exec";
 
 type HttpErrJson = { code?: string; message?: string };
 
@@ -85,7 +85,7 @@ function expectSelectedItemsHaveSubtotalAndTotal(cart: {
 }
 
 describe("store-api carts (HTTP integration)", () => {
-  let ctx: StoreCartE2EContext;
+  let ctx: StoreCartIntegrationContext;
   /** Carts created during tests — removed in afterAll so the DB stays clean. */
   const createdCartIds = new Set<string>();
 
@@ -207,7 +207,7 @@ describe("store-api carts (HTTP integration)", () => {
 
   beforeAll(
     async () => {
-      ctx = await bootstrapStoreCartE2E(medusaBackendBaseUrl());
+      ctx = await bootstrapStoreCartIntegration(medusaBackendBaseUrl());
     },
     { timeout: 120_000 },
   );
@@ -219,7 +219,7 @@ describe("store-api carts (HTTP integration)", () => {
           deleteCartsByIdsViaMedusaExec([...createdCartIds]);
         } catch (e) {
           console.warn(
-            "[e2e] Cart cleanup (medusa exec) failed — you may need to delete carts manually:",
+            "[integration-test] Cart cleanup (medusa exec) failed — you may need to delete carts manually:",
             e,
           );
         }
@@ -310,7 +310,7 @@ describe("store-api carts (HTTP integration)", () => {
     it("updates allowed fields without accepting cart metadata from client", async () => {
       const cartId = await postGuestCart();
       await addLine(cartId, 1);
-      const testEmail = `e2e-cart-${Date.now()}@example.com`;
+      const testEmail = `integration-cart-${Date.now()}@example.com`;
       const res = await storeFetch(ctx.baseUrl, `/store-api/carts/${cartId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

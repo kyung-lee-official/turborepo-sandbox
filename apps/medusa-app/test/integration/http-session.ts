@@ -1,7 +1,7 @@
 const PUBLISHABLE_HEADER = "x-publishable-api-key";
 
 /** Bun extends fetch with `tls`; keep local so tsc is happy without dom lib conflicts. */
-type E2eFetchInit = RequestInit & {
+type IntegrationFetchInit = RequestInit & {
   tls?: { rejectUnauthorized?: boolean };
 };
 
@@ -31,9 +31,9 @@ function insecureTlsForUrl(url: string): boolean {
   }
 }
 
-export function e2eFetch(
+export function integrationFetch(
   input: string | URL | Request,
-  init: E2eFetchInit = {},
+  init: IntegrationFetchInit = {},
 ): Promise<Response> {
   const url =
     typeof input === "string"
@@ -74,7 +74,7 @@ async function adminFetch(
     : `${origin}${path.startsWith("/") ? path : `/${path}`}`;
   const headers = new Headers(init.headers);
   headers.set("Authorization", `Bearer ${adminJwt}`);
-  return e2eFetch(url, { ...init, headers });
+  return integrationFetch(url, { ...init, headers });
 }
 
 /**
@@ -86,7 +86,7 @@ export async function loginAdminJwt(
   password: string,
 ): Promise<string> {
   const origin = originOf(baseUrl);
-  const res = await e2eFetch(`${origin}/auth/user/emailpass`, {
+  const res = await integrationFetch(`${origin}/auth/user/emailpass`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -150,7 +150,7 @@ export async function resolvePublishableApiKey(
   return key.token;
 }
 
-export type StoreCartE2EContext = {
+export type StoreCartIntegrationContext = {
   baseUrl: string;
   adminJwt: string;
   publishableApiKey: string;
@@ -258,7 +258,7 @@ async function fetchFirstShippingProfileId(
 /**
  * Creates a minimal published product with one variant for cart line-item tests; returns product + variant ids.
  */
-async function createDisposableE2eProduct(
+async function createDisposableIntegrationProduct(
   baseUrl: string,
   adminJwt: string,
   input: {
@@ -269,8 +269,8 @@ async function createDisposableE2eProduct(
 ): Promise<{ productId: string; variantId: string }> {
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   const body = {
-    title: `E2E harness product ${suffix}`,
-    handle: `e2e-harness-${suffix}`,
+    title: `Integration harness product ${suffix}`,
+    handle: `integration-harness-${suffix}`,
     status: "published" as const,
     shipping_profile_id: input.shippingProfileId,
     discountable: true,
@@ -278,7 +278,7 @@ async function createDisposableE2eProduct(
     variants: [
       {
         title: "Standard",
-        sku: `e2e-harness-${suffix}`,
+        sku: `integration-harness-${suffix}`,
         options: { Type: "Standard" },
         prices: [
           {
@@ -341,9 +341,9 @@ export async function deleteAdminProduct(
 /**
  * Health wait, admin JWT, publishable key, region, sales channel, and a fresh product variant (POST /admin/products).
  */
-export async function bootstrapStoreCartE2E(
+export async function bootstrapStoreCartIntegration(
   baseUrl: string,
-): Promise<StoreCartE2EContext> {
+): Promise<StoreCartIntegrationContext> {
   await waitForHealth(baseUrl);
   const { email, password } = adminCredentials();
   const adminJwt = await loginAdminJwt(baseUrl, email, password);
@@ -354,7 +354,7 @@ export async function bootstrapStoreCartE2E(
     baseUrl,
     adminJwt,
   );
-  const { productId, variantId } = await createDisposableE2eProduct(
+  const { productId, variantId } = await createDisposableIntegrationProduct(
     baseUrl,
     adminJwt,
     {
@@ -397,7 +397,7 @@ export async function waitForHealth(
 
   while (Date.now() < deadline) {
     try {
-      const res = await e2eFetch(url, { method: "GET" });
+      const res = await integrationFetch(url, { method: "GET" });
       if (res.ok) {
         return;
       }
@@ -451,7 +451,7 @@ export async function establishCustomerSession(
   const origin = originOf(baseUrl);
   const pub = { [PUBLISHABLE_HEADER]: options.publishableApiKey };
 
-  const loginRes = await e2eFetch(`${origin}/auth/customer/emailpass`, {
+  const loginRes = await integrationFetch(`${origin}/auth/customer/emailpass`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...pub },
     body: JSON.stringify({
@@ -470,7 +470,7 @@ export async function establishCustomerSession(
     );
   }
 
-  const sessionRes = await e2eFetch(`${origin}/auth/session`, {
+  const sessionRes = await integrationFetch(`${origin}/auth/session`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${loginJson.token}`,
@@ -516,5 +516,5 @@ export async function storeFetch(
     );
   }
 
-  return e2eFetch(url, { ...init, headers });
+  return integrationFetch(url, { ...init, headers });
 }

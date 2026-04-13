@@ -3,7 +3,7 @@ import path from "node:path";
 
 const __dirname = path.dirname(__filename);
 
-/** `apps/medusa-app` root (parent of `test/e2e`). */
+/** `apps/medusa-app` root (parent of `test/integration`). */
 export const MEDUSA_APP_ROOT = path.resolve(__dirname, "..", "..");
 
 const bunx = process.platform === "win32" ? "bunx.exe" : "bunx";
@@ -29,7 +29,7 @@ export function deleteCartsByIdsViaMedusaExec(cartIds: string[]): void {
   if (unique.length === 0) {
     return;
   }
-  medusaExec("./src/scripts/delete-e2e-carts.ts", {
-    E2E_CART_IDS: unique.join(","),
+  medusaExec("./src/scripts/delete-integration-test-carts.ts", {
+    INTEGRATION_TEST_CART_IDS: unique.join(","),
   });
 }

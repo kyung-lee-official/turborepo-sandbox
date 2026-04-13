@@ -1,6 +1,6 @@
 /**
  * Ensures the Postgres database from DATABASE_URL exists (no psql).
- * Run from apps/medusa-app: `bun --env-file=.env.test ./test/e2e/create-test-database.ts`
+ * Run from apps/medusa-app: `bun --env-file=.env.test ./test/integration/create-test-database.ts`
  */
 
 import path from "node:path";
