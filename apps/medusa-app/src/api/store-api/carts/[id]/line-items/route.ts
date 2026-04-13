@@ -3,6 +3,7 @@ import type {
   AddToCartWorkflowInputDTO,
   HttpTypes,
 } from "@medusajs/framework/types";
+import { refetchCart } from "@/api/store-api/carts/helpers";
 import type { StoreAddCartLineItemType } from "@/api/store-api/carts/validators";
 import { customAddToCartWorkflow } from "@/workflows/commerce-modules/cart/custom-add-line-items/custom-add-line-items";
 
@@ -22,9 +23,10 @@ export const POST = async (
     ],
   };
 
-  const { result } = await customAddToCartWorkflow(req.scope).run({
+  await customAddToCartWorkflow(req.scope).run({
     input: workflowInput,
   });
 
-  res.send(result as unknown as HttpTypes.StoreCartResponse);
+  const cart = await refetchCart(cartId, req.scope, req.queryConfig.fields);
+  res.status(200).json({ cart });
 };

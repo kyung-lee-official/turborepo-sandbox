@@ -40,6 +40,50 @@ function lineVariantId(
   return undefined;
 }
 
+function isCartNumericAmount(value: unknown): boolean {
+  if (value == null) {
+    return false;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return true;
+  }
+  if (typeof value === "string" && value !== "") {
+    return Number.isFinite(Number(value));
+  }
+  if (typeof value === "object") {
+    const o = value as { numeric?: unknown; value?: unknown };
+    if (o.numeric != null && Number.isFinite(Number(o.numeric))) {
+      return true;
+    }
+    if (o.value != null && o.value !== "") {
+      return Number.isFinite(Number(o.value));
+    }
+  }
+  return false;
+}
+
+// --- Added for line-item pricing contract (store-api default fields) ---
+// Asserts every *selected* line (cart.items[]) includes Medusa `subtotal` and `total`.
+// Unselected snapshots (metadata.unselected) are intentionally not checked here.
+//
+// Changelog: (1) Added isCartNumericAmount + this helper + wired into GET/POST cart flows
+// that return items; replaced optional multi-key line totals in "adds a line item".
+// (2) Mutation cart routes now end with refetchCart + default query fields so JSON matches
+// GET /store-api/carts/:id (see unselect DELETE middleware for queryConfig).
+function expectSelectedItemsHaveSubtotalAndTotal(cart: {
+  items?: unknown[];
+}): void {
+  const items = cart.items;
+  if (!items?.length) {
+    return;
+  }
+  for (const raw of items) {
+    const row = raw as Record<string, unknown>;
+    expect(isCartNumericAmount(row.subtotal)).toBe(true);
+    expect(isCartNumericAmount(row.total)).toBe(true);
+  }
+}
+
 describe("store-api carts (HTTP E2E)", () => {
   let ctx: StoreCartE2EContext;
   /** Carts created during tests — removed in afterAll so the DB stays clean. */
@@ -245,6 +289,7 @@ describe("store-api carts (HTTP E2E)", () => {
       const json = (await res.json()) as CartJson;
       expect(json.cart?.id).toMatch(/^cart_/);
       rememberCart(json.cart?.id);
+      expectSelectedItemsHaveSubtotalAndTotal(json.cart);
     });
   });
 
@@ -255,6 +300,7 @@ describe("store-api carts (HTTP E2E)", () => {
       const { cart } = await getCart(cartId);
       expect(cart.id).toBe(cartId);
       expect(cart.items?.length).toBeGreaterThan(0);
+      expectSelectedItemsHaveSubtotalAndTotal(cart);
       expect(Array.isArray(cart.display_lines)).toBe(true);
       expect(cart.display_lines!.length).toBeGreaterThan(0);
     });
@@ -263,6 +309,7 @@ describe("store-api carts (HTTP E2E)", () => {
   describe("POST /store-api/carts/:id", () => {
     it("updates allowed fields without accepting cart metadata from client", async () => {
       const cartId = await postGuestCart();
+      await addLine(cartId, 1);
       const testEmail = `e2e-cart-${Date.now()}@example.com`;
       const res = await storeFetch(ctx.baseUrl, `/store-api/carts/${cartId}`, {
         method: "POST",
@@ -273,6 +320,7 @@ describe("store-api carts (HTTP E2E)", () => {
       expect(res.status).toBe(200);
       const { cart } = (await res.json()) as CartJson;
       expect(cart.email).toBe(testEmail);
+      expectSelectedItemsHaveSubtotalAndTotal(cart);
     });
   });
 
@@ -285,38 +333,7 @@ describe("store-api carts (HTTP E2E)", () => {
 
       const row = cart.items![0]! as Record<string, unknown>;
       expect(typeof row.unit_price).toBe("number");
-      const lineTotalKeys = [
-        "subtotal",
-        "original_subtotal",
-        "total",
-        "original_total",
-        "item_subtotal",
-        "item_total",
-        "original_item_subtotal",
-        "original_item_total",
-      ] as const;
-      const hasLineTotals = lineTotalKeys.some((k) => {
-        const v = row[k];
-        if (typeof v === "number" && Number.isFinite(v)) {
-          return true;
-        }
-        if (typeof v === "string" && v !== "" && Number.isFinite(Number(v))) {
-          return true;
-        }
-        return false;
-      });
-      if (hasLineTotals) {
-        for (const key of lineTotalKeys) {
-          const v = row[key];
-          if (v === undefined) {
-            continue;
-          }
-          expect(
-            typeof v === "number" ||
-              (typeof v === "string" && Number.isFinite(Number(v))),
-          ).toBe(true);
-        }
-      }
+      expectSelectedItemsHaveSubtotalAndTotal(cart);
     });
 
     it("returns 400 when variant exists only in unselected (must use variant quantity endpoint)", async () => {
@@ -352,6 +369,7 @@ describe("store-api carts (HTTP E2E)", () => {
       const res = await updateLineQuantity(cartId, lineId, 3);
       expect(res.status).toBe(200);
       const { cart } = (await res.json()) as CartJson;
+      expectSelectedItemsHaveSubtotalAndTotal(cart);
       const item = cart.items?.find((i) => i.id === lineId);
       expect(item?.quantity).toBe(3);
     });
@@ -405,6 +423,7 @@ describe("store-api carts (HTTP E2E)", () => {
       expect(cart.metadata?.unselected?.[ctx.variantId]).toBeUndefined();
       const line = cart.items?.find((i) => lineVariantId(i) === ctx.variantId);
       expect(line?.quantity).toBe(1);
+      expectSelectedItemsHaveSubtotalAndTotal(cart);
     });
 
     it("removes the variant entirely when quantity is 0 (unselected only)", async () => {

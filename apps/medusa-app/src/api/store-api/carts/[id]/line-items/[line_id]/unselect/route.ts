@@ -1,5 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import type { HttpTypes } from "@medusajs/framework/types";
+import { refetchCart } from "@/api/store-api/carts/helpers";
 import { customUnselectCartItemWorkflow } from "@/workflows/commerce-modules/cart/custom-unselect-cart-item/custom-unselect-cart-item";
 
 /**
@@ -20,9 +21,10 @@ export const DELETE = async (
     ids: [lineId],
   };
 
-  const { result } = await customUnselectCartItemWorkflow(req.scope).run({
+  await customUnselectCartItemWorkflow(req.scope).run({
     input: workflowInput,
   });
 
-  res.send(result as unknown as HttpTypes.StoreCartResponse);
+  const cart = await refetchCart(cartId, req.scope, req.queryConfig.fields);
+  res.status(200).json({ cart });
 };

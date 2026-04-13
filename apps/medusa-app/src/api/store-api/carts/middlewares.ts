@@ -140,6 +140,16 @@ export const storeCartRoutesMiddlewares: MiddlewareRoute[] = [
     ],
   },
   {
+    method: ["DELETE"],
+    matcher: "/store-api/carts/:id/line-items/:line_id/unselect",
+    middlewares: [
+      validateAndTransformQuery(
+        StoreGetCartsCart,
+        QueryConfig.retrieveTransformQueryConfig,
+      ),
+    ],
+  },
+  {
     method: ["POST"],
     matcher: "/store/carts/:id/line-items/:line_id",
     middlewares: [

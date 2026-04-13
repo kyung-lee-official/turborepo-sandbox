@@ -1,5 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import type { HttpTypes } from "@medusajs/framework/types";
+import { refetchCart } from "@/api/store-api/carts/helpers";
 import type { UpdateLineItemBody } from "@/api/store-api/carts/validators";
 import { customUpdateLineItemWorkflow } from "@/workflows/commerce-modules/cart/custom-update-line-item/custom-update-line-item";
 
@@ -16,9 +17,10 @@ export const POST = async (
     quantity: req.validatedBody.quantity,
   };
 
-  const { result } = await customUpdateLineItemWorkflow(req.scope).run({
+  await customUpdateLineItemWorkflow(req.scope).run({
     input: workflowInput,
   });
 
-  res.send(result as unknown as HttpTypes.StoreCartResponse);
+  const cart = await refetchCart(cartId, req.scope, req.queryConfig.fields);
+  res.status(200).json({ cart });
 };
