@@ -1,7 +1,7 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import type { HttpTypes } from "@medusajs/framework/types";
-import { setCartVariantQuantityWorkflow } from "@/workflows/commerce-modules/cart/set-cart-variant-quantity/set-cart-variant-quantity";
 import type { StoreSetVariantQuantityType } from "@/api/store-api/carts/validators";
+import { setCartVariantQuantityWorkflow } from "@/workflows/commerce-modules/cart/set-cart-variant-quantity/set-cart-variant-quantity";
 
 export const POST = async (
   req: MedusaRequest<StoreSetVariantQuantityType, HttpTypes.SelectParams>,
