@@ -209,10 +209,9 @@ export const CartLineItem = ({ cart }: { cart: StoreApiCart }) => {
       clearUnselectedLocal(variantId);
       return;
     }
-    if (n > serverQty) {
-      n = serverQty;
-      setQuantities((prev) => ({ ...prev, [k]: n }));
-    }
+    // Same as server snapshot and no pending local edit to persist — skip API.
+    // (Do not cap n to serverQty: increasing quantity must call setVariantQuantity,
+    // same as the '+' control.)
     if (n === serverQty) {
       clearUnselectedLocal(variantId);
       return;
