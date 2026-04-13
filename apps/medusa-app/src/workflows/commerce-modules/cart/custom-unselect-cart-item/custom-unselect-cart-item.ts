@@ -13,7 +13,15 @@ import {
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
 import type { StoreCart, StoreCartResponse } from "@medusajs/types";
-import type { CartMetadata } from "@repo/types";
+import type { CartMetadata, CartUnselectedEntry } from "@repo/types";
+
+function snapshotNum(value: unknown): number | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
@@ -53,6 +61,7 @@ export const customUnselectCartItemWorkflow = createWorkflow(
 
       const newlyUnselected = lineItemsToUnselect.reduce(
         (acc, item) => {
+          const lineTotals = item as Record<string, unknown>;
           if (item?.variant_id) {
             // Use the persisted original created_at if available (survives re-select cycles),
             // otherwise fall back to the line item's own created_at (correct for first unselect).
@@ -62,6 +71,11 @@ export const customUnselectCartItemWorkflow = createWorkflow(
                 ? new Date(item.created_at).toISOString()
                 : new Date().toISOString());
 
+            const compareAt =
+              item.compare_at_unit_price != null
+                ? Number(item.compare_at_unit_price)
+                : null;
+
             acc[item.variant_id] = {
               quantity: item.quantity,
               created_at: originalCreatedAt,
@@ -70,6 +84,21 @@ export const customUnselectCartItemWorkflow = createWorkflow(
               variant_title: item.variant_title ?? null,
               variant_sku: item.variant_sku ?? null,
               unit_price: Number(item.unit_price),
+              compare_at_unit_price:
+                compareAt != null && Number.isFinite(compareAt)
+                  ? compareAt
+                  : null,
+              is_tax_inclusive: Boolean(item.is_tax_inclusive),
+              original_subtotal: snapshotNum(lineTotals["original_subtotal"]),
+              subtotal: snapshotNum(lineTotals["subtotal"]),
+              original_total: snapshotNum(lineTotals["original_total"]),
+              total: snapshotNum(lineTotals["total"]),
+              original_item_subtotal: snapshotNum(
+                lineTotals["original_item_subtotal"],
+              ),
+              item_subtotal: snapshotNum(lineTotals["item_subtotal"]),
+              original_item_total: snapshotNum(lineTotals["original_item_total"]),
+              item_total: snapshotNum(lineTotals["item_total"]),
               thumbnail: item.thumbnail ?? null,
             };
 
@@ -80,19 +109,7 @@ export const customUnselectCartItemWorkflow = createWorkflow(
           }
           return acc;
         },
-        {} as Record<
-          string,
-          {
-            quantity: number;
-            created_at: string;
-            title: string;
-            subtitle: string | null;
-            variant_title: string | null;
-            variant_sku: string | null;
-            unit_price: number;
-            thumbnail: string | null;
-          }
-        >,
+        {} as Record<string, CartUnselectedEntry>,
       );
 
       const metadata: CartMetadata = {

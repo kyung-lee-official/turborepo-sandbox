@@ -142,6 +142,7 @@ export async function syncUnselectedMetadataFromCatalog(
       before.variant_title !== after.variant_title ||
       before.variant_sku !== after.variant_sku ||
       before.unit_price !== after.unit_price ||
+      before.compare_at_unit_price !== after.compare_at_unit_price ||
       before.thumbnail !== after.thumbnail
     );
   });

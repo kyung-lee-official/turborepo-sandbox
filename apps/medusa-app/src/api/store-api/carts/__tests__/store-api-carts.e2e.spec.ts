@@ -282,6 +282,41 @@ describe("store-api carts (HTTP E2E)", () => {
       const { cart } = await addLine(cartId, 1);
       expect(cart.items?.length).toBeGreaterThan(0);
       expect(lineVariantId(cart.items![0]!)).toBe(ctx.variantId);
+
+      const row = cart.items![0]! as Record<string, unknown>;
+      expect(typeof row.unit_price).toBe("number");
+      const lineTotalKeys = [
+        "subtotal",
+        "original_subtotal",
+        "total",
+        "original_total",
+        "item_subtotal",
+        "item_total",
+        "original_item_subtotal",
+        "original_item_total",
+      ] as const;
+      const hasLineTotals = lineTotalKeys.some((k) => {
+        const v = row[k];
+        if (typeof v === "number" && Number.isFinite(v)) {
+          return true;
+        }
+        if (typeof v === "string" && v !== "" && Number.isFinite(Number(v))) {
+          return true;
+        }
+        return false;
+      });
+      if (hasLineTotals) {
+        for (const key of lineTotalKeys) {
+          const v = row[key];
+          if (v === undefined) {
+            continue;
+          }
+          expect(
+            typeof v === "number" ||
+              (typeof v === "string" && Number.isFinite(Number(v))),
+          ).toBe(true);
+        }
+      }
     });
 
     it("returns 400 when variant exists only in unselected (must use variant quantity endpoint)", async () => {

@@ -8,6 +8,22 @@ export interface CartMetadata {
       variant_title: string | null;
       variant_sku: string | null;
       unit_price: number;
+      /** Copied from the line item at unselect time; optional on older carts. */
+      compare_at_unit_price?: number | null;
+      /**
+       * Line totals captured when the row was moved to set-aside (same naming as
+       * {@link StoreApiCartLineItem}); optional on older carts. Used for promo strikethrough
+       * when `compare_at_unit_price` is unset.
+       */
+      is_tax_inclusive?: boolean;
+      original_subtotal?: number | null;
+      subtotal?: number | null;
+      original_total?: number | null;
+      total?: number | null;
+      original_item_subtotal?: number | null;
+      item_subtotal?: number | null;
+      original_item_total?: number | null;
+      item_total?: number | null;
       thumbnail: string | null;
     };
   };
