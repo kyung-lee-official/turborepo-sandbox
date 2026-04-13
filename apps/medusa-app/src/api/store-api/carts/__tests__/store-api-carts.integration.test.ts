@@ -84,7 +84,7 @@ function expectSelectedItemsHaveSubtotalAndTotal(cart: {
   }
 }
 
-describe("store-api carts (HTTP E2E)", () => {
+describe("store-api carts (HTTP integration)", () => {
   let ctx: StoreCartE2EContext;
   /** Carts created during tests — removed in afterAll so the DB stays clean. */
   const createdCartIds = new Set<string>();
