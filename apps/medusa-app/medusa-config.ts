@@ -29,6 +29,34 @@ if (Number.isNaN(parseInt(process.env.PORT, 10))) {
   throw new Error("PORT must be a valid number");
 }
 
+if (!process.env.PAYPAL_CLIENT_ID) {
+  throw new Error("PAYPAL_CLIENT_ID is not defined in environment variables");
+}
+if (!process.env.PAYPAL_CLIENT_SECRET) {
+  throw new Error(
+    "PAYPAL_CLIENT_SECRET is not defined in environment variables",
+  );
+}
+
+if (!process.env.OCEANPAYMENT_ACCOUNT) {
+  throw new Error(
+    "OCEANPAYMENT_ACCOUNT is not defined in environment variables",
+  );
+}
+if (!process.env.OCEANPAYMENT_TERMINAL) {
+  throw new Error(
+    "OCEANPAYMENT_TERMINAL is not defined in environment variables",
+  );
+}
+if (!process.env.OCEANPAYMENT_SECURE_CODE) {
+  throw new Error(
+    "OCEANPAYMENT_SECURE_CODE is not defined in environment variables",
+  );
+}
+if (!process.env.OCEANPAYMENT_KEY) {
+  throw new Error("OCEANPAYMENT_KEY is not defined in environment variables");
+}
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -102,6 +130,16 @@ module.exports = defineConfig({
               // provider options...
               clientId: process.env.PAYPAL_CLIENT_ID,
               clientSecret: process.env.PAYPAL_CLIENT_SECRET,
+            },
+          },
+          {
+            resolve: "./src/modules/ocean-payment",
+            id: "oceanpayment",
+            options: {
+              account: process.env.OCEANPAYMENT_ACCOUNT,
+              terminal: process.env.OCEANPAYMENT_TERMINAL,
+              secureCode: process.env.OCEANPAYMENT_SECURE_CODE,
+              key: process.env.OCEANPAYMENT_KEY,
             },
           },
         ],
