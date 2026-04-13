@@ -12,16 +12,10 @@ import {
   updateLineItemInCartWorkflow,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import type {
-  StoreCart,
-  StoreCartResponse,
-} from "@medusajs/types/dist/http/cart/store";
 import { HttpError } from "@repo/types";
-import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 import { stripUnselectedForLineVariantStep } from "./steps/strip-unselected-for-line-variant";
 
-// Custom input type for the update line item workflow
 type CustomUpdateLineItemInput = {
   cart_id: string;
   line_item_id: string;
@@ -31,7 +25,6 @@ type CustomUpdateLineItemInput = {
 export const customUpdateLineItemWorkflow = createWorkflow(
   "custom-update-line-item",
   (input: CustomUpdateLineItemInput) => {
-    // Acquire the lock before running the nested workflow
     acquireLockStep({
       key: input.cart_id,
       timeout: 2,
@@ -43,14 +36,12 @@ export const customUpdateLineItemWorkflow = createWorkflow(
       line_item_id: input.line_item_id,
     });
 
-    // Get existing cart with line items to validate the line item exists
     const { data: existingCartData } = useQueryGraphStep({
       entity: "cart",
       fields: ["*", "items.*", "metadata"],
       filters: { id: input.cart_id },
     }).config({ name: "get-existing-cart-with-items" });
 
-    // Validate line item exists and prepare update data
     const updateData = transform(
       { existingCartData, input },
       (transformData) => {
@@ -61,7 +52,6 @@ export const customUpdateLineItemWorkflow = createWorkflow(
           throw new HttpError("CART.NOT_FOUND", "Cart not found");
         }
 
-        // Find the line item to update
         const lineItem = (cart.items || []).find(
           (item) => item?.id === line_item_id,
         );
@@ -80,9 +70,7 @@ export const customUpdateLineItemWorkflow = createWorkflow(
       },
     );
 
-    // Conditionally update or delete the line item based on quantity
     when(updateData, (data) => data.quantity > 0).then(() => {
-      // Update quantity when quantity > 0
       return updateLineItemInCartWorkflow.runAsStep({
         input: {
           cart_id: input.cart_id,
@@ -95,7 +83,6 @@ export const customUpdateLineItemWorkflow = createWorkflow(
     });
 
     when(updateData, (data) => data.quantity === 0).then(() => {
-      // Delete line item when quantity is 0
       return deleteLineItemsWorkflow.runAsStep({
         input: {
           cart_id: input.cart_id,
@@ -113,40 +100,12 @@ export const customUpdateLineItemWorkflow = createWorkflow(
 
     syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
-    // Refetch the updated cart with the new line item quantities
-    const { data: finalCartData } = useQueryGraphStep({
-      entity: "cart",
-      fields: [
-        "*",
-        "items.*",
-        "items.variant.*",
-        "items.product.*",
-        "shipping_address.*",
-        "billing_address.*",
-        "region.*",
-      ],
-      filters: {
-        id: input.cart_id,
-      },
-    }).config({ name: "refetch-updated-cart" });
-
-    // Transform to StoreCartResponse format
-    const storeCartResponse = transform(
-      finalCartData,
-      (data): StoreCartResponse => {
-        const cart = data[0] as unknown as Record<string, unknown>;
-        applyStoreCartDisplayOrder(cart);
-        return {
-          cart: cart as unknown as StoreCart,
-        };
-      },
-    );
-
-    // Release the lock after the workflow completes
     releaseLockStep({
       key: input.cart_id,
     });
 
-    return new WorkflowResponse(storeCartResponse);
+    return new WorkflowResponse(
+      transform(input, (inp) => ({ cart_id: inp.cart_id })),
+    );
   },
 );

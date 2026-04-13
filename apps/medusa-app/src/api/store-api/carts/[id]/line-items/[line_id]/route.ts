@@ -21,6 +21,8 @@ export const POST = async (
     input: workflowInput,
   });
 
-  const cart = await refetchCart(cartId, req.scope, req.queryConfig.fields);
+  const cart = await refetchCart(cartId, req.scope, req.queryConfig.fields, {
+    skipRefreshAndSync: true,
+  });
   res.status(200).json({ cart });
 };

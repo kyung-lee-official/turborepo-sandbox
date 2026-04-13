@@ -11,9 +11,7 @@ import {
   updateCartsStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import type { StoreCart, StoreCartResponse } from "@medusajs/types";
 import type { CartMetadata } from "@repo/types";
-import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 type CustomRemoveCartItemInput = {
@@ -94,37 +92,12 @@ export const customDeleteLineItemsWorkflow = createWorkflow(
 
     syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
-    const { data: finalCartData } = useQueryGraphStep({
-      entity: "cart",
-      fields: [
-        "*",
-        "items.*",
-        "items.variant.*",
-        "items.product.*",
-        "shipping_address.*",
-        "billing_address.*",
-        "region.*",
-      ],
-      filters: {
-        id: input.cart_id,
-      },
-    }).config({ name: "refetch-cart-with-metadata" });
-
-    const storeCartResponse = transform(
-      finalCartData,
-      (data): StoreCartResponse => {
-        const cart = data[0] as unknown as Record<string, unknown>;
-        applyStoreCartDisplayOrder(cart);
-        return {
-          cart: cart as unknown as StoreCart,
-        };
-      },
-    );
-
     releaseLockStep({
       key: input.cart_id,
     });
 
-    return new WorkflowResponse(storeCartResponse);
+    return new WorkflowResponse(
+      transform(input, (inp) => ({ cart_id: inp.cart_id })),
+    );
   },
 );

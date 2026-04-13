@@ -12,8 +12,8 @@ import {
   updateCartsStep,
   useQueryGraphStep,
 } from "@medusajs/medusa/core-flows";
-import type { StoreCart, StoreCartResponse } from "@medusajs/types";
 import type { CartMetadata, CartUnselectedEntry } from "@repo/types";
+import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 function snapshotNum(value: unknown): number | undefined {
   if (value == null) {
@@ -22,35 +22,28 @@ function snapshotNum(value: unknown): number | undefined {
   const n = Number(value);
   return Number.isFinite(n) ? n : undefined;
 }
-import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
-import { syncUnselectedMetadataFromCatalogStep } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog-step";
 
 export const customUnselectCartItemWorkflow = createWorkflow(
   "custom-unselect-cart-item",
   (input: DeleteLineItemsWorkflowInput) => {
-    // Acquire the lock before running the nested workflow
     acquireLockStep({
       key: input.cart_id,
       timeout: 2,
       ttl: 10,
     });
 
-    // get the cart to item variant ids and quantities before the line items are deleted
     const { data } = useQueryGraphStep({
       entity: "cart",
       fields: ["*", "items.*"],
       filters: { id: input.cart_id },
     }).config({ name: "get-variants" });
 
-    // Update cart metadata by appending only the line item(s) being unselected.
     const metadataToUpdate = transform({ data, input }, (transformData) => {
       const updatedCart = transformData.data[0];
       const existingMetadata =
         (updatedCart?.metadata as unknown as CartMetadata) || {};
       const existingUnselected = existingMetadata.unselected || {};
 
-      // Persistent write-once map that tracks the true first-add timestamp for each variant.
-      // Using this instead of item.created_at means the timestamp survives re-select cycles.
       const existingOriginalCreatedAt =
         existingMetadata.item_original_created_at ?? {};
       const updatedOriginalCreatedAt = { ...existingOriginalCreatedAt };
@@ -63,8 +56,6 @@ export const customUnselectCartItemWorkflow = createWorkflow(
         (acc, item) => {
           const lineTotals = item as Record<string, unknown>;
           if (item?.variant_id) {
-            // Use the persisted original created_at if available (survives re-select cycles),
-            // otherwise fall back to the line item's own created_at (correct for first unselect).
             const originalCreatedAt =
               existingOriginalCreatedAt[item.variant_id] ??
               (item.created_at
@@ -102,7 +93,6 @@ export const customUnselectCartItemWorkflow = createWorkflow(
               thumbnail: item.thumbnail ?? null,
             };
 
-            // Write-once: record if not already stored
             if (!updatedOriginalCreatedAt[item.variant_id]) {
               updatedOriginalCreatedAt[item.variant_id] = originalCreatedAt;
             }
@@ -128,8 +118,7 @@ export const customUnselectCartItemWorkflow = createWorkflow(
       },
     ]);
 
-    // Delete the line items using the existing deleteLineItemsWorkflow as a step
-    const result = deleteLineItemsWorkflow.runAsStep({
+    deleteLineItemsWorkflow.runAsStep({
       input: {
         cart_id: input.cart_id,
         ids: input.ids,
@@ -145,40 +134,12 @@ export const customUnselectCartItemWorkflow = createWorkflow(
 
     syncUnselectedMetadataFromCatalogStep({ cart_id: input.cart_id });
 
-    // Refetch the updated cart with the new metadata
-    const { data: finalCartData } = useQueryGraphStep({
-      entity: "cart",
-      fields: [
-        "*",
-        "items.*",
-        "items.variant.*",
-        "items.product.*",
-        "shipping_address.*",
-        "billing_address.*",
-        "region.*",
-      ],
-      filters: {
-        id: input.cart_id,
-      },
-    }).config({ name: "refetch-cart-with-metadata" });
-
-    // Transform to StoreCartResponse format with type assertion
-    const storeCartResponse = transform(
-      finalCartData,
-      (data): StoreCartResponse => {
-        const cart = data[0] as unknown as Record<string, unknown>;
-        applyStoreCartDisplayOrder(cart);
-        return {
-          cart: cart as unknown as StoreCart,
-        };
-      },
-    );
-
-    // Release the lock after the nested workflow completes
     releaseLockStep({
       key: input.cart_id,
     });
 
-    return new WorkflowResponse(storeCartResponse);
+    return new WorkflowResponse(
+      transform(input, (inp) => ({ cart_id: inp.cart_id })),
+    );
   },
 );
