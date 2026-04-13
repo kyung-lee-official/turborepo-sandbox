@@ -1,16 +1,13 @@
 import type { Query } from "@medusajs/framework";
-import {
-  ContainerRegistrationKeys,
-  Modules,
-} from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
-import type { ICartModuleService } from "@medusajs/types";
 import {
   addToCartWorkflow,
   deleteLineItemsWorkflow,
   refreshCartItemsWorkflow,
   updateLineItemInCartWorkflow,
 } from "@medusajs/medusa/core-flows";
+import type { ICartModuleService } from "@medusajs/types";
 import type { CartMetadata } from "@repo/types";
 import { HttpError } from "@repo/types";
 import { syncUnselectedMetadataFromCatalog } from "@/api/store-api/carts/sync-unselected-metadata-from-catalog";

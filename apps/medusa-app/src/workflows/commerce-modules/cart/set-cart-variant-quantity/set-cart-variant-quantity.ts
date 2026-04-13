@@ -10,8 +10,8 @@ import type {
 } from "@medusajs/types/dist/http/cart/store";
 import { applyStoreCartDisplayOrder } from "@/api/store-api/carts/apply-store-cart-display-order";
 import {
-  applySetCartVariantQuantityStep,
   type ApplySetCartVariantQuantityInput,
+  applySetCartVariantQuantityStep,
 } from "./steps/apply-set-cart-variant-quantity";
 
 export const setCartVariantQuantityWorkflow = createWorkflow(
