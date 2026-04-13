@@ -1,11 +1,12 @@
 "use client";
 
 import type { StoreApiCart, StoreApiCartLineItem } from "@repo/types";
+import { storeApiCartLinePriceDisplayForQuantity } from "@repo/types";
 import Image from "next/image";
 import { Button } from "@/app/medusa/components/Button";
 import { Card } from "@/app/medusa/components/Card";
 import { Checkbox } from "@/app/medusa/components/Checkbox";
-import { formatCurrency } from "@/utils/currency";
+import { CartLinePrice } from "./CartLinePrice";
 import { CartQuantityControl } from "./CartQuantityControl";
 
 export type SelectedCartLineRowProps = {
@@ -39,6 +40,11 @@ export const SelectedCartLineRow = ({
   onRemove,
   disableMinus,
 }: SelectedCartLineRowProps) => {
+  const priceDisplay = storeApiCartLinePriceDisplayForQuantity(
+    item,
+    displayQuantity,
+  );
+
   return (
     <Card variant="pixel" className="max-w-none space-y-0 p-4">
       <div className="flex items-start justify-between">
@@ -67,9 +73,10 @@ export const SelectedCartLineRow = ({
               Variant: {item.variant_title}
             </p>
           )}
-          <p className="mt-1 font-medium text-gray-700 text-sm">
-            {formatCurrency(Number(item.unit_price), cart.currency_code)}
-          </p>
+          <CartLinePrice
+            currencyCode={cart.currency_code}
+            display={priceDisplay}
+          />
           {item.variant_sku && (
             <p className="text-gray-400 text-xs">SKU: {item.variant_sku}</p>
           )}

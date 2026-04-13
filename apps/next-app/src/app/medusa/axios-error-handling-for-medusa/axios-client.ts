@@ -78,6 +78,7 @@ async function post<T>(
   url: string,
   data?: any,
   options?: {
+    params?: Record<string, unknown>;
     withoutApiKey?: boolean;
     apiKey?: string;
     headers?: AxiosHeaders;
@@ -85,6 +86,7 @@ async function post<T>(
 ): Promise<T> {
   const res = await request<T>("POST", url, {
     data,
+    params: options?.params,
     withoutApiKey: options?.withoutApiKey,
     apiKey: options?.apiKey,
     headers: options?.headers,
@@ -96,12 +98,14 @@ async function del<T>(
   url: string,
   data?: any,
   options?: {
+    params?: Record<string, unknown>;
     withoutApiKey?: boolean;
     apiKey?: string;
   },
 ): Promise<T> {
   const res = await request<T>("DELETE", url, {
     data,
+    params: options?.params,
     withoutApiKey: options?.withoutApiKey,
     apiKey: options?.apiKey,
   });

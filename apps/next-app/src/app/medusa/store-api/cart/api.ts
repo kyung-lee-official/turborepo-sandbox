@@ -11,16 +11,25 @@ export enum QK_CART {
   CREATE_CART = "create_cart",
 }
 
+/** Ensures Medusa expands per-line totals (`original_*`, `subtotal`, `total`, …) alongside server defaults. */
+const STORE_API_CART_FIELDS = "+items.*";
+
 /** Retrieve cart with store ordering/metadata via custom store API. */
 export async function getCart(id: string) {
-  const data = await api.get<StoreApiCartResponse>(`/store-api/carts/${id}`);
+  const data = await api.get<StoreApiCartResponse>(`/store-api/carts/${id}`, {
+    params: { fields: STORE_API_CART_FIELDS },
+  });
   return data;
 }
 
 export async function createCart(regionId?: string) {
-  const data = await api.post<StoreApiCartResponse>("/store-api/carts", {
-    region_id: regionId,
-  });
+  const data = await api.post<StoreApiCartResponse>(
+    "/store-api/carts",
+    {
+      region_id: regionId,
+    },
+    { params: { fields: STORE_API_CART_FIELDS } },
+  );
   return data;
 }
 
@@ -32,6 +41,7 @@ export async function getOrCreateCustomerCart(options: {
   const data = await api.get<StoreApiCartResponse>(`/store-api/carts`, {
     params: {
       region_id: options.regionId,
+      fields: STORE_API_CART_FIELDS,
       ...(options.salesChannelId
         ? { sales_channel_id: options.salesChannelId }
         : {}),
@@ -47,6 +57,7 @@ export async function updateACart(
   const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}`,
     updates,
+    { params: { fields: STORE_API_CART_FIELDS } },
   );
   return data;
 }
@@ -62,6 +73,7 @@ export async function addLineItem(
       variant_id: variantId,
       quantity: quantity,
     },
+    { params: { fields: STORE_API_CART_FIELDS } },
   );
   return data;
 }
@@ -76,6 +88,7 @@ export async function updateLineItem(
     {
       quantity: quantity,
     },
+    { params: { fields: STORE_API_CART_FIELDS } },
   );
   return data;
 }
@@ -83,6 +96,8 @@ export async function updateLineItem(
 export async function unselectLineItem(cartId: string, lineId: string) {
   const data = await api.del<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/line-items/${lineId}/unselect`,
+    undefined,
+    { params: { fields: STORE_API_CART_FIELDS } },
   );
   return data;
 }
@@ -96,6 +111,7 @@ export async function setVariantQuantity(
   const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/variants/${variantId}/quantity`,
     { quantity },
+    { params: { fields: STORE_API_CART_FIELDS } },
   );
   return data;
 }
@@ -104,6 +120,7 @@ export async function removeLineItem(cartId: string, lineItemId: string) {
   const data = await api.post<StoreApiCartResponse>(
     `/store-api/carts/${cartId}/delete-line-item`,
     { item_id: lineItemId },
+    { params: { fields: STORE_API_CART_FIELDS } },
   );
   return data;
 }

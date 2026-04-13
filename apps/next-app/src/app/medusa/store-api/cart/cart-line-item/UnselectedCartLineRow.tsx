@@ -1,11 +1,12 @@
 "use client";
 
 import type { CartUnselectedEntry } from "@repo/types";
+import { storeApiUnselectedPriceDisplay } from "@repo/types";
 import Image from "next/image";
 import { Button } from "@/app/medusa/components/Button";
 import { Card } from "@/app/medusa/components/Card";
 import { Checkbox } from "@/app/medusa/components/Checkbox";
-import { formatCurrency } from "@/utils/currency";
+import { CartLinePrice } from "./CartLinePrice";
 import { CartQuantityControl } from "./CartQuantityControl";
 
 export type UnselectedLineSnapshot = CartUnselectedEntry;
@@ -41,6 +42,8 @@ export const UnselectedCartLineRow = ({
   onRemove,
   disableMinus,
 }: UnselectedCartLineRowProps) => {
+  const priceDisplay = storeApiUnselectedPriceDisplay(line, displayQuantity);
+
   return (
     <Card variant="pixel" className="max-w-none space-y-0 p-4">
       <div className="flex items-start justify-between">
@@ -69,9 +72,10 @@ export const UnselectedCartLineRow = ({
               Variant: {line.variant_title}
             </p>
           )}
-          <p className="mt-1 font-medium text-gray-700 text-sm">
-            {formatCurrency(line.unit_price, currencyCode)}
-          </p>
+          <CartLinePrice
+            currencyCode={currencyCode}
+            display={priceDisplay}
+          />
           {line.variant_sku && (
             <p className="text-gray-400 text-xs">SKU: {line.variant_sku}</p>
           )}
