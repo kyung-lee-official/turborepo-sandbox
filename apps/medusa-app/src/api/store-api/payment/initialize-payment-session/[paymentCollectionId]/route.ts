@@ -21,7 +21,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const query = req.scope.resolve(ContainerRegistrationKeys.QUERY);
   const { data: paymentCollections } = await query.graph({
     entity: "payment_collection",
-    fields: ["id", "cart.id", "cart.shipping_address.*"],
+    fields: ["id", "cart.id", "cart.email", "cart.shipping_address.*"],
     filters: {
       id: paymentCollectionId,
     },
@@ -47,6 +47,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
         payment_collection_id: paymentCollectionId,
         shipping_address: shippingAddress,
         custom_id: cart.id,
+        customer_email: cart.email ?? "",
       },
     } as CreatePaymentSessionsWorkflowInput,
   });

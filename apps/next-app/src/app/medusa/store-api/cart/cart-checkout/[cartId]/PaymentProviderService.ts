@@ -44,6 +44,26 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
       }
     },
   },
+  pp_oceanpayment_oceanpayment: {
+    type: "external",
+    buttonText: "Pay with card (OceanPayment)",
+    successMessage:
+      "Redirecting to OceanPayment secure checkout…",
+    handleRedirect: (data: any) => {
+      const paymentSession = data.payment_sessions?.[0] || data;
+      const approvalUrl =
+        paymentSession.data?.approval_url || paymentSession.data?.pay_url;
+
+      if (approvalUrl) {
+        window.location.href = approvalUrl;
+      } else {
+        console.error(
+          "OceanPayment pay URL not found in response:",
+          paymentSession,
+        );
+      }
+    },
+  },
 };
 
 // Provider service functions
