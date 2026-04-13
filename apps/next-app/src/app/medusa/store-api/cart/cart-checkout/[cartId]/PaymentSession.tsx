@@ -66,7 +66,9 @@ export const PaymentSession = ({
 
   return (
     <Card variant="pixel" className="max-w-none space-y-4 p-6">
-      <h2 className="font-bold text-gray-900 text-xl">Select payment provider</h2>
+      <h2 className="font-bold text-gray-900 text-xl">
+        Select payment provider
+      </h2>
       {providersQuery.isLoading ? (
         <div className="animate-pulse space-y-2">
           <div className="h-4 w-1/4 bg-stone-200" />
@@ -89,7 +91,7 @@ export const PaymentSession = ({
               id="payment-provider"
               value={selectedProvider}
               onChange={(e) => setSelectedProvider(e.target.value)}
-              className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-sm text-gray-900 shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-gray-900 text-sm shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               disabled={initializeSessionMutation.isPending}
             >
               <option value="">Select a payment provider</option>
