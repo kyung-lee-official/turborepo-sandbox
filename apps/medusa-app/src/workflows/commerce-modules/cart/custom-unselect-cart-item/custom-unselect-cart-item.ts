@@ -80,16 +80,16 @@ export const customUnselectCartItemWorkflow = createWorkflow(
                   ? compareAt
                   : null,
               is_tax_inclusive: Boolean(item.is_tax_inclusive),
-              original_subtotal: snapshotNum(lineTotals["original_subtotal"]),
-              subtotal: snapshotNum(lineTotals["subtotal"]),
-              original_total: snapshotNum(lineTotals["original_total"]),
-              total: snapshotNum(lineTotals["total"]),
+              original_subtotal: snapshotNum(lineTotals.original_subtotal),
+              subtotal: snapshotNum(lineTotals.subtotal),
+              original_total: snapshotNum(lineTotals.original_total),
+              total: snapshotNum(lineTotals.total),
               original_item_subtotal: snapshotNum(
-                lineTotals["original_item_subtotal"],
+                lineTotals.original_item_subtotal,
               ),
-              item_subtotal: snapshotNum(lineTotals["item_subtotal"]),
-              original_item_total: snapshotNum(lineTotals["original_item_total"]),
-              item_total: snapshotNum(lineTotals["item_total"]),
+              item_subtotal: snapshotNum(lineTotals.item_subtotal),
+              original_item_total: snapshotNum(lineTotals.original_item_total),
+              item_total: snapshotNum(lineTotals.item_total),
               thumbnail: item.thumbnail ?? null,
             };
 
