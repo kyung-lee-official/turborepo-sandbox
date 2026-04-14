@@ -15,12 +15,17 @@ type OceanWebhookPaymentSessionRow = {
   context?: Record<string, unknown> | null;
 };
 
-type GraphQuery = {
-  graph: (args: unknown) => Promise<{ data: PaymentRow[] }>;
+/** Type compatible with the query object returned by ContainerRegistrationKeys.QUERY */
+type RemoteQuery = {
+  graph: (args: {
+    entity: string;
+    fields: string[];
+    filters?: Record<string, unknown>;
+  }) => Promise<{ data: unknown[] }>;
 };
 
 export async function findOceanPaymentSessionByOrderNumber(
-  query: GraphQuery,
+  query: RemoteQuery,
   orderNumber: string,
 ): Promise<OceanWebhookPaymentSessionRow | null> {
   const { data } = (await query.graph({
@@ -38,7 +43,7 @@ export async function findOceanPaymentSessionByOrderNumber(
 }
 
 export async function findOceanPaymentByOrderNumber(
-  query: GraphQuery,
+  query: RemoteQuery,
   orderNumber: string,
 ): Promise<PaymentRow | null> {
   const { data } = (await query.graph({
