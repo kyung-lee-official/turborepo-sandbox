@@ -80,6 +80,49 @@ function toOceanOrderNumber(paymentCollectionId: string): string {
     .slice(0, 50);
 }
 
+/**
+ * Medusa passes persisted session fields on `input.data`, and the
+ * `authorizePaymentSession(id, context)` argument on `input.context` (see PayPal provider).
+ * Webhooks and routes may put `payment_id` / `payment_status` in `context.data` or at the
+ * top level of `context` (e.g. storefront forwarding `backUrl` fields).
+ */
+function resolveOceanAuthorizePayload(
+  input: AuthorizePaymentInput,
+): OceanPaymentBackUrlPayload {
+  const sessionData =
+    input.data != null && typeof input.data === "object"
+      ? { ...(input.data as Record<string, unknown>) }
+      : {};
+  const ctx = (
+    input as AuthorizePaymentInput & { context?: Record<string, unknown> }
+  ).context;
+  const ctxRecord =
+    ctx != null && typeof ctx === "object" ? (ctx as Record<string, unknown>) : {};
+  const nestedData =
+    ctxRecord.data != null && typeof ctxRecord.data === "object"
+      ? (ctxRecord.data as Record<string, unknown>)
+      : {};
+  const fromFlat: Record<string, unknown> = {};
+  for (const key of [
+    "payment_id",
+    "payment_status",
+    "authorized_via",
+    "order_number",
+    "order_currency",
+    "order_amount",
+    "payment_details",
+  ] as const) {
+    if (key in ctxRecord) {
+      fromFlat[key] = ctxRecord[key];
+    }
+  }
+  return {
+    ...sessionData,
+    ...fromFlat,
+    ...nestedData,
+  } as OceanPaymentBackUrlPayload;
+}
+
 class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
   static identifier = "oceanpayment";
 
@@ -270,11 +313,11 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
   async authorizePayment(
     input: AuthorizePaymentInput,
   ): Promise<AuthorizePaymentOutput> {
-    const payload = input.data as OceanPaymentBackUrlPayload | undefined;
+    const payload = resolveOceanAuthorizePayload(input);
     if (!payload?.payment_id || payload.payment_status === undefined) {
       throw new HttpError(
         "PAYMENT.OCEANPAYMENT_AUTHORIZATION_FAILED",
-        "Expected OceanPayment backUrl payload with payment_id and payment_status (verify backUrl signature before calling authorize).",
+        "Expected OceanPayment backUrl / notice payload with payment_id and payment_status (verify signature before calling authorize; pass fields on authorize context or context.data).",
       );
     }
 
