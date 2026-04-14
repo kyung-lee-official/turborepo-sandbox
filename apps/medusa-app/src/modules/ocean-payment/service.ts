@@ -38,6 +38,11 @@ import { AbstractPaymentProvider, BigNumber } from "@medusajs/framework/utils";
 import { HttpError } from "@repo/types";
 import { OceanPaymentClient } from "./client";
 import {
+  isAllowedOceanHostedCheckoutMethod,
+  OCEAN_HOSTED_CHECKOUT_METHOD_VALUES,
+  OCEAN_HOSTED_CHECKOUT_METHODS,
+} from "./hosted-checkout-methods";
+import {
   buildBillingFromCart,
   buildOceanProductFieldsFromCartLines,
   type OceanPaymentBackUrlPayload,
@@ -121,6 +126,17 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
 
     const noticeUrl = process.env.OCEANPAYMENT_NOTICE_URL ?? "";
     const { amount, currency_code, data = {}, context } = input;
+    /** Ocean expects ISO 4217 uppercase (e.g. USD); Medusa often passes lowercase. */
+    const order_currency = String(currency_code ?? "")
+      .trim()
+      .toUpperCase();
+    if (!order_currency || order_currency.length !== 3) {
+      throw new HttpError(
+        "PAYMENT.OCEANPAYMENT_MISCONFIGURED",
+        "order_currency must be a 3-letter ISO 4217 code (e.g. USD).",
+      );
+    }
+
     const billing = buildBillingFromCart(
       context.shipping_address,
       data,
@@ -136,7 +152,19 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
 
     const order_number = toOceanOrderNumber(context.payment_collection_id);
     const order_amount = formatOrderAmount(amount);
-    const methods = data.methods ?? "Credit Card";
+    let methods: string;
+    if (data.methods != null && String(data.methods).trim() !== "") {
+      const m = String(data.methods).trim();
+      if (!isAllowedOceanHostedCheckoutMethod(m)) {
+        throw new HttpError(
+          "PAYMENT.OCEANPAYMENT_INVALID_METHOD",
+          `Invalid Ocean Hosted Checkout methods value: ${m}. Allowed: ${OCEAN_HOSTED_CHECKOUT_METHOD_VALUES.join(", ")}.`,
+        );
+      }
+      methods = m;
+    } else {
+      methods = OCEAN_HOSTED_CHECKOUT_METHODS.CREDIT_CARD;
+    }
     const order_notes = data.order_notes ?? "";
 
     const signValue = buildHostedCheckoutRequestSignValue({
@@ -144,7 +172,7 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
       terminal: this.options_.terminal,
       backUrl,
       order_number,
-      order_currency: currency_code,
+      order_currency,
       order_amount,
       billing_firstName: billing.billing_firstName,
       billing_lastName: billing.billing_lastName,
@@ -179,7 +207,7 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
       signValue,
       backUrl,
       order_number,
-      order_currency: currency_code,
+      order_currency,
       order_amount,
       methods,
       order_notes,

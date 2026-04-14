@@ -39,10 +39,24 @@ export class OceanPaymentClient {
     }
 
     const parsed = parseSendTradeXml(text);
-    if (!parsed.pay_url) {
+
+    if (parsed.pay_results !== "1") {
+      const detail = parsed.pay_details?.trim() || "unknown";
+      throw new HttpError(
+        "PAYMENT.OCEANPAYMENT_SEND_TRADE_FAILED",
+        `OceanPayment sendTrade declined (pay_results=${parsed.pay_results || "?"}): ${detail}`,
+        {
+          pay_results: parsed.pay_results,
+          pay_details: parsed.pay_details,
+          bodyPreview: text.slice(0, 800),
+        },
+      );
+    }
+
+    if (!parsed.pay_url?.trim()) {
       throw new HttpError(
         "PAYMENT.OCEANPAYMENT_INVALID_RESPONSE",
-        "Hosted Checkout sendTrade response must include pay_url (this provider does not support Payment Link MOTO_url or non-hosted flows).",
+        "Hosted Checkout sendTrade succeeded (pay_results=1) but pay_url is missing.",
         { bodyPreview: text.slice(0, 800) },
       );
     }
@@ -69,14 +83,6 @@ export class OceanPaymentClient {
           "OceanPayment sendTrade response signature verification failed",
         );
       }
-    }
-
-    if (parsed.pay_results !== "1") {
-      throw new HttpError(
-        "PAYMENT.OCEANPAYMENT_SEND_TRADE_FAILED",
-        `OceanPayment sendTrade declined: ${parsed.pay_details || "unknown"}`,
-        { pay_results: parsed.pay_results, pay_details: parsed.pay_details },
-      );
     }
 
     return parsed;
