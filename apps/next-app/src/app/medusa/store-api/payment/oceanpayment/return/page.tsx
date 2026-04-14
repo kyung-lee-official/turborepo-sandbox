@@ -24,25 +24,24 @@ const Page = async ({ searchParams }: Props) => {
     <StoreApiScaffold maxWidth="narrow">
       <PageHeading
         title="OceanPayment return (demo)"
-        description="Hosted checkout browser return — use this URL as OCEANPAYMENT_BACK_URL while integrating."
+        description="Use this URL as OCEANPAYMENT_PAYMENT_RESULT_REDIRECT_BASE — the browser arrives here via GET after Medusa verifies the synchronous backUrl POST."
       />
 
       <Card variant="pixel" className="max-w-none space-y-4 p-6">
         <p className="text-gray-800 text-sm leading-relaxed">
-          Ocean&apos;s default is to{" "}
-          <strong className="font-semibold">POST</strong> form fields to your{" "}
-          <code className="font-mono text-xs">backUrl</code>. A Next.js{" "}
-          <code className="font-mono text-xs">page.tsx</code> only handles{" "}
-          <strong className="font-semibold">GET</strong>, so for production you
-          need a <code className="font-mono text-xs">route.ts</code> POST handler
-          (or configure Ocean to return via GET if your account supports it),
-          then verify the synchronous signature before completing the Medusa
-          payment.
+          Flow: Ocean <strong className="font-semibold">POSTs</strong> the payment
+          form to your Medusa <code className="font-mono text-xs">backUrl</code>{" "}
+          (e.g. <code className="font-mono text-xs">/hooks/payment/oceanpayment_oceanpayment/back</code>
+          ). Medusa verifies <code className="font-mono text-xs">signValue</code>, then responds with{" "}
+          <strong className="font-semibold">303</strong> to this page with an allowlisted subset of fields
+          in the query string. This Next.js <code className="font-mono text-xs">page.tsx</code> only handles
+          that final <strong className="font-semibold">GET</strong>.
         </p>
         <p className="text-gray-700 text-sm">
           This page is a <strong className="font-semibold">visual demo</strong>
-          : if you open it with query parameters (e.g. after a test redirect), they
-          are listed below.
+          : query parameters shown below are whatever Medusa attached on redirect
+          (e.g. <code className="font-mono text-xs">payment_id</code>,{" "}
+          <code className="font-mono text-xs">payment_status</code>).
         </p>
       </Card>
 
@@ -65,8 +64,8 @@ const Page = async ({ searchParams }: Props) => {
       ) : (
         <Card variant="pixel" className="max-w-none p-6">
           <p className="text-gray-700 text-sm">
-            No query parameters on this request. After a real Ocean redirect you
-            may see an empty GET here while the POST body is handled elsewhere.
+            No query parameters on this request. Open this URL from the checkout
+            flow after Medusa&apos;s 303 redirect, or append test query params manually.
           </p>
         </Card>
       )}

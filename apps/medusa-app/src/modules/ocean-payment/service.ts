@@ -159,11 +159,20 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
       };
     },
   ): Promise<InitiatePaymentOutput> {
+    /** Browser POST target after hosted checkout — use Medusa POST route, e.g. `.../hooks/payment/oceanpayment_oceanpayment/back`. */
     const backUrl = process.env.OCEANPAYMENT_BACK_URL;
     if (!backUrl) {
       throw new HttpError(
         "PAYMENT.OCEANPAYMENT_MISCONFIGURED",
         "OCEANPAYMENT_BACK_URL must be set (synchronous return / browser POST target).",
+      );
+    }
+
+    const resultRedirectBase =
+      process.env.OCEANPAYMENT_PAYMENT_RESULT_REDIRECT_BASE?.trim();
+    if (!resultRedirectBase) {
+      this.logger_.warn(
+        "[OceanPayment] OCEANPAYMENT_PAYMENT_RESULT_REDIRECT_BASE is unset. The Medusa `/hooks/payment/oceanpayment_oceanpayment/back` handler needs it to 303-redirect after a verified synchronous POST.",
       );
     }
 

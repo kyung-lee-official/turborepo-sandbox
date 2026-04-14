@@ -10,6 +10,11 @@
  *   `oceanpayment_auto_redirect` (skip sendTrade XML signature verification per Ocean matrix).
  * - `OCEANPAYMENT_LINE_AMOUNTS_MINOR_UNITS` — default `true`; set `false` if cart line `total` is already major units.
  * - `OCEANPAYMENT_FALLBACK_BILLING_IP` — used when no `billing_ip` in session data or context.
+ * - `OCEANPAYMENT_BACK_URL` — **Medusa** URL that accepts Ocean’s synchronous **POST** (form body), e.g.
+ *   `{MEDUSA_BACKEND_URL}/hooks/payment/oceanpayment_oceanpayment/back`. Included in `sendTrade` request
+ *   signing; do not point at a Next.js `page.tsx` (GET-only) URL.
+ * - `OCEANPAYMENT_PAYMENT_RESULT_REDIRECT_BASE` — storefront URL (no query string) for **303** after a
+ *   verified `backUrl` POST, e.g. `{NEXT_ORIGIN}/medusa/store-api/payment/oceanpayment/return`.
  * - `OCEANPAYMENT_NOTICE_URL` — set to `{MEDUSA_BACKEND_URL}/hooks/payment/oceanpayment_oceanpayment`.
  * - `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` — override if your DB provider id differs from `pp_oceanpayment_oceanpayment`
  *   (exported as `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` below).
