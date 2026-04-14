@@ -1,6 +1,10 @@
 import type { StoreCartAddress } from "@medusajs/framework/types";
 
 /**
+ * OceanPayment **Hosted Checkout** only (`sendTrade` / hosted payment page).
+ * @see https://dev.oceanpayment.com/en/docs/payment/introduction
+ * @see https://dev.oceanpayment.com/en/docs/payment/host-page/integration
+ *
  * Optional fields your storefront can pass when initializing a payment session
  * (merged with cart shipping address where applicable).
  */
@@ -40,8 +44,9 @@ export type OceanPaymentSendTradeResponse = {
 };
 
 /**
- * Payload you should POST into Medusa `authorizePayment` after validating
- * the synchronous `backUrl` signature on your own route.
+ * Hosted Checkout browser return — payload to pass into Medusa `authorizePayment` after you verify
+ * synchronous `backUrl` POST signature on your own route.
+ * @see https://dev.oceanpayment.com/en/docs/payment/host-page/integration
  * @see https://dev.oceanpayment.com/en/docs/payment/parameter
  */
 export type OceanPaymentBackUrlPayload = {
@@ -54,14 +59,98 @@ export type OceanPaymentBackUrlPayload = {
   [key: string]: unknown;
 };
 
-export type OceanPaymentSessionData = OceanPaymentSendTradeResponse & {
-  pay_url: string;
+/** Cart lines passed from `initialize-payment-session` into provider context. */
+export type OceanPaymentCartLineInput = {
+  title?: string | null;
+  product_title?: string | null;
+  quantity?: number | string | null;
+  variant_sku?: string | null;
+  /** Medusa line total; typically minor units (e.g. cents). */
+  total?: number | string | null;
 };
+
+/**
+ * Maps cart lines to Ocean comma-separated product fields.
+ * When `OCEANPAYMENT_LINE_AMOUNTS_MINOR_UNITS` is not `"false"`, `total` is divided by 100 for display.
+ */
+export function buildOceanProductFieldsFromCartLines(
+  lines: OceanPaymentCartLineInput[] | null | undefined,
+  fallback: {
+    productName: string;
+    productNum: string;
+    productSku: string;
+    productPrice: string;
+  },
+  /** Used when a line has no `total` (same as collection amount for single-line fallback). */
+  priceWhenLineTotalMissing?: string,
+): {
+  productName: string;
+  productNum: string;
+  productSku: string;
+  productPrice: string;
+} {
+  if (!lines?.length) {
+    return fallback;
+  }
+
+  const minorUnits =
+    (process.env.OCEANPAYMENT_LINE_AMOUNTS_MINOR_UNITS ?? "true")
+      .trim()
+      .toLowerCase() !== "false";
+
+  const names: string[] = [];
+  const nums: string[] = [];
+  const skus: string[] = [];
+  const prices: string[] = [];
+
+  for (const line of lines) {
+    const rawName = line.product_title ?? line.title ?? "Item";
+    const name = String(rawName).replace(/,/g, " ").trim() || "Item";
+    const qtyNum = Number(line.quantity ?? 1);
+    const qty = Number.isFinite(qtyNum) && qtyNum > 0 ? Math.floor(qtyNum) : 1;
+    const skuRaw = line.variant_sku != null ? String(line.variant_sku) : "";
+    const sku = skuRaw.replace(/,/g, " ").trim() || "#item";
+
+    let priceStr = priceWhenLineTotalMissing?.trim() || fallback.productPrice;
+    if (line.total != null && line.total !== "") {
+      const raw = Number(line.total);
+      if (Number.isFinite(raw)) {
+        const major = minorUnits ? raw / 100 : raw;
+        priceStr = major.toFixed(2);
+      }
+    }
+
+    names.push(name);
+    nums.push(String(qty));
+    skus.push(sku);
+    prices.push(priceStr);
+  }
+
+  return {
+    productName: names.join(","),
+    productNum: nums.join(","),
+    productSku: skus.join(","),
+    productPrice: prices.join(","),
+  };
+}
 
 export function pickXmlTag(xml: string, tag: string): string {
   const re = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, "i");
   const m = xml.match(re);
   return m?.[1]?.trim() ?? "";
+}
+
+export function mergeOceanNoticeIntoPaymentData(
+  paymentData: Record<string, unknown> | undefined,
+  notice: Record<string, unknown>,
+): Record<string, unknown> {
+  return {
+    ...(paymentData ?? {}),
+    last_ocean_notice: {
+      ...notice,
+      recorded_at: new Date().toISOString(),
+    },
+  };
 }
 
 export function buildBillingFromCart(

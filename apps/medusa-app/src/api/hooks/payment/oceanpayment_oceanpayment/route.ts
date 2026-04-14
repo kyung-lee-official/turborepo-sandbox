@@ -2,10 +2,10 @@ import type { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { mergeOceanNoticeIntoPaymentData } from "@/modules/ocean-payment/ocean-payment-data";
 import { findOceanPaymentByOrderNumber } from "@/modules/ocean-payment/ocean-webhook-find-payment";
-import { parseOceanCheckoutWebhookXml } from "@/modules/ocean-payment/ocean-webhook-parse";
+import { parseHostedCheckoutNoticeXml } from "@/modules/ocean-payment/ocean-webhook-parse";
 import { readMedusaRequestBodyUtf8 } from "@/modules/ocean-payment/read-raw-request-body";
 import {
-  buildCheckoutWebhookTransactionSignValue,
+  buildHostedCheckoutNoticeUrlSignValue,
   oceanSignValuesEqual,
 } from "@/modules/ocean-payment/sign";
 
@@ -23,8 +23,8 @@ function getWebhookXmlPayload(req: MedusaRequest): string {
 }
 
 /**
- * OceanPayment async transaction notification (`noticeUrl`).
- * Expects raw XML POST body per
+ * Hosted Checkout only — async `noticeUrl` notification after `sendTrade` / `pay_url`.
+ * Raw XML POST body per
  * https://dev.oceanpayment.com/en/docs/webhook/payments/checkout
  *
  * Configure `OCEANPAYMENT_NOTICE_URL` to this route’s public URL, e.g.
@@ -55,8 +55,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     return;
   }
 
-  const fields = parseOceanCheckoutWebhookXml(xml);
-  const expected = buildCheckoutWebhookTransactionSignValue({
+  const fields = parseHostedCheckoutNoticeXml(xml);
+  const expected = buildHostedCheckoutNoticeUrlSignValue({
     account: fields.account,
     terminal: fields.terminal,
     order_number: fields.order_number,
@@ -88,10 +88,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
     }) => Promise<unknown>;
   };
 
-  const found = await findOceanPaymentByOrderNumber(
-    query,
-    fields.order_number,
-  );
+  const found = await findOceanPaymentByOrderNumber(query, fields.order_number);
 
   if (!found) {
     logger.warn(

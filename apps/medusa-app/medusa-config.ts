@@ -53,9 +53,6 @@ if (!process.env.OCEANPAYMENT_SECURE_CODE) {
     "OCEANPAYMENT_SECURE_CODE is not defined in environment variables",
   );
 }
-if (!process.env.OCEANPAYMENT_KEY) {
-  throw new Error("OCEANPAYMENT_KEY is not defined in environment variables");
-}
 
 module.exports = defineConfig({
   projectConfig: {
@@ -133,13 +130,13 @@ module.exports = defineConfig({
             },
           },
           {
+            // Hosted Checkout only — https://dev.oceanpayment.com/en/docs/payment/introduction
             resolve: "./src/modules/ocean-payment",
             id: "oceanpayment",
             options: {
               account: process.env.OCEANPAYMENT_ACCOUNT,
               terminal: process.env.OCEANPAYMENT_TERMINAL,
               secureCode: process.env.OCEANPAYMENT_SECURE_CODE,
-              key: process.env.OCEANPAYMENT_KEY,
             },
           },
         ],

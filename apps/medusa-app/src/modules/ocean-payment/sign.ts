@@ -1,3 +1,7 @@
+/**
+ * Signature helpers for OceanPayment **Hosted Checkout** (`sendTrade`, response XML, `noticeUrl`).
+ * @see https://dev.oceanpayment.com/en/docs/payment/introduction
+ */
 import { createHash } from "node:crypto";
 
 /**
@@ -86,4 +90,45 @@ export function buildHostedCheckoutSendTradeResponseSignValue(input: {
 
 export function oceanSignValuesEqual(a: string, b: string): boolean {
   return a.toLowerCase() === b.toLowerCase();
+}
+
+/**
+ * Hosted Checkout — server async notification (`noticeUrl`) signature verification.
+ * (Same string as Ocean’s “Payments” row for transaction webhooks after `sendTrade`.)
+ * account + terminal + order_number + order_currency + order_amount + order_notes +
+ * card_number + payment_id + payment_authType + payment_status + payment_details + payment_risk + secureCode
+ * @see https://dev.oceanpayment.com/en/docs/payment/introduction (Hosted Checkout)
+ * @see https://dev.oceanpayment.com/en/docs/webhook/payments/checkout
+ */
+export function buildHostedCheckoutNoticeUrlSignValue(input: {
+  account: string;
+  terminal: string;
+  order_number: string;
+  order_currency: string;
+  order_amount: string;
+  order_notes: string;
+  card_number: string;
+  payment_id: string;
+  payment_authType: string;
+  payment_status: string;
+  payment_details: string;
+  payment_risk: string;
+  secureCode: string;
+}): string {
+  const concat =
+    oceanSanitizeForSign(input.account) +
+    oceanSanitizeForSign(input.terminal) +
+    oceanSanitizeForSign(input.order_number) +
+    oceanSanitizeForSign(input.order_currency) +
+    oceanSanitizeForSign(input.order_amount) +
+    oceanSanitizeForSign(input.order_notes) +
+    oceanSanitizeForSign(input.card_number) +
+    oceanSanitizeForSign(input.payment_id) +
+    oceanSanitizeForSign(input.payment_authType) +
+    oceanSanitizeForSign(input.payment_status) +
+    oceanSanitizeForSign(input.payment_details) +
+    oceanSanitizeForSign(input.payment_risk) +
+    oceanSanitizeForSign(input.secureCode);
+
+  return sha256Hex(concat);
 }

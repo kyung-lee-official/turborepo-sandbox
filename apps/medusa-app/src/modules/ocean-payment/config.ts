@@ -1,6 +1,20 @@
 /**
- * OceanPayment gateway base URL (sandbox vs production).
+ * OceanPayment **Hosted Checkout** only (not Embedded, Server-to-Server, Payment Link, or POS).
+ * @see https://dev.oceanpayment.com/en/docs/payment/introduction
+ *
+ * Gateway base URL (sandbox vs production) and Hosted Checkout redirect options.
+ *
+ * Environment (common):
+ * - `OCEANPAYMENT_GATEWAY_BASE_URL` — optional override for sendTrade host.
+ * - `OCEANPAYMENT_HOSTED_REDIRECT_MODE` — `merchant_control` (default) or `auto` /
+ *   `oceanpayment_auto_redirect` (skip sendTrade XML signature verification per Ocean matrix).
+ * - `OCEANPAYMENT_LINE_AMOUNTS_MINOR_UNITS` — default `true`; set `false` if cart line `total` is already major units.
+ * - `OCEANPAYMENT_FALLBACK_BILLING_IP` — used when no `billing_ip` in session data or context.
+ * - `OCEANPAYMENT_NOTICE_URL` — set to `{MEDUSA_BACKEND_URL}/hooks/payment/oceanpayment_oceanpayment`.
+ * - `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` — override if your DB provider id differs from `pp_oceanpayment_oceanpayment`.
+ *
  * @see https://dev.oceanpayment.com/en/docs/payment/host-page/integration
+ * @see https://dev.oceanpayment.com/en/docs/compliance-and-security/sign/payment (Hosted Checkout rows only)
  */
 
 export function getOceanPaymentGatewayBaseUrl(): string {
@@ -13,8 +27,39 @@ export function getOceanPaymentGatewayBaseUrl(): string {
     : "https://test-secure.oceanpayment.com";
 }
 
+/**
+ * Hosted checkout redirect mode per Ocean sign/payment matrix.
+ * - `merchant_control`: verify `sendTrade` XML `signValue` (pay_url response).
+ * - `auto` (`oceanpayment_auto_redirect`): real-time response verification is not
+ *   the same per docs — skip XML signature check; still validate `pay_url` + `pay_results`.
+ * @see https://dev.oceanpayment.com/en/docs/compliance-and-security/sign/payment
+ */
+export type OceanPaymentHostedRedirectMode =
+  | "merchant_control"
+  | "oceanpayment_auto_redirect";
+
+export function getOceanPaymentHostedRedirectMode(): OceanPaymentHostedRedirectMode {
+  const raw = (
+    process.env.OCEANPAYMENT_HOSTED_REDIRECT_MODE ?? "merchant_control"
+  )
+    .trim()
+    .toLowerCase()
+    .replace(/-/g, "_");
+
+  if (
+    raw === "auto" ||
+    raw === "oceanpayment_auto_redirect" ||
+    raw === "auto_redirect"
+  ) {
+    return "oceanpayment_auto_redirect";
+  }
+  return "merchant_control";
+}
+
 export const OceanPaymentConfig = {
   getGatewayBaseUrl: getOceanPaymentGatewayBaseUrl,
+
+  getHostedRedirectMode: getOceanPaymentHostedRedirectMode,
 
   sendTradePath: "/gateway/service/sendTrade",
 } as const;

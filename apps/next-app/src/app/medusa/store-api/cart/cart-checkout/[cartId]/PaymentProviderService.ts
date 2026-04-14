@@ -46,9 +46,8 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
   },
   pp_oceanpayment_oceanpayment: {
     type: "external",
-    buttonText: "Pay with card (OceanPayment)",
-    successMessage:
-      "Redirecting to OceanPayment secure checkout…",
+    buttonText: "Pay with OceanPayment (hosted checkout)",
+    successMessage: "Redirecting to OceanPayment hosted checkout…",
     handleRedirect: (data: any) => {
       const paymentSession = data.payment_sessions?.[0] || data;
       const approvalUrl =
@@ -58,7 +57,7 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
         window.location.href = approvalUrl;
       } else {
         console.error(
-          "OceanPayment pay URL not found in response:",
+          "OceanPayment hosted checkout pay_url not found in response:",
           paymentSession,
         );
       }

@@ -1,7 +1,7 @@
 import type { MiddlewareRoute } from "@medusajs/framework/http";
 
 /**
- * Raw XML body for OceanPayment `noticeUrl` — disable global JSON/urlencoded parsers
+ * Hosted Checkout `noticeUrl` — raw XML body: disable global JSON/urlencoded parsers
  * so the route handler can read the stream.
  */
 export const oceanpaymentOceanpaymentHooksMiddlewares: MiddlewareRoute[] = [
