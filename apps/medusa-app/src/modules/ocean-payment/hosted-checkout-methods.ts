@@ -2,6 +2,11 @@
  * Official `methods` values for Hosted Checkout per Ocean payment products list.
  * @see https://dev.oceanpayment.com/en/docs/payment/methods/list
  *
+ * Apple Pay and Google Pay: expect `sendTrade` / hosted checkout to work only when
+ * those rails are enabled on your real Ocean merchant account and terminal.
+ * Ocean sandbox / test environments often do not support wallet methods (you may see
+ * declines such as payment method not accepted).
+ *
  * Keep in sync with:
  * `apps/next-app/src/app/medusa/store-api/payment/ocean-hosted-methods.ts`
  */
