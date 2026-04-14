@@ -262,8 +262,9 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
   }
 
   /**
-   * After your `backUrl` handler verifies the synchronous POST signature, forward
-   * the payload (at least `payment_id` + `payment_status`) into Medusa authorize.
+   * After your `backUrl` handler verifies the synchronous POST signature, or the
+   * async `noticeUrl` webhook verifies the notice signature, forward the payload
+   * (at least `payment_id` + `payment_status`) into Medusa authorize.
    * Hosted credit-card sale: `payment_status === "1"` => captured.
    */
   async authorizePayment(
@@ -284,12 +285,15 @@ class OceanPaymentProviderService extends AbstractPaymentProvider<Options> {
       );
     }
 
+    const via =
+      payload.authorized_via === "noticeUrl" ? "noticeUrl" : "backUrl";
+
     return {
       status: "captured",
       data: {
         ...(input.data as object),
         oceanpayment: {
-          authorized_via: "backUrl",
+          authorized_via: via,
           payment_id: payload.payment_id,
         },
       },

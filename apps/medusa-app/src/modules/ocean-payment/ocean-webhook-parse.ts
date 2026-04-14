@@ -40,3 +40,23 @@ export function parseHostedCheckoutNoticeXml(
     response_type: pickXmlTag(xml, "response_type"),
   };
 }
+
+/**
+ * Merges `noticeUrl` fields into payment session `data` so {@link OceanPaymentProviderService.authorizePayment}
+ * receives `payment_id` + `payment_status` (same shape as synchronous `backUrl`).
+ */
+export function mergeOceanSessionDataForAuthorizeFromNotice(
+  sessionData: Record<string, unknown>,
+  fields: OceanHostedCheckoutNoticeFields,
+): Record<string, unknown> {
+  return {
+    ...sessionData,
+    payment_id: fields.payment_id,
+    payment_status: fields.payment_status,
+    authorized_via: "noticeUrl",
+    order_number: fields.order_number || sessionData.order_number,
+    order_currency: fields.order_currency,
+    order_amount: fields.order_amount,
+    payment_details: fields.payment_details,
+  };
+}

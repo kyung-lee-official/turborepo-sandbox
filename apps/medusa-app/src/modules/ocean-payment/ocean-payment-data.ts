@@ -52,6 +52,8 @@ export type OceanPaymentSendTradeResponse = {
 export type OceanPaymentBackUrlPayload = {
   payment_id: string;
   payment_status: string;
+  /** Set when authorization data comes from async `noticeUrl` instead of synchronous `backUrl`. */
+  authorized_via?: "backUrl" | "noticeUrl";
   order_number?: string;
   order_currency?: string;
   order_amount?: string;
