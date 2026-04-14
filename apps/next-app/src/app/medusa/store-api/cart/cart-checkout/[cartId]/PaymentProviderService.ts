@@ -1,4 +1,5 @@
 import {
+  type InitializeExternalPaymentSessionData,
   initializeDefaultPaymentSession,
   initializePaymentSession,
 } from "../../../payment/api";
@@ -88,6 +89,7 @@ export function isSystemDefault(providerId: string): boolean {
 export async function initializeSession(
   paymentCollectionId: string,
   providerId: string,
+  sessionExtra?: Partial<InitializeExternalPaymentSessionData>,
 ): Promise<any> {
   const config = getProviderConfig(providerId);
 
@@ -98,7 +100,11 @@ export async function initializeSession(
         providerId,
       );
     case "external":
-      return await initializePaymentSession(paymentCollectionId, providerId);
+      return await initializePaymentSession(
+        paymentCollectionId,
+        providerId,
+        sessionExtra ?? {},
+      );
     default:
       throw new Error(`No provider type found for provider ID: ${providerId}`);
   }

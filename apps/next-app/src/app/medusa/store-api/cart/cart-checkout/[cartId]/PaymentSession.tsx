@@ -8,11 +8,17 @@ import { Card } from "@/app/medusa/components/Card";
 import { listPaymentProviders } from "../../../payment/api";
 import { QK_CART } from "../../api";
 import {
+  OCEAN_HOSTED_CHECKOUT_METHOD_OPTIONS,
+  OCEAN_HOSTED_CHECKOUT_METHODS,
+} from "../../../payment/ocean-hosted-methods";
+import {
   getButtonText,
   getSuccessMessage,
   handlePostInitialization,
   initializeSession,
 } from "./PaymentProviderService";
+
+const OCEAN_PAYMENT_PROVIDER_ID = "pp_oceanpayment_oceanpayment";
 
 type PaymentSessionProps = {
   paymentCollectionId: string;
@@ -28,6 +34,9 @@ export const PaymentSession = ({
   hasHydrated,
 }: PaymentSessionProps) => {
   const [selectedProvider, setSelectedProvider] = useState<string>("");
+  const [oceanHostedMethod, setOceanHostedMethod] = useState<string>(
+    OCEAN_HOSTED_CHECKOUT_METHODS.CREDIT_CARD,
+  );
   const queryClient = useQueryClient();
 
   const providersQuery = useQuery({
@@ -40,10 +49,12 @@ export const PaymentSession = ({
     mutationFn: async ({
       paymentCollectionId: pcId,
       providerId,
+      sessionExtra,
     }: {
       paymentCollectionId: string;
       providerId: string;
-    }) => await initializeSession(pcId, providerId),
+      sessionExtra?: { methods?: string };
+    }) => await initializeSession(pcId, providerId, sessionExtra),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QK_CART.GET_CART, cartId, regionId],
@@ -58,6 +69,10 @@ export const PaymentSession = ({
       await initializeSessionMutation.mutateAsync({
         paymentCollectionId,
         providerId: selectedProvider,
+        sessionExtra:
+          selectedProvider === OCEAN_PAYMENT_PROVIDER_ID
+            ? { methods: oceanHostedMethod }
+            : undefined,
       });
     } catch (error) {
       console.error("Failed to initialize payment session:", error);
@@ -90,7 +105,10 @@ export const PaymentSession = ({
             <select
               id="payment-provider"
               value={selectedProvider}
-              onChange={(e) => setSelectedProvider(e.target.value)}
+              onChange={(e) => {
+                setSelectedProvider(e.target.value);
+                setOceanHostedMethod(OCEAN_HOSTED_CHECKOUT_METHODS.CREDIT_CARD);
+              }}
               className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-gray-900 text-sm shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               disabled={initializeSessionMutation.isPending}
             >
@@ -105,6 +123,30 @@ export const PaymentSession = ({
               )}
             </select>
           </div>
+
+          {selectedProvider === OCEAN_PAYMENT_PROVIDER_ID && (
+            <div>
+              <label
+                htmlFor="ocean-hosted-method"
+                className="mb-2 block font-semibold text-gray-800 text-sm"
+              >
+                Ocean hosted checkout method
+              </label>
+              <select
+                id="ocean-hosted-method"
+                value={oceanHostedMethod}
+                onChange={(e) => setOceanHostedMethod(e.target.value)}
+                className="w-full rounded-none border-2 border-[#1e1b84] bg-white px-3 py-2 font-sans text-gray-900 text-sm shadow-[4px_4px_0_0_#0f172a] focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                disabled={initializeSessionMutation.isPending}
+              >
+                {OCEAN_HOSTED_CHECKOUT_METHOD_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <Button
             type="button"

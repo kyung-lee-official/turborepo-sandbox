@@ -49,9 +49,16 @@ export async function initializeDefaultPaymentSession(
   return data;
 }
 
+export type InitializeExternalPaymentSessionData = {
+  intent: "CAPTURE";
+  /** Ocean Hosted Checkout `sendTrade` `methods` (e.g. Credit Card, ApplePay, GooglePay). */
+  methods?: string;
+};
+
 export async function initializePaymentSession(
   paymentCollectionId: string,
   providerId: string,
+  sessionData: Partial<InitializeExternalPaymentSessionData> = {},
 ) {
   const data = await api.post<StorePaymentCollectionResponse>(
     `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/store-api/payment/initialize-payment-session/${paymentCollectionId}`,
@@ -59,6 +66,7 @@ export async function initializePaymentSession(
       provider_id: providerId,
       data: {
         intent: "CAPTURE",
+        ...sessionData,
       },
     },
   );
