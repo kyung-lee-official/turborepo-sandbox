@@ -10,6 +10,7 @@ import { QK_CART } from "../../api";
 import {
   OCEAN_HOSTED_CHECKOUT_METHOD_OPTIONS,
   OCEAN_HOSTED_CHECKOUT_METHODS,
+  OCEAN_MEDUSA_PAYMENT_PROVIDER_ID,
 } from "../../../payment/ocean-hosted-methods";
 import {
   getButtonText,
@@ -17,8 +18,6 @@ import {
   handlePostInitialization,
   initializeSession,
 } from "./PaymentProviderService";
-
-const OCEAN_PAYMENT_PROVIDER_ID = "pp_oceanpayment_oceanpayment";
 
 type PaymentSessionProps = {
   paymentCollectionId: string;
@@ -70,7 +69,7 @@ export const PaymentSession = ({
         paymentCollectionId,
         providerId: selectedProvider,
         sessionExtra:
-          selectedProvider === OCEAN_PAYMENT_PROVIDER_ID
+          selectedProvider === OCEAN_MEDUSA_PAYMENT_PROVIDER_ID
             ? { methods: oceanHostedMethod }
             : undefined,
       });
@@ -124,7 +123,7 @@ export const PaymentSession = ({
             </select>
           </div>
 
-          {selectedProvider === OCEAN_PAYMENT_PROVIDER_ID && (
+          {selectedProvider === OCEAN_MEDUSA_PAYMENT_PROVIDER_ID && (
             <div>
               <label
                 htmlFor="ocean-hosted-method"

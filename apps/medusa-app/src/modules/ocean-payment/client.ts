@@ -89,7 +89,7 @@ export class OceanPaymentClient {
   }
 }
 
-export function parseSendTradeXml(xml: string): OceanPaymentSendTradeResponse {
+function parseSendTradeXml(xml: string): OceanPaymentSendTradeResponse {
   return {
     account: pickXmlTag(xml, "account"),
     terminal: pickXmlTag(xml, "terminal"),

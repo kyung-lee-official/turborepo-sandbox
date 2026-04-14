@@ -3,6 +3,7 @@ import {
   initializeDefaultPaymentSession,
   initializePaymentSession,
 } from "../../../payment/api";
+import { OCEAN_MEDUSA_PAYMENT_PROVIDER_ID } from "../../../payment/ocean-hosted-methods";
 
 // Payment provider types
 export type PaymentProviderType = "system_default" | "external";
@@ -45,7 +46,7 @@ const PROVIDER_CONFIGS: Record<string, PaymentProviderConfig> = {
       }
     },
   },
-  pp_oceanpayment_oceanpayment: {
+  [OCEAN_MEDUSA_PAYMENT_PROVIDER_ID]: {
     type: "external",
     buttonText: "Pay with OceanPayment (hosted checkout)",
     successMessage: "Redirecting to OceanPayment hosted checkout…",

@@ -9,6 +9,8 @@
  *
  * Keep in sync with:
  * `apps/next-app/src/app/medusa/store-api/payment/ocean-hosted-methods.ts`
+ *
+ * Medusa provider id: `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` in `config.ts`.
  */
 export const OCEAN_HOSTED_CHECKOUT_METHODS = {
   CREDIT_CARD: "Credit Card",

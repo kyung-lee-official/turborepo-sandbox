@@ -11,11 +11,17 @@
  * - `OCEANPAYMENT_LINE_AMOUNTS_MINOR_UNITS` — default `true`; set `false` if cart line `total` is already major units.
  * - `OCEANPAYMENT_FALLBACK_BILLING_IP` — used when no `billing_ip` in session data or context.
  * - `OCEANPAYMENT_NOTICE_URL` — set to `{MEDUSA_BACKEND_URL}/hooks/payment/oceanpayment_oceanpayment`.
- * - `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` — override if your DB provider id differs from `pp_oceanpayment_oceanpayment`.
+ * - `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` — override if your DB provider id differs from `pp_oceanpayment_oceanpayment`
+ *   (exported as `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` below).
  *
  * @see https://dev.oceanpayment.com/en/docs/payment/host-page/integration
  * @see https://dev.oceanpayment.com/en/docs/compliance-and-security/sign/payment (Hosted Checkout rows only)
  */
+
+/** Medusa `payment` / `payment_session` `provider_id` for this module. */
+export const OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID =
+  process.env.OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID?.trim() ||
+  "pp_oceanpayment_oceanpayment";
 
 export function getOceanPaymentGatewayBaseUrl(): string {
   if (process.env.OCEANPAYMENT_GATEWAY_BASE_URL) {

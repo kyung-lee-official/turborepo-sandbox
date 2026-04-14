@@ -9,7 +9,14 @@
  *
  * Keep in sync with:
  * `apps/medusa-app/src/modules/ocean-payment/hosted-checkout-methods.ts`
+ *
+ * Medusa provider id: align with `OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID` in
+ * `apps/medusa-app/src/modules/ocean-payment/config.ts` (optional `NEXT_PUBLIC_OCEAN_MEDUSA_PAYMENT_PROVIDER_ID` here for storefront builds).
  */
+export const OCEAN_MEDUSA_PAYMENT_PROVIDER_ID =
+  process.env.NEXT_PUBLIC_OCEAN_MEDUSA_PAYMENT_PROVIDER_ID?.trim() ||
+  "pp_oceanpayment_oceanpayment";
+
 export const OCEAN_HOSTED_CHECKOUT_METHODS = {
   CREDIT_CARD: "Credit Card",
   APPLE_PAY: "ApplePay",

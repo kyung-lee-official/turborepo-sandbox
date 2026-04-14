@@ -1,16 +1,15 @@
+import { OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID } from "./config";
+
 /**
  * Locate Medusa payments created by Hosted Checkout (`sendTrade`), for `noticeUrl` handling.
  *
  * Default Medusa `payment.provider_id` for `{ resolve: "./src/modules/ocean-payment", id: "oceanpayment" }`.
  */
-export const OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID =
-  process.env.OCEANPAYMENT_MEDUSA_PAYMENT_PROVIDER_ID ??
-  "pp_oceanpayment_oceanpayment";
 
 type PaymentRow = { id: string; data: Record<string, unknown> };
 
 /** Minimal payment session row for `noticeUrl` handling (match PayPal webhook pattern). */
-export type OceanWebhookPaymentSessionRow = {
+type OceanWebhookPaymentSessionRow = {
   id: string;
   data: Record<string, unknown>;
   context?: Record<string, unknown> | null;
