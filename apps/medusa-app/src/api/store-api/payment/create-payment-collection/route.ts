@@ -1,4 +1,4 @@
-import type { MedusaResponse } from "@medusajs/framework";
+import type { MedusaRequest, MedusaResponse } from "@medusajs/framework";
 import {
   ContainerRegistrationKeys,
   MedusaError,
@@ -6,7 +6,6 @@ import {
 import { createPaymentCollectionForCartWorkflow } from "@medusajs/medusa/core-flows";
 import type { CreatePaymentCollectionForCartWorkflowInputDTO } from "@medusajs/types";
 import { HttpError } from "@repo/types";
-import type { MedusaRequestWithRequester } from "@/api/utils/middleware/authenticate-jwt";
 
 /**
  * Fields chosen so an existing linked collection matches the shape of
@@ -20,10 +19,7 @@ const CART_WITH_PAYMENT_COLLECTION_FIELDS = [
   "payment_collection.payment_providers.*",
 ] as const;
 
-export async function POST(
-  req: MedusaRequestWithRequester,
-  res: MedusaResponse,
-) {
+export async function POST(req: MedusaRequest, res: MedusaResponse) {
   const input =
     (await req.body) as CreatePaymentCollectionForCartWorkflowInputDTO;
 
