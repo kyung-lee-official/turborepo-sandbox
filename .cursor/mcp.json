@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp",
+        "--path",
+        "C:\\Data\\user-data\\projects\\typescript\\turborepo-sandbox"
+      ]
+    }
+  }
+}

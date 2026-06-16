@@ -1,0 +1,99 @@
+---
+description: Docs/comments in English with precise code symbols; non-English only for literals defined in code
+alwaysApply: true
+---
+
+# Docs and comments convention
+
+When writing **markdown** (README, module guides) or **code comments**, use **English** for explanations, headings, and flow descriptions. Refer to things that exist in the codebase using their **actual definitions** — not loose labels that could mean several columns or tables.
+
+## Language
+
+- **Default:** Write technical docs and comments in **English**.
+- **Exception:** Keep **non-English text verbatim** when it is a **literal** the code or import expects — stored constants, Zod header enums, Excel column titles, UI/API sentinel values. Do not translate these in docs; quote them exactly (usually in backticks).
+
+```markdown
+<!-- ✅ GOOD — English prose, literal header preserved -->
+Column `SKU` maps to `ImportRow.sku` via `validateWorksheetHeaders`.
+
+<!-- ❌ BAD — translated header no longer matches validation -->
+"stock keeping unit" column → sku
+```
+
+## Prose style: explicit verbs, not arrows
+
+In **markdown prose**, **comments**, and **Mermaid node labels**, do not use arrow characters (`→`, `←`, `⇒`, `->`, `<-`) to describe data flow or assignments. Write short procedural steps.
+
+**Prefer verbs:** `get`, `set`, `call`, `read`, `write`, `build`, `validate`, `return`, `skip`, `append`.
+
+```markdown
+<!-- ✅ GOOD -->
+After `findById` returns `order`, get `customerId` from `order.customerId`, then load `customer` by `customerId`.
+
+<!-- ❌ BAD -->
+Pass order fields → customer loader
+Set `customerId` ← `order.customerId`
+```
+
+**Mermaid:** Use `-->` only as **diagram edge syntax** between nodes. Inside `[node labels]`, use verb style (one beat per node).
+
+```mermaid
+---
+config:
+  theme: neo-dark
+---
+flowchart TD
+  A["get order by id"] --> B["get customerId from order"]
+```
+
+**Tables:** Use column headers like **Source** / **Target** — not arrow glyphs in cells.
+
+## Prepositions: `from` vs `by`
+
+| Use | Meaning | Examples |
+| --- | ------- | -------- |
+| **`from`** | Value is **read off** an object, row, result, or constant | get `email` **from** `user.email`; set `total` **from** `row.amount` |
+| **`by`** | Value is **found using** key(s), a query, or a method | get `user` **by** `email` (`findFirst`); get `price` **by** `sku` on `priceMap` |
+
+**Heuristic:** lookup / resolve / match / `findFirst` / `Map.get` → **`by`**. Field on row / return value / Excel column → **`from`**.
+
+## Precise symbols (not vague English)
+
+| Avoid (ambiguous) | Prefer (defined in code) |
+| --------------- | ------------------------ |
+| the user id field | `User.id` |
+| status from enum | `OrderStatus.Pending` |
+| import helper | `parseImportRow()` — pick the layer you mean |
+
+Use backticks for inline symbols: `` `Model.field` ``, `` `functionName()` ``, `` `CONST_NAME` ``.
+
+## What to name explicitly
+
+- **DB / ORM:** model + field, e.g. `Order.totalAmount`
+- **DTOs / Zod:** schema or field, e.g. `createOrderSchema` field `currency`
+- **Functions:** exported name + file when helpful, e.g. `resolveTaxRate()` in `tax.ts`
+- **Constants / enums:** exact identifier, e.g. `DEFAULT_CURRENCY`
+- **Excel import:** **exact header string** **and** target field, e.g. column `Qty` sets `LineItem.quantity`
+
+## Short labels in English prose
+
+You may use a brief English gloss **once**, if you immediately tie it to the symbol: “customer email (`User.email`)”.
+
+## Mermaid / tables
+
+### Theme (mandatory for README flowcharts)
+
+Every **Mermaid** flowchart in a `README.md` file MUST include the `neo-dark` theme directive:
+
+```mermaid
+---
+config:
+  theme: neo-dark
+---
+flowchart TD
+  A[Start] --> B[End]
+```
+
+### Content
+
+Diagram node text may be short; use **get** / **set** / **call** in labels and **`from` / `by`** correctly. Surrounding **prose stays English** and uses real field/model names.

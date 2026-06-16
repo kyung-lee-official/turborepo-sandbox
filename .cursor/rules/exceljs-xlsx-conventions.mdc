@@ -1,0 +1,86 @@
+---
+description: ExcelJS conventions for .xlsx imports (cell.text), exports (freeze header, auto-filter), and financial cells (numeric + numFmt)
+alwaysApply: true
+---
+
+# ExcelJS — `.xlsx` import and export conventions
+
+## Reading imported workbooks
+
+When **reading** user-supplied workbook data (imports, validation, transforms), prefer **`cell.text`** (trim / normalize as needed) over **`cell.value`**.
+
+### Why
+
+- **`cell.value`** for **formulas** is often an object (e.g. `{ formula, result }`), not a number; coercing with `String(value)` breaks parsing.
+- **Hyperlinks** and some rich types also surface awkwardly on **`value`** while **`text`** matches what the user sees in Excel.
+
+### Default
+
+```typescript
+// ✅ GOOD — matches on-screen value; works for typical formula results
+const s = row.getCell(col).text?.trim() ?? "";
+
+// ❌ BAD for generic import fields — formula/hyperlink pitfalls
+const raw = row.getCell(col).value;
+```
+
+### Exceptions (reading)
+
+Use **`cell.value`**, **`cell.hyperlink`**, **`cell.formula`**, or typed handling **only when the task explicitly requires it** (e.g. preserving a formula string, reading a native `Date` from a date cell). Add a short comment stating why **`text`** is not used.
+
+---
+
+## Exporting workbooks for download
+
+When **writing** `.xlsx` files users download, apply **both** defaults on **every data sheet** after headers and body rows are written:
+
+1. **Freeze the first row** so the header stays visible while scrolling.
+2. **Enable auto-filter** on the header row.
+
+Skip only when the product explicitly requires an unfrozen or unfiltered layout. Add a short comment at the call site stating why.
+
+### Default
+
+Assumes **row 1** is the header row. Call after columns and data rows are populated, **before** `workbook.xlsx.writeBuffer()` (or equivalent).
+
+Use a shared helper when the project provides one (do not duplicate inline):
+
+```typescript
+applyDefaultExportedSheetView(worksheet);
+// or when column count is not on worksheet.columns:
+applyDefaultExportedSheetView(worksheet, columnCount);
+```
+
+### Multi-sheet workbooks
+
+Apply freeze + filter on **each** worksheet that has a tabular header + data layout, not only the first sheet.
+
+### Financial and other summable amounts
+
+When exporting **money**, **rates**, **weights**, **counts**, or any column users should **`SUM`** in Excel, write a **numeric** cell value (`number`), not a **string**. Use **`numFmt`** so Excel displays decimals correctly.
+
+**Why:** A string like `"123.45"` displays like money but **`SUM`** ignores it.
+
+```typescript
+// ✅ GOOD — numeric value; Excel can SUM; display via numFmt
+worksheet.columns = [
+  { header: "Amount", key: "amount", style: { numFmt: "#,##0.00" } },
+];
+worksheet.addRow({ amount: decimal.toDecimalPlaces(2).toNumber() });
+
+// ❌ BAD — SUM() skips string cells
+worksheet.addRow({ amount: decimal.toDecimalPlaces(2).toString() });
+```
+
+| Kind | Export value | Typical `numFmt` |
+| --- | --- | --- |
+| **Money** | round to 2 dp, `.toNumber()` | `#,##0.00` |
+| **Rates** | `.toNumber()` at stored precision | `0.000000` |
+| **Other metrics** | `number` from domain parse/round | match business dp |
+
+Use **`null`** / leave empty for missing amounts; do not write `"0"` as a string unless zero is explicitly intended as numeric **`0`**.
+
+#### Exceptions (financial export)
+
+- **Explicit text column** (raw audit dump): keep string.
+- **Identifier codes** that look numeric but must stay text: use string or text format.
