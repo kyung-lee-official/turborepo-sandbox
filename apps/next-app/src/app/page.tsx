@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { NavLinkWithTooltip } from "@/components/home/nav-link-with-tooltip";
+import { filesBlockLinks } from "./files-block-links";
 import { Airbnb } from "./chart/visx/Icons";
 
 const Block = ({
@@ -8,7 +10,7 @@ const Block = ({
   children,
 }: {
   title: string | ReactNode;
-  list: { link: string; text: string | ReactNode }[];
+  list: { link: string; text: string | ReactNode; description?: string }[];
   children?: ReactNode;
 }) => {
   return (
@@ -18,9 +20,13 @@ const Block = ({
       <div className="flex flex-col">
         {list.map((item) => {
           return (
-            <Link key={item.link} href={item.link} className="hover:underline">
+            <NavLinkWithTooltip
+              key={item.link}
+              href={item.link}
+              description={item.description}
+            >
               {item.text}
-            </Link>
+            </NavLinkWithTooltip>
           );
         })}
       </div>
@@ -268,45 +274,7 @@ export default function Home() {
           },
         ]}
       />
-      <Block
-        title="Files"
-        list={[
-          {
-            link: "/files/aliyun-oss",
-            text: "aliyun oss upload and download",
-          },
-          {
-            link: "/files/conditionally-download-json-or-buffer",
-            text: "conditionally download json or buffer",
-          },
-          {
-            link: "/files/file-transmit",
-            text: "file transmit (upload and download)",
-          },
-          { link: "/files/image-cropper", text: "image cropper" },
-          {
-            link: "/files/modify-excel-before-upload",
-            text: "modify excel before upload",
-          },
-          {
-            link: "/files/file-transmit/upload-files-multi",
-            text: "upload files (one by one in a loop)",
-          },
-          { link: "/files/tencent-cos", text: "tencent cos" },
-          {
-            link: "/files/upload-large-xlsx-to-database",
-            text: "upload large xlsx to database",
-          },
-          {
-            link: "/files/upload-multiple-excel",
-            text: "compress and upload multiple excel files in individual inputs",
-          },
-          {
-            link: "/files/upload-multiple-excel-single-input",
-            text: "compress and upload multiple excel files in a single inputs",
-          },
-        ]}
-      />
+      <Block title="Files" list={[...filesBlockLinks]} />
       <Block
         title="Javascript | React"
         list={[
