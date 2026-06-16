@@ -15,7 +15,10 @@
   },
   "scripts": {
     "build": "tsc --build",
-    "db:generate": "prisma generate --schema=./prisma/schema.prisma"
+    "db:nest:generate": "prisma generate",
+    "db:nest:migrate:dev": "prisma migrate dev",
+    "db:nest:migrate:deploy": "prisma migrate deploy",
+    "db:nest:studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.1.0",

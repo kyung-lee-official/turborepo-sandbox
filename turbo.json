@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "stream",
+  "globalEnv": ["DATABASE_URL", "MEDUSA_DATABASE_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -18,9 +19,25 @@
       "cache": false,
       "persistent": true
     },
-    "db:generate": {
+    "db:nest:generate": {
       "cache": true,
+      "outputs": ["src/generated/**"]
+    },
+    "db:nest:migrate:dev": {
+      "cache": false
+    },
+    "db:nest:migrate:deploy": {
+      "cache": false
+    },
+    "db:nest:studio": {
+      "cache": false,
       "persistent": true
+    },
+    "db:medusa:migrate": {
+      "cache": false
+    },
+    "db:medusa:seed": {
+      "cache": false
     },
     "typecheck": {
       "dependsOn": ["^build"]

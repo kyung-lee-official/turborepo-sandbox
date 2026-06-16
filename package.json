@@ -21,7 +21,15 @@
     "start:prod-ip:web": "bun --env-file=.env.base --env-file=.env.prod-ip run --cwd apps/next-app start",
     "start:prod-ip:all": "bun --env-file=.env.base --env-file=.env.prod-ip turbo run start:prod --env-mode=loose",
     "start:prod-domain": "bun run start:prod-domain:api",
-    "start:prod-ip": "bun run start:prod-ip:api"
+    "start:prod-ip": "bun run start:prod-ip:api",
+    "# Database — Nest (DATABASE_URL → turborepo-sandbox-nest-app)": "",
+    "db:nest:generate": "turbo run db:nest:generate --filter=@repo/database",
+    "db:nest:migrate:dev": "turbo run db:nest:migrate:dev --filter=@repo/database",
+    "db:nest:migrate:deploy": "turbo run db:nest:migrate:deploy --filter=@repo/database",
+    "db:nest:studio": "turbo run db:nest:studio --filter=@repo/database",
+    "# Database — Medusa (MEDUSA_DATABASE_URL → turborepo-sandbox-medusa-sandbox)": "",
+    "db:medusa:migrate": "turbo run db:medusa:migrate --filter=medusa-app",
+    "db:medusa:seed": "turbo run db:medusa:seed --filter=medusa-app"
   },
   "packageManager": "bun@1.3.4",
   "workspaces": [

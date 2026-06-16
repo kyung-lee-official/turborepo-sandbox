@@ -25,7 +25,10 @@
     "test:dev": "bun run --env-file=.env.test medusa develop",
     "test:db:prepare": "bun --env-file=.env.test ./test/integration/prepare-test-db.ts",
     "test:db:reset": "bun --env-file=.env.test ./test/integration/reset-test-database.ts",
-    "test:integration:bun": "bun --env-file=.env.test test --timeout 120000"
+    "test:integration:bun": "bun --env-file=.env.test test --timeout 120000",
+  "# Medusa DB (MEDUSA_DATABASE_URL — load from repo root .env.base)": "",
+    "db:medusa:migrate": "bun --env-file=../../.env.base x medusa db:migrate",
+    "db:medusa:seed": "bun --env-file=../../.env.base x medusa exec ./src/scripts/seed.ts"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.13.4",
