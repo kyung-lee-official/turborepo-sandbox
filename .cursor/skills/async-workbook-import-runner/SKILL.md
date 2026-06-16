@@ -2,8 +2,8 @@
 name: async-workbook-import-runner
 description: >-
   Three-layer async import architecture: (1) format-agnostic transport — slots,
-  202, Redis, BullMQ,   job phases; (2) tabular-xlsx — workbook load, row errors, error XLSX,
-  tabular phase in progress; (3) domain — sheet maps, enrich, persist.
+  202, Redis, BullMQ, job phases; (2) tabular-xlsx — workbook load, row errors, error XLSX,
+  tabular phase in progress; (3) domain — sheet maps, row transforms, persist.
   Use when adding async .xlsx imports, splitting transport from parsing, or
   designing reusable import abstractions.
 ---
@@ -58,7 +58,7 @@ No universal “parse any file format” engine. No config-driven column DSL.
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  Layer 3 — Domain           business data shape + persist  │
-│  sheet maps, enrich, transactions, createMany/deleteMany     │
+│  sheet maps, row transforms, transactions, persist           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -66,7 +66,7 @@ No universal “parse any file format” engine. No config-driven column DSL.
 | ----- | ---- | ------------ |
 | **1 Transport** | `ImportUpload`, upload slots, `jobId`, **job phase**, opaque **progress**, **outcome**, error blob storage, lock policy, authz | Worksheets, row numbers, XLSX headers, DB models, progress shape (% vs tabular phase vs worksheet) |
 | **2 Tabular XLSX** | Workbook load, required sheets, header validation, row loop, `ErrorDetail`, error XLSX columns, **tabular phase** in progress | BullMQ, Redis keys, `importKind` routing, business rules |
-| **3 Domain** | Per-`importKind` sheet maps, enrichment, save strategy, domain runner | Queue wiring, multipart parsing, generic job TTL |
+| **3 Domain** | Per-`importKind` sheet maps, row transforms, save strategy, domain runner | Queue wiring, multipart parsing, generic job TTL |
 
 **Dependency rule:** Layer 3 may call Layer 2. Layer 2 may not call Layer 3. Layer 1 invokes Layer 3 only through a registered **domain runner**. Layer 1 never imports ExcelJS.
 
@@ -140,17 +140,17 @@ type JobMeta = {
 | **None** | Always enqueue |
 | **Global singleton** | No active run for this `importKind` |
 | **Resource-scoped** | No active run for `(importKind, resourceKey)` |
-| **Member-scoped** | Parallel jobs OK; isolate keys and authz by `memberId` |
+| **Member-scoped** | Parallel jobs OK; isolate keys and authz by `actorId` |
 
 Queue `concurrency: 1` does **not** replace POST guards across instances.
 
 ### Registry (transport boundary)
 
 ```typescript
-registry.register("inventory", {
-  domainRunner: inventoryDomainRunner,
+registry.register("catalog", {
+  domainRunner: catalogDomainRunner,
   uploadSlots: [{ uploadSlotId: "mainWorkbook", required: true }],
-  lockPolicy: resourceScoped("warehouseId"),
+  lockPolicy: resourceScoped("resourceId"),
 });
 ```
 
@@ -193,7 +193,7 @@ type ErrorDetail = {
 | ------- | ------- |
 | Load buffer into (ExcelJS) workbook | yes |
 | Assert required sheet names exist | yes |
-| `validateWorksheetHeaders` + Zod/header enum | yes |
+| Validate headers against `TabularSheetSpec` | yes |
 | Read cells with **`cell.text`** (trim at ingest) | yes |
 | Row loop, skip blank rows, `sourceRowNumber` | yes |
 | Scoped error helper (attach slot / worksheet) | yes |
@@ -216,7 +216,6 @@ Transport **stores** the buffer; Layer 2 **builds** it.
 type TabularSheetSpec = {
   sheetName: string;
   headers: readonly string[];
-  warehouseColumn?: string;  // example: domain-agnostic column id
 };
 ```
 
@@ -275,17 +274,17 @@ type DomainImportRunner<TContext> = {
 
 | Artifact | Role |
 | -------- | ---- |
-| **Static mappings** | Worksheet names, header literals, lookup tables |
-| **Orchestrator** | Which sheets to parse, order, fail-fast on missing sheets |
-| **Enricher** | Resolve IDs, categories, FX (optional) |
-| **Saver** | `deleteMany` / `createMany`, transactions |
+| **Sheet specs** | Worksheet names, header literals, required sheets |
+| **Orchestrator** | Parse order, fail-fast on missing sheets |
+| **Row mapper** | Raw rows to domain DTOs; lookups and validation |
+| **Saver** | Persist valid rows; optional transaction |
 
 ### Domain sketch
 
 ```typescript
 async function run(uploads, ctx, { onProgress }) {
   const file = uploads.get("mainWorkbook");
-  if (!file) throw new BadRequestException("Missing slot mainWorkbook");
+  if (!file) throw new BadRequestException("Missing upload slot mainWorkbook");
 
   const workbook = await loadWorkbook(file.buffer);
   assertRequiredSheets(workbook, REQUIRED_SHEETS);
@@ -300,10 +299,10 @@ async function run(uploads, ctx, { onProgress }) {
   await onProgress({ phase: "parsing_workbook", uploadSlotId: "mainWorkbook", worksheetName: "Orders" });
 
   const rows = parseOrdersSheet(workbook, sheetErrors);
-  const dtos = enrichOrders(rows, ctx, sheetErrors);
+  const records = mapRowsToRecords(rows, ctx, sheetErrors);
 
   await onProgress({ phase: "saving_database", uploadSlotId: "mainWorkbook" });
-  const saved = await saveOrders(dtos, ctx);
+  const saved = await saveRecords(records, ctx);
 
   return errors.hasErrors()
     ? { outcome: "validation_failed", errors: errors.toList(), importedCount: saved, errorCount: errors.count }
@@ -313,7 +312,7 @@ async function run(uploads, ctx, { onProgress }) {
 
 Multi-sheet: loop domain sheet specs; call `onProgress` with each `worksheetName`. Multi-slot: read `uploads.get("supplement")` when the `importKind` defines two upload slots.
 
-**Do not** put Redis, BullMQ, or HTTP types in Layer 3.
+**Do not** put Redis, BullMQ, or queue types in Layer 3. NestJS HTTP exceptions (e.g. `BadRequestException`) for missing slots or invalid context are fine.
 
 ---
 
@@ -329,25 +328,23 @@ Multi-sheet: loop domain sheet specs; call `onProgress` with each `worksheetName
 
 ```text
 import/
-  transport/           # Layer 1
+  transport/              # Layer 1
     async-import.types.ts
     import-registry.ts
     import-transport.service.ts
-    import-redis.service.ts
-    import.processor.ts
-  tabular-xlsx/          # Layer 2
+    import-job-store.ts   # Redis or equivalent
+    import.processor.ts   # queue worker
+  tabular-xlsx/           # Layer 2
     tabular-import.types.ts
     load-workbook.ts
     parse-sheet-rows.ts
     scope-import-errors.ts
     build-tabular-error-xlsx.ts
     report-tabular-progress.ts
-features/
-  inventory-import/      # Layer 3 only
-    inventory.domain-runner.ts
-    static-mappings/
-    enrich-*.ts
-    save-*.ts
+
+# Layer 3 — one module per importKind (path is app convention)
+catalog-import/
+  catalog.domain-runner.ts
 ```
 
 ---
@@ -368,9 +365,9 @@ Layer 2
 - [ ] cell.text + trim at ingest for string fields
 
 Layer 3
-- [ ] Static mappings for sheet/header literals
+- [ ] Sheet specs document worksheet names and header literals
 - [ ] Missing required sheet throws before DB write
-- [ ] Domain README: sheets, row rules (not transport)
+- [ ] Per-`importKind` notes: sheets and row rules (not transport)
 ```
 
 ---
