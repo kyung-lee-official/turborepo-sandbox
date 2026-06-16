@@ -3,9 +3,25 @@
   "private": true,
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo run typecheck",
+    "# Dev with domain (HTTPS)": "",
+    "dev:domain": "bun --env-file=.env.base --env-file=.env.dev-domain turbo run dev --env-mode=loose",
+    "# Dev with internal IP (HTTP)": "",
+    "dev:ip": "bun --env-file=.env.base --env-file=.env.prod-ip turbo run dev --env-mode=loose",
+    "# Production builds": "",
+    "build:prod-domain": "bun --env-file=.env.base --env-file=.env.prod-domain turbo run build --env-mode=loose",
+    "build:prod-ip": "bun --env-file=.env.base --env-file=.env.prod-ip turbo run build --env-mode=loose",
+    "# Production start (after build). Use :all for API + web; :api / :web for one process each.": "",
+    "_start:nest-node": "node apps/nest-app/dist/main",
+    "start:prod-domain:api": "bun --env-file=.env.base --env-file=.env.prod-domain run _start:nest-node",
+    "start:prod-domain:web": "bun --env-file=.env.base --env-file=.env.prod-domain run --cwd apps/next-app start",
+    "start:prod-domain:all": "bun --env-file=.env.base --env-file=.env.prod-domain turbo run start:prod --env-mode=loose",
+    "start:prod-ip:api": "bun --env-file=.env.base --env-file=.env.prod-ip run _start:nest-node",
+    "start:prod-ip:web": "bun --env-file=.env.base --env-file=.env.prod-ip run --cwd apps/next-app start",
+    "start:prod-ip:all": "bun --env-file=.env.base --env-file=.env.prod-ip turbo run start:prod --env-mode=loose",
+    "start:prod-domain": "bun run start:prod-domain:api",
+    "start:prod-ip": "bun run start:prod-ip:api"
   },
   "packageManager": "bun@1.3.4",
   "workspaces": [

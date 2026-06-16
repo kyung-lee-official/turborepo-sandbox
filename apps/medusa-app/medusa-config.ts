@@ -6,8 +6,10 @@ if (!process.env.MEDUSA_BACKEND_URL) {
   throw new Error("MEDUSA_BACKEND_URL is not defined in environment variables");
 }
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined in environment variables");
+if (!process.env.DATABASE_URL && !process.env.MEDUSA_DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL or MEDUSA_DATABASE_URL is not defined in environment variables",
+  );
 }
 
 if (!process.env.STORE_CORS) {
@@ -56,7 +58,7 @@ if (!process.env.OCEANPAYMENT_SECURE_CODE) {
 
 module.exports = defineConfig({
   projectConfig: {
-    databaseUrl: process.env.DATABASE_URL,
+    databaseUrl: process.env.MEDUSA_DATABASE_URL || process.env.DATABASE_URL,
     http: {
       storeCors: process.env.STORE_CORS,
       adminCors: process.env.ADMIN_CORS,

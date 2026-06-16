@@ -14,6 +14,10 @@
     "start": {
       "cache": false
     },
+    "start:prod": {
+      "cache": false,
+      "persistent": true
+    },
     "db:generate": {
       "cache": true,
       "persistent": true
