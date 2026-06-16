@@ -32,7 +32,8 @@ No universal “parse any file format” engine. No config-driven column DSL.
 | **progress** | **1**, 2, 3 | `JobMeta.progress`; runner-defined JSON (`unknown` at Layer 1) |
 | **tabular phase** | **2** | `TabularImportProgress.phase`; XLSX-only value inside `progress` |
 | **outcome** | **1**, 3 | `JobMeta.outcome` when job phase is `complete`: `success` \| `validation_failed` \| `failed` |
-| **domain runner** | **3**, 1 | `DomainImportRunner` for one `importKind`; registered at transport boundary |
+| **worker** | **1** | BullMQ processor that dequeues `{ jobId, importKind }`, resolves and invokes the domain runner; owns queue wiring, not parsing |  
+| **domain runner** | **3**, 1 | `DomainImportRunner` for one `importKind`; registered at transport boundary; called by the worker, has no BullMQ/Redis knowledge |
 | **originalName** | **1**, 2, 3 | Client filename; display only, never used for routing |
 | **error blob** | **1**, 2 | Stored download bytes (Layer 2 builds XLSX; Layer 1 stores) |
 
