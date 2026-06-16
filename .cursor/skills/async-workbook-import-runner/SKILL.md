@@ -2,8 +2,8 @@
 name: async-workbook-import-runner
 description: >-
   Three-layer async import architecture: (1) format-agnostic transport — slots,
-  202, Redis, BullMQ, job phases; (2) tabular-xlsx — workbook load, row errors,
-  error XLSX, worksheet progress; (3) domain — sheet maps, enrich, persist.
+  202, Redis, BullMQ,   job phases; (2) tabular-xlsx — workbook load, row errors, error XLSX,
+  tabular phase in progress; (3) domain — sheet maps, enrich, persist.
   Use when adding async .xlsx imports, splitting transport from parsing, or
   designing reusable import abstractions. Async only — not sync HTTP 207.
 ---
@@ -12,9 +12,31 @@ description: >-
 
 ## Goal
 
-Reusable **async file-import jobs** where only the **bottom layer** is feature-specific. **Layer 1** knows bytes and job lifecycle. **Layer 2** knows Excel worksheets and row-level errors. **Layer 3** knows business tables and rules.
+Reusable **async file-import jobs** where only the **bottom layer** is `importKind`-specific. **Layer 1** knows bytes and **job phase**. **Layer 2** knows Excel worksheets and row-level errors. **Layer 3** knows business tables and rules.
 
 No universal “parse any file format” engine. No config-driven column DSL.
+
+### Terminology (use consistently)
+
+**Layer(s):** `1` Transport, `2` Tabular XLSX, `3` Domain. Bold marks the layer that **owns** the type or field; unbold numbers are layers that read or write it.
+
+| Term | Layer(s) | Meaning |
+| ---- | -------- | ------- |
+| **importKind** | **1**, 3 | Registry key that selects a domain runner |
+| **job** / **jobId** | **1** | One async import run |
+| **job phase** | **1** | `JobMeta.phase`: `queued` \| `processing` \| `complete` \| `failed` |
+| **JobMeta** | **1** | Redis record for a job (phase, progress, outcome) |
+| **upload slot** | **1** | Named multipart field; identifies a file’s role |
+| **uploadSlotId** | **1**, 2, 3 | Slot identifier; same string as the multipart field name |
+| **ImportUpload** | **1**, 3 | One uploaded file: buffer + `uploadSlotId` + `originalName` |
+| **progress** | **1**, 2, 3 | `JobMeta.progress`; runner-defined JSON (`unknown` at Layer 1) |
+| **tabular phase** | **2** | `TabularImportProgress.phase`; XLSX-only value inside `progress` |
+| **outcome** | **1**, 3 | `JobMeta.outcome` when job phase is `complete`: `success` \| `validation_failed` \| `failed` |
+| **domain runner** | **3**, 1 | `DomainImportRunner` for one `importKind`; registered at transport boundary |
+| **originalName** | **1**, 2, 3 | Client filename; display only, never used for routing |
+| **error blob** | **1**, 2 | Stored download bytes (Layer 2 builds XLSX; Layer 1 stores) |
+
+**Do not mix:** job phase vs tabular phase; outcome vs job phase (`complete` ≠ `success`); `uploadSlotId` vs `originalName`; `JobMeta` vs informal “meta”.
 
 ---
 
@@ -23,7 +45,7 @@ No universal “parse any file format” engine. No config-driven column DSL.
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Layer 1 — Transport        format-agnostic async file job   │
-│  slots, 202/jobId, Redis, queue, lock policy, job meta      │
+│  slots, 202/jobId, Redis, JobMeta, queue, lock policy      │
 └──────────────────────────────┬──────────────────────────────┘
                                │ Map<uploadSlotId, ImportUpload>
                                ▼
@@ -41,11 +63,11 @@ No universal “parse any file format” engine. No config-driven column DSL.
 
 | Layer | Owns | Must not own |
 | ----- | ---- | ------------ |
-| **1 Transport** | `ImportUpload`, upload slots, `jobId`, phased **job** meta, outcomes, error **blob** storage, lock policy, authz | Worksheets, row numbers, XLSX headers, DB models |
-| **2 Tabular XLSX** | Workbook load, required sheets, header validation, row loop, `ErrorDetail`, error **XLSX** columns, `worksheetName` in progress | BullMQ, Redis keys, `importKind` routing, business rules |
-| **3 Domain** | Per-feature sheet maps, enrichment, save strategy, `importKind` runner | Queue wiring, multipart parsing, generic job TTL |
+| **1 Transport** | `ImportUpload`, upload slots, `jobId`, **job phase**, opaque **progress**, **outcome**, error blob storage, lock policy, authz | Worksheets, row numbers, XLSX headers, DB models, progress shape (% vs tabular phase vs worksheet) |
+| **2 Tabular XLSX** | Workbook load, required sheets, header validation, row loop, `ErrorDetail`, error XLSX columns, **tabular phase** in progress | BullMQ, Redis keys, `importKind` routing, business rules |
+| **3 Domain** | Per-`importKind` sheet maps, enrichment, save strategy, domain runner | Queue wiring, multipart parsing, generic job TTL |
 
-**Dependency rule:** Layer 3 may call Layer 2. Layer 2 may not call Layer 3. Layer 1 calls Layer 3 only through a **registered runner** interface. Layer 1 never imports ExcelJS.
+**Dependency rule:** Layer 3 may call Layer 2. Layer 2 may not call Layer 3. Layer 1 invokes Layer 3 only through a registered **domain runner**. Layer 1 never imports ExcelJS.
 
 ---
 
@@ -63,15 +85,18 @@ No universal “parse any file format” engine. No config-driven column DSL.
 
 ### What is a slot?
 
-An **upload slot** is a **named multipart field** on the POST body. The field name (e.g. `mainWorkbook`) is the **`uploadSlotId`** — a stable routing key that tells transport and domain code *which role* each file plays. Display filenames are not used for routing. A single-file import still declares one slot in `UploadSlotSpec[]`; multi-file features add more slots (e.g. `supplement`).
+An **upload slot** is a **named multipart field** on the POST body. Its **`uploadSlotId`** is the field name (e.g. `mainWorkbook`) — a stable routing key for which role each file plays. **`originalName`** is display-only and is never used for routing. A single-file import declares one slot in `UploadSlotSpec[]`; multi-file `importKind` values add more slots (e.g. `supplement`).
+
+### Progress is opaque at Layer 1
+
+Transport owns **job phase** (is the job still running?), not **progress** shape (how much work is done). Domain runners may put percent, tabular phase, or worksheet name inside `JobMeta.progress`; transport stores and relays it without interpreting it.
+
+Each `importKind` documents its progress schema (often `TabularImportProgress` for XLSX). The client types `JobMeta.progress` per `importKind`, not in transport.
 
 ### Types
 
 ```typescript
-type AsyncImportPhase =
-  | "queued"
-  | "processing"   // or map tabular phases in meta.progress.phase only
-  | "complete";
+type JobPhase = "queued" | "processing" | "complete" | "failed";
 
 type ImportUpload = {
   uploadSlotId: string;  // multipart field name — routing key
@@ -80,35 +105,34 @@ type ImportUpload = {
   mimeType?: string;     // optional; do not route by filename
 };
 
-type UploadSlotSpec = { fieldName: string; required: boolean };
+type UploadSlotSpec = { uploadSlotId: string; required: boolean };
 
-/** Job-level progress — no worksheet fields */
-type AsyncImportProgress = {
-  phase: string;
-  uploadSlotId: string;
-  displayFileName?: string;
+/** Job envelope — transport reads job phase only; progress is runner-defined */
+type JobMeta = {
+  phase: JobPhase;
+  progress?: unknown;
+  outcome?: "success" | "validation_failed" | "failed";
+  errorBlobKey?: string;
 };
 ```
 
-For XLSX imports, store **tabular detail** in `meta.progress` (Layer 2 shape). Transport treats `progress` as opaque JSON except `phase` and `uploadSlotId`.
-
-**Rule:** routing uses **`uploadSlotId`**, never `originalName`.
+**Rule:** routing uses **`uploadSlotId`**, never **`originalName`**. When job phase is **`complete`**, set **`outcome`** (`success` is not a job phase).
 
 ### POST
 
 1. Resolve **`importKind`**.
 2. Run **`ImportLockPolicy`**; reject with stable **`code`** if blocked.
 3. Validate multipart against **`UploadSlotSpec[]`**.
-4. Create `jobId`, Redis meta (`phase: queued`), store uploads per slot, enqueue `{ jobId, importKind }`, return **202** `{ jobId }`.
+4. Create `jobId`, `JobMeta` (`phase: queued`), store uploads per slot, enqueue `{ jobId, importKind }`, return **202** `{ jobId }`.
 
 ### Worker
 
 1. Load `Map<uploadSlotId, ImportUpload>`.
-2. Resolve **domain runner** from registry by `importKind`.
-3. Pass hooks: `onProgress(detail)` patches Redis meta; `onJobPhase` optional for coarse transport phase.
-4. Map runner result to `success` | `validation_failed` | `failed`.
-5. On `validation_failed`, persist error **blob** (Layer 2 supplies XLSX bytes; transport stores bytes only).
-6. Clear upload blobs per TTL policy.
+2. Resolve domain runner from registry by `importKind`.
+3. Pass `onProgress(detail: unknown)` — writes `JobMeta.progress`, sets job phase to `processing`.
+4. Map `DomainImportResult.outcome` to `JobMeta.outcome`; set job phase to `complete` (or `failed` on throw).
+5. On outcome `validation_failed`, persist error blob (Layer 2 supplies XLSX bytes; transport stores bytes only).
+6. Clear upload buffers per TTL policy.
 
 ### Lock policy (POST only)
 
@@ -126,7 +150,7 @@ Queue `concurrency: 1` does **not** replace POST guards across instances.
 ```typescript
 registry.register("inventory", {
   domainRunner: inventoryDomainRunner,
-  slots: [{ fieldName: "mainWorkbook", required: true }],
+  uploadSlots: [{ uploadSlotId: "mainWorkbook", required: true }],
   lockPolicy: resourceScoped("warehouseId"),
 });
 ```
@@ -135,9 +159,9 @@ registry.register("inventory", {
 
 ## Layer 2 — Tabular XLSX
 
-Shared by **all** async XLSX import kinds. One module per app/package.
+Shared by all async XLSX `importKind` values. One module per app/package.
 
-### Types
+### Types (tabular progress — stored in `JobMeta.progress`, not transport)
 
 ```typescript
 type TabularImportPhase =
@@ -145,11 +169,13 @@ type TabularImportPhase =
   | "validating_rows"
   | "saving_database";
 
+/** XLSX progress shape — lives in JobMeta.progress */
 type TabularImportProgress = {
   phase: TabularImportPhase;
   uploadSlotId: string;
-  workbookDisplayName?: string;
+  originalName?: string;
   worksheetName?: string;
+  percent?: number;
 };
 
 type ErrorDetail = {
@@ -157,7 +183,7 @@ type ErrorDetail = {
   message: string;
   rawData: string;
   uploadSlotId?: string;
-  workbookDisplayName?: string;
+  originalName?: string;
   worksheetName?: string;
 };
 ```
@@ -179,7 +205,7 @@ type ErrorDetail = {
 | Column | Include when |
 | ------ | ------------ |
 | Upload slot | any error has `uploadSlotId` |
-| Workbook | any error has `workbookDisplayName` |
+| Original name | any error has `originalName` |
 | Worksheet | any error has `worksheetName` |
 | Row Number, Message, Raw Data | always |
 
@@ -202,17 +228,17 @@ Domain passes specs; Layer 2 validates headers and yields raw row maps or calls 
 ```typescript
 await reportTabularProgress(onProgress, "parsing_workbook", "mainWorkbook", {
   worksheetName: "Orders",
-  workbookDisplayName: file.originalName,
+  originalName: file.originalName,
 });
 ```
 
-### Outcomes (tabular + domain handoff)
+### Outcomes (domain runner → transport)
 
-| Result | Valid rows in DB | Error XLSX |
-| ------ | ---------------- | ---------- |
-| success | all saved | none |
-| validation_failed | partial save (default) | yes |
-| failed (throw) | rollback if domain uses transaction | optional |
+| Outcome | Valid rows in DB | Error blob |
+| ------- | ---------------- | ---------- |
+| `success` | all saved | none |
+| `validation_failed` | partial save (default) | yes |
+| `failed` (throw) | rollback if domain uses transaction | optional |
 
 Default bulk import: **partial save + error XLSX**. Use a transaction in Layer 3 only when all-or-nothing is required.
 
@@ -240,7 +266,7 @@ type DomainImportRunner<TContext> = {
     uploads: Map<string, ImportUpload>,
     ctx: TContext,
     hooks: {
-      onProgress: (p: TabularImportProgress) => Promise<void>;
+      onProgress: (detail: unknown) => Promise<void>;
     },
   ): Promise<DomainImportResult>;
 };
@@ -268,7 +294,7 @@ async function run(uploads, ctx, { onProgress }) {
   const errors = createErrorCollector();
   const sheetErrors = scopeErrors(errors, {
     uploadSlotId: "mainWorkbook",
-    workbookDisplayName: file.originalName,
+    originalName: file.originalName,
     worksheetName: "Orders",
   });
 
@@ -286,7 +312,7 @@ async function run(uploads, ctx, { onProgress }) {
 }
 ```
 
-Multi-sheet: loop domain sheet specs; call `onProgress` with each `worksheetName`. Multi-slot: read `uploads.get("supplement")` when the feature defines two slots.
+Multi-sheet: loop domain sheet specs; call `onProgress` with each `worksheetName`. Multi-slot: read `uploads.get("supplement")` when the `importKind` defines two upload slots.
 
 **Do not** put Redis, BullMQ, or HTTP types in Layer 3.
 
@@ -294,9 +320,9 @@ Multi-sheet: loop domain sheet specs; call `onProgress` with each `worksheetName
 
 ## Frontend
 
-- **Layer 1:** `formData.append(slot.fieldName, file)`, poll job meta, download error blob.
-- **Layer 2 display:** format `progress` with worksheet + slot + display filename when present.
-- Export slot constants (e.g. `MAIN_WORKBOOK_SLOT = "mainWorkbook"`) beside the API client.
+- **Layer 1:** `formData.append(uploadSlotId, file)`, poll `JobMeta.phase`, download error blob when job phase is `complete`.
+- **Per `importKind`:** type-narrow `JobMeta.progress` (e.g. `TabularImportProgress` for XLSX).
+- Export `uploadSlotId` constants (e.g. `MAIN_WORKBOOK_SLOT = "mainWorkbook"`) beside the API client.
 
 ---
 
@@ -334,11 +360,12 @@ Layer 1
 - [ ] UploadSlotSpec[] in API docs (named fields, not files[])
 - [ ] Domain runner registered by importKind
 - [ ] Lock policy + stable reject code
-- [ ] Single processor — no per-feature Redis duplicate
+- [ ] Single processor — no per-`importKind` Redis duplicate
+- [ ] JobMeta.progress is `unknown` — no transport union for progress shape
 
 Layer 2
 - [ ] Shared error XLSX builder used on validation_failed
-- [ ] Errors scoped with slot/worksheet at parse site
+- [ ] Errors scoped with `uploadSlotId` / `worksheetName` at parse site
 - [ ] cell.text + trim at ingest for string fields
 
 Layer 3
@@ -354,9 +381,9 @@ Layer 3
 | Anti-pattern | Why |
 | ------------ | --- |
 | Layer 1 imports ExcelJS | Couples transport to XLSX |
-| “Any file format” progress union in Layer 1 | Worksheet vs page vs JSON path leaks |
+| Typed progress union in Layer 1 | Progress shape belongs in domain runner + client per `importKind` |
 | Generic column-to-ORM mapper in Layer 2 | Belongs in Layer 3 or nowhere |
-| Third copy of Redis service per feature | Extend Layer 1 transport |
+| Third copy of Redis service per `importKind` | Extend Layer 1 transport |
 | Route uploads by filename | Use uploadSlotId |
 
-**When to add Layer 1 + 2 formally:** first async import can start in one repo folder; extract when a **second** import kind shares the same transport or tabular code.
+**When to add Layer 1 + 2 formally:** first async import can start in one repo folder; extract when a second `importKind` shares the same transport or tabular code.
