@@ -5,7 +5,7 @@ description: >-
   202, Redis, BullMQ,   job phases; (2) tabular-xlsx — workbook load, row errors, error XLSX,
   tabular phase in progress; (3) domain — sheet maps, enrich, persist.
   Use when adding async .xlsx imports, splitting transport from parsing, or
-  designing reusable import abstractions. Async only — not sync HTTP 207.
+  designing reusable import abstractions.
 ---
 
 # Async import: transport / tabular-xlsx / domain
@@ -77,8 +77,6 @@ No universal “parse any file format” engine. No config-driven column DSL.
 - Adding a new **async `.xlsx`** import.
 - Splitting a monolithic processor into transport vs parse vs domain.
 - Choosing where **`worksheetName`** and **error XLSX** live (Layer 2, not Layer 1).
-
-**Out of scope:** synchronous partial-success **HTTP 207** uploads.
 
 ---
 
