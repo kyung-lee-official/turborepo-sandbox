@@ -35,7 +35,21 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # ENV
+# Real environment files (should never be committed)
 .env
+.env.local
+.env.*.local
+.env.base
+.env.dev-domain
+.env.prod-domain
+.env.prod-ip
+
+# Allow example/template files to be committed
+!.env*.example
+!.env.base.example
+!.env.dev-domain.example
+!.env.prod-domain.example
+!.env.prod-ip.example
 
 # Storage
 storage
