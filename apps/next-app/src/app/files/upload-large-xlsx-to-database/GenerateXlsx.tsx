@@ -30,7 +30,7 @@ export const GenerateXlsx = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Upload Large XLSX to Database</h1>
+      <h1 className="text-3xl font-bold mb-6">Generate Large XLSX Test Data</h1>
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Generate Test Data Files</h2>
@@ -43,7 +43,7 @@ export const GenerateXlsx = () => {
             <p className="text-sm text-green-700">
               <strong>✅ Valid Data File:</strong> Contains properly formatted
               data with correct Bio-IDs, valid names, and appropriate gender
-              values for successful database import.
+              values for import testing.
             </p>
           </div>
           <div className="bg-orange-50 border-l-4 border-orange-400 p-3">
@@ -84,8 +84,8 @@ export const GenerateXlsx = () => {
                 in `apps/nest-app/temp` on the Nest server.
               </p>
               <p className="text-sm text-blue-700">
-                <strong>🧪 Testing Strategy:</strong> Use the valid file to test
-                successful imports, and the invalid file to verify your error
+                <strong>🧪 Testing Strategy:</strong> Use the valid file for
+                happy-path scenarios, and the invalid file to exercise error
                 handling and data validation logic.
               </p>
               <p className="text-sm text-blue-700">

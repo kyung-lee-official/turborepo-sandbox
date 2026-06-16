@@ -159,12 +159,6 @@ File downloaded from ./file-downloads/`,
     }
   }
 
-  @Post("upload-modified-excel")
-  @UseInterceptors(FileInterceptor("file"))
-  async uploadModifiedExcel(@UploadedFile() file: Express.Multer.File) {
-    return await this.techniquesService.uploadModifiedExcel(file);
-  }
-
   @Post()
   create(@Body() createTechniqueDto: CreateTechniqueDto) {
     return this.techniquesService.create(createTechniqueDto);

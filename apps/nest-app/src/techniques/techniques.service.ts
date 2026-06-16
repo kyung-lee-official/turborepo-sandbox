@@ -133,18 +133,6 @@ export class TechniquesService {
     }
   }
 
-  async uploadModifiedExcel(file: Express.Multer.File) {
-    /* Process the uploaded Excel file */
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(file.buffer as any);
-    /* check A1 */
-    const worksheet = workbook.getWorksheet(1);
-    const cellValue = worksheet!.getCell("A1").value;
-    console.log("A1:", cellValue);
-
-    return { status: "ok" };
-  }
-
   create(createTechniqueDto: CreateTechniqueDto) {
     return "This action adds a new technique";
   }

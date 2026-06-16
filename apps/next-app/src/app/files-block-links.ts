@@ -24,12 +24,6 @@ export const filesBlockLinks = [
       "Pick an image, pan and zoom inside a circular crop area, then save locally or upload the cropped result to Tencent COS.",
   },
   {
-    link: "/files/modify-excel-before-upload",
-    text: "modify excel before upload",
-    description:
-      "Read an Excel file with ExcelJS in the browser, convert cell A1 from YYYY-MM-DD to ISO8601, then upload the modified workbook to Nest.",
-  },
-  {
     link: "/files/file-transmit/upload-files-multi",
     text: "upload files (one by one in a loop)",
     description:
@@ -43,9 +37,9 @@ export const filesBlockLinks = [
   },
   {
     link: "/files/upload-large-xlsx-to-database",
-    text: "upload large xlsx to database",
+    text: "generate large xlsx test data",
     description:
-      "Large XLSX import: generate test files, upload to Nest, track background jobs via REST and Socket.IO, and download row-level error reports.",
+      "Generate 500k-row valid and invalid Excel test files via Nest and save them under apps/nest-app/temp.",
   },
   {
     link: "/files/upload-multiple-excel",
