@@ -1,7 +1,7 @@
 "use client";
 
-import axios from "axios";
 import { useState } from "react";
+import { generateLargeExcelFile } from "./api";
 
 export const GenerateXlsx = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -10,30 +10,10 @@ export const GenerateXlsx = () => {
     setIsGenerating(true);
 
     try {
-      /* Generate valid data file */
-      const validResponse = await axios.post(
-        "/api/files/generate-large-excel",
-        { fileType: "valid" },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      /* Generate invalid data file */
-      const invalidResponse = await axios.post(
-        "/api/files/generate-large-excel",
-        { fileType: "invalid" },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      const validResult = validResponse.data;
-      const invalidResult = invalidResponse.data;
+      const [validResult, invalidResult] = await Promise.all([
+        generateLargeExcelFile("valid"),
+        generateLargeExcelFile("invalid"),
+      ]);
 
       alert(
         `Excel files generated successfully:\n` +
@@ -100,8 +80,8 @@ export const GenerateXlsx = () => {
           <div className="ml-3">
             <div className="space-y-2">
               <p className="text-sm text-blue-700">
-                <strong>📁 File Location:</strong> Both generated files will be
-                saved in the `temp` folder at the project root.
+                <strong>📁 File Location:</strong> Both generated files are saved
+                in `apps/nest-app/temp` on the Nest server.
               </p>
               <p className="text-sm text-blue-700">
                 <strong>🧪 Testing Strategy:</strong> Use the valid file to test

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Delete,
   Get,
@@ -20,9 +21,13 @@ import {
   ApiTags,
 } from "@nestjs/swagger";
 import type { Response } from "express";
+import { generateLargeExcelBodySchema } from "./dto/generate-large-excel.dto";
+import { GenerateLargeExcelService } from "./services/generate-large-excel.service";
 import {
   deleteDataByTaskIdApiOperation,
   deleteDataByTaskIdApiParam,
+  generateLargeExcelApiBody,
+  generateLargeExcelApiOperation,
   getTaskByIdApiOperation,
   getTaskByIdApiParam,
   getTasksApiOperation,
@@ -38,7 +43,16 @@ import { UploadLargeXlsxService } from "./upload-large-xlsx.service";
 export class UploadLargeXlsxController {
   constructor(
     private readonly uploadLargeXlsxService: UploadLargeXlsxService,
+    private readonly generateLargeExcelService: GenerateLargeExcelService,
   ) {}
+
+  @ApiOperation(generateLargeExcelApiOperation)
+  @ApiBody(generateLargeExcelApiBody)
+  @Post("generate-large-excel")
+  async generateLargeExcel(@Body() body: unknown) {
+    const parsed = generateLargeExcelBodySchema.parse(body ?? {});
+    return this.generateLargeExcelService.generate(parsed);
+  }
 
   @ApiOperation(uploadXlsxApiOperation)
   @ApiConsumes("multipart/form-data")

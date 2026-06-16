@@ -4,6 +4,7 @@ import { RedisModule } from "../../redis/redis.module";
 import { FileProcessingProcessor } from "./processors/file-processing.processor";
 import { SavingProcessor } from "./processors/saving.processor";
 import { ValidatingProcessor } from "./processors/validating.processor";
+import { GenerateLargeExcelService } from "./services/generate-large-excel.service";
 import { BullQueueService } from "./services/bull-queue.service";
 import { RedisStorageService } from "./services/redis-storage.service";
 import { UploadLargeXlsxController } from "./upload-large-xlsx.controller";
@@ -15,6 +16,7 @@ import { UploadLargeXlsxService } from "./upload-large-xlsx.service";
   controllers: [UploadLargeXlsxController],
   providers: [
     UploadLargeXlsxService,
+    GenerateLargeExcelService,
     UploadLargeXlsxGateway,
     RedisStorageService,
     BullQueueService,

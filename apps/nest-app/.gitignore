@@ -39,6 +39,7 @@ lerna-debug.log*
 
 # Storage
 storage
+temp
 
 # file-downloads
 downloads/*

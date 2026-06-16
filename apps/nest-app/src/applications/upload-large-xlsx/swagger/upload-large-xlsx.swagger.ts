@@ -66,3 +66,25 @@ export const getValidationErrorsByTaskIdApiParam: ApiParamOptions = {
   type: "number",
   description: "Task ID to get validation errors for",
 };
+
+export const generateLargeExcelApiOperation: ApiOperationOptions = {
+  summary: "Generate large test XLSX file",
+  description:
+    "Generate a 500k-row mock Excel file (valid or invalid data) saved under nest-app/temp for upload testing",
+};
+
+export const generateLargeExcelApiBody: ApiBodyOptions = {
+  description: "File type to generate",
+  required: true,
+  schema: {
+    type: "object",
+    properties: {
+      fileType: {
+        type: "string",
+        enum: ["valid", "invalid"],
+        default: "valid",
+      },
+    },
+    required: ["fileType"],
+  },
+};
