@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun --bun --use-system-ca next dev -p 4000",
+    "dev": "bun --bun --use-system-ca next dev -p 3000",
     "# Dev with domain (HTTPS)": "",
     "dev:domain": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain run dev",
     "# Dev with internal IP (HTTP)": "",
@@ -12,14 +12,14 @@
     "# Production builds": "",
     "build:prod-domain": "bun --env-file=../../.env.base --env-file=../../.env.prod-domain run build",
     "build:prod-ip": "bun --env-file=../../.env.base --env-file=../../.env.prod-ip run build",
-    "start": "bun --bun next start -p 4000",
-    "start:prod": "bun --bun next start -p 4000",
+    "start": "bun --bun next start -p 3000",
+    "start:prod": "bun --bun next start -p 3000",
     "# Production start (after build)": "",
     "start:prod-domain": "bun --env-file=../../.env.base --env-file=../../.env.prod-domain run start:prod",
     "start:prod-ip": "bun --env-file=../../.env.base --env-file=../../.env.prod-ip run start:prod",
     "lint": "bun --bun next lint",
     "gen:types": "openapi-typescript http://localhost:3001/api/pokemon.json --output src/app/type-sharing/ts-rest/types.ts",
-    "medusa:next": "bun --bun --use-system-ca next dev -p 4000"
+    "medusa:next": "bun --bun --use-system-ca next dev -p 3000"
   },
   "dependencies": {
     "@casl/ability": "^6.7.3",
