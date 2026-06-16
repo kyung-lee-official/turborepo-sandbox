@@ -56,3 +56,8 @@ file-uploads/*
 
 # turbo
 .turbo
+# Temporary files
+temp/
+
+# Temporary files
+temp/

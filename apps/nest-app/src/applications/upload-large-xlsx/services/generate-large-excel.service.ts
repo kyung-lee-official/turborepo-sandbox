@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import * as ExcelJS from "exceljs";
 import { existsSync, mkdirSync, statSync } from "node:fs";
 import { appendFile, readFile } from "node:fs/promises";
-import path from "node:path";
+import { join } from "node:path";
 import { nanoid } from "nanoid";
 import type {
   GenerateLargeExcelBodyDto,
@@ -132,7 +132,7 @@ export class GenerateLargeExcelService {
 
     this.logger.log(`Generating ${dataTypeLabel} data file...`);
 
-    const tempDir = path.join(process.cwd(), "temp");
+    const tempDir = join(process.cwd(), "temp");
     if (!existsSync(tempDir)) {
       mkdirSync(tempDir, { recursive: true });
       this.logger.log("Created temp directory");
@@ -190,7 +190,7 @@ export class GenerateLargeExcelService {
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `mock-data-500k-${dataTypeLabel}-${timestamp}.xlsx`;
-    const filepath = path.join(tempDir, filename);
+    const filepath = join(tempDir, filename);
 
     this.logger.log("Writing Excel file...");
     const writeStartTime = Date.now();
@@ -218,7 +218,7 @@ export class GenerateLargeExcelService {
   }
 
   private async ensureTempInGitignore() {
-    const gitignorePath = path.join(process.cwd(), ".gitignore");
+    const gitignorePath = join(process.cwd(), ".gitignore");
     if (!existsSync(gitignorePath)) {
       return;
     }
