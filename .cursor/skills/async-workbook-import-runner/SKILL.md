@@ -61,6 +61,10 @@ No universal “parse any file format” engine. No config-driven column DSL.
 
 ## Layer 1 — Transport (format-agnostic)
 
+### What is a slot?
+
+An **upload slot** is a **named multipart field** on the POST body. The field name (e.g. `mainWorkbook`) is the **`uploadSlotId`** — a stable routing key that tells transport and domain code *which role* each file plays. Display filenames are not used for routing. A single-file import still declares one slot in `UploadSlotSpec[]`; multi-file features add more slots (e.g. `supplement`).
+
 ### Types
 
 ```typescript
