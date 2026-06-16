@@ -12,6 +12,7 @@ async function bootstrap() {
   );
   app.enableCors({
     origin: process.env.CORS_ORIGINS?.split(",") || [],
+    exposedHeaders: ["Content-Disposition", "X-Error-Code", "X-Error-Message"],
   });
 
   setupSwagger(app);
