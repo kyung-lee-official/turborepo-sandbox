@@ -191,7 +191,7 @@ type ErrorDetail = {
 
 | Concern | Layer 2 |
 | ------- | ------- |
-| Load buffer into workbook | yes |
+| Load buffer into (ExcelJS) workbook | yes |
 | Assert required sheet names exist | yes |
 | `validateWorksheetHeaders` + Zod/header enum | yes |
 | Read cells with **`cell.text`** (trim at ingest) | yes |
@@ -220,7 +220,7 @@ type TabularSheetSpec = {
 };
 ```
 
-Domain passes specs; Layer 2 validates headers and yields raw row maps or calls a row callback.
+Domain passes specs; Layer 2 validates headers and yields raw row maps (batch `Array`) or calls a row callback (streaming, one row at a time).
 
 ### Progress helper
 
