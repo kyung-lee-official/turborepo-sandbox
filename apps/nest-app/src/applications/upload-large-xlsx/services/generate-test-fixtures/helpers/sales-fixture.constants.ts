@@ -1,11 +1,3 @@
-export const SALES_IMPORT_KIND = "sales-import" as const;
-
-export const UPLOAD_SLOT = {
-  salesData: "salesData",
-  inventory: "inventory",
-  productDescriptions: "productDescriptions",
-} as const;
-
 export const SALES_DATA_SHEETS = {
   products: "Products",
   lineItems: "LineItems",
