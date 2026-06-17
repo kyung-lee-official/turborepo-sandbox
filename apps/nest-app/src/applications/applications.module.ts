@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
+import { AsyncImportModule } from "../import/async-import.module";
 import { Import207ErrorXlsxModule } from "./import-207-error-xlsx/import-207-error-xlsx.module";
+import { SalesImportModule } from "./sales-import/sales-import.module";
 import { MockDataModule } from "./mock-data/mock-data.module";
 import { ProgramLifecycleModule } from "./program-lifecycle/program-lifecycle.module";
 import { ResendModule } from "./resend/resend.module";
@@ -13,6 +15,8 @@ import { UploadLargeXlsxModule } from "./upload-large-xlsx/upload-large-xlsx.mod
     ResendModule,
     UploadLargeJsonModule,
     UploadLargeXlsxModule,
+    AsyncImportModule,
+    SalesImportModule,
     Import207ErrorXlsxModule,
   ],
   exports: [
@@ -21,6 +25,8 @@ import { UploadLargeXlsxModule } from "./upload-large-xlsx/upload-large-xlsx.mod
     ResendModule,
     UploadLargeJsonModule,
     UploadLargeXlsxModule,
+    AsyncImportModule,
+    SalesImportModule,
     Import207ErrorXlsxModule,
   ],
 })
