@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
-import { GenerateLargeExcelService } from "./services/generate-large-excel.service";
+import { GenerateTestFixturesService } from "./services/generate-test-fixtures.service";
 import { UploadLargeXlsxController } from "./upload-large-xlsx.controller";
 
 @Module({
   controllers: [UploadLargeXlsxController],
-  providers: [GenerateLargeExcelService],
+  providers: [GenerateTestFixturesService],
 })
 export class UploadLargeXlsxModule {}

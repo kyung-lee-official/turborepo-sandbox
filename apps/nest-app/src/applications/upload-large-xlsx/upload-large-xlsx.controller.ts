@@ -1,24 +1,24 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { generateLargeExcelBodySchema } from "./dto/generate-large-excel.dto";
-import { GenerateLargeExcelService } from "./services/generate-large-excel.service";
+import { generateTestFixturesBodySchema } from "./dto/generate-test-fixtures.dto";
+import { GenerateTestFixturesService } from "./services/generate-test-fixtures.service";
 import {
-  generateLargeExcelApiBody,
-  generateLargeExcelApiOperation,
+  generateTestFixturesApiBody,
+  generateTestFixturesApiOperation,
 } from "./swagger/upload-large-xlsx.swagger";
 
 @ApiTags("Upload Large Xlsx")
 @Controller("applications/upload-large-xlsx")
 export class UploadLargeXlsxController {
   constructor(
-    private readonly generateLargeExcelService: GenerateLargeExcelService,
+    private readonly generateTestFixturesService: GenerateTestFixturesService,
   ) {}
 
-  @ApiOperation(generateLargeExcelApiOperation)
-  @ApiBody(generateLargeExcelApiBody)
-  @Post("generate-large-excel")
-  async generateLargeExcel(@Body() body: unknown) {
-    const parsed = generateLargeExcelBodySchema.parse(body ?? {});
-    return this.generateLargeExcelService.generate(parsed);
+  @ApiOperation(generateTestFixturesApiOperation)
+  @ApiBody(generateTestFixturesApiBody)
+  @Post("generate-test-fixtures")
+  async generateTestFixtures(@Body() body: unknown) {
+    const parsed = generateTestFixturesBodySchema.parse(body ?? {});
+    return this.generateTestFixturesService.generate(parsed);
   }
 }
