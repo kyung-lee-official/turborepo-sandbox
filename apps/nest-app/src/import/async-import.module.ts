@@ -4,6 +4,7 @@ import { RedisModule } from "../redis/redis.module";
 import { AsyncImportController } from "./transport/async-import.controller";
 import { ASYNC_IMPORT_QUEUE } from "./transport/async-import.types";
 import { ImportProcessor } from "./transport/import.processor";
+import { ImportJobProgressSseService } from "./transport/import-job-progress-sse.service";
 import { ImportJobStoreService } from "./transport/import-job-store.service";
 import { ImportRegistry } from "./transport/import-registry";
 import { ImportTransportService } from "./transport/import-transport.service";
@@ -19,9 +20,15 @@ import { ImportTransportService } from "./transport/import-transport.service";
   providers: [
     ImportRegistry,
     ImportJobStoreService,
+    ImportJobProgressSseService,
     ImportTransportService,
     ImportProcessor,
   ],
-  exports: [ImportRegistry, ImportTransportService, ImportJobStoreService],
+  exports: [
+    ImportRegistry,
+    ImportTransportService,
+    ImportJobStoreService,
+    ImportJobProgressSseService,
+  ],
 })
 export class AsyncImportModule {}

@@ -28,6 +28,10 @@ export class ImportJobStoreService {
     return `${KEY_PREFIX}:active:${importKind}`;
   }
 
+  buildEventsChannelFromJobId(jobId: string) {
+    return `${KEY_PREFIX}:events:${jobId}`;
+  }
+
   async saveMeta(meta: JobMeta): Promise<void> {
     const client = this.redisService.getClient();
     await client.set(
@@ -35,6 +39,10 @@ export class ImportJobStoreService {
       JSON.stringify(meta),
       "EX",
       META_TTL_SECONDS,
+    );
+    await client.publish(
+      this.buildEventsChannelFromJobId(meta.jobId),
+      JSON.stringify(meta),
     );
   }
 
@@ -64,10 +72,7 @@ export class ImportJobStoreService {
     return next;
   }
 
-  async saveUpload(
-    jobId: string,
-    upload: ImportUpload,
-  ): Promise<void> {
+  async saveUpload(jobId: string, upload: ImportUpload): Promise<void> {
     const client = this.redisService.getClient();
     const payload = JSON.stringify({
       uploadSlotId: upload.uploadSlotId,
