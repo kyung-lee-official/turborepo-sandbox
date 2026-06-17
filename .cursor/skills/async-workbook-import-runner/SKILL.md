@@ -2,7 +2,7 @@
 name: async-workbook-import-runner
 description: >-
   Three-layer async import architecture: (1) format-agnostic transport — slots,
-  202, Redis, BullMQ, job phases; (2) tabular-xlsx — workbook load, row errors, error XLSX,
+  202, Redis, BullMQ, job phases, SSE progress; (2) tabular-xlsx — workbook load, row errors, error XLSX,
   tabular phase in progress; (3) domain — sheet maps, row transforms, persist.
   Use when adding async .xlsx imports, splitting transport from parsing, or
   designing reusable import abstractions.
@@ -46,7 +46,7 @@ No universal “parse any file format” engine. No config-driven column DSL.
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Layer 1 — Transport        format-agnostic async file job   │
-│  slots, 202/jobId, Redis, JobMeta, queue, lock policy      │
+│  slots, 202/jobId, Redis, JobMeta, SSE, queue, lock policy │
 └──────────────────────────────┬──────────────────────────────┘
                                │ Map<uploadSlotId, ImportUpload>
                                ▼
@@ -64,7 +64,7 @@ No universal “parse any file format” engine. No config-driven column DSL.
 
 | Layer | Owns | Must not own |
 | ----- | ---- | ------------ |
-| **1 Transport** | `ImportUpload`, upload slots, `jobId`, **job phase**, opaque **progress**, **outcome**, error blob storage, lock policy, authz | Worksheets, row numbers, XLSX headers, DB models, progress shape (% vs tabular phase vs worksheet) |
+| **1 Transport** | `ImportUpload`, upload slots, `jobId`, **job phase**, opaque **progress**, **outcome**, error blob storage, **SSE progress stream**, lock policy, authz | Worksheets, row numbers, XLSX headers, DB models, progress shape (% vs tabular phase vs worksheet) |
 | **2 Tabular XLSX** | Workbook load, required sheets, header validation, row loop, `ErrorDetail`, error XLSX columns, **tabular phase** in progress | BullMQ, Redis keys, `importKind` routing, business rules |
 | **3 Domain** | Per-`importKind` sheet maps, row transforms, save strategy, domain runner | Queue wiring, multipart parsing, generic job TTL |
 
@@ -124,11 +124,21 @@ type JobMeta = {
 3. Validate multipart against **`UploadSlotSpec[]`**.
 4. Create `jobId`, `JobMeta` (`phase: queued`), store uploads per slot, enqueue `{ jobId, importKind }`, return **202** `{ jobId }`.
 
+### Progress (SSE)
+
+Client opens **`GET jobs/:jobId/events`** (`text/event-stream`) after POST. No polling endpoint for `JobMeta`.
+
+1. Job store **`saveMeta`** writes Redis and **`publish`**es full `JobMeta` on `{prefix}:events:{jobId}` (same payload on every patch).
+2. SSE sends current `JobMeta` on connect, then forwards pub/sub updates. Stream **closes** when `phase` is `complete` or `failed`.
+3. Optional heartbeat events while open. Use a dedicated Redis subscriber connection per SSE client.
+
+`GET jobs/:jobId/error-blob` when `outcome === "validation_failed"`.
+
 ### Worker
 
 1. Load `Map<uploadSlotId, ImportUpload>`.
 2. Resolve domain runner from registry by `importKind`.
-3. Pass `onProgress(detail: unknown)` — writes `JobMeta.progress`, sets job phase to `processing`.
+3. Pass `onProgress(detail: unknown)` — patches `JobMeta.progress`, sets job phase to `processing` (pub/sub notifies SSE).
 4. Map `DomainImportResult.outcome` to `JobMeta.outcome`; set job phase to `complete` (or `failed` on throw).
 5. On outcome `validation_failed`, persist error blob (Layer 2 supplies XLSX bytes; transport stores bytes only).
 6. Clear upload buffers per TTL policy.
@@ -318,7 +328,7 @@ Multi-sheet: loop domain sheet specs; call `onProgress` with each `worksheetName
 
 ## Frontend
 
-- **Layer 1:** `formData.append(uploadSlotId, file)`, poll `JobMeta.phase`, download error blob when job phase is `complete`.
+- **Layer 1:** `formData.append(uploadSlotId, file)` → POST → `EventSource` on `jobs/:jobId/events` (each event `data` is `JobMeta`); download error blob when `outcome === "validation_failed"`.
 - **Per `importKind`:** type-narrow `JobMeta.progress` (e.g. `TabularImportProgress` for XLSX).
 - Export `uploadSlotId` constants (e.g. `MAIN_WORKBOOK_SLOT = "mainWorkbook"`) beside the API client.
 
@@ -332,7 +342,8 @@ import/
     async-import.types.ts
     import-registry.ts
     import-transport.service.ts
-    import-job-store.ts   # Redis or equivalent
+    import-job-store.ts   # Redis meta, uploads, error blob; publish on saveMeta
+    import-job-progress-sse.service.ts
     import.processor.ts   # queue worker
   tabular-xlsx/           # Layer 2
     tabular-import.types.ts
@@ -358,6 +369,7 @@ Layer 1
 - [ ] Lock policy + stable reject code
 - [ ] Single processor — no per-`importKind` Redis duplicate
 - [ ] JobMeta.progress is `unknown` — no transport union for progress shape
+- [ ] SSE `jobs/:jobId/events` + Redis pub/sub on `saveMeta`; no poll endpoint for meta
 
 Layer 2
 - [ ] Shared error XLSX builder used on validation_failed
