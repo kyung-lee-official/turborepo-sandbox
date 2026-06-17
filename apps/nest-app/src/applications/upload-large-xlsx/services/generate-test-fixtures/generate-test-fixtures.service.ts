@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
 import { existsSync, mkdirSync } from "node:fs";
 import { appendFile, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { Injectable, Logger } from "@nestjs/common";
 import type {
   GenerateTestFixturesBodyDto,
   GenerateTestFixturesResult,
