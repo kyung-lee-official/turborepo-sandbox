@@ -7,7 +7,7 @@ function formatBundleSummary(bundle: ScenarioBundle): string {
   const files = bundle.uploadSlots
     .map(
       (f) =>
-        `  • ${f.uploadSlotId}: ${f.originalName}${f.lineCount ? ` (${f.lineCount.toLocaleString()} lines)` : f.rowCount ? ` (${f.rowCount.toLocaleString()} rows incl. header)` : ""}`,
+        `  • ${f.originalName}${f.lineCount ? ` (${f.lineCount.toLocaleString()} lines)` : f.rowCount ? ` (${f.rowCount.toLocaleString()} rows incl. header)` : ""}`,
     )
     .join("\n");
   return (

@@ -3,7 +3,6 @@ import axios from "axios";
 export type TestFixtureScenario = "perfect" | "partial" | "fail_fast";
 
 export type GeneratedFixtureFile = {
-  uploadSlotId: string;
   originalName: string;
   filepath: string;
   mimeType: string;
@@ -14,7 +13,6 @@ export type GeneratedFixtureFile = {
 
 export type ScenarioBundle = {
   scenario: TestFixtureScenario;
-  importKind: "sales-import";
   bundleDir: string;
   expectedOutcome: "success" | "validation_failed" | "failed";
   uploadSlots: GeneratedFixtureFile[];

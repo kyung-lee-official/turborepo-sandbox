@@ -14,8 +14,6 @@ import { buildSalesDataWorkbook } from "./helpers/build-sales-data-workbook";
 import {
   FIXTURE_FILE_NAMES,
   MIME_TYPES,
-  SALES_IMPORT_KIND,
-  UPLOAD_SLOT,
 } from "./helpers/sales-fixture.constants";
 import { buildSkuPool } from "./helpers/sku-pool";
 
@@ -95,12 +93,10 @@ export class GenerateTestFixturesService {
 
     return {
       scenario,
-      importKind: SALES_IMPORT_KIND,
       bundleDir,
       expectedOutcome,
       uploadSlots: [
         {
-          uploadSlotId: UPLOAD_SLOT.salesData,
           originalName: FIXTURE_FILE_NAMES.salesData,
           filepath: salesDataPath,
           mimeType: MIME_TYPES.xlsx,
@@ -108,7 +104,6 @@ export class GenerateTestFixturesService {
           rowCount: salesData.rowCount,
         },
         {
-          uploadSlotId: UPLOAD_SLOT.inventory,
           originalName: FIXTURE_FILE_NAMES.inventory,
           filepath: inventoryPath,
           mimeType: MIME_TYPES.xlsx,
@@ -116,7 +111,6 @@ export class GenerateTestFixturesService {
           rowCount: inventory.rowCount,
         },
         {
-          uploadSlotId: UPLOAD_SLOT.productDescriptions,
           originalName: FIXTURE_FILE_NAMES.productDescriptions,
           filepath: jsonlPath,
           mimeType: MIME_TYPES.jsonl,
