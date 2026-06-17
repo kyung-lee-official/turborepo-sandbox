@@ -12,8 +12,8 @@ import {
   type ImportUpload,
   type JobMeta,
 } from "./async-import.types";
-import { assertImportLockAllowsEnqueue } from "./import-lock-policy";
 import { ImportJobStoreService } from "./import-job-store.service";
+import { assertImportLockAllowsEnqueue } from "./import-lock-policy";
 import { ImportRegistry } from "./import-registry";
 
 @Injectable()
