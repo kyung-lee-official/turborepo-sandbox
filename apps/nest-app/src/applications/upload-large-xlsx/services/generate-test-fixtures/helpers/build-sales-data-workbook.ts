@@ -1,5 +1,5 @@
 import * as ExcelJS from "exceljs";
-import type { TestFixtureScenario } from "../../dto/generate-test-fixtures.dto";
+import type { TestFixtureScenario } from "../../../dto/generate-test-fixtures.dto";
 import { applyDefaultExportedSheetView } from "./apply-exported-sheet-view";
 import {
   EXCEL_BATCH_SIZE,

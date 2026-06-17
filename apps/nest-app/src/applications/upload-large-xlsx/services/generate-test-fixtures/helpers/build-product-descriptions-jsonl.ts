@@ -1,6 +1,6 @@
 import { createWriteStream } from "node:fs";
 import { finished } from "node:stream/promises";
-import type { TestFixtureScenario } from "../../dto/generate-test-fixtures.dto";
+import type { TestFixtureScenario } from "../../../dto/generate-test-fixtures.dto";
 import {
   DESCRIPTION_ADJECTIVES,
   JSONL_BATCH_SIZE,

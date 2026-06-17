@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { generateTestFixturesBodySchema } from "./dto/generate-test-fixtures.dto";
-import { GenerateTestFixturesService } from "./services/generate-test-fixtures.service";
+import { GenerateTestFixturesService } from "./services/generate-test-fixtures/generate-test-fixtures.service";
 import {
   generateTestFixturesApiBody,
   generateTestFixturesApiOperation,

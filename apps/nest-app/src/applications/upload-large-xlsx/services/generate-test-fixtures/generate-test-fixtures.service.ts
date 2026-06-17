@@ -7,17 +7,17 @@ import type {
   GenerateTestFixturesResult,
   ScenarioBundle,
   TestFixtureScenario,
-} from "../dto/generate-test-fixtures.dto";
-import { buildInventoryWorkbook } from "./sales-test-fixtures/build-inventory-workbook";
-import { buildProductDescriptionsJsonl } from "./sales-test-fixtures/build-product-descriptions-jsonl";
-import { buildSalesDataWorkbook } from "./sales-test-fixtures/build-sales-data-workbook";
+} from "../../dto/generate-test-fixtures.dto";
+import { buildInventoryWorkbook } from "./helpers/build-inventory-workbook";
+import { buildProductDescriptionsJsonl } from "./helpers/build-product-descriptions-jsonl";
+import { buildSalesDataWorkbook } from "./helpers/build-sales-data-workbook";
 import {
   FIXTURE_FILE_NAMES,
   MIME_TYPES,
   SALES_IMPORT_KIND,
   UPLOAD_SLOT,
-} from "./sales-test-fixtures/sales-fixture.constants";
-import { buildSkuPool } from "./sales-test-fixtures/sku-pool";
+} from "./helpers/sales-fixture.constants";
+import { buildSkuPool } from "./helpers/sku-pool";
 
 const ALL_SCENARIOS: TestFixtureScenario[] = [
   "perfect",
