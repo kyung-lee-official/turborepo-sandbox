@@ -1,303 +1,346 @@
 ---
 name: async-processing
 description: >-
-  Async import processing layer: startProcessing, job queue, JobMeta, SSE, locks,
-  worker, domain registry. Upload-agnostic — requires ready ImportBatch. Use when
-  adding importKind runners, job orchestration, or wiring processing to domain.
+  Async processing layer: StartProcessingInput contract, API/event adapters,
+  startProcessing orchestrator, ProcessingBatch registry, source reader, job
+  queue, JobMeta, SSE, worker, domainKind registry. Use when wiring processing
+  entry points, domain runners, or job orchestration.
 ---
 
-# Async import: processing / format plugins / domain
+# Async processing
 
 ## Goal
 
-Reusable **async file-import jobs** where only the **domain layer** is `importKind`-specific. **Processing layer** knows **job phase** and orchestration only — not how files were uploaded. **Format plugins layer** knows file-shape parsing. **Domain layer** knows business tables and rules.
+**Source-agnostic async processing.** Entry points are an **API controller** and an **event subscriber** — each delegates to its own **adapter** that normalizes upstream data into **`StartProcessingInput`**, validates (e.g. Zod), then calls **`startProcessing`**.
 
-**Inbound contract:** [import-batch-contract](../import-batch-contract/SKILL.md) — `ImportBatch`, registry, slot reader. Processing starts only from a **ready** batch via **`startProcessing`**.
+- **Upload** — [import-upload-handoff](../import-upload-handoff/SKILL.md) builds upload `slots`; **API or event adapter** maps to `StartProcessingInput`.
+- **Direct API** — controller receives body; **API adapter** validates and normalizes.
 
-No universal “parse any file format” engine. No config-driven column DSL.
+Only the **domain layer** is `domainKind`-specific. **Storage verification** is worker step 1. **Business validation** is domain / format plugins.
 
-### Terminology
-
-**Area:** `Contract`, `Processing`, `Format plugins`, `Domain`. Bold marks the owner.
-
-| Term | Area | Meaning |
-| ---- | ---- | ------- |
-| **ImportBatch** | **Contract**, Processing | Inbound handoff: slots + `ImportBatchSource` refs |
-| **batchId** | **Contract**, Processing | Id from upload path; passed to `startProcessing` |
-| **importKind** | **Processing**, **Domain** | Registry key that selects a domain runner |
-| **job** / **jobId** | **Processing** | One async import run |
-| **job phase** | **Processing** | `JobMeta.phase`: `queued` \| `processing` \| `complete` \| `failed` |
-| **JobMeta** | **Processing** | Redis record for a job (phase, progress, outcome) |
-| **uploadSlotId** | Contract, Format plugins, Domain | Slot routing key |
-| **progress** | Processing, Format plugins, Domain | `JobMeta.progress`; runner-defined JSON (`unknown` in processing) |
-| **outcome** | **Processing**, **Domain** | `JobMeta.outcome` when job phase is `complete` |
-| **worker** | **Processing** | BullMQ processor; dequeues `{ jobId, importKind, batchId }` |
-| **domain runner** | **Domain**, Processing | `DomainImportRunner` for one `importKind` |
-| **originalName** | Contract, Format plugins, Domain | Display only; never used for routing |
-| **error blob** | **Processing**, Format plugins | Download bytes (tabular-xlsx builds XLSX; processing stores) |
-| **plugin id** | **Format plugins** | `tabular-xlsx`, `jsonl` (not `importKind`) |
-
-**Do not mix:** job phase vs plugin progress phase; outcome vs job phase (`complete` ≠ `success`); `importKind` vs plugin id; upload progress vs job SSE.
+**Upload progress** is upstream. **Job progress** is SSE here.
 
 ---
 
 ## Architecture
 
-```text
-[Upload paths]  ──registerReady──►  ImportBatch (contract)
-                                           │
-                              startProcessing(batchId, importKind)
-                                           ▼
-┌──────────────────────────────────────────────────────────────┐
-│  Processing layer     jobId, queue, JobMeta, SSE, locks     │
-└──────────────────────────────┬───────────────────────────────┘
-                               │ domain runner
-┌──────────────────────────────▼───────────────────────────────┐
-│  Domain layer (per importKind)                                  │
-└──────────────────────────────┬─────────────────────────────────┘
-                               │ per uploadSlotId
-┌──────────────────────────────▼───────────────────────────────┐
-│  Format plugins layer                                           │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+---
+config:
+  theme: neo-dark
+---
+flowchart TD
+  apiCtrl["API controller POST start"]
+  eventSub["event subscriber OnEvent"]
+  apiAdp["API adapter normalize validate"]
+  eventAdp["event adapter normalize validate"]
+  start["call startProcessing"]
+  batch["create ProcessingBatch enqueue"]
+  worker["worker verifyLocator"]
+  domain["domain runner"]
+
+  apiCtrl --> apiAdp
+  eventSub --> eventAdp
+  apiAdp --> start
+  eventAdp --> start
+  start --> batch
+  batch --> worker
+  worker --> domain
 ```
 
-| Area | Owns | Must not own |
-| ---- | ---- | ------------ |
-| **Contract** | `ImportBatch`, registry, slot reader | BullMQ, `importKind`, multipart, presigned URLs |
-| **Processing** | `jobId`, **job phase**, opaque **progress**, **outcome**, error blob storage, **SSE**, lock policy, `startProcessing` | Multipart, object-store grants, file bytes in Redis, worksheets, DB models |
-| **Format plugins** | Parse, `ErrorDetail`, error XLSX build | Queue, `importKind`, business rules |
-| **Domain** | Orchestration, transforms, save strategy | Upload flows, queue wiring |
+**Rule:** controller and subscriber are **thin** — they only forward to an adapter. **Only adapters** call `startProcessing`.
 
-**Dependency rule:** Upload paths call contract `registerReady` only. Processing invokes domain runner. Domain may call format plugins. Format plugins must not call domain or processing. Processing must not import format plugins or ExcelJS.
-
-**Plugin skills:** [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md) · [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md)
-
----
-
-## When to use this skill
-
-- Adding a new async import (`importKind`).
-- `startProcessing`, SSE, registry, lock policy, worker, domain runner wiring.
-- Choosing what lives in domain vs format plugins.
-
-For upload mechanisms, slot verification, and `registerReady`, use [import-batch-contract](../import-batch-contract/SKILL.md) and the upload skills.
+| Piece | Role |
+| ----- | ---- |
+| **API controller** | HTTP entry — receives raw body, delegates to API adapter |
+| **Event subscriber** | Event entry — receives raw payload, delegates to event adapter |
+| **API adapter** | Normalize API body (incl. upload handoff shape) → `StartProcessingInput` → orchestrator |
+| **Event adapter** | Normalize event payload (incl. upload handoff) → `StartProcessingInput` → orchestrator |
+| **StartProcessingInput** | Validated DTO — `domainKind` + `sources` |
+| **ProcessingBatch** | Created in `startProcessing`; used by worker |
+| **ProcessingBatchRegistry** | `saveForJob`, `getByBatchId`, `deleteByBatchId` |
+| **ProcessingSourceReader** | `verifyLocator`, `openReadStream`, `deleteLocator` |
 
 ---
 
-## Processing layer
+## Terminology
 
-### Progress is opaque in processing
+| Term | Meaning |
+| ---- | ------- |
+| **StartProcessingInput** | Normalized, validated inbound DTO for `startProcessing` |
+| **domainKind** | Registry key for domain runner and required `sourceId` list (e.g. `sales-import`) |
+| **sourceId** | Routing key for one input (e.g. `mainWorkbook`) — not upload-specific |
+| **SourceLocator** | Opaque read handle: local path, object key, … |
+| **API controller** | HTTP entry point — `POST .../start` |
+| **Event subscriber** | `@OnEvent("processing.start-requested")` entry point |
+| **API adapter** | Normalizes raw API body → `StartProcessingInput`; calls orchestrator |
+| **Event adapter** | Normalizes raw event payload → `StartProcessingInput`; calls orchestrator |
+| **batchId** / **jobId** | Created in `startProcessing` |
+| **storage verification** | Worker step 1: stat / HEAD on each `SourceLocator` |
 
-Processing owns **job phase** (is the job still running?), not **progress** shape. Domain runners put plugin-specific detail in `JobMeta.progress`; processing stores and relays without interpreting it.
+Upload vocabulary (`uploadSlotId`, upload `slots`) stays in [import-upload-handoff](../import-upload-handoff/SKILL.md) only.
 
-Each `importKind` documents its progress schema on the client. Processing types `JobMeta.progress` as `unknown`.
+---
 
-### Types
+## Types
+
+### Adapter inbound (processing DTO)
 
 ```typescript
-type JobPhase = "queued" | "processing" | "complete" | "failed";
+type StartProcessingInput = {
+  domainKind: string;
+  sources: Record<string, ProcessingSource>;
+};
 
-type UploadSlotSpec = { uploadSlotId: string; required: boolean };
+type ProcessingSource = {
+  sourceId: string;
+  label?: string;       // display only; was originalName from upload
+  mimeType?: string;
+  locator: SourceLocator;
+};
 
+type SourceLocator =
+  | { kind: "local"; path: string; declaredSizeBytes?: number }
+  | {
+      kind: "object";
+      provider: "s3" | "cos";
+      bucket: string;
+      key: string;
+      declaredSizeBytes?: number;
+    };
+  // future: { kind: "db"; ... } — processing unchanged at adapter boundary
+```
+
+### Created in startProcessing
+
+```typescript
+type ProcessingBatch = {
+  batchId: string;
+  domainKind: string;
+  jobId: string;
+  sources: Record<string, ProcessingSource>;
+  createdAt: string;
+};
+
+type VerifiedSourceLocator = SourceLocator & {
+  sizeBytes: number;
+  etag?: string;
+};
+
+type SourceSlotSpec = { sourceId: string; required: boolean };
+```
+
+Orchestrator validates `input.sources` against `DomainKindRegistration.sourceSlots`.
+
+### Job queue and meta
+
+```typescript
 type JobMeta = {
   jobId: string;
-  importKind: string;
+  domainKind: string;
   batchId: string;
   phase: JobPhase;
   progress?: unknown;
   outcome?: "success" | "validation_failed" | "failed";
-  errorBlobKey?: string;
-  importedCount?: number;
-  errorCount?: number;
-  createdAt: string;
-  updatedAt: string;
+  // ...
 };
 
-type AsyncImportJobPayload = {
+type AsyncProcessingJobPayload = {
   jobId: string;
-  importKind: string;
+  domainKind: string;
   batchId: string;
 };
 ```
 
-Import batch types (`ImportBatch`, `ImportBatchSlot`, `ImportBatchSource`) live in [import-batch-contract](../import-batch-contract/SKILL.md).
+---
 
-### startProcessing (sole entry from upload)
-
-```http
-POST /applications/async-import/batches/:batchId/start
-Content-Type: application/json
-
-{ "importKind": "sales-import" }
-```
-
-→ **202** `{ "jobId": "..." }`
-
-1. Load `ImportBatch` by `batchId`; reject if missing, not `ready`, or expired.
-2. Resolve `importKind` from `ImportRegistry`; validate batch slots against `uploadSlots`.
-3. Run `ImportLockPolicy`; reject with stable `code` if blocked.
-4. Create `jobId`, `JobMeta` (`phase: queued`, `batchId`).
-5. `claimByJobId(batchId, jobId)`; reject if claim fails.
-6. Enqueue `{ jobId, importKind, batchId }`.
-7. Return `{ jobId }`.
-
-Processing **never** accepts multipart or presigned grants on this endpoint.
-
-### Progress (SSE)
-
-Client opens **`GET jobs/:jobId/events`** after `startProcessing`. No polling endpoint for `JobMeta`.
-
-1. Job store **`saveMeta`** writes Redis and **`publish`**es full `JobMeta` on `{prefix}:events:{jobId}`.
-2. SSE sends current `JobMeta` on connect, then forwards pub/sub updates. Stream **closes** when `phase` is `complete` or `failed`.
-3. Optional heartbeat. Dedicated Redis subscriber per SSE client.
-
-`GET jobs/:jobId/error-blob` when `outcome === "validation_failed"`.
-
-### Worker
-
-1. Load `ImportBatch`; assert `claimedByJobId === jobId`.
-2. Build `Map<uploadSlotId, ImportBatchSlot>`.
-3. Resolve domain runner by `importKind`.
-4. Call `domainRunner.run(slots, { openStream, onProgress })`:
-   - `openStream(slot)` uses `ImportBatchSlotReader.openReadStream(slot.source)`.
-   - `onProgress` patches `JobMeta.progress`, sets job phase to `processing`.
-5. Map `DomainImportResult.outcome` to `JobMeta.outcome`; set job phase to `complete` (or `failed` on throw).
-6. On `validation_failed`, persist error blob (format plugin supplies bytes; processing stores only).
-7. `deleteSource` for each slot; clear active lock if needed.
-
-### Lock policy (startProcessing only)
-
-| Policy | Guard |
-| ------ | ----- |
-| **None** | Always enqueue |
-| **Global singleton** | No active run for this `importKind` |
-| **Resource-scoped** | No active run for `(importKind, resourceKey)` |
-| **Member-scoped** | Parallel jobs OK; isolate by `actorId` |
-
-Queue `concurrency: 1` does **not** replace POST guards across instances.
-
-### Registry
+## ProcessingBatchRegistry
 
 ```typescript
-registry.register("catalog", {
-  domainRunner: catalogDomainRunner,
-  uploadSlots: [{ uploadSlotId: "mainWorkbook", required: true }],
-  lockPolicy: resourceScoped("resourceId"),
-});
+interface ProcessingBatchRegistry {
+  saveForJob(batch: ProcessingBatch): Promise<void>;
+  getByBatchId(batchId: string): Promise<ProcessingBatch | null>;
+  deleteByBatchId(batchId: string): Promise<void>;
+}
 ```
-
-`uploadSlots` validates the **batch** at `startProcessing`, not multipart at upload time.
 
 ---
 
-## Format plugins layer
-
-One plugin per **format family** under `import/plugins/{id}/`. Plugins are **`importKind`-agnostic**; domain picks a plugin per **`uploadSlotId`**.
-
-**Shared `ErrorDetail` contract:**
+## ProcessingSourceReader
 
 ```typescript
-type ErrorDetail = {
-  rowNumber?: number;
-  message: string;
-  rawData: string;
-  uploadSlotId?: string;
-  originalName?: string;
-  worksheetName?: string;
-};
+interface ProcessingSourceReader {
+  verifyLocator(locator: SourceLocator): Promise<VerifiedSourceLocator>;
+  openReadStream(locator: VerifiedSourceLocator): Promise<Readable>;
+  deleteLocator(locator: SourceLocator): Promise<void>;
+}
 ```
 
-On `validation_failed`, domain merges `ErrorDetail[]` into one **XLSX** error blob (tabular-xlsx plugin builds; processing stores).
+---
 
-| Slot format | Plugin skill |
-| ----------- | ------------ |
-| `.xlsx` | [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md) |
-| `.jsonl` | [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md) |
+## Entry points and adapters
+
+Processing has **two entry points**. Each entry point delegates to **one adapter**. Only the adapter calls `startProcessing`.
+
+### API controller (entry)
+
+```typescript
+@Post("start")
+async start(@Body() body: unknown) {
+  return this.apiStartProcessingAdapter.handle(body);
+}
+```
+
+### API adapter
+
+```http
+POST /applications/async-processing/start
+Content-Type: application/json
+
+{ "domainKind": "sales-import", "sources": { ... } }
+```
+
+Body may also carry upload handoff shape (`domainKind` + `slots`); API adapter maps to `StartProcessingInput` before Zod parse.
+
+→ **202** `{ "jobId": "...", "batchId": "..." }`
+
+```typescript
+class ApiStartProcessingAdapter {
+  async handle(raw: unknown): Promise<{ jobId: string; batchId: string }> {
+    const input = this.normalizeAndValidate(raw);
+    return this.processingOrchestrator.startProcessing(input);
+  }
+}
+```
+
+### Event subscriber (entry)
+
+```typescript
+@OnEvent("processing.start-requested")
+async onProcessingStartRequested(payload: unknown) {
+  await this.eventStartProcessingAdapter.handle(payload);
+}
+```
+
+Emitted by [import-upload-handoff](../import-upload-handoff/SKILL.md). Subscriber does not parse — adapter does.
+
+### Event adapter
+
+```typescript
+class EventStartProcessingAdapter {
+  async handle(raw: unknown): Promise<{ jobId: string; batchId: string }> {
+    const input = this.normalizeAndValidate(raw);
+    return this.processingOrchestrator.startProcessing(input);
+  }
+}
+```
+
+Normalizes upload handoff payload (`domainKind` + `slots`) or full `StartProcessingInput` → validate → `startProcessing`.
+
+### Upload handoff map (inside adapters)
+
+```typescript
+function mapUploadHandoffToInput(
+  domainKind: string,
+  slots: UploadHandoffSlots,
+): StartProcessingInput {
+  return {
+    domainKind,
+    sources: Object.fromEntries(
+      Object.entries(slots).map(([id, slot]) => [
+        id,
+        {
+          sourceId: slot.uploadSlotId,
+          label: slot.originalName,
+          mimeType: slot.mimeType,
+          locator: slot.source,
+        },
+      ]),
+    ),
+  };
+}
+```
+
+---
+
+## Inside startProcessing
+
+1. Validate `input.sources` for `input.domainKind` (registry `sourceSlots`).
+2. Lock policy.
+3. Create `jobId`, `batchId`, `ProcessingBatch`.
+4. `saveForJob(batch)`.
+5. Enqueue `{ jobId, domainKind, batchId }`.
+6. Return `{ jobId, batchId }`.
+
+---
+
+## Worker
+
+1. Load `ProcessingBatch` by `batchId`.
+2. **`verifyLocator`** per source.
+3. `domainRunner.run(sources, { openStream, onProgress })`.
+4. Finalize job; cleanup locators.
+
+---
+
+## Domain registry
+
+```typescript
+registry.register("sales-import", {
+  domainRunner: salesDomainRunner,
+  sourceSlots: [{ sourceId: "mainWorkbook", required: true }],
+  lockPolicy: { type: "global_singleton" },
+});
+```
 
 ---
 
 ## Domain layer
 
-One **domain runner** per `importKind`. Composes format plugins; implements business logic only.
-
-### Interface (called by worker)
-
 ```typescript
-type DomainImportResult =
-  | { outcome: "success"; importedCount: number; errorCount: 0 }
-  | {
-      outcome: "validation_failed";
-      errors: ErrorDetail[];
-      importedCount: number;
-      errorCount: number;
-      errorBlob?: Buffer;
-    };
-
 type DomainImportRunner = {
-  importKind: string;
+  domainKind: string;
   run(
-    slots: Map<string, ImportBatchSlot>,
+    sources: Map<string, ProcessingSource>,
     io: {
-      openStream: (slot: ImportBatchSlot) => Promise<Readable>;
+      openStream: (source: ProcessingSource) => Promise<Readable>;
       onProgress: (detail: unknown) => Promise<void>;
     },
   ): Promise<DomainImportResult>;
 };
 ```
 
-`ImportBatchSlot` is defined in [import-batch-contract](../import-batch-contract/SKILL.md).
-
-### Domain sketch
-
-```typescript
-async function run(slots, { openStream, onProgress }) {
-  const slot = slots.get("mainWorkbook");
-  if (!slot) throw new BadRequestException("Missing slot mainWorkbook");
-
-  const stream = await openStream(slot);
-  const workbook = await loadWorkbookFromStream(stream);
-  assertRequiredSheets(workbook, REQUIRED_SHEETS);
-
-  const errors = createErrorCollector();
-  const sheetErrors = scopeErrors(errors, {
-    uploadSlotId: "mainWorkbook",
-    originalName: slot.originalName,
-    worksheetName: "Orders",
-  });
-
-  await onProgress({ phase: "parsing_workbook", uploadSlotId: "mainWorkbook", worksheetName: "Orders" });
-
-  const rows = parseOrdersSheet(workbook, sheetErrors);
-  const records = mapRowsToRecords(rows, ctx, sheetErrors);
-
-  await onProgress({ phase: "saving_database", uploadSlotId: "mainWorkbook" });
-  const saved = await saveRecords(records, ctx);
-
-  return errors.hasErrors()
-    ? { outcome: "validation_failed", errors: errors.toList(), importedCount: saved, errorCount: errors.count }
-    : { outcome: "success", importedCount: saved, errorCount: 0 };
-}
-```
-
-**Do not** put Redis, BullMQ, or upload-store types in the domain layer.
-
-### Outcomes
-
-| Outcome | Valid rows in DB | Error blob |
-| ------- | ---------------- | ---------- |
-| `success` | all saved | none |
-| `validation_failed` | partial save (default) | yes |
-| `failed` (throw) | rollback if domain uses transaction | optional |
+Format plugins still use `sourceId` / `label` on errors — see plugin skills.
 
 ---
 
 ## Frontend
 
-1. Complete upload path for the environment → `{ batchId }` (upload progress from that path only).
-2. `POST .../batches/:batchId/start` with `{ importKind }` → `{ jobId }`.
-3. `EventSource` on `jobs/:jobId/events` (`JobMeta`) until `complete` or `failed`.
-4. Download error blob when `outcome === "validation_failed"`.
-5. Type-narrow `JobMeta.progress` per `importKind` on the client.
+1. Upload handoff → `{ slots }` — [import-upload-handoff](../import-upload-handoff/SKILL.md).
+2. **API controller** `POST .../start` → **API adapter** (client may send `sources` or upload handoff shape).
+3. SSE `jobs/:jobId/events`.
+
+---
+
+## Invariants
+
+1. **Source-agnostic** — processing types do not mention upload, multipart, or presigned URLs.
+2. **Entry then adapter** — controller/subscriber forward raw input; adapter normalizes and validates.
+3. **Two adapters only** call `startProcessing` — not controllers or subscribers.
+4. **Verify in worker** — not in upload upstream.
+5. **Upload handoff maps in adapter** — upload module never calls orchestrator.
+
+---
+
+## What not to do
+
+| Anti-pattern | Why |
+| ------------ | --- |
+| `importKind` in processing layer | Use `domainKind`; processing is not upload-specific |
+| Controller/subscriber calls `startProcessing` | Delegate to adapter only |
+| Skip adapter normalization | Adapters own validate + map before orchestrator |
+| Upload types in orchestrator | Map in adapter |
+| Upload calls `startProcessing` | Event/API adapters only |
 
 ---
 
@@ -306,64 +349,18 @@ async function run(slots, { openStream, onProgress }) {
 ```text
 import/
   contract/
-    import-batch.types.ts
-    import-batch.registry.ts
-    import-batch-slot.reader.ts
+    start-processing-input.schema.ts
+    map-upload-handoff-to-input.ts
+    processing-batch.registry.ts
+    processing-source.reader.ts
   processing/
-    async-import.types.ts
-    import-registry.ts
+    async-processing.controller.ts           # API entry
+    api-start-processing.adapter.ts          # normalize → startProcessing
+    processing-start-requested.listener.ts   # event entry
+    event-start-processing.adapter.ts        # normalize → startProcessing
     processing-orchestrator.service.ts
-    import-job-store.service.ts
-    import-job-progress-sse.service.ts
     import.processor.ts
-  plugins/
-    tabular-xlsx/
-    jsonl/
-upload/
-  local-multipart/
-  s3-direct/
-  cos-direct/
-applications/
-  sales-import/
-    sales-import.domain-runner.ts
 ```
-
----
-
-## Registration checklist
-
-```text
-Contract + upload
-- [ ] Upload path calls registerReady; returns batchId
-- [ ] UploadSlotSpec[] documented per importKind (named fields)
-
-Processing
-- [ ] Domain runner registered by importKind
-- [ ] startProcessing validates batch + claimByJobId before enqueue
-- [ ] Lock policy + stable reject code
-- [ ] Single processor — no per-importKind Redis duplicate
-- [ ] JobMeta.progress is unknown
-- [ ] SSE jobs/:jobId/events + Redis pub/sub on saveMeta
-- [ ] Worker deletes ImportBatchSource after terminal state
-
-Domain
-- [ ] Sheet / line specs document literals
-- [ ] openStream at slot boundary; no assumption of upload mechanism
-- [ ] Picks format plugin per uploadSlotId
-```
-
----
-
-## What not to do
-
-| Anti-pattern | Why |
-| ------------ | --- |
-| Multipart or presigned URL on startProcessing | Upload belongs to upload paths |
-| File bytes in Redis job store | Use ImportBatchSource + slot reader |
-| One unified upload workflow for local and S3 | Different client flows; share contract only |
-| Processing imports ExcelJS | Couples processing to XLSX |
-| Typed progress union in processing | Progress shape is per importKind on client |
-| Route by filename | Use `uploadSlotId` |
 
 ---
 
@@ -371,9 +368,6 @@ Domain
 
 | Task | Skills |
 | ---- | ------ |
-| ImportBatch, registry, reader | `import-batch-contract` |
-| startProcessing, worker, SSE, new `importKind` | `async-processing` |
-| Local / S3 / COS upload | upload skills + `import-batch-contract` |
-| XLSX parse / error XLSX | `import-plugin-tabular-xlsx` |
-| JSONL parse | `import-plugin-jsonl` |
-| End-to-end `sales-import` | contract + processing + upload + plugins |
+| Upload handoff | `import-upload-handoff` |
+| Processing contract, adapters, orchestrator, worker, domain | `async-processing` |
+| Format plugins | `import-plugin-tabular-xlsx`, `import-plugin-jsonl` |
