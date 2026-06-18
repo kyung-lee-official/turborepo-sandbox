@@ -8,7 +8,7 @@ description: >-
 
 # Format plugins layer — tabular-xlsx
 
-Shared by all async `.xlsx` upload slots. See [async-import-runner](../async-import-runner/SKILL.md) for transport, domain, `ErrorDetail`, SSE, and outcomes.
+Shared by all async `.xlsx` upload slots. See [async-processing](../async-processing/SKILL.md) for processing, domain, `ErrorDetail`, SSE, and outcomes. Upload is independent — see [import-batch-contract](../import-batch-contract/SKILL.md).
 
 ## When to use
 
@@ -42,7 +42,7 @@ type TabularSheetSpec = {
 };
 ```
 
-`ErrorDetail` is defined in async-import-runner (transport/domain contract).
+`ErrorDetail` is defined in async-processing (processing/domain contract).
 
 ## Responsibilities
 
@@ -65,7 +65,7 @@ type TabularSheetSpec = {
 | Worksheet | any error has `worksheetName` |
 | Row Number, Message, Raw Data | always |
 
-Transport layer stores the buffer; this plugin builds it.
+Processing layer stores the buffer; this plugin builds it.
 
 Domain passes `TabularSheetSpec`; plugin validates headers and yields raw row maps (batch) or calls a row callback (streaming).
 

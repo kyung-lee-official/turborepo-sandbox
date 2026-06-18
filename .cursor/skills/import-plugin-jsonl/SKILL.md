@@ -8,7 +8,7 @@ description: >-
 
 # Format plugins layer — jsonl
 
-Shared by all async JSONL upload slots. See [async-import-runner](../async-import-runner/SKILL.md) for transport, domain, `ErrorDetail`, SSE, and outcomes. See [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md) for merged validation error XLSX.
+Shared by all async JSONL upload slots. See [async-processing](../async-processing/SKILL.md) for processing, domain, `ErrorDetail`, SSE, and outcomes. See [import-batch-contract](../import-batch-contract/SKILL.md) for upload handoff. See [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md) for merged validation error XLSX.
 
 ## When to use
 
@@ -35,7 +35,7 @@ type JsonlImportProgress = {
 };
 ```
 
-`ErrorDetail` is defined in async-import-runner. Set `rowNumber` to the 1-based source line; omit `worksheetName`.
+`ErrorDetail` is defined in async-processing. Set `rowNumber` to the 1-based source line; omit `worksheetName`.
 
 ## Responsibilities
 
