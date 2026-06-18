@@ -70,3 +70,9 @@ file-uploads/*
 
 # turbo
 .turbo
+
+# Reasonix desktop state (don't track)
+.reasonix/*
+# But track project-scoped skills and memories
+!.reasonix/skills/
+!.reasonix/memories/
