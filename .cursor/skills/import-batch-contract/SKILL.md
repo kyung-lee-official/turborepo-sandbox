@@ -1,44 +1,53 @@
 ---
 name: import-batch-contract
 description: >-
-  Import inbound contract: ImportBatch, ImportBatchRegistry, ImportBatchSlotReader.
-  Handoff from any upload path to async processing. Use when wiring upload complete
-  to startProcessing, defining batch types, or adding a new upload mechanism.
+  Processing inbound contract: StartProcessingInput at API/event adapters,
+  ImportBatch, ImportBatchRegistry, ImportBatchSlotReader. Downstream of upload
+  handoff. Use when wiring startProcessing, adapters, or worker slot I/O.
 ---
 
-# Import batch — inbound contract
+# Import batch — processing inbound contract
 
 ## Goal
 
-**Upload paths are independent** (local multipart, S3 presigned, COS STS, …). **Async processing is upload-agnostic.** The only shared surface is this **inbound contract**: a verified `ImportBatch` plus an explicit trigger into processing.
+**Downstream of upload.** [import-upload-handoff](../import-upload-handoff/SKILL.md) ends at **`slots`** or **`import.start-requested`**. This skill starts at the **processing adapters** — the only callers of **`startProcessing`**.
 
-Upload progress lives on the upload path. Job progress lives on async processing (SSE). Do not mix them in the contract.
+**Storage verification** is worker step 1. **Business validation** is domain / format plugins.
 
-**Related skills:** [async-processing](../async-processing/SKILL.md) · [upload-local-multipart](../upload-local-multipart/SKILL.md) · [upload-s3-direct](../upload-s3-direct/SKILL.md) · [upload-cos-direct](../upload-cos-direct/SKILL.md)
+**Related:** [async-processing](../async-processing/SKILL.md) · [import-upload-handoff](../import-upload-handoff/SKILL.md)
 
 ---
 
 ## Architecture
 
-```text
-[Upload path A]  ──registerReady──┐
-[Upload path B]  ──registerReady──┼──► ImportBatch (status: ready)
-[Upload path C]  ──registerReady──┘              │
-                                                 │ startProcessing(batchId, importKind)
-                                                 ▼
-                                    Async processing (job, queue, SSE, worker)
-                                                 │
-                                                 ▼
-                                    Domain runner + format plugins
+```mermaid
+---
+config:
+  theme: neo-dark
+---
+flowchart TD
+  api["API adapter POST .../start"]
+  event["event adapter OnEvent import.start-requested"]
+  start["call startProcessing StartProcessingInput"]
+  batch["create ImportBatch saveForJob enqueue"]
+  worker["worker verifySource"]
+  domain["domain runner and format plugins"]
+
+  api --> start
+  event --> start
+  start --> batch
+  batch --> worker
+  worker --> domain
 ```
+
+**Rule:** only **API adapter** and **event adapter** call `startProcessing`.
 
 | Piece | Role |
 | ----- | ---- |
-| **ImportBatch** | Inbound contract — slots + resolved sources (no buffers in contract) |
-| **ImportBatchRegistry** | Handoff store: `registerReady`, `claimByJobId`, `getByBatchId` |
-| **ImportBatchSlotReader** | Open/delete blobs by `ImportBatchSource` (worker uses this) |
-| **Upload paths** | Each ends with `registerReady`; never enqueue jobs |
-| **Async processing** | `startProcessing` only; never accepts multipart or presigned grants |
+| **StartProcessingInput** | Adapter inbound — `importKind` + `slots` |
+| **ImportBatch** | Created inside `startProcessing`; used by worker |
+| **ImportBatchRegistry** | `saveForJob`, `getByBatchId`, `deleteByBatchId` |
+| **ImportBatchSlotReader** | `verifySource`, `openReadStream`, `deleteSource` |
 
 ---
 
@@ -46,27 +55,24 @@ Upload progress lives on the upload path. Job progress lives on async processing
 
 | Term | Meaning |
 | ---- | ------- |
-| **batchId** | Stable id for one handoff unit; returned when upload path finishes |
-| **uploadSlotId** | Routing key for a file's role (e.g. `mainWorkbook`); same across upload, contract, domain |
-| **originalName** | Client filename; display only, never used for routing |
-| **ImportBatchSource** | Where bytes live after upload — local path or object key |
-| **ready** | All required slots verified; safe to call `startProcessing` |
-| **claimed** | Processing took ownership; `claimedByJobId` set |
+| **StartProcessingInput** | What adapters pass to `startProcessing` |
+| **API adapter** | `AsyncImportController` `POST .../start` |
+| **Event adapter** | `ImportStartRequestedListener` `@OnEvent import.start-requested` |
+| **batchId** / **jobId** | Created in `startProcessing` |
+| **storage verification** | Worker step 1: stat / HEAD |
+
+`uploadSlotId`, `ImportBatchSlot`, `ImportBatchSource` — built upstream; shape in [import-upload-handoff](../import-upload-handoff/SKILL.md).
 
 ---
 
 ## Types
 
-```typescript
-type ImportBatchStatus = "ready" | "claimed" | "expired";
+### Adapter inbound
 
-type ImportBatch = {
-  batchId: string;
-  status: ImportBatchStatus;
+```typescript
+type StartProcessingInput = {
+  importKind: string;
   slots: Record<string, ImportBatchSlot>;
-  createdAt: string;
-  expiresAt: string;
-  claimedByJobId?: string;
 };
 
 type ImportBatchSlot = {
@@ -77,148 +83,125 @@ type ImportBatchSlot = {
 };
 
 type ImportBatchSource =
-  | {
-      kind: "local";
-      path: string;       // server-generated; never client-supplied
-      sizeBytes: number;
-    }
+  | { kind: "local"; path: string; declaredSizeBytes?: number }
   | {
       kind: "object";
       provider: "s3" | "cos";
       bucket: string;
-      key: string;        // server-generated
-      sizeBytes: number;
-      etag?: string;
+      key: string;
+      declaredSizeBytes?: number;
     };
 ```
 
-**Rules**
+### Created in startProcessing
 
-- Processing never sees `Buffer`, presigned URLs, STS credentials, or multipart.
-- Routing uses **`uploadSlotId`**, never **`originalName`**.
-- Status **`ready`** only after verify: file on disk, or `HEAD` on object (size, optional etag).
-- **`importKind`** is not on the batch; it is supplied at **`startProcessing`** so one batch is “these files exist” and routing stays in the processing registry.
+```typescript
+type ImportBatch = {
+  batchId: string;
+  importKind: string;
+  jobId: string;
+  slots: Record<string, ImportBatchSlot>;
+  createdAt: string;
+};
 
-### Slot spec (shared with processing registry)
+type VerifiedImportBatchSource = ImportBatchSource & {
+  sizeBytes: number;
+  etag?: string;
+};
+```
 
 ```typescript
 type UploadSlotSpec = { uploadSlotId: string; required: boolean };
 ```
 
-Upload paths validate against the slot list their UI documents. Processing re-validates against `ImportKindRegistration.uploadSlots` at `startProcessing`.
+Orchestrator validates `input.slots` against `ImportKindRegistration.uploadSlots`.
 
 ---
 
 ## ImportBatchRegistry
 
-Metadata only (Redis or DB). **Never store file bytes here.**
-
 ```typescript
 interface ImportBatchRegistry {
-  registerReady(batch: ImportBatch): Promise<void>;
+  saveForJob(batch: ImportBatch): Promise<void>;
   getByBatchId(batchId: string): Promise<ImportBatch | null>;
-  /**
-   * Atomically ready → claimed, set claimedByJobId.
-   * Returns false if missing, not ready, expired, or already claimed.
-   */
-  claimByJobId(batchId: string, jobId: string): Promise<boolean>;
-  markExpired(batchId: string): Promise<void>;
+  deleteByBatchId(batchId: string): Promise<void>;
 }
 ```
 
 | Method | Caller |
 | ------ | ------ |
-| `registerReady` | Any upload path when ingest is verified |
-| `getByBatchId` | `startProcessing`, worker |
-| `claimByJobId` | `startProcessing` before enqueue |
-| `markExpired` | TTL sweeper |
-
-**TTL:** set `expiresAt` (e.g. 24h). Unclaimed batches expire; delete orphan blobs via reader + object lifecycle rules.
+| `saveForJob` | Orchestrator before enqueue |
+| `getByBatchId` | Worker |
+| `deleteByBatchId` | Worker after terminal state |
 
 ---
 
 ## ImportBatchSlotReader
 
-Used by the **processing worker** only. Upload paths do not need it.
-
 ```typescript
 interface ImportBatchSlotReader {
-  openReadStream(source: ImportBatchSource): Promise<Readable>;
+  verifySource(source: ImportBatchSource): Promise<VerifiedImportBatchSource>;
+  openReadStream(source: VerifiedImportBatchSource): Promise<Readable>;
   deleteSource(source: ImportBatchSource): Promise<void>;
 }
 ```
 
-| `source.kind` | `openReadStream` | `deleteSource` |
-| ------------- | ---------------- | -------------- |
-| `local` | `fs.createReadStream(path)` | unlink |
-| `object` | S3/COS `GetObject` | `DeleteObject` |
-
-Domain and format plugins receive streams or buffers materialized at the domain boundary — not upload implementation details.
-
 ---
 
-## Upload path obligation
+## Adapters (only entry points)
 
-Each upload mechanism owns its **full client workflow** (including upload progress). Its **only** coupling to processing:
+### API adapter
 
-1. Build `ImportBatch` with verified slots.
-2. Call `registerReady(batch)`.
-3. Return `{ batchId }` to the client.
+```http
+POST /applications/async-import/start
+Content-Type: application/json
 
-Example (local path after multipart save):
+{ "importKind": "sales-import", "slots": { ... } }
+```
 
 ```typescript
-await importBatchRegistry.registerReady({
-  batchId,
-  status: "ready",
-  slots: {
-    mainWorkbook: {
-      uploadSlotId: "mainWorkbook",
-      originalName: file.originalname,
-      mimeType: file.mimetype,
-      source: { kind: "local", path: savedPath, sizeBytes },
-    },
-  },
-  createdAt,
-  expiresAt,
-});
-return { batchId };
+@Post("start")
+async start(@Body() body: StartProcessingInput) {
+  return this.processingOrchestrator.startProcessing(body);
+}
 ```
 
-Object-store paths differ in how they fill `source: { kind: "object", ... }` before the same `registerReady` call. See upload skills.
+→ **202** `{ "jobId": "...", "batchId": "..." }`
+
+Optional `uploadSessionId` to validate `slots` against the upload session that produced them.
+
+### Event adapter
+
+```typescript
+@OnEvent("import.start-requested")
+async onImportStartRequested(payload: StartProcessingInput) {
+  await this.processingOrchestrator.startProcessing(payload);
+}
+```
+
+Event is **emitted** by [import-upload-handoff](../import-upload-handoff/SKILL.md); listener lives in processing module.
 
 ---
 
-## Processing trigger (consumer of contract)
+## Inside startProcessing
 
-Async processing exposes **`startProcessing(importKind, batchId)`**:
+1. Validate `input.slots` for `input.importKind`.
+2. Lock policy.
+3. Create `jobId`, `batchId`, `ImportBatch`.
+4. `saveForJob(batch)`.
+5. Enqueue `{ jobId, importKind, batchId }`.
+6. Return `{ jobId, batchId }`.
 
-1. Load batch; reject if not `ready` or expired.
-2. Validate slots against registry `UploadSlotSpec[]` for `importKind`.
-3. Lock policy.
-4. Create `jobId`, `JobMeta` (`phase: queued`).
-5. `claimByJobId(batchId, jobId)` — reject if false.
-6. Enqueue `{ jobId, importKind, batchId }`.
-7. Return **202** `{ jobId }`.
-
-Client sequence:
-
-```text
-1. Finish upload path        → { batchId }
-2. POST .../batches/:batchId/start { importKind }  → { jobId }
-3. SSE .../jobs/:jobId/events                      → JobMeta
-```
+Worker: load batch → **`verifySource`** per slot → domain runner. Details: [async-processing](../async-processing/SKILL.md).
 
 ---
 
 ## Invariants
 
-1. **Ready means verified** — no `ready` without `sizeBytes` (and etag when object store provides it).
-2. **One claim per batch** — second `startProcessing` gets a stable error (e.g. 409).
-3. **Claim before enqueue** — avoids duplicate workers on retry.
-4. **Server owns keys/paths** — clients send `originalName` for display only.
-5. **Cleanup after terminal job** — worker calls `deleteSource` per slot; drop or archive batch record.
-6. **No upload progress in ImportBatch** — contract is post-upload only.
+1. **Two adapters only** call `startProcessing`.
+2. **`ImportBatch` exists only after** an adapter calls `startProcessing`.
+3. **Verify in worker** — not at upload time.
+4. **Cleanup after terminal job** — `deleteSource`, `deleteByBatchId`.
 
 ---
 
@@ -230,25 +213,12 @@ import/
     import-batch.types.ts
     import-batch.registry.ts
     import-batch-slot.reader.ts
-  processing/                 # see async-processing skill
+  processing/
+    async-import.controller.ts          # API adapter
+    import-start-requested.listener.ts  # event adapter
+    processing-orchestrator.service.ts
+    import.processor.ts
     ...
-upload/                       # independent entry points — not one unified layer
-  local-multipart/
-  s3-direct/
-  cos-direct/
-```
-
----
-
-## Checklist (new upload path)
-
-```text
-- [ ] Own HTTP flow and upload progress UX
-- [ ] Server-generated path or object key per slot
-- [ ] Verify before registerReady (disk flush or object HEAD)
-- [ ] registerReady with status "ready" only when all required slots done
-- [ ] Return batchId; do not enqueue BullMQ
-- [ ] Document uploadSlotId constants for the client
 ```
 
 ---
@@ -257,9 +227,6 @@ upload/                       # independent entry points — not one unified lay
 
 | Task | Skills |
 | ---- | ------ |
-| Inbound types, registry, reader | `import-batch-contract` |
-| startProcessing, worker, SSE | `async-processing` |
-| Local proxy upload | `upload-local-multipart` |
-| S3 presigned direct upload | `upload-s3-direct` |
-| Tencent COS STS direct upload | `upload-cos-direct` |
-| Domain + format plugins | `async-processing` + plugin skills |
+| Upload, slots, emit event | `import-upload-handoff` |
+| StartProcessingInput, adapters, registry, reader | `import-batch-contract` |
+| Orchestrator, worker, SSE, domain | `async-processing` |
