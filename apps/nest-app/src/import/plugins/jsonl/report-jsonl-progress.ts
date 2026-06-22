@@ -1,11 +1,11 @@
 import type {
-  JsonlProcessingPhase,
+  JsonlPluginPhase,
   JsonlProcessingProgress,
 } from "./jsonl-processing.types";
 
 export async function reportJsonlProgress(
   onProgress: ((detail: unknown) => Promise<void>) | undefined,
-  phase: JsonlProcessingPhase,
+  phase: JsonlPluginPhase,
   sourceId: string,
   options?: { originalName?: string; percent?: number },
 ): Promise<void> {

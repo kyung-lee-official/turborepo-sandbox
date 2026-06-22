@@ -1,8 +1,8 @@
 import * as ExcelJS from "exceljs";
 import { applyDefaultExportedSheetView } from "./apply-exported-sheet-view";
-import type { ErrorDetail } from "./tabular-processing.types";
+import type { ErrorDetail } from "./import-error.types";
 
-export const TABULAR_ERROR_XLSX_CONTENT_TYPE =
+export const VALIDATION_ERROR_XLSX_CONTENT_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 type ErrorColumnDef = {
@@ -63,7 +63,7 @@ function rowFromError(
   return row;
 }
 
-export async function buildTabularErrorXlsxBuffer(
+export async function buildValidationErrorXlsxBuffer(
   errors: readonly ErrorDetail[],
 ): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();

@@ -1,4 +1,4 @@
-import type { ErrorDetail } from "./tabular-processing.types";
+import type { ErrorDetail } from "../../shared/import-error.types";
 
 export type TabularErrorScope = {
   sourceId: string;

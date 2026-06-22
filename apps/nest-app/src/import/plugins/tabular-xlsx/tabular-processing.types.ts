@@ -1,34 +1,21 @@
+import type { ErrorDetail } from "../../shared/import-error.types";
+
 /** Plugin-emitted phase only — row iteration reports percent via onProgress callback */
 export type TabularPluginPhase = "parsing_workbook";
 
-/** Plugin phase + domain-only phases */
-export type TabularProcessingPhase =
-  | TabularPluginPhase
-  | "validating_rows"
-  | "saving_database";
-
-/** Published via io.onProgress during domainRunner.run */
+/** Published via io.onProgress while parsing a workbook */
 export type TabularProcessingProgress = {
-  phase: TabularProcessingPhase;
+  phase: TabularPluginPhase;
   sourceId: string;
   originalName?: string;
   worksheetName?: string;
   percent?: number;
 };
 
-/** Defined by domain module per domainKind / sheet (exact Excel header strings) */
+/** Caller-owned sheet layout (exact Excel header strings) */
 export type TabularSheetSpec = {
   sheetName: string;
   headers: readonly string[];
-};
-
-export type ErrorDetail = {
-  message: string;
-  sourceId?: string;
-  originalName?: string;
-  worksheetName?: string;
-  rowNumber?: number;
-  rawData?: string;
 };
 
 export type TabularRowHandler = (row: {
@@ -46,3 +33,5 @@ export type TabularParseContext = {
   sourceId: string;
   label?: string;
 };
+
+export type { ErrorDetail };

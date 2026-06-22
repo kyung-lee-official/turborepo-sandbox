@@ -12,7 +12,7 @@ description: >-
 
 **Everything from `startProcessing` onward.** Source-agnostic job orchestration — inputs arrive as validated **`StartProcessingInput`** from [start-processing-adapters](../start-processing-adapters/SKILL.md) adapters.
 
-**Processing records** (`ProcessingJob`, `ProcessingManifest`) persist in **DB**. **Redis** is for **BullMQ** and **live domain progress** (SSE during the run). Domain business logic and **`ErrorDetail`** — plugin skills.
+**Processing records** (`ProcessingJob`, `ProcessingManifest`) persist in **DB**. **Redis** is for **BullMQ** and **live domain progress** (SSE during the run). Domain business logic, **`ErrorDetail`**, validation error XLSX — [import-shared](../import-shared/SKILL.md). Format parse — plugin skills.
 
 **Storage verification** runs in the worker after **`claimProcessingPhase`**, before **`domainRunner.run`**. Upload and start API/event paths are upstream.
 
@@ -89,7 +89,7 @@ Solid arrows: this skill. Dashed arrows: start adapters — see [start-processin
 | **[DomainRunner](#domain-boundary)**                                                           | Per-`domainKind` handler invoked by the worker                          |
 | **[ActiveJobConflictError](#processingactivejoblock)**                                         | Thrown when `global_singleton` acquire fails — adapter maps to HTTP 409 |
 
-Start vocabulary: [start-processing-adapters](../start-processing-adapters/SKILL.md). **`ErrorDetail`** — plugin skills (domain-internal).
+Start vocabulary: [start-processing-adapters](../start-processing-adapters/SKILL.md). **`ErrorDetail`**, **`buildValidationErrorXlsxBuffer`** — [import-shared](../import-shared/SKILL.md).
 
 ---
 
@@ -203,7 +203,7 @@ type AsyncProcessingJobPayload = {
 /** Published on Redis during domainRunner.run — not persisted per tick */
 type ProcessingProgressEvent = {
   jobId: string;
-  progress: unknown; // domain/plugin shape, e.g. TabularProcessingProgress, JsonlProcessingProgress
+  progress: unknown; // e.g. TabularProcessingProgress, JsonlProcessingProgress, DomainProcessingProgress
 };
 
 /** Published by worker after finalize — SSE reloads full snapshot from DB */
@@ -361,7 +361,7 @@ registry.register("sales-report", {
 });
 ```
 
-Worker calls **`DomainRunner`** from the registry. Domain-internal validation uses **`ErrorDetail`** in plugin skills.
+Worker calls **`DomainRunner`** from the registry. Domain-internal validation uses **`ErrorDetail`** from [import-shared](../import-shared/SKILL.md); format plugins emit parse-time errors only.
 
 ---
 
@@ -898,4 +898,5 @@ Prisma schema — `packages/database/prisma/schema.prisma` (or app-owned schema)
 | --------------------------------------------- | ------------------------------------------------- |
 | Upload, start API/event adapters   | `start-processing-adapters`                           |
 | Orchestrator, worker, processing records, SSE | `async-processing`                                |
-| Domain runner implementation, ErrorDetail     | plugin skills (+ `DomainRunResult` in this skill) |
+| Domain runner implementation, ErrorDetail, error XLSX | import-shared (+ `DomainRunResult` in this skill) |
+| Format parse (xlsx / jsonl)                   | import-plugin-tabular-xlsx / import-plugin-jsonl |

@@ -1,15 +1,15 @@
 import type {
-  TabularPluginPhase,
-  TabularProcessingProgress,
-} from "./tabular-processing.types";
+  DomainProcessingPhase,
+  DomainProcessingProgress,
+} from "./domain-processing.types";
 
-export async function reportTabularProgress(
+export async function reportDomainProgress(
   onProgress: ((detail: unknown) => Promise<void>) | undefined,
-  phase: TabularPluginPhase,
+  phase: DomainProcessingPhase,
   sourceId: string,
   options?: {
-    worksheetName?: string;
     originalName?: string;
+    worksheetName?: string;
     percent?: number;
   },
 ): Promise<void> {
@@ -17,11 +17,11 @@ export async function reportTabularProgress(
     return;
   }
 
-  const event: TabularProcessingProgress = {
+  const event: DomainProcessingProgress = {
     phase,
     sourceId,
-    worksheetName: options?.worksheetName,
     originalName: options?.originalName,
+    worksheetName: options?.worksheetName,
     percent: options?.percent,
   };
   await onProgress(event);

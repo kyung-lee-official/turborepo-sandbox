@@ -1,4 +1,4 @@
-import type { ErrorDetail } from "../tabular-xlsx/tabular-processing.types";
+import type { ErrorDetail } from "../../shared/import-error.types";
 import type { JsonlErrorScope } from "./jsonl-processing.types";
 
 export function scopeJsonlError(

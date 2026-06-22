@@ -1,16 +1,11 @@
-import type { ErrorDetail } from "../tabular-xlsx/tabular-processing.types";
+import type { ErrorDetail } from "../../shared/import-error.types";
 
 /** Plugin-emitted phase only */
 export type JsonlPluginPhase = "parsing_lines";
 
-/** Plugin phase + domain-only phases */
-export type JsonlProcessingPhase =
-  | JsonlPluginPhase
-  | "validating_rows"
-  | "saving_database";
-
+/** Published via io.onProgress while parsing lines */
 export type JsonlProcessingProgress = {
-  phase: JsonlProcessingPhase;
+  phase: JsonlPluginPhase;
   sourceId: string;
   originalName?: string;
   percent?: number;

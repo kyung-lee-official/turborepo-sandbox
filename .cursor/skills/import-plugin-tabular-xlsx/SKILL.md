@@ -2,15 +2,14 @@
 name: import-plugin-tabular-xlsx
 description: >-
   Format plugins layer — tabular-xlsx: ExcelJS workbook load, headers, cell.text,
-  row errors, TabularProcessingProgress, validation error XLSX. Use when implementing
-  or extending import/plugins/tabular-xlsx for an async `.xlsx` sourceId.
+  row maps, parsing_workbook progress. Business-agnostic .xlsx import for async processing.
 ---
 
 # Format plugins layer — tabular-xlsx
 
-Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [start-processing-adapters](../start-processing-adapters/SKILL.md). JSONL errors merge into the same error XLSX — [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md).
+**Business-agnostic** `.xlsx` import for any async **`sourceId`**. Domain **`DomainRunner`** supplies sheet layout (**`TabularSheetSpec`**) and business rules in **`onRow`**. Shared validation errors and error XLSX — [import-shared](../import-shared/SKILL.md). Job orchestration — [async-processing](../async-processing/SKILL.md). Upload — [start-processing-adapters](../start-processing-adapters/SKILL.md).
 
-Implement under **`apps/nest-app/src/import/plugins/tabular-xlsx/`** (no barrel **`index.ts`** — import concrete files). **`ErrorDetail`** in **`tabular-processing.types.ts`** is the canonical type for merged tabular + JSONL errors.
+Implement under **`apps/nest-app/src/import/plugins/tabular-xlsx/`** (no barrel **`index.ts`** — import concrete files).
 
 ---
 
@@ -18,62 +17,47 @@ Implement under **`apps/nest-app/src/import/plugins/tabular-xlsx/`** (no barrel 
 
 | This plugin owns | Domain runner owns |
 | --- | --- |
-| ExcelJS load, headers, **`cell.text`**, row maps | **`TabularSheetSpec`** per sheet (domain module) |
-| Parse-site **`ErrorDetail`**, **`buildTabularErrorXlsxBuffer`** | Business rules, DB writes, map rows → **`DomainRunResult`** |
-| Plugin progress (**`parsing_workbook`** via percent callback) | **`validating_rows`**, **`saving_database`** via **`reportTabularProgress`** |
+| ExcelJS load, headers, **`cell.text`**, row maps | **`TabularSheetSpec`** per sheet (exact header strings) |
+| Parse-site **`ErrorDetail`** via **`scopeTabularError`** | Business rules in **`onRow`**, persistence |
+| **`parsing_workbook`** via optional percent callback | **`validating_rows`**, **`saving_database`** — [import-shared](../import-shared/SKILL.md) |
+| | **`buildValidationErrorXlsxBuffer`**, **`DomainRunResult`** |
 
 | Must not (plugin) | |
 | --- | --- |
 | BullMQ, Redis, `domainKind` routing, Prisma | |
+| **`buildValidationErrorXlsxBuffer`** | |
+| Domain-specific columns, schemas, or sheet names hardcoded | |
 
 ---
 
 ## When to use
 
-- Any `.xlsx` **`sourceId`** in async processing (`import/plugins/tabular-xlsx/`).
-- Building validation error XLSX from **`ErrorDetail[]`** (tabular-only or merged with JSONL).
+- Any async job that ingests a **`.xlsx`** **`sourceId`**.
+- Domains may use this plugin **alone** or alongside **jsonl** — the domain merges errors if needed.
 
 ---
 
 ## Types
 
+Import **`ErrorDetail`** from [import-shared](../import-shared/SKILL.md) (`import/shared/import-error.types.ts`).
+
 ```typescript
-/** Plugin-emitted phase only — row iteration reports percent via onProgress callback */
 type TabularPluginPhase = "parsing_workbook";
 
-/** Plugin phase + domain-only phases */
-type TabularProcessingPhase =
-  | TabularPluginPhase
-  | "validating_rows"
-  | "saving_database";
-
-/** Published via io.onProgress during domainRunner.run — Redis/SSE in async-processing */
 type TabularProcessingProgress = {
-  phase: TabularProcessingPhase;
+  phase: TabularPluginPhase;
   sourceId: string;
-  /** Display filename — set from VerifiedProcessingSource.label (upload originalName) */
   originalName?: string;
   worksheetName?: string;
   percent?: number;
 };
 
-/** Defined by domain module per domainKind / sheet (exact Excel header strings) */
 type TabularSheetSpec = {
   sheetName: string;
   headers: readonly string[];
 };
 
-type ErrorDetail = {
-  message: string;
-  sourceId?: string;
-  /** Set from VerifiedProcessingSource.label at scope site */
-  originalName?: string;
-  /** Tabular only — omit on JSONL errors (import-plugin-jsonl) */
-  worksheetName?: string;
-  /** 1-based Excel sheet row — set at parse site (not named sourceRowNumber elsewhere) */
-  rowNumber?: number;
-  rawData?: string;
-};
+type TabularParseContext = { sourceId: string; label?: string };
 ```
 
 ---
@@ -81,22 +65,16 @@ type ErrorDetail = {
 ## Plugin API (sketch)
 
 ```typescript
-/** Read stream from io.openStream, then load workbook */
 async function loadWorkbookFromBuffer(buffer: Buffer): Promise<ExcelJS.Workbook>;
-
-type TabularParseContext = { sourceId: string; label?: string };
-
-type TabularRowHandler = (row: {
-  rowNumber: number;
-  cells: Record<string, string>;
-}) => void | Promise<void>;
+async function loadWorkbookFromStream(stream: Readable): Promise<ExcelJS.Workbook>;
+async function readStreamToBuffer(stream: Readable): Promise<Buffer>;
 
 async function parseSheetRows(
   workbook: ExcelJS.Workbook,
   spec: TabularSheetSpec,
   ctx: TabularParseContext,
   handlers: {
-    onRow: TabularRowHandler;
+    onRow: (row: { rowNumber: number; cells: Record<string, string> }) => void | Promise<void>;
     onProgress?: (percent: number) => Promise<void>;
     pushError: (detail: ErrorDetail) => void;
   },
@@ -109,28 +87,24 @@ function scopeTabularError(
 
 async function reportTabularProgress(
   onProgress: ((detail: unknown) => Promise<void>) | undefined,
-  phase: TabularProcessingPhase,
+  phase: TabularPluginPhase,
   sourceId: string,
   options?: { worksheetName?: string; originalName?: string; percent?: number },
 ): Promise<void>;
-
-async function buildTabularErrorXlsxBuffer(
-  errors: readonly ErrorDetail[],
-): Promise<Buffer>;
 ```
 
-After **`loadWorkbookFromBuffer`**, domain validates business rules in **`onRow`**, collects **`ErrorDetail[]`**, and emits **`validating_rows`** / **`saving_database`** via **`reportTabularProgress`**. **`parseSheetRows`** scopes parse-time errors with **`scopeTabularError`** before **`pushError`**.
+**`parseSheetRows`** scopes parse-time errors with **`scopeTabularError`** before **`pushError`**. Domain validates in **`onRow`** and appends business **`ErrorDetail`** the same way.
 
 ---
 
-## Domain integration
+## Domain integration (example)
 
-1. **`domainRunner.run`** — **`stream = await io.openStream(source)`**, buffer via **`readStreamToBuffer`** / **`loadWorkbookFromStream`**, then **`loadWorkbookFromBuffer`**.
+1. **`stream = await io.openStream(source)`**, then **`loadWorkbookFromStream`** / **`loadWorkbookFromBuffer`**.
 2. **`parseSheetRows`** per domain-owned **`TabularSheetSpec`**:
 
 ```typescript
 await parseSheetRows(workbook, sheetSpec, { sourceId: source.sourceId, label: source.label }, {
-  pushError: (detail) => tabularErrors.push(detail),
+  pushError: (detail) => errors.push(detail),
   onProgress: async (percent) => {
     await reportTabularProgress(io.onProgress, "parsing_workbook", source.sourceId, {
       originalName: source.label,
@@ -139,34 +113,12 @@ await parseSheetRows(workbook, sheetSpec, { sourceId: source.sourceId, label: so
     });
   },
   onRow: async ({ rowNumber, cells }) => {
-    // business rules; scopeTabularError(...) into tabularErrors
+    // domain business rules; scopeTabularError(...) into errors
   },
 });
 ```
 
-3. Scope errors with **`sourceId`**, **`label` → `originalName`**, **`worksheetName`**, **`rowNumber`** (1-based Excel sheet row).
-4. Merge tabular errors with JSONL **`ErrorDetail[]`** when the domain has multiple plugins.
-5. On validation failures:
-
-```typescript
-const errors: ErrorDetail[] = [...tabularErrors, ...jsonlErrors];
-
-if (errors.length > 0) {
-  const errorBlob = await buildTabularErrorXlsxBuffer(errors);
-  return {
-    outcome: "validation_failed",
-    processedCount,
-    errorCount: errors.length,
-    errorBlob,
-  };
-}
-
-return { outcome: "success", processedCount, errorCount: 0 };
-```
-
-Worker stores **`errorBlob`** via **`ProcessingErrorBlobStore`** — [async-processing](../async-processing/SKILL.md#processingerrorblobstore). When **`errorCount > 0`**, always return **`errorBlob`**.
-
-**`validating_rows`** and **`saving_database`** — domain calls **`reportTabularProgress`**; plugin emits **`parsing_workbook`** only (via domain **`onProgress`** wrapper).
+3. Post-parse phases and error XLSX — domain uses [import-shared](../import-shared/SKILL.md) (**`reportDomainProgress`**, **`buildValidationErrorXlsxBuffer`**).
 
 ---
 
@@ -174,59 +126,20 @@ Worker stores **`errorBlob`** via **`ProcessingErrorBlobStore`** — [async-proc
 
 | Phase | Who emits | Helper |
 | ----- | --------- | ------ |
-| **`parsing_workbook`** | **`parseSheetRows`** (via domain **`onProgress`** wrapper) | **`reportTabularProgress`** |
-| **`validating_rows`** | Domain in **`onRow`** / batch validation | **`reportTabularProgress`** |
-| **`saving_database`** | Domain during persistence | **`reportTabularProgress`** |
-
-```typescript
-await reportTabularProgress(io.onProgress, "validating_rows", "mainWorkbook", {
-  originalName: source.label,
-  worksheetName: sheetSpec.sheetName,
-  percent: 60,
-});
-```
+| **`parsing_workbook`** | **`parseSheetRows`** (domain wraps **`onProgress`**) | **`reportTabularProgress`** |
+| **`validating_rows`**, **`saving_database`** | Domain runner | **`reportDomainProgress`** (import-shared) |
 
 ---
 
-| Concern | tabular-xlsx plugin |
-| ------- | ------------------- |
-| Load buffer into ExcelJS workbook | yes |
-| Assert required sheet names exist | yes |
-| Validate headers against **`TabularSheetSpec`** | yes |
-| Read cells with **`cell.text`** (trim at ingest) | yes |
-| Row loop, skip blank rows, set **`ErrorDetail.rowNumber`** | yes |
-| Scoped error helper (`sourceId`, worksheet, `label`) | yes |
-| **`buildTabularErrorXlsxBuffer`** from **`ErrorDetail[]`** | yes |
-| JSONL-only error download | **no** — jsonl plugin; merge here |
-
----
-
-## Error XLSX
-
-| Column | Include when |
-| ------ | ------------ |
-| Source | any error has `sourceId` |
-| Original name | any error has `originalName` |
-| Worksheet | any error has `worksheetName` |
-| Row Number, Message, Raw Data | always |
-
-On every error sheet after headers and body rows: **freeze row 1** and **enable auto-filter** (project helper **`applyDefaultExportedSheetView`** when available — see `.cursor/rules/exceljs-xlsx-conventions.mdc`).
-
-Processing layer stores bytes; this plugin builds the buffer only.
-
----
-
-## Responsibilities
+## Suggested files
 
 ```text
 import/plugins/tabular-xlsx/
-  tabular-processing.types.ts       # canonical ErrorDetail
+  tabular-processing.types.ts
   load-workbook-from-buffer.ts
   parse-sheet-rows.ts
   scope-tabular-errors.ts
-  build-tabular-error-xlsx.ts
   report-tabular-progress.ts
-  apply-exported-sheet-view.ts
 ```
 
 ---
@@ -234,13 +147,11 @@ import/plugins/tabular-xlsx/
 ## Checklist
 
 ```text
-- [ ] Stream → buffer → loadWorkbookFromBuffer inside domainRunner
 - [ ] TabularSheetSpec owned by domain; plugin validates headers only
-- [ ] cell.text + trim at ingest; rowNumber = 1-based Excel row on ErrorDetail
-- [ ] originalName on errors/progress from VerifiedProcessingSource.label
-- [ ] buildTabularErrorXlsxBuffer on validation_failed → DomainRunResult.errorBlob
-- [ ] Merge JSONL ErrorDetail[] when domain has jsonl sources
-- [ ] Error XLSX: freeze header row + auto-filter
+- [ ] cell.text + trim at ingest; rowNumber = 1-based Excel row
+- [ ] ErrorDetail from import/shared — not defined in this plugin
+- [ ] Plugin emits parsing_workbook only; domain emits validating_rows / saving_database
+- [ ] Domain builds error XLSX via import/shared — not this plugin
 - [ ] No index.ts barrel re-exports
 ```
 
@@ -250,6 +161,7 @@ import/plugins/tabular-xlsx/
 
 | Task | Skills |
 | ---- | ------ |
-| Tabular parse, error XLSX builder | `import-plugin-tabular-xlsx` |
-| JSONL lines + merged errors | `import-plugin-jsonl` + this skill |
+| Tabular parse, parsing_workbook progress | `import-plugin-tabular-xlsx` |
+| Error type, error XLSX, domain progress | `import-shared` |
+| JSONL parse (separate peer plugin) | `import-plugin-jsonl` |
 | DomainRunner, DomainRunResult, SSE | `async-processing` |
