@@ -56,7 +56,7 @@ type LocalUploadSession = {
 
 | `autoStart` | `domainKind` | On success |
 | --- | --- | --- |
-| `false` (default) | Client sends on start API | Return `{ sources, uploadSessionId? }` — client calls **API controller** |
+| `false` (default) | Client sends **`uploadSessionId`** on start API | Save **`UploadSession`**, return `{ uploadSessionId }` — [handoff deferred start](../import-upload-handoff/SKILL.md#deferred-start-trust-model) |
 | `true` | **Required** on session | Emit `{ domainKind, sources }` — **event subscriber** → **event adapter** |
 
 Event adapter may surface **`ActiveJobConflictError`** as 409 when **`global_singleton`** lock is busy — [import-upload-handoff](../import-upload-handoff/SKILL.md#api-adapter).
@@ -77,7 +77,7 @@ config:
 flowchart LR
   multipart["POST multipart upload"]
   fail["fail cleanup disk"]
-  ret["return sources to client"]
+  ret["save UploadSession return uploadSessionId"]
   apiCtrl["API controller POST start"]
   apiAdp["API adapter"]
   boundary["startProcessing"]
@@ -195,10 +195,17 @@ const sources: UploadHandoffSources = {
 **Deferred (`autoStart: false`):**
 
 ```typescript
-return { sources, uploadSessionId: session.uploadSessionId };
+const uploadSessionId = session.uploadSessionId ?? nanoid();
+await this.uploadSessionStore.save({
+  uploadSessionId,
+  domainKind: session.domainKind!,
+  sources,
+  expiresAt: addHours(new Date(), 24),
+});
+return { uploadSessionId };
 ```
 
-Client later **`POST .../start`** with `domainKind` + handoff `sources` (or `uploadSessionId` if server stored the session). API adapter maps to **`StartProcessingInput`**.
+Client later **`POST .../start`** with **`uploadSessionId`** only — API adapter loads canonical `sources` server-side ([import-upload-handoff](../import-upload-handoff/SKILL.md#deferred-start-trust-model)).
 
 **autoStart (`autoStart: true`, `domainKind` set):**
 
@@ -231,7 +238,7 @@ Validate cheap checks (required fields, MIME) **before** first disk write when p
 | Multipart receive + Multer **`diskStorage`** | yes |
 | Server-generated **`path`** per **`sourceId`** | yes |
 | Validate against domain **`sourceSpecs`** | yes |
-| Return `{ sources, uploadSessionId? }` or emit event | yes |
+| Return `{ uploadSessionId }` or emit event | yes |
 | Fail → unlink partial files, no job record | yes |
 | Locator stat verify | **no** — [async-processing worker](../async-processing/SKILL.md#worker) |
 | **`ProcessingJobRepository`** / active lock | **no** |
@@ -260,7 +267,7 @@ import/upload/local-multipart/
 - [ ] diskStorage — unique server paths under configured base dir
 - [ ] Required sourceIds validated before or with atomic rollback on failure
 - [ ] Fail → unlink all savedPaths, no event, no ProcessingJobRepository
-- [ ] Success deferred → { sources, uploadSessionId? }; client uses start API
+- [ ] Success deferred → save UploadSession, return uploadSessionId; client POST .../start with session id
 - [ ] Success autoStart → emit processing.start-requested with domainKind + sources
 - [ ] Never call startProcessing from upload code
 - [ ] Document sourceId constants for the client (match multipart field names)
