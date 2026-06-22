@@ -483,7 +483,7 @@ const ACTIVE_JOB_TTL_SECONDS = 60 * 60 * 24; // match worst-case run; refreshLea
 
 DB phase is durable truth; Redis is the fast gate. Tune **`STALE_PROCESSING_MS`** per domain.
 
-**Crash recovery:** TTL on the key clears orphaned locks when a worker dies before **`release`**. Worker **must** call **`refreshLease(domainKind, jobId)`** at domain-run start and periodically during long runs (e.g. throttled from **`onProgress`** or a timer) so TTL does not expire during queue wait + processing.
+**Crash recovery:** TTL on the key clears orphaned locks when a worker dies before **`release`**. Orchestrator **`acquire`** sets initial TTL; worker **must** call **`refreshLease`** immediately after **`claimProcessingPhase`** (covers queue wait) and **throttled** during domain run (see worker step 8).
 
 | `lockPolicy`       | On active job                  | On worker complete                                                               |
 | ------------------ | ------------------------------ | -------------------------------------------------------------------------------- |
@@ -527,9 +527,9 @@ Key convention: e.g. `processing-errors/{jobId}.xlsx`. Bytes never go in DB or B
 1. **Idempotency guard** — if job already `complete` or `failed` in DB, run **orphan lock cleanup** (same as step 2 when terminal) and return.
 2. **`claimProcessingPhase(jobId)`** — conditional `queued` → `processing`.
    - If **`false`**: load job — when phase is terminal and Redis lock value equals this **`jobId`**, **`release`**; return.
-3. When **`lockPolicy.type === "global_singleton"`**, **`refreshLease(domainKind, jobId)`** — first extension after claim (covers queue wait since orchestrator **`acquire`**).
+3. Load **`ProcessingJob`** row — **`domainKind = row.domainKind`**; resolve registration; **`refreshLease`** when **`global_singleton`** (extends TTL after queue wait).
 4. **`getManifestByManifestId(manifestId)`** — if **null**, **`finalize`** `failed`, **`publishTerminal`** (best effort), return.
-5. Set **`domainKind = manifest.domainKind`** (authoritative — not BullMQ payload alone).
+5. Set **`domainKind = manifest.domainKind`** (authoritative — re-resolve registration if needed).
 6. **`verifyLocator`** per source; build **`Map<string, VerifiedProcessingSource>`** (track partial set in **`verifiedForCleanup`**).
 7. **`refreshLease`** again before domain run when **`global_singleton`**.
 8. **`domainRunner.run`** — `openStream` → **`openReadStream`**; **`onProgress`** → **`publishProgress`**, and **throttled** **`refreshLease`** (e.g. at most once per 60s — not every tick).
@@ -548,30 +548,35 @@ Key convention: e.g. `processing-errors/{jobId}.xlsx`. Bytes never go in DB or B
 @Injectable()
 @Processor(ASYNC_PROCESSING_QUEUE)
 export class ProcessingProcessor extends WorkerHost {
+  private lastLeaseRefreshAt = new Map<string, number>();
+  private static LEASE_REFRESH_INTERVAL_MS = 60_000;
+
   async process(job: Job<AsyncProcessingJobPayload>) {
     const { jobId, manifestId } = job.data;
     const verifiedForCleanup: VerifiedProcessingSource[] = [];
-    let domainKind = job.data.domainKind; // fallback until manifest loads
+    let domainKind = job.data.domainKind;
 
     const existing = await this.jobRepository.findById(jobId);
     if (existing?.phase === "complete" || existing?.phase === "failed") {
+      await this.releaseOrphanLockIfTerminal(jobId, existing);
       return;
     }
 
     const claimed = await this.jobRepository.claimProcessingPhase(jobId);
     if (!claimed) {
       const row = await this.jobRepository.findById(jobId);
-      if (
-        row &&
-        (row.phase === "complete" || row.phase === "failed") &&
-        (await this.activeJobLock.isHeldBy(jobId, row.domainKind))
-      ) {
-        await this.activeJobLock.release(row.domainKind, jobId);
+      if (row) {
+        await this.releaseOrphanLockIfTerminal(jobId, row);
       }
       return;
     }
 
     try {
+      const jobRow = await this.jobRepository.findById(jobId);
+      domainKind = jobRow!.domainKind;
+      const registration = this.domainRegistry.getByDomainKind(domainKind);
+      await this.refreshLeaseIfNeeded(registration, domainKind, jobId, true);
+
       const manifest =
         await this.jobRepository.getManifestByManifestId(manifestId);
       if (!manifest) {
@@ -587,16 +592,17 @@ export class ProcessingProcessor extends WorkerHost {
       }
 
       domainKind = manifest.domainKind;
-      const registration = this.domainRegistry.getByDomainKind(domainKind);
-
       const verifiedSources = await this.buildVerifiedSources(
         manifest.sources,
         verifiedForCleanup,
       );
 
-      if (registration.lockPolicy.type === "global_singleton") {
-        await this.activeJobLock.refreshLease(domainKind, jobId);
-      }
+      await this.refreshLeaseIfNeeded(
+        registration,
+        domainKind,
+        jobId,
+        true,
+      );
 
       let result: DomainRunResult;
       try {
@@ -605,9 +611,12 @@ export class ProcessingProcessor extends WorkerHost {
             this.sourceReader.openReadStream(source.verifiedLocator),
           onProgress: async (detail) => {
             await this.progressPublisher.publishProgress(jobId, detail);
-            if (registration.lockPolicy.type === "global_singleton") {
-              await this.activeJobLock.refreshLease(domainKind, jobId);
-            }
+            await this.refreshLeaseIfNeeded(
+              registration,
+              domainKind,
+              jobId,
+              false,
+            );
           },
         });
       } catch (domainError) {
@@ -623,19 +632,7 @@ export class ProcessingProcessor extends WorkerHost {
       }
 
       try {
-        const errorStorageKey =
-          result.outcome === "validation_failed" && result.errorBlob
-            ? await this.errorBlobStore.putErrorBlob(jobId, result.errorBlob)
-            : undefined;
-
-        await this.jobRepository.finalize(jobId, {
-          phase: "complete",
-          outcome: result.outcome,
-          processedCount: result.processedCount,
-          errorCount: result.errorCount,
-          errorStorageKey,
-          completedAt: new Date(),
-        });
+        await this.finalizeSuccess(jobId, result);
         await this.progressPublisher.publishTerminal(jobId, {
           phase: "complete",
         });
@@ -644,12 +641,15 @@ export class ProcessingProcessor extends WorkerHost {
           `Post-domain finalize failed for job ${jobId}`,
           postDomainError,
         );
-        const row = await this.jobRepository.findById(jobId);
-        if (row?.phase === "processing") {
-          await this.jobRepository.finalize(jobId, {
-            phase: "failed",
-            outcome: "failed",
-            completedAt: new Date(),
+        try {
+          await this.finalizeSuccess(jobId, result);
+          await this.progressPublisher.publishTerminal(jobId, {
+            phase: "complete",
+          });
+        } catch (retryError) {
+          this.logger.error(`Post-domain retry failed for job ${jobId}`, retryError);
+          await this.progressPublisher.publishTerminal(jobId, {
+            phase: "complete",
           });
         }
       }
@@ -667,10 +667,39 @@ export class ProcessingProcessor extends WorkerHost {
       }
     }
   }
+
+  private async releaseOrphanLockIfTerminal(
+    jobId: string,
+    row: ProcessingJob,
+  ): Promise<void> {
+    if (
+      (row.phase === "complete" || row.phase === "failed") &&
+      (await this.activeJobLock.isHeldBy(jobId, row.domainKind))
+    ) {
+      await this.activeJobLock.release(row.domainKind, jobId);
+    }
+  }
+
+  private async refreshLeaseIfNeeded(
+    registration: DomainKindRegistration,
+    domainKind: string,
+    jobId: string,
+    force: boolean,
+  ): Promise<void> {
+    if (registration.lockPolicy.type !== "global_singleton") {
+      return;
+    }
+    const now = Date.now();
+    const last = this.lastLeaseRefreshAt.get(jobId) ?? 0;
+    if (force || now - last >= ProcessingProcessor.LEASE_REFRESH_INTERVAL_MS) {
+      await this.activeJobLock.refreshLease(domainKind, jobId);
+      this.lastLeaseRefreshAt.set(jobId, now);
+    }
+  }
 }
 ```
 
-Add **`isHeldBy(jobId, domainKind)`** on **`ProcessingActiveJobLock`** (compare Redis key value) for step 2 orphan cleanup — or inline **`GET`** + compare in the worker.
+Extract **`finalizeSuccess`** (error blob + **`finalize` complete**) in the worker module. **`isHeldBy`** supports steps 1–2 orphan cleanup.
 
 ---
 
