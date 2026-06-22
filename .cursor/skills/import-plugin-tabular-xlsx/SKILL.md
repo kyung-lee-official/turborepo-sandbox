@@ -64,6 +64,7 @@ type ErrorDetail = {
   sourceId?: string;
   /** Set from VerifiedProcessingSource.label at scope site */
   originalName?: string;
+  /** Tabular only — omit on JSONL errors (import-plugin-jsonl) */
   worksheetName?: string;
   /** 1-based Excel sheet row — set at parse site (not named sourceRowNumber elsewhere) */
   rowNumber?: number;
