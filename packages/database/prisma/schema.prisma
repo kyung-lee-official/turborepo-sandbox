@@ -300,6 +300,7 @@ model ProcessingJob {
     completedAt     DateTime?
 
     manifest               ProcessingManifest?
+    processingJobErrors    ProcessingJobError[]
     salesImportMergedLines SalesImportMergedLine[]
 
     @@index([domainKind])
@@ -317,6 +318,23 @@ model ProcessingManifest {
     job ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
     @@index([domainKind])
+}
+
+/**
+ * One validation error row per failed ingest item — domain owns `payload` shape (JSON).
+ * Deleted with the parent ProcessingJob.
+ */
+model ProcessingJobError {
+    id              String @id @default(cuid())
+    processingJobId String
+    /** Stable export / replay order within the job (1..N) */
+    sequence        Int
+    payload         Json
+
+    processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
+
+    @@unique([processingJobId, sequence])
+    @@index([processingJobId])
 }
 
 /**
