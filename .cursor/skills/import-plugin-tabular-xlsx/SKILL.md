@@ -10,6 +10,8 @@ description: >-
 
 Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [start-processing-adapters](../start-processing-adapters/SKILL.md). JSONL errors merge into the same error XLSX — [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md).
 
+Implement under **`apps/nest-app/src/import/plugins/tabular-xlsx/`** (no barrel **`index.ts`** — import concrete files). **`ErrorDetail`** in **`tabular-processing.types.ts`** is the canonical type for merged tabular + JSONL errors.
+
 ---
 
 ## Scope
@@ -17,9 +19,8 @@ Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** cal
 | This plugin owns | Domain runner owns |
 | --- | --- |
 | ExcelJS load, headers, **`cell.text`**, row maps | **`TabularSheetSpec`** per sheet (domain module) |
-| **`ErrorDetail`** at parse/validate site | Business rules, DB writes |
-| **`buildTabularErrorXlsxBuffer`** | Map rows → **`DomainRunResult`** |
-| Plugin progress phases | **`saving_database`** progress + **`onProgress`** |
+| Parse-site **`ErrorDetail`**, **`buildTabularErrorXlsxBuffer`** | Business rules, DB writes, map rows → **`DomainRunResult`** |
+| Plugin progress (**`parsing_workbook`** via percent callback) | **`validating_rows`**, **`saving_database`** via **`reportTabularProgress`** |
 
 | Must not (plugin) | |
 | --- | --- |
@@ -37,11 +38,14 @@ Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** cal
 ## Types
 
 ```typescript
-/** Plugin-emitted phases only */
-type TabularPluginPhase = "parsing_workbook" | "validating_rows";
+/** Plugin-emitted phase only — row iteration reports percent via onProgress callback */
+type TabularPluginPhase = "parsing_workbook";
 
-/** SSE progress — plugin phases + domain-only phase */
-type TabularProcessingPhase = TabularPluginPhase | "saving_database";
+/** Plugin phase + domain-only phases */
+type TabularProcessingPhase =
+  | TabularPluginPhase
+  | "validating_rows"
+  | "saving_database";
 
 /** Published via io.onProgress during domainRunner.run — Redis/SSE in async-processing */
 type TabularProcessingProgress = {
@@ -192,12 +196,13 @@ await reportTabularProgress(onProgress, "saving_database", "mainWorkbook", {
 
 ```text
 import/plugins/tabular-xlsx/
-  tabular-processing.types.ts
+  tabular-processing.types.ts       # canonical ErrorDetail
   load-workbook-from-buffer.ts
   parse-sheet-rows.ts
   scope-tabular-errors.ts
   build-tabular-error-xlsx.ts
   report-tabular-progress.ts
+  apply-exported-sheet-view.ts
 ```
 
 ---
