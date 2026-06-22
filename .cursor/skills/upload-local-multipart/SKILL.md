@@ -9,11 +9,23 @@ description: >-
 
 ## Goal
 
-Client sends files to **NestJS** via multipart. Server writes bytes to **disk**, builds handoff **`sources`**, then either returns them to the client or emits **`processing.start-requested`**. Stops before **`startProcessing`** — see [import-upload-handoff](../import-upload-handoff/SKILL.md). Job orchestration: [async-processing](../async-processing/SKILL.md).
+Client sends files to **NestJS** via **`multipart/form-data`**. Server writes bytes to **disk**, builds handoff **`sources`**, then either saves **`UploadSession`** and returns **`{ uploadSessionId }`** (deferred) or emits **`processing.start-requested`** (autoStart). Stops before **`startProcessing`** — see [import-upload-handoff](../import-upload-handoff/SKILL.md). Job orchestration: [async-processing](../async-processing/SKILL.md).
 
 **Upload progress:** Nest stream meter — not job SSE ([async-processing](../async-processing/SKILL.md) SSE).
 
 **Input files are ephemeral:** worker **`deleteLocator`** removes local paths after processing ([async-processing — Worker](../async-processing/SKILL.md#worker)).
+
+---
+
+## Scope
+
+| This skill owns | [import-upload-handoff](../import-upload-handoff/SKILL.md) owns |
+| --- | --- |
+| Multer, disk paths, rollback | **`UploadSession`** type + **`UploadSessionStore`** |
+| Build **`UploadHandoffSources`** | Start API, adapters, deferred trust model |
+| **`LocalUploadSession`** form fields | `mapUploadHandoffToInput`, `POST .../start` |
+
+Inject **`UploadSessionStore`** from handoff — do not duplicate session persistence here.
 
 ---
 
@@ -30,6 +42,7 @@ Client sends files to **NestJS** via multipart. Server writes bytes to **disk**,
 - **HEAD/stat** locators at upload — worker **verify** step in [async-processing](../async-processing/SKILL.md#worker).
 - Accept client-supplied **`path`** or use **`originalName`** as the on-disk filename.
 - Put file **buffers** on BullMQ or in Redis — persist to disk; handoff carries **`SourceLocator`** only.
+- Return handoff **`sources`** or **locators** to the client on **deferred** success — only **`uploadSessionId`** ([handoff trust model](../import-upload-handoff/SKILL.md#deferred-start-trust-model)).
 
 ---
 
@@ -37,35 +50,38 @@ Client sends files to **NestJS** via multipart. Server writes bytes to **disk**,
 
 | Term | Meaning |
 | ---- | ------- |
-| **`LocalUploadSession`** | Per-request options: `domainKind`, `autoStart` |
-| **`sourceId`** | Multipart field name — must match domain **`sourceSpecs`** ([async-processing](../async-processing/SKILL.md#domainregistry)) |
-| **`UploadHandoffSources`** | Canonical map type — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-sources) |
-| **`uploadSessionId`** | Optional server id when session state is stored server-side for deferred start |
+| **`LocalUploadSession`** | Per-request **form fields**: `domainKind`, `autoStart`, optional client `uploadSessionId` hint |
+| **`UploadSession`** | Persisted record in handoff store — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-sources) |
+| **`sourceId`** | Multipart **file** field name — must match domain **`sourceSpecs`** |
+| **`UploadHandoffSources`** | Built server-side — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-sources) |
+| **`uploadSessionId`** | Server id returned to client; client sends it on **`POST .../start`** (server generates if omitted) |
 
 ---
 
 ## Upload session
 
+**`domainKind` is required** for every upload (form field or route param). Needed to resolve **`sourceSpecs`** and to save **`UploadSession`**.
+
 ```typescript
 type LocalUploadSession = {
-  uploadSessionId?: string; // optional — include in deferred start API when stored server-side
-  domainKind?: string;
-  autoStart?: boolean; // true → emit processing.start-requested after success
+  domainKind: string;
+  autoStart?: boolean; // default false
+  uploadSessionId?: string; // optional client hint; server may generate nanoid()
 };
 ```
 
-| `autoStart` | `domainKind` | On success |
-| --- | --- | --- |
-| `false` (default) | Client sends **`uploadSessionId`** on start API | Save **`UploadSession`**, return `{ uploadSessionId }` — [handoff deferred start](../import-upload-handoff/SKILL.md#deferred-start-trust-model) |
-| `true` | **Required** on session | Emit `{ domainKind, sources }` — **event subscriber** → **event adapter** |
+| `autoStart` | On success |
+| --- | --- |
+| `false` (default) | **`UploadSessionStore.save`** → return `{ uploadSessionId }` only |
+| `true` | Emit `{ domainKind, sources }` in-process → event adapter |
 
-Event adapter may surface **`ActiveJobConflictError`** as 409 when **`global_singleton`** lock is busy — [import-upload-handoff](../import-upload-handoff/SKILL.md#api-adapter).
+On **`global_singleton`** conflict during autoStart, event adapter **logs and skips** (no HTTP 409) — [import-upload-handoff — Event adapter](../import-upload-handoff/SKILL.md#event-adapter).
 
 ---
 
 ## Flow
 
-Solid arrows: this skill. Dashed arrows: [import-upload-handoff](../import-upload-handoff/SKILL.md) adapters — never call **`startProcessing`** from upload code.
+Solid arrows: this skill. Dashed arrows: [import-upload-handoff](../import-upload-handoff/SKILL.md) adapters.
 
 **Deferred start (`autoStart: false`):**
 
@@ -115,37 +131,52 @@ flowchart LR
 
 ## HTTP / Nest surface
 
+Use **`multipart/form-data`** for files **and** session fields — not a separate JSON body.
+
 ```typescript
-@Post("upload")
+@Post(":domainKind/upload")
 @UseInterceptors(
   FileFieldsInterceptor(
     sourceSpecs.map((s) => ({ name: s.sourceId, maxCount: 1 })),
   ),
 )
 async upload(
+  @Param("domainKind") domainKindFromRoute: string,
   @UploadedFiles() files: Record<string, Express.Multer.File[]>,
-  @Body() session: LocalUploadSession,
+  @Body("autoStart") autoStartRaw?: string,
+  @Body("uploadSessionId") uploadSessionId?: string,
 ) {
-  return this.localMultipartUploadService.handleUpload(files, session);
+  const registration = this.domainRegistry.getByDomainKind(domainKindFromRoute);
+  const session: LocalUploadSession = {
+    domainKind: domainKindFromRoute,
+    autoStart: autoStartRaw === "true",
+    uploadSessionId,
+  };
+  return this.localMultipartUploadService.handleUpload(
+    files,
+    session,
+    registration.sourceSpecs,
+  );
 }
 ```
 
-- **Route** — e.g. `POST /applications/:domainKind/upload` or session-scoped upload URL; keep upload routes in handoff `upload/local-multipart/`.
-- **Field names** — each **`sourceId`** from domain **`sourceSpecs`** (e.g. `mainWorkbook`) is one multipart field, max one file.
-- **Limits** — configure Multer/body size per largest expected file; reject disallowed MIME types before writing disk (domain-specific allowlist).
+- **`sourceSpecs`** — from **`DomainRegistry.getByDomainKind(domainKind)`** per request (or route param).
+- **File fields** — one per **`sourceId`** (e.g. `mainWorkbook`).
+- **Text fields** — `autoStart`, optional `uploadSessionId`; **`domainKind`** from route or `@Body("domainKind")` when not in path.
+- **Limits** — Multer/body size; MIME allowlist before disk write.
 
 ---
 
 ## Disk persistence
 
-Use Multer **`diskStorage`** (not memory + Redis buffer). Memory storage is for tiny dev-only paths; production async processing expects **`locator: { kind: "local", path }`**.
+Use Multer **`diskStorage`** (not memory + Redis buffer).
 
 **Path rules**
 
 1. Base directory — e.g. `{TMP}/processing-uploads/` (env-configured).
-2. **Server-generated path** — `{base}/{uploadSessionId}/{sourceId}-{nanoid}{ext}` or `{base}/{nanoid}/{sourceId}{ext}`.
-3. Extension — derive from validated MIME or safe default (`.bin`); never trust client path segments.
-4. Create directories with restrictive permissions; reject `..` and absolute paths from client metadata.
+2. **Server-generated path** — `{base}/{uploadSessionId}/{sourceId}-{nanoid}{ext}`.
+3. Extension from validated MIME or safe default (`.bin`).
+4. Restrictive directory permissions; reject `..` in client metadata.
 
 ```typescript
 function buildSavedPath(sessionId: string, sourceId: string, mimeType: string): string {
@@ -160,18 +191,14 @@ Set **`declaredSizeBytes`** from Multer **`file.size`** after write.
 
 ## Validation and `sourceSpecs`
 
-Resolve required **`sourceId`** list from domain registration (**`DomainKindRegistration.sourceSpecs`**) or a local upload config keyed by **`domainKind`**.
-
-1. Validate **`session.domainKind`** when `autoStart` or when route embeds kind.
-2. For each **`SourceSpec`**: if **`required`**, field must have exactly one file; if optional, zero or one.
-3. Reject unknown field names (not in specs) unless product explicitly allows extras.
-4. Validate MIME/size before persisting; on any failure, **rollback** (see below).
+1. Resolve **`sourceSpecs`** from **`DomainRegistry`** by **`session.domainKind`**.
+2. For each **`SourceSpec`**: required → exactly one file; optional → zero or one.
+3. Reject unknown file field names.
+4. Validate MIME/size before persisting; on failure **rollback**.
 
 ---
 
 ## Build handoff `sources`
-
-Wrap entries in **`UploadHandoffSources`** — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-sources).
 
 ```typescript
 const sources: UploadHandoffSources = {
@@ -188,6 +215,8 @@ const sources: UploadHandoffSources = {
 };
 ```
 
+Type: [import-upload-handoff — Handoff sources](../import-upload-handoff/SKILL.md#handoff-sources).
+
 ---
 
 ## Success paths
@@ -198,23 +227,25 @@ const sources: UploadHandoffSources = {
 const uploadSessionId = session.uploadSessionId ?? nanoid();
 await this.uploadSessionStore.save({
   uploadSessionId,
-  domainKind: session.domainKind!,
+  domainKind: session.domainKind,
   sources,
   expiresAt: addHours(new Date(), 24),
 });
 return { uploadSessionId };
 ```
 
-Client later **`POST .../start`** with **`uploadSessionId`** only — API adapter loads canonical `sources` server-side ([import-upload-handoff](../import-upload-handoff/SKILL.md#deferred-start-trust-model)).
+**`UploadSessionStore`** — handoff module ([import-upload-handoff](../import-upload-handoff/SKILL.md#suggested-module-layout)). Payload matches handoff **`UploadSession`** type.
 
-**autoStart (`autoStart: true`, `domainKind` set):**
+Client **`POST .../start`** with **`uploadSessionId`** only — [deferred start trust model](../import-upload-handoff/SKILL.md#deferred-start-trust-model).
+
+**autoStart (`autoStart: true`):**
 
 ```typescript
 this.eventEmitter.emit("processing.start-requested", {
   domainKind: session.domainKind,
   sources,
 });
-return { sources }; // optional — client may still display upload result
+return { accepted: true }; // do not return locators to client
 ```
 
 ---
@@ -223,11 +254,11 @@ return { sources }; // optional — client may still display upload result
 
 On **any** error after one or more files were written:
 
-1. **`unlink`** every path recorded for this request (track in a `savedPaths: string[]`).
-2. Do **not** emit event or return handoff `sources`.
+1. **`unlink`** every path in `savedPaths: string[]`.
+2. Do **not** emit event, save session, or return locators.
 3. No **`ProcessingJob`** row, no BullMQ enqueue, no Redis active lock.
 
-Validate cheap checks (required fields, MIME) **before** first disk write when possible to avoid partial writes.
+Run cheap validation before the first disk write when possible.
 
 ---
 
@@ -235,15 +266,14 @@ Validate cheap checks (required fields, MIME) **before** first disk write when p
 
 | Concern | This path |
 | ------- | --------- |
-| Multipart receive + Multer **`diskStorage`** | yes |
+| Multipart + **`diskStorage`** | yes |
 | Server-generated **`path`** per **`sourceId`** | yes |
-| Validate against domain **`sourceSpecs`** | yes |
-| Return `{ uploadSessionId }` or emit event | yes |
-| Fail → unlink partial files, no job record | yes |
-| Locator stat verify | **no** — [async-processing worker](../async-processing/SKILL.md#worker) |
-| **`ProcessingJobRepository`** / active lock | **no** |
-| Call **`startProcessing`** | **no** — handoff adapters only |
-| Delete files after job | **no** — worker **`deleteLocator`** |
+| Validate against **`sourceSpecs`** | yes |
+| Save **`UploadSession`** via injected store (deferred) | yes |
+| Return **`{ uploadSessionId }`** only on deferred success | yes |
+| Emit **`processing.start-requested`** (autoStart) | yes |
+| Implement **`UploadSessionStore`** | **no** — handoff |
+| Locator verify / job / lock / **`startProcessing`** | **no** |
 
 ---
 
@@ -253,10 +283,13 @@ Validate cheap checks (required fields, MIME) **before** first disk write when p
 import/upload/local-multipart/
   local-upload-session.types.ts
   local-multipart-upload.controller.ts
-  local-multipart-upload.service.ts
+  local-multipart-upload.service.ts      # inject UploadSessionStore from handoff
   multer-disk-storage.factory.ts
   build-upload-handoff-sources.ts
   rollback-saved-paths.ts
+
+import/handoff/
+  upload-session.store.ts                # shared with S3/COS deferred start
 ```
 
 ---
@@ -264,13 +297,13 @@ import/upload/local-multipart/
 ## Checklist
 
 ```text
-- [ ] diskStorage — unique server paths under configured base dir
-- [ ] Required sourceIds validated before or with atomic rollback on failure
-- [ ] Fail → unlink all savedPaths, no event, no ProcessingJobRepository
-- [ ] Success deferred → save UploadSession, return uploadSessionId; client POST .../start with session id
-- [ ] Success autoStart → emit processing.start-requested with domainKind + sources
+- [ ] multipart/form-data: file fields = sourceIds; domainKind required (route or form)
+- [ ] sourceSpecs from DomainRegistry per domainKind
+- [ ] diskStorage — server paths only; rollback savedPaths on failure
+- [ ] Deferred: UploadSessionStore.save → return { uploadSessionId } only (no locators)
+- [ ] autoStart: emit processing.start-requested; minimal HTTP response (no locators)
 - [ ] Never call startProcessing from upload code
-- [ ] Document sourceId constants for the client (match multipart field names)
+- [ ] Document sourceId field names for the client
 ```
 
 ---
@@ -280,5 +313,5 @@ import/upload/local-multipart/
 | Task | Skills |
 | ---- | ------ |
 | Multipart disk upload, autoStart | `upload-local-multipart` + `import-upload-handoff` |
-| Start API, adapters, handoff types | `import-upload-handoff` |
+| UploadSession store, start adapters | `import-upload-handoff` |
 | Worker verify, job, lock, SSE | `async-processing` |
