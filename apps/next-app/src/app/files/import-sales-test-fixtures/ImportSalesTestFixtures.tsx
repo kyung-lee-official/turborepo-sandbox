@@ -4,12 +4,18 @@ import { useRef, useState } from "react";
 import { SalesImportFixturesNav } from "../sales-import-fixtures/SalesImportFixturesNav";
 import {
   fetchProcessingErrors,
+  getProcessingJob,
   type ProcessingJobResponse,
   startSalesImportProcessing,
   triggerValidationErrorDownload,
   uploadSalesImportFiles,
-  waitForProcessingJob,
 } from "./api";
+import { ImportJobProgressPanel } from "./ImportJobProgressPanel";
+import {
+  appendProgressLine,
+  type ProgressLine,
+  waitForProcessingJobViaSse,
+} from "./processing-job-sse";
 
 type UploadSlot = {
   sourceId: "salesData" | "inventory" | "productDescriptions";
@@ -60,7 +66,7 @@ export const ImportSalesTestFixtures = () => {
     Record<string, File | undefined>
   >({});
   const [isRunning, setIsRunning] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [progressLines, setProgressLines] = useState<ProgressLine[]>([]);
   const [lastJob, setLastJob] = useState<ProcessingJobResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDownloadingErrors, setIsDownloadingErrors] = useState(false);
@@ -84,30 +90,51 @@ export const ImportSalesTestFixtures = () => {
     }
 
     setIsRunning(true);
-    setStatusMessage("Uploading files…");
     setErrorMessage(null);
     setLastJob(null);
+    setProgressLines([]);
+
+    const pushProgress = (label: string, detail?: string) => {
+      setProgressLines((prev) => appendProgressLine(prev, label, detail));
+    };
 
     try {
+      pushProgress("Uploading files");
       const { uploadSessionId } = await uploadSalesImportFiles({
         salesData,
         inventory,
         productDescriptions,
       });
+      pushProgress("Upload complete", uploadSessionId);
 
-      setStatusMessage("Starting processing job…");
+      pushProgress("Starting processing job");
       const { jobId } = await startSalesImportProcessing(uploadSessionId);
+      pushProgress("Job accepted", jobId);
 
-      setStatusMessage(`Job ${jobId} queued — waiting for completion…`);
-      const job = await waitForProcessingJob(jobId);
+      await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_NESTJS, {
+        onProgressLine: (line) => {
+          setProgressLines((prev) => {
+            const last = prev.at(-1);
+            if (
+              last &&
+              last.label === line.label &&
+              last.detail === line.detail
+            ) {
+              return prev;
+            }
+            return [...prev, line];
+          });
+        },
+      });
+
+      const job = await getProcessingJob(jobId);
       setLastJob(job);
-      setStatusMessage(formatJobSummary(job));
     } catch (error) {
       console.error("Sales import failed:", error);
       const message =
         error instanceof Error ? error.message : "Sales import failed";
       setErrorMessage(message);
-      setStatusMessage(null);
+      pushProgress("Import failed", message);
     } finally {
       setIsRunning(false);
     }
@@ -209,11 +236,7 @@ export const ImportSalesTestFixtures = () => {
         {isRunning ? "Running import…" : "Upload and start import"}
       </button>
 
-      {statusMessage ? (
-        <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-900 text-sm">
-          {statusMessage}
-        </div>
-      ) : null}
+      <ImportJobProgressPanel lines={progressLines} isLive={isRunning} />
 
       {lastJob ? (
         <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-800 text-sm">

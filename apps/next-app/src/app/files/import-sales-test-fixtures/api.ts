@@ -116,22 +116,3 @@ export function triggerValidationErrorDownload(
   anchor.click();
   URL.revokeObjectURL(url);
 }
-
-export async function waitForProcessingJob(
-  jobId: string,
-  options?: { pollIntervalMs?: number; timeoutMs?: number },
-): Promise<ProcessingJobResponse> {
-  const pollIntervalMs = options?.pollIntervalMs ?? 2000;
-  const timeoutMs = options?.timeoutMs ?? 30 * 60 * 1000;
-  const deadline = Date.now() + timeoutMs;
-
-  while (Date.now() < deadline) {
-    const job = await getProcessingJob(jobId);
-    if (job.phase === "complete" || job.phase === "failed") {
-      return job;
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
-  }
-
-  throw new Error(`Timed out waiting for job ${jobId}`);
-}
