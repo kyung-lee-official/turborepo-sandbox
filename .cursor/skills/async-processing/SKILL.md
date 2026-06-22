@@ -16,6 +16,8 @@ description: >-
 
 **Storage verification** runs in the worker after `updatePhase`, before `domainRunner.run`. Upload and start API/event paths are upstream.
 
+Implement under **`processing/`** (see [Suggested module layout](#suggested-module-layout)). Async import uses **only** this skill set — handoff, upload-*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
+
 ---
 
 ## Architecture
@@ -698,6 +700,7 @@ export class AsyncProcessingModule {}
 | Nest `ConflictException` in lock service   | Throw `ActiveJobConflictError`; adapter maps to 409        |
 | BullMQ concurrency as `global_singleton`   | Queues jobs instead of 409; use Redis lock at orchestrator |
 | Check-then-set active key without `SET NX` | Race allows two concurrent starts — use atomic acquire     |
+| Redis-buffer job meta + upload bytes stack | Use DB `ProcessingJob`, object-store locators, handoff skills |
 
 ---
 

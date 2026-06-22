@@ -10,8 +10,6 @@ description: >-
 
 Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [import-upload-handoff](../import-upload-handoff/SKILL.md). JSONL errors merge into the same error XLSX — [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md).
 
-Not the sync **HTTP 207** import pattern — see `.codex/skills/import-207-error-xlsx/` for request/response uploads.
-
 ---
 
 ## Scope
@@ -224,4 +222,3 @@ import/plugins/tabular-xlsx/
 | Tabular parse, error XLSX builder | `import-plugin-tabular-xlsx` |
 | JSONL lines + merged errors | `import-plugin-jsonl` + this skill |
 | DomainRunner, DomainRunResult, SSE | `async-processing` |
-| Sync 207 single-request import | `import-207-error-xlsx` (different pattern) |
