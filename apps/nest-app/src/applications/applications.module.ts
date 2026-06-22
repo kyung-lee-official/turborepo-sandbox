@@ -3,8 +3,7 @@ import { Import207ErrorXlsxModule } from "./import-207-error-xlsx/import-207-err
 import { MockDataModule } from "./mock-data/mock-data.module";
 import { ProgramLifecycleModule } from "./program-lifecycle/program-lifecycle.module";
 import { ResendModule } from "./resend/resend.module";
-import { SalesImportModule } from "./sales-import/sales-import.module";
-import { SalesImportFixturesModule } from "./sales-import-fixtures/sales-import-fixtures.module";
+import { SalesDataModule } from "./sales-data/sales-data.module";
 import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.module";
 
 @Module({
@@ -13,8 +12,7 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     MockDataModule,
     ResendModule,
     UploadLargeJsonModule,
-    SalesImportFixturesModule,
-    SalesImportModule,
+    SalesDataModule,
     Import207ErrorXlsxModule,
   ],
   exports: [
@@ -22,8 +20,7 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     MockDataModule,
     ResendModule,
     UploadLargeJsonModule,
-    SalesImportFixturesModule,
-    SalesImportModule,
+    SalesDataModule,
     Import207ErrorXlsxModule,
   ],
 })

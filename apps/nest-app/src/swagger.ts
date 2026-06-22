@@ -2,7 +2,7 @@ import type { INestApplication } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ProgramLifecycleModule } from "./applications/program-lifecycle/program-lifecycle.module";
 import { ResendModule } from "./applications/resend/resend.module";
-import { SalesImportFixturesModule } from "./applications/sales-import-fixtures/sales-import-fixtures.module";
+import { SalesDataModule } from "./applications/sales-data/sales-data.module";
 import { UploadLargeJsonModule } from "./applications/upload-large-json/upload-large-json.module";
 import { AssessmentsModule } from "./cerbos-authorization/assessments/assessments.module";
 import { AuthneticationModule } from "./cerbos-authorization/authnetication/authnetication.module";
@@ -70,7 +70,7 @@ export function setupSwagger(app: INestApplication) {
       include: [
         ProgramLifecycleModule,
         UploadLargeJsonModule,
-        SalesImportFixturesModule,
+        SalesDataModule,
         ResendModule,
       ],
     },

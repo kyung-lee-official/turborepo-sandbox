@@ -11,7 +11,7 @@ Reusable pieces stay in:
 | Shared errors / error XLSX | `import/shared/` | `ErrorDetail`, `buildValidationErrorXlsxBuffer` |
 | Job orchestration | `async-processing/` | Worker, `DomainRegistry`, SSE |
 | Upload + start | `start-processing-adapters/`, upload-* skills | Session, `POST .../start` |
-| Test file generator | `applications/sales-import-fixtures/` | Local fixture bundles |
+| Test file generator | `applications/sales-data/sales-import-fixtures/` | Local fixture bundles |
 
 Agent skills for reusable layers remain under `.cursor/skills/`. **This folder uses this README only.**
 
@@ -113,7 +113,7 @@ Use **`Decimal`** for **`unitPrice`** at the domain boundary (see project debugg
 ## Planned module layout
 
 ```text
-applications/sales-import/
+applications/sales-data/sales-import/
   README.md                         # this file
   sales-import-merge.policy.ts      # policy flags + domain kind
   sales-import.constants.ts         # sourceSpecs, TabularSheetSpec headers
@@ -138,7 +138,7 @@ applications/sales-import/
 
 ## Test fixtures
 
-Generate bundles from Next.js **`/files/sales-import-fixtures`** (Nest **`applications/sales-import-fixtures`**).
+Generate bundles from Next.js **`/files/sales-import-fixtures`** (Nest **`applications/sales-data/sales-import-fixtures`**).
 
 | Scenario | Expected job outcome |
 | --- | --- |
