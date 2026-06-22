@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -19,5 +19,14 @@ export class ProcessingErrorBlobStore {
     const absolutePath = join(this.baseDir, `${jobId}.xlsx`);
     await writeFile(absolutePath, blob);
     return storageKey;
+  }
+
+  async getErrorBlob(jobId: string): Promise<Buffer | null> {
+    const absolutePath = join(this.baseDir, `${jobId}.xlsx`);
+    try {
+      return await readFile(absolutePath);
+    } catch {
+      return null;
+    }
   }
 }

@@ -36,6 +36,7 @@ import { ProcessingSourceReader } from "./processing-source.reader";
     ProcessingOrchestratorService,
     DomainRegistry,
     ProcessingJobRepository,
+    ProcessingErrorBlobStore,
   ],
 })
 export class AsyncProcessingCoreModule {}

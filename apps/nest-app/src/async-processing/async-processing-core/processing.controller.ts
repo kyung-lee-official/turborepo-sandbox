@@ -1,5 +1,7 @@
 import { Controller, Get, NotFoundException, Param, Res } from "@nestjs/common";
 import type { Response } from "express";
+import { VALIDATION_ERROR_XLSX_CONTENT_TYPE } from "@/import/shared/build-validation-error-xlsx";
+import { ProcessingErrorBlobStore } from "./processing-error-blob.store";
 import { ProcessingJobRepository } from "./processing-job.repository";
 import { ProcessingProgressSseService } from "./processing-progress-sse.service";
 
@@ -8,6 +10,7 @@ export class ProcessingController {
   constructor(
     private readonly jobRepository: ProcessingJobRepository,
     private readonly progressSseService: ProcessingProgressSseService,
+    private readonly errorBlobStore: ProcessingErrorBlobStore,
   ) {}
 
   @Get(":jobId")
@@ -29,6 +32,28 @@ export class ProcessingController {
       updatedAt: job.updatedAt.toISOString(),
       completedAt: job.completedAt?.toISOString() ?? null,
     };
+  }
+
+  @Get(":jobId/errors")
+  async downloadErrors(@Param("jobId") jobId: string, @Res() res: Response) {
+    const job = await this.jobRepository.findById(jobId);
+    if (!job?.errorStorageKey) {
+      throw new NotFoundException(`No error report for job: ${jobId}`);
+    }
+
+    const blob = await this.errorBlobStore.getErrorBlob(jobId);
+    if (!blob) {
+      throw new NotFoundException(
+        `Error report file missing for job: ${jobId}`,
+      );
+    }
+
+    res.setHeader("Content-Type", VALIDATION_ERROR_XLSX_CONTENT_TYPE);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="validation-errors-${jobId}.xlsx"`,
+    );
+    res.send(blob);
   }
 
   @Get(":jobId/events")
