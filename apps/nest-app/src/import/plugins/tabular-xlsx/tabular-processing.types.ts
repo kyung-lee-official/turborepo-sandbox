@@ -1,8 +1,11 @@
-/** Plugin-emitted phases only */
-export type TabularPluginPhase = "parsing_workbook" | "validating_rows";
+/** Plugin-emitted phase only — row iteration reports percent via onProgress callback */
+export type TabularPluginPhase = "parsing_workbook";
 
-/** SSE progress — plugin phases + domain-only phase */
-export type TabularProcessingPhase = TabularPluginPhase | "saving_database";
+/** Plugin phase + domain-only phases */
+export type TabularProcessingPhase =
+  | TabularPluginPhase
+  | "validating_rows"
+  | "saving_database";
 
 /** Published via io.onProgress during domainRunner.run */
 export type TabularProcessingProgress = {
