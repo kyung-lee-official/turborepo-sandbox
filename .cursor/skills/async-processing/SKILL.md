@@ -57,7 +57,7 @@ Solid arrows: this skill. Dashed arrows: handoff layer — see [import-upload-ha
 | **[ProcessingProcessor](#worker)** | BullMQ worker — verify, run domain, finalize |
 | **[ProcessingProgressPublisher](#processingprogresspublisher)** | Redis pub/sub for progress + terminal signal |
 | **[ProcessingProgressSseService](#live-progress-and-sse)** | SSE stream for clients |
-| **[ProcessingActiveJobLock](#processingactivejoblock)** | `global_singleton` acquire/release per `domainKind` |
+| **[ProcessingActiveJobLock](#processingactivejoblock)** | Redis `SET NX` per `domainKind` — admission control (BullMQ does not replace this) |
 | **[ProcessingErrorBlobStore](#processingerrorblobstore)** | Persist validation error blob; returns `errorStorageKey` |
 
 ---
@@ -84,6 +84,7 @@ Solid arrows: this skill. Dashed arrows: handoff layer — see [import-upload-ha
 | **[ProcessingTerminalEvent](#live-progress-and-sse)** | Redis signal for SSE to reload terminal snapshot from DB |
 | **[DomainRunResult](#domain-boundary)** | Fixed return shape from `DomainRunner.run` |
 | **[DomainRunner](#domain-boundary)** | Per-`domainKind` handler invoked by the worker |
+| **[ActiveJobConflictError](#processingactivejoblock)** | Thrown when `global_singleton` acquire fails — adapter maps to HTTP 409 |
 
 Upload handoff vocabulary: [import-upload-handoff](../import-upload-handoff/SKILL.md). **`ErrorDetail`** — plugin skills (domain-internal).
 
@@ -283,6 +284,9 @@ interface ProcessingJobRepository {
 
   updatePhase(jobId: string, phase: ProcessingPhase): Promise<void>;
 
+  /** Single-winner queued → processing; returns false if another worker claimed */
+  claimProcessingPhase(jobId: string): Promise<boolean>;
+
   finalize(
     jobId: string,
     patch: {
@@ -378,11 +382,11 @@ Inject: **`DomainRegistry`**, **`ProcessingJobRepository`**, **`ProcessingActive
 2. Validate `input.sources` against `sourceSpecs` (required keys present).
 3. Create `jobId`, `manifestId` (nanoid).
 4. **`ProcessingJobRepository.createQueued`** — job + manifest in DB, `phase: queued`.
-5. When `lockPolicy.type === "global_singleton"`, **`ProcessingActiveJobLock.acquire(domainKind)`** — on conflict throw **`ActiveJobConflictError`**; delete the queued job row and rethrow (adapter maps to HTTP 409).
+5. When `lockPolicy.type === "global_singleton"`, **`ProcessingActiveJobLock.acquire(domainKind, jobId)`** — on conflict throw **`ActiveJobConflictError`**; orchestrator **`deleteById(jobId)`** and rethrow (adapter maps to HTTP 409).
 6. **Enqueue** BullMQ job.
 7. Return `{ jobId, manifestId }`.
 
-If step 5 or 6 throws after `createQueued`, orchestrator must **`finalize` or delete** the orphaned `ProcessingJob` (and manifest) before propagating the error.
+If step 5 or 6 throws after `createQueued`, orchestrator **`deleteById(jobId)`** (cascade manifest). Release the Redis lock only when **`lockAcquired`** is true.
 
 ```typescript
 async startProcessing(input: StartProcessingInput) {
@@ -403,7 +407,7 @@ async startProcessing(input: StartProcessingInput) {
 
   try {
     if (registration.lockPolicy.type === "global_singleton") {
-      await this.activeJobLock.acquire(input.domainKind);
+      await this.activeJobLock.acquire(input.domainKind, jobId);
       lockAcquired = true;
     }
 
@@ -418,7 +422,7 @@ async startProcessing(input: StartProcessingInput) {
     );
   } catch (error) {
     if (lockAcquired) {
-      await this.activeJobLock.release(input.domainKind);
+      await this.activeJobLock.release(input.domainKind, jobId);
     }
     await this.jobRepository.deleteById(jobId);
     throw error;
@@ -432,24 +436,48 @@ Use **`attempts: 1`** (or worker idempotency below) so a terminal `finalize` is 
 
 ### ProcessingActiveJobLock
 
+**Redis recommended.** BullMQ handles job dispatch and worker concurrency — it does **not** provide `global_singleton` admission control or HTTP 409 at `startProcessing`. Use a small Redis-backed lock; DB-only is optional and awkward for TTL/lease.
+
 ```typescript
 /** Thrown by acquire when global_singleton job already running — adapter maps to HTTP 409 */
 class ActiveJobConflictError extends Error {}
 
 interface ProcessingActiveJobLock {
-  acquire(domainKind: string): Promise<void>; // throws ActiveJobConflictError
-  release(domainKind: string): Promise<void>;
+  /** Atomic SET NX — key value is jobId */
+  acquire(domainKind: string, jobId: string): Promise<void>; // throws ActiveJobConflictError
+  /** Delete key only when value matches jobId */
+  release(domainKind: string, jobId: string): Promise<void>;
+  /** Optional — extend TTL during long domain runs */
+  refreshLease?(domainKind: string, jobId: string): Promise<void>;
 }
 ```
 
-Implement with Redis or DB — one choice per deployment. **`release`** runs in worker step 9 (or no-op for `none` policy).
+**Redis key:** `async-processing:active:{domainKind}` → `{jobId}`.
+
+**Acquire (atomic):**
+
+```typescript
+// SET key jobId NX EX ttlSeconds — null reply → ActiveJobConflictError
+const ACTIVE_JOB_TTL_SECONDS = 60 * 60 * 24; // match worst-case run; refreshLease for longer
+```
+
+**Release (compare-and-delete):**
+
+```typescript
+// Lua: if GET key == jobId then DEL key
+// No-op when lockPolicy is none (implementation skips Redis)
+```
+
+**Stale lock recovery:** On `ActiveJobConflictError`, read active `jobId` from Redis and load **`ProcessingJob`** from DB. If that job is terminal (`complete` / `failed`) or missing, **`DEL`** the key and **retry `acquire` once**. DB phase is durable truth; Redis is the fast gate.
+
+**Crash recovery:** TTL on the key clears orphaned locks when a worker dies before `release`. Worker may call **`refreshLease`** during long runs so TTL does not expire mid-job.
 
 | `lockPolicy` | On active job | On worker complete |
 | --- | --- | --- |
 | `none` | no-op | no-op |
-| `global_singleton` | throw `ActiveJobConflictError` | `release(domainKind)` in worker `finally` |
+| `global_singleton` | throw `ActiveJobConflictError` | `release(domainKind, jobId)` in worker `finally` (always call; no-op for `none`) |
 
-Lock is acquired **after** `createQueued` so a failed acquire does not block the domain without a job row. Orchestrator **releases and deletes the job** if enqueue fails after acquire.
+Lock is acquired **after** `createQueued`. Orchestrator **releases (when acquired) and deletes the job** if enqueue fails.
 
 ---
 
@@ -484,16 +512,16 @@ Key convention: e.g. `processing-errors/{jobId}.xlsx`. Bytes never go in DB or B
 `@Processor(ASYNC_PROCESSING_QUEUE)` — canonical steps:
 
 1. **Idempotency guard** — if job already `complete` or `failed` in DB, return (handles stray retries).
-2. **`updatePhase(jobId, "processing")`** — prefer conditional update (`WHERE phase = 'queued'`) so duplicate workers do not both enter domain logic.
+2. **`claimProcessingPhase(jobId)`** — conditional `queued` → `processing`; if `false`, return (duplicate worker lost the race).
 3. **`getManifestByManifestId(manifestId)`** from repository.
-4. **`verifyLocator`** per source; build **`Map<string, VerifiedProcessingSource>`**.
+4. **`verifyLocator`** per source; build **`Map<string, VerifiedProcessingSource>`** (track partial progress for cleanup on failure).
 5. **`domainRunner.run(verifiedSources, io)`** — `openStream` calls `sourceReader.openReadStream(source.verifiedLocator)`; `onProgress` calls `publishProgress` only.
 6. Map **`DomainRunResult`** → **`finalize`** (`validation_failed`: `phase: complete`, `outcome: validation_failed`).
 7. Store error blob via **`ProcessingErrorBlobStore`** when present; set `errorStorageKey`.
 8. **`publishTerminal`** so SSE reloads DB snapshot.
-9. Cleanup locators; **`ProcessingActiveJobLock.release(domainKind)`** when policy requires it.
+9. **`deleteLocator`** for every verified source (and any partial verify set on failure); **`release(domainKind, jobId)`** — always invoke; no-op when `lockPolicy` is `none`.
 
-On uncaught error after step 2: `finalize` with `phase: failed`, `publishTerminal`, `release` lock, rethrow (with `attempts: 1` no retry runs).
+On uncaught error after step 2: `finalize` with `phase: failed`, `publishTerminal`, then `finally` runs cleanup + lock release.
 
 ```typescript
 @Injectable()
@@ -501,19 +529,26 @@ On uncaught error after step 2: `finalize` with `phase: failed`, `publishTermina
 export class ProcessingProcessor extends WorkerHost {
   async process(job: Job<AsyncProcessingJobPayload>) {
     const { jobId, manifestId, domainKind } = job.data;
+    const verifiedForCleanup: VerifiedProcessingSource[] = [];
 
     const existing = await this.jobRepository.findById(jobId);
     if (existing?.phase === "complete" || existing?.phase === "failed") {
       return;
     }
 
-    await this.jobRepository.updatePhase(jobId, "processing");
+    const claimed = await this.jobRepository.claimProcessingPhase(jobId);
+    if (!claimed) {
+      return;
+    }
 
     try {
       const manifest = await this.jobRepository.getManifestByManifestId(manifestId);
       const registration = this.domainRegistry.getByDomainKind(manifest!.domainKind);
 
-      const verifiedSources = await this.buildVerifiedSources(manifest!.sources);
+      const verifiedSources = await this.buildVerifiedSources(
+        manifest!.sources,
+        verifiedForCleanup,
+      );
       const result = await registration.domainRunner.run(verifiedSources, {
         openStream: (source) =>
           this.sourceReader.openReadStream(source.verifiedLocator),
@@ -544,8 +579,10 @@ export class ProcessingProcessor extends WorkerHost {
       await this.progressPublisher.publishTerminal(jobId, { phase: "failed" });
       throw error;
     } finally {
-      await this.activeJobLock.release(domainKind);
-      // deleteLocator per verified source
+      for (const source of verifiedForCleanup) {
+        await this.sourceReader.deleteLocator(source.verifiedLocator);
+      }
+      await this.activeJobLock.release(domainKind, jobId);
     }
   }
 }
@@ -619,6 +656,7 @@ export class AsyncProcessingModule {}
 | **PostgreSQL** | `ProcessingJob`, `ProcessingManifest` — durable processing records |
 | **Redis (BullMQ)** | Job queue |
 | **Redis (pub/sub)** | `ProcessingProgressEvent` (live) + `ProcessingTerminalEvent` (terminal signal) |
+| **Redis (active lock)** | `async-processing:active:{domainKind}` — `global_singleton` admission control |
 | **Object store / disk** | Input blobs (upload layer) + error report blob (`errorStorageKey`) |
 
 ---
@@ -628,12 +666,13 @@ export class AsyncProcessingModule {}
 1. **Source-agnostic** — no upload types in orchestrator or worker.
 2. **Boundary at `startProcessing`** — nothing in this layer runs before that call.
 3. **Processing records in DB** — phase and outcome are durable; not Redis-only.
-4. **Redis for queue + live progress** — not the system of record for job history.
+4. **Redis for queue + live progress + active lock** — not the system of record for job history.
 5. **One repository for job + manifest** — no parallel manifest registry.
 6. **Verify in worker** — not at upload time; domain receives **`VerifiedProcessingSource`** only.
 7. **No domain row data in processing tables** — business persistence stays in domain layer.
 8. **No BullMQ retry after terminal finalize** — `attempts: 1` or worker idempotency guard.
-9. **Conditional phase transition** — `queued` → `processing` must be single-winner when duplicate workers exist.
+9. **Conditional phase transition** — `claimProcessingPhase` must be single-winner when duplicate workers exist.
+10. **BullMQ ≠ domain lock** — worker concurrency or per-domain queues do not replace `ProcessingActiveJobLock`.
 
 ---
 
@@ -652,6 +691,8 @@ export class AsyncProcessingModule {}
 | Default BullMQ retries on processing jobs | Double domain runs after `finalize` |
 | Acquire lock before job row exists | Failed acquire blocks domain with no rollback target |
 | Nest `ConflictException` in lock service | Throw `ActiveJobConflictError`; adapter maps to 409 |
+| BullMQ concurrency as `global_singleton` | Queues jobs instead of 409; use Redis lock at orchestrator |
+| Check-then-set active key without `SET NX` | Race allows two concurrent starts — use atomic acquire |
 
 ---
 
@@ -663,7 +704,7 @@ processing/
   async-processing.module.ts
   domain-registry.service.ts
   processing-orchestrator.service.ts
-  processing-active-job.lock.ts
+  processing-active-job.lock.ts          # Redis SET NX + compare-and-delete release
   processing-job.repository.ts           # Prisma — job + manifest
   processing-source.reader.ts
   processing-error-blob.store.ts
