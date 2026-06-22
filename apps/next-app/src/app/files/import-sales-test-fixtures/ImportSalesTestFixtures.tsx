@@ -63,6 +63,7 @@ export const ImportSalesTestFixtures = () => {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [lastJob, setLastJob] = useState<ProcessingJobResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isDownloadingErrors, setIsDownloadingErrors] = useState(false);
 
   const allSelected = UPLOAD_SLOTS.every(
     (slot) => selectedFiles[slot.sourceId],
@@ -101,11 +102,6 @@ export const ImportSalesTestFixtures = () => {
       const job = await waitForProcessingJob(jobId);
       setLastJob(job);
       setStatusMessage(formatJobSummary(job));
-
-      if (job.outcome === "validation_failed" && job.hasErrors) {
-        const report = await fetchProcessingErrors(jobId);
-        triggerValidationErrorDownload(jobId, report);
-      }
     } catch (error) {
       console.error("Sales import failed:", error);
       const message =
@@ -116,6 +112,32 @@ export const ImportSalesTestFixtures = () => {
       setIsRunning(false);
     }
   };
+
+  const handleDownloadErrors = async () => {
+    if (!lastJob?.hasErrors) {
+      return;
+    }
+
+    setIsDownloadingErrors(true);
+    setErrorMessage(null);
+
+    try {
+      const report = await fetchProcessingErrors(lastJob.jobId);
+      triggerValidationErrorDownload(lastJob.jobId, report);
+    } catch (error) {
+      console.error("Failed to download validation errors:", error);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to download validation errors",
+      );
+    } finally {
+      setIsDownloadingErrors(false);
+    }
+  };
+
+  const showErrorDownload =
+    lastJob?.outcome === "validation_failed" && lastJob.hasErrors;
 
   return (
     <div className="mx-auto max-w-4xl p-6">
@@ -197,11 +219,23 @@ export const ImportSalesTestFixtures = () => {
         <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-800 text-sm">
           <p className="font-medium">Last job</p>
           <p className="mt-1 font-mono text-xs">{formatJobSummary(lastJob)}</p>
-          {lastJob.outcome === "validation_failed" ? (
-            <p className="mt-2 text-amber-800">
-              Validation errors were saved — JSON error report download should
-              have started automatically.
-            </p>
+          {showErrorDownload ? (
+            <div className="mt-3 space-y-2">
+              <p className="text-amber-800">
+                Validation errors were saved to the database. Download the JSON
+                report to review them.
+              </p>
+              <button
+                type="button"
+                onClick={handleDownloadErrors}
+                disabled={isDownloadingErrors}
+                className="rounded-md bg-amber-600 px-4 py-2 font-medium text-sm text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isDownloadingErrors
+                  ? "Preparing download…"
+                  : "Download validation errors (JSON)"}
+              </button>
+            </div>
           ) : null}
         </div>
       ) : null}
