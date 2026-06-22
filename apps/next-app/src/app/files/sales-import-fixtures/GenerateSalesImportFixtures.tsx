@@ -93,8 +93,8 @@ export const GenerateSalesImportFixtures = () => {
             <div>
               <p className="font-medium">
                 <strong>productDescriptions.jsonl</strong> — upload slot{" "}
-                <code className="text-xs">productDescriptions</code>, 100k lines
-                (one JSON object per line)
+                <code className="text-xs">productDescriptions</code>,{" "}
+                {`5k unique sku/description lines (one per catalog SKU)`}
               </p>
               <ul className="mt-1 list-inside list-disc pl-2">
                 <li>
