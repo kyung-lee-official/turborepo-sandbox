@@ -1,8 +1,8 @@
 import { BullModule } from "@nestjs/bullmq";
 import { Module } from "@nestjs/common";
-import { PrismaModule } from "../recipes/prisma/prisma.module";
-import { RedisModule } from "../redis/redis.module";
-import { ASYNC_PROCESSING_QUEUE } from "./async-processing.types";
+import { PrismaModule } from "../../recipes/prisma/prisma.module";
+import { RedisModule } from "../../redis/redis.module";
+import { ASYNC_PROCESSING_QUEUE } from "../async-processing.types";
 import { DomainRegistry } from "./domain-registry.service";
 import { ProcessingController } from "./processing.controller";
 import { ProcessingProcessor } from "./processing.processor";

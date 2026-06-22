@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { RedisModule } from "../../redis/redis.module";
-import { AsyncProcessingCoreModule } from "../async-processing-core.module";
+import { AsyncProcessingCoreModule } from "../async-processing-core/async-processing-core.module";
 import { ApiStartProcessingAdapter } from "./api-start-processing.adapter";
 import { EventStartProcessingAdapter } from "./event-start-processing.adapter";
 import { ProcessingStartRequestedListener } from "./processing-start-requested.listener";

@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import type { Prisma } from "@repo/database";
-import { PrismaService } from "../recipes/prisma/prisma.service";
+import { PrismaService } from "../../recipes/prisma/prisma.service";
 import type {
   ProcessingJob,
   ProcessingOutcome,
   ProcessingPhase,
   ProcessingSource,
-} from "./async-processing.types";
+} from "../async-processing.types";
 
 @Injectable()
 export class ProcessingJobRepository {

@@ -868,20 +868,21 @@ export class AsyncProcessingModule {}
 
 ```text
 async-processing/
-  async-processing.types.ts
-  async-processing-core.module.ts        # orchestrator, worker, repo, SSE — engine
+  async-processing.types.ts              # shared types — core + adapters
   async-processing.module.ts             # umbrella: core + start-processing-adapters
-  domain-registry.service.ts
-  processing-orchestrator.service.ts
-  processing-active-job.lock.ts
-  processing-job.repository.ts
-  processing-source.reader.ts
-  processing-error-blob.store.ts
-  processing-progress-publisher.service.ts
-  processing-progress-sse.service.ts
-  processing.processor.ts
-  processing.controller.ts
-  start-processing-adapters/             # start-processing-adapters skill
+  async-processing-core/
+    async-processing-core.module.ts
+    domain-registry.service.ts
+    processing-orchestrator.service.ts
+    processing-active-job.lock.ts
+    processing-job.repository.ts
+    processing-source.reader.ts
+    processing-error-blob.store.ts
+    processing-progress-publisher.service.ts
+    processing-progress-sse.service.ts
+    processing.processor.ts
+    processing.controller.ts
+  start-processing-adapters/
     start-processing-adapters.module.ts
     upload-session.store.ts
     ...

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { StartProcessingInput } from "../async-processing.types";
 import { ActiveJobConflictError } from "../async-processing.types";
-import { ProcessingOrchestratorService } from "../processing-orchestrator.service";
+import { ProcessingOrchestratorService } from "../async-processing-core/processing-orchestrator.service";
 import { mapSessionSourcesToStartInput } from "./map-session-sources-to-start-input";
 import { processingStartRequestedSchema } from "./start-processing-input.schema";
 

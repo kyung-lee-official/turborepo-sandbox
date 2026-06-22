@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { RedisService } from "../redis/redis.service";
+import { RedisService } from "../../redis/redis.service";
 import type {
   ProcessingProgressEvent,
   ProcessingTerminalEvent,
-} from "./async-processing.types";
+} from "../async-processing.types";
 
 @Injectable()
 export class ProcessingProgressPublisher {

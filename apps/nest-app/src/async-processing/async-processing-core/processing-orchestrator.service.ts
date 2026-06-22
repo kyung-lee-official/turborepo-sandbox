@@ -8,7 +8,7 @@ import {
   type ProcessingSource,
   type SourceSpec,
   type StartProcessingInput,
-} from "./async-processing.types";
+} from "../async-processing.types";
 import { DomainRegistry } from "./domain-registry.service";
 import { ProcessingActiveJobLock } from "./processing-active-job.lock";
 import { ProcessingJobRepository } from "./processing-job.repository";

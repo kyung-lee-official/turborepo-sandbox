@@ -13,7 +13,7 @@ import * as COS from "cos-nodejs-sdk-v5";
 import type {
   SourceLocator,
   VerifiedSourceLocator,
-} from "./async-processing.types";
+} from "../async-processing.types";
 
 @Injectable()
 export class ProcessingSourceReader {

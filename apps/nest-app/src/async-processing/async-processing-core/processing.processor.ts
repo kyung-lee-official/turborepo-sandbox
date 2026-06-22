@@ -10,7 +10,7 @@ import {
   type ProcessingJob,
   type ProcessingSource,
   type VerifiedProcessingSource,
-} from "./async-processing.types";
+} from "../async-processing.types";
 import { DomainRegistry } from "./domain-registry.service";
 import { ProcessingActiveJobLock } from "./processing-active-job.lock";
 import { ProcessingErrorBlobStore } from "./processing-error-blob.store";

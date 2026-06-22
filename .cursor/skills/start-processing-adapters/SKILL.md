@@ -422,15 +422,20 @@ Nest under **`async-processing/`**. **`StartProcessingAdaptersModule`** imports 
 
 ```text
 async-processing/
-  async-processing-core.module.ts
+  async-processing.types.ts              # shared types
   async-processing.module.ts             # umbrella — AppModule imports this
+  async-processing-core/
+    async-processing-core.module.ts
+    processing-orchestrator.service.ts
+    processing.processor.ts
+    ...
   start-processing-adapters/
     start-processing-adapters.module.ts
     upload-session.types.ts
-    upload-session.store.ts              # Redis or DB — canonical sources for deferred start
+    upload-session.store.ts
     start-processing-input.schema.ts
     map-session-sources-to-start-input.ts
-    start-processing.controller.ts       # POST .../start — 202
+    start-processing.controller.ts
     api-start-processing.adapter.ts
     processing-start-requested.listener.ts
     event-start-processing.adapter.ts

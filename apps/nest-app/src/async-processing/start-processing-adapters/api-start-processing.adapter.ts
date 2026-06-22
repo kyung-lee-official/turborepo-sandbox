@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { ActiveJobConflictError } from "../async-processing.types";
-import { ProcessingOrchestratorService } from "../processing-orchestrator.service";
+import { ProcessingOrchestratorService } from "../async-processing-core/processing-orchestrator.service";
 import { mapSessionSourcesToStartInput } from "./map-session-sources-to-start-input";
 import { startApiBodySchema } from "./start-processing-input.schema";
 import { UploadSessionStore } from "./upload-session.store";

@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { RedisService } from "../redis/redis.service";
+import { RedisService } from "../../redis/redis.service";
 import {
   ACTIVE_JOB_TTL_SECONDS,
   ActiveJobConflictError,
   STALE_PROCESSING_MS,
-} from "./async-processing.types";
+} from "../async-processing.types";
 import { ProcessingJobRepository } from "./processing-job.repository";
 
 const RELEASE_LOCK_SCRIPT = `

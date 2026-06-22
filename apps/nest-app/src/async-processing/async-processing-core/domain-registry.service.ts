@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import type { DomainKindRegistration } from "./async-processing.types";
+import type { DomainKindRegistration } from "../async-processing.types";
 
 @Injectable()
 export class DomainRegistry {

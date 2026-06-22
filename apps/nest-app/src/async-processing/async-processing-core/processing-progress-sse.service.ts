@@ -2,7 +2,7 @@ import { PassThrough, type Readable } from "node:stream";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
-import { SSE_IDLE_TIMEOUT_MS } from "./async-processing.types";
+import { SSE_IDLE_TIMEOUT_MS } from "../async-processing.types";
 import { ProcessingJobRepository } from "./processing-job.repository";
 
 type JobSnapshot = {
