@@ -52,21 +52,60 @@ export const GenerateXlsx = () => {
             bundles aligned with async import upload slots. Each bundle
             includes:
           </p>
-          <ul className="list-inside list-disc space-y-1 text-gray-700 text-sm">
-            <li>
-              <strong>salesData.xlsx</strong> — multi-sheet (Products +
-              LineItems), ~50k rows per sheet
-            </li>
-            <li>
-              <strong>inventory.xlsx</strong> — Inventory sheet (SKU, Inventory
-              Qty), ~50k rows
-            </li>
-            <li>
-              <strong>productDescriptions.jsonl</strong> — 100k lines (
-              <code className="text-xs">sku</code>,{" "}
-              <code className="text-xs">description</code>)
-            </li>
-          </ul>
+          <div className="space-y-4 text-gray-700 text-sm">
+            <div>
+              <p className="font-medium">
+                <strong>salesData.xlsx</strong> — upload slot{" "}
+                <code className="text-xs">salesData</code>, ~50k data rows per
+                sheet (plus header row)
+              </p>
+              <ul className="mt-1 list-inside list-disc space-y-1 pl-2">
+                <li>
+                  Worksheet <strong>Products</strong>:{" "}
+                  <code className="text-xs">SKU</code>,{" "}
+                  <code className="text-xs">Product Name</code>,{" "}
+                  <code className="text-xs">Category</code>,{" "}
+                  <code className="text-xs">Unit Price</code>
+                </li>
+                <li>
+                  Worksheet <strong>LineItems</strong>:{" "}
+                  <code className="text-xs">Order ID</code>,{" "}
+                  <code className="text-xs">SKU</code>,{" "}
+                  <code className="text-xs">Quantity</code>,{" "}
+                  <code className="text-xs">Sale Date</code> (omitted in{" "}
+                  <strong>fail_fast</strong> bundles)
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">
+                <strong>inventory.xlsx</strong> — upload slot{" "}
+                <code className="text-xs">inventory</code>, ~50k data rows
+              </p>
+              <ul className="mt-1 list-inside list-disc pl-2">
+                <li>
+                  Worksheet <strong>Inventory</strong>:{" "}
+                  <code className="text-xs">SKU</code>,{" "}
+                  <code className="text-xs">Inventory Qty</code>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium">
+                <strong>productDescriptions.jsonl</strong> — upload slot{" "}
+                <code className="text-xs">productDescriptions</code>, 100k lines
+                (one JSON object per line)
+              </p>
+              <ul className="mt-1 list-inside list-disc pl-2">
+                <li>
+                  <code className="text-xs">sku</code> (string)
+                </li>
+                <li>
+                  <code className="text-xs">description</code> (string)
+                </li>
+              </ul>
+            </div>
+          </div>
           <div className="border-green-400 border-l-4 bg-green-50 p-3">
             <p className="text-green-700 text-sm">
               <strong>perfect:</strong> All slots valid — expected outcome{" "}
