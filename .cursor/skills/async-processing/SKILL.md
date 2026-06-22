@@ -14,9 +14,9 @@ description: >-
 
 **Processing records** (`ProcessingJob`, `ProcessingManifest`) persist in **DB**. **Redis** is for **BullMQ** and **live domain progress** (SSE during the run). Domain business logic and **`ErrorDetail`** — plugin skills.
 
-**Storage verification** runs in the worker after `updatePhase`, before `domainRunner.run`. Upload and start API/event paths are upstream.
+**Storage verification** runs in the worker after **`claimProcessingPhase`**, before **`domainRunner.run`**. Upload and start API/event paths are upstream.
 
-Implement under **`processing/`** (see [Suggested module layout](#suggested-module-layout)). Async import uses **only** this skill set — handoff, upload-*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
+Implement under **`processing/`** (see [Suggested module layout](#suggested-module-layout)). Async import uses **only** this skill set — handoff, upload-\*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
 
 ---
 
@@ -80,7 +80,7 @@ Solid arrows: this skill. Dashed arrows: handoff layer — see [import-upload-ha
 | **[ProcessingPhase](#processing-lifecycle-types)**                                             | `queued` \| `processing` \| `complete` \| `failed`                      |
 | **[ProcessingOutcome](#processing-lifecycle-types)**                                           | `success` \| `validation_failed` \| `failed`                            |
 | **[jobId](#processingorchestratorservice)** / **[manifestId](#processingorchestratorservice)** | Created in `startProcessing`; `jobId` === `ProcessingJob.id`            |
-| **[storage verification](#worker)**                                                            | Worker step 4 — stat / HEAD each `SourceLocator` before domain run      |
+| **[storage verification](#worker)**                                                            | Worker step 6 — stat / HEAD each `SourceLocator` before domain run      |
 | **[ASYNC_PROCESSING_QUEUE](#job-queue-bullmq)**                                                | BullMQ queue name (`"async-processing"`)                                |
 | **[ProcessingProgressEvent](#live-progress-and-sse)**                                          | Ephemeral Redis progress payload                                        |
 | **[ProcessingTerminalEvent](#live-progress-and-sse)**                                          | Redis signal for SSE to reload terminal snapshot from DB                |
@@ -202,7 +202,7 @@ type AsyncProcessingJobPayload = {
 /** Published on Redis during domainRunner.run — not persisted per tick */
 type ProcessingProgressEvent = {
   jobId: string;
-  progress: unknown; // domain/plugin shape, e.g. TabularProcessingProgress
+  progress: unknown; // domain/plugin shape, e.g. TabularProcessingProgress, JsonlProcessingProgress
 };
 
 /** Published by worker after finalize — SSE reloads full snapshot from DB */
@@ -449,8 +449,10 @@ interface ProcessingActiveJobLock {
   acquire(domainKind: string, jobId: string): Promise<void>; // throws ActiveJobConflictError
   /** Delete key only when value matches jobId */
   release(domainKind: string, jobId: string): Promise<void>;
-  /** Optional — extend TTL during long domain runs */
-  refreshLease?(domainKind: string, jobId: string): Promise<void>;
+  /** True when Redis key value equals jobId — orphan lock cleanup after terminal job */
+  isHeldBy(jobId: string, domainKind: string): Promise<boolean>;
+  /** Extend TTL during long runs — required for global_singleton */
+  refreshLease(domainKind: string, jobId: string): Promise<void>;
 }
 ```
 
@@ -470,9 +472,18 @@ const ACTIVE_JOB_TTL_SECONDS = 60 * 60 * 24; // match worst-case run; refreshLea
 // No-op when lockPolicy is none (implementation skips Redis)
 ```
 
-**Stale lock recovery:** On `ActiveJobConflictError`, read active `jobId` from Redis and load **`ProcessingJob`** from DB. If that job is terminal (`complete` / `failed`) or missing, **`DEL`** the key and **retry `acquire` once**. DB phase is durable truth; Redis is the fast gate.
+**Stale lock recovery (orchestrator `acquire`):** On **`ActiveJobConflictError`**, read active **`jobId`** from Redis and load **`ProcessingJob`** from DB.
 
-**Crash recovery:** TTL on the key clears orphaned locks when a worker dies before `release`. Worker may call **`refreshLease`** during long runs so TTL does not expire mid-job.
+| DB state                                                                                           | Action                                                            |
+| -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Job **missing**                                                                                    | **`DEL`** key → **retry `acquire` once**                          |
+| **`complete`** or **`failed`**                                                                     | **`DEL`** key → **retry `acquire` once**                          |
+| **`processing`** and **`updatedAt`** older than **`STALE_PROCESSING_MS`** (e.g. 2× worst-case run) | **`finalize`** `failed`, **`DEL`** key → **retry `acquire` once** |
+| **`processing`** and fresh, or **`queued`** with same active key                                   | **Re-throw** **`ActiveJobConflictError`**                         |
+
+DB phase is durable truth; Redis is the fast gate. Tune **`STALE_PROCESSING_MS`** per domain.
+
+**Crash recovery:** TTL on the key clears orphaned locks when a worker dies before **`release`**. Worker **must** call **`refreshLease(domainKind, jobId)`** at domain-run start and periodically during long runs (e.g. throttled from **`onProgress`** or a timer) so TTL does not expire during queue wait + processing.
 
 | `lockPolicy`       | On active job                  | On worker complete                                                               |
 | ------------------ | ------------------------------ | -------------------------------------------------------------------------------- |
@@ -513,25 +524,34 @@ Key convention: e.g. `processing-errors/{jobId}.xlsx`. Bytes never go in DB or B
 
 `@Processor(ASYNC_PROCESSING_QUEUE)` — canonical steps:
 
-1. **Idempotency guard** — if job already `complete` or `failed` in DB, return (handles stray retries).
-2. **`claimProcessingPhase(jobId)`** — conditional `queued` → `processing`; if `false`, return (duplicate worker lost the race).
-3. **`getManifestByManifestId(manifestId)`** from repository.
-4. **`verifyLocator`** per source; build **`Map<string, VerifiedProcessingSource>`** (track partial progress for cleanup on failure).
-5. **`domainRunner.run(verifiedSources, io)`** — `openStream` calls `sourceReader.openReadStream(source.verifiedLocator)`; `onProgress` calls `publishProgress` only.
-6. Map **`DomainRunResult`** → **`finalize`** (`validation_failed`: `phase: complete`, `outcome: validation_failed`).
-7. Store error blob via **`ProcessingErrorBlobStore`** when present; set `errorStorageKey`.
-8. **`publishTerminal`** so SSE reloads DB snapshot.
-9. **`deleteLocator`** for every verified source (and any partial verify set on failure); **`release(domainKind, jobId)`** — always invoke; no-op when `lockPolicy` is `none`.
+1. **Idempotency guard** — if job already `complete` or `failed` in DB, run **orphan lock cleanup** (same as step 2 when terminal) and return.
+2. **`claimProcessingPhase(jobId)`** — conditional `queued` → `processing`.
+   - If **`false`**: load job — when phase is terminal and Redis lock value equals this **`jobId`**, **`release`**; return.
+3. When **`lockPolicy.type === "global_singleton"`**, **`refreshLease(domainKind, jobId)`** — first extension after claim (covers queue wait since orchestrator **`acquire`**).
+4. **`getManifestByManifestId(manifestId)`** — if **null**, **`finalize`** `failed`, **`publishTerminal`** (best effort), return.
+5. Set **`domainKind = manifest.domainKind`** (authoritative — not BullMQ payload alone).
+6. **`verifyLocator`** per source; build **`Map<string, VerifiedProcessingSource>`** (track partial set in **`verifiedForCleanup`**).
+7. **`refreshLease`** again before domain run when **`global_singleton`**.
+8. **`domainRunner.run`** — `openStream` → **`openReadStream`**; **`onProgress`** → **`publishProgress`**, and **throttled** **`refreshLease`** (e.g. at most once per 60s — not every tick).
+9. Store error blob when present; compute **`errorStorageKey`**.
+10. **`finalize`** `phase: complete` with outcome from **`DomainRunResult`**.
+11. **`publishTerminal`** `{ phase: "complete" }`.
+12. **`finally`** (always): **`release(domainKind, jobId)`** first; then **best-effort** **`deleteLocator`** (log per-source failures).
 
-On uncaught error after step 2: `finalize` with `phase: failed`, `publishTerminal`, then `finally` runs cleanup + lock release.
+**Error paths**
+
+- **Domain throw (step 8):** **`finalize`** `failed`, **`publishTerminal`** `{ phase: "failed" }` (best effort), rethrow.
+- **Post-domain failure (steps 9–11):** log; **retry `finalize` once** with the same **`DomainRunResult`** when the domain succeeded. **Do not** map to `failed` when a valid **`DomainRunResult`** is already in scope. If retry fails, **`publishTerminal`** (best effort) after checking DB phase; leave row as-is when already terminal.
+- **Never** wrap steps 9–11 in the same **`catch`** as step 8.
 
 ```typescript
 @Injectable()
 @Processor(ASYNC_PROCESSING_QUEUE)
 export class ProcessingProcessor extends WorkerHost {
   async process(job: Job<AsyncProcessingJobPayload>) {
-    const { jobId, manifestId, domainKind } = job.data;
+    const { jobId, manifestId } = job.data;
     const verifiedForCleanup: VerifiedProcessingSource[] = [];
+    let domainKind = job.data.domainKind; // fallback until manifest loads
 
     const existing = await this.jobRepository.findById(jobId);
     if (existing?.phase === "complete" || existing?.phase === "failed") {
@@ -540,60 +560,117 @@ export class ProcessingProcessor extends WorkerHost {
 
     const claimed = await this.jobRepository.claimProcessingPhase(jobId);
     if (!claimed) {
+      const row = await this.jobRepository.findById(jobId);
+      if (
+        row &&
+        (row.phase === "complete" || row.phase === "failed") &&
+        (await this.activeJobLock.isHeldBy(jobId, row.domainKind))
+      ) {
+        await this.activeJobLock.release(row.domainKind, jobId);
+      }
       return;
     }
 
     try {
       const manifest =
         await this.jobRepository.getManifestByManifestId(manifestId);
-      const registration = this.domainRegistry.getByDomainKind(
-        manifest!.domainKind,
-      );
+      if (!manifest) {
+        await this.jobRepository.finalize(jobId, {
+          phase: "failed",
+          outcome: "failed",
+          completedAt: new Date(),
+        });
+        await this.progressPublisher.publishTerminal(jobId, {
+          phase: "failed",
+        });
+        return;
+      }
+
+      domainKind = manifest.domainKind;
+      const registration = this.domainRegistry.getByDomainKind(domainKind);
 
       const verifiedSources = await this.buildVerifiedSources(
-        manifest!.sources,
+        manifest.sources,
         verifiedForCleanup,
       );
-      const result = await registration.domainRunner.run(verifiedSources, {
-        openStream: (source) =>
-          this.sourceReader.openReadStream(source.verifiedLocator),
-        onProgress: (detail) =>
-          this.progressPublisher.publishProgress(jobId, detail),
-      });
 
-      const errorStorageKey =
-        result.outcome === "validation_failed" && result.errorBlob
-          ? await this.errorBlobStore.putErrorBlob(jobId, result.errorBlob)
-          : undefined;
-
-      await this.jobRepository.finalize(jobId, {
-        phase: "complete",
-        outcome: result.outcome,
-        processedCount: result.processedCount,
-        errorCount: result.errorCount,
-        errorStorageKey,
-        completedAt: new Date(),
-      });
-      await this.progressPublisher.publishTerminal(jobId, {
-        phase: "complete",
-      });
-    } catch (error) {
-      await this.jobRepository.finalize(jobId, {
-        phase: "failed",
-        outcome: "failed",
-        completedAt: new Date(),
-      });
-      await this.progressPublisher.publishTerminal(jobId, { phase: "failed" });
-      throw error;
-    } finally {
-      for (const source of verifiedForCleanup) {
-        await this.sourceReader.deleteLocator(source.verifiedLocator);
+      if (registration.lockPolicy.type === "global_singleton") {
+        await this.activeJobLock.refreshLease(domainKind, jobId);
       }
+
+      let result: DomainRunResult;
+      try {
+        result = await registration.domainRunner.run(verifiedSources, {
+          openStream: (source) =>
+            this.sourceReader.openReadStream(source.verifiedLocator),
+          onProgress: async (detail) => {
+            await this.progressPublisher.publishProgress(jobId, detail);
+            if (registration.lockPolicy.type === "global_singleton") {
+              await this.activeJobLock.refreshLease(domainKind, jobId);
+            }
+          },
+        });
+      } catch (domainError) {
+        await this.jobRepository.finalize(jobId, {
+          phase: "failed",
+          outcome: "failed",
+          completedAt: new Date(),
+        });
+        await this.progressPublisher.publishTerminal(jobId, {
+          phase: "failed",
+        });
+        throw domainError;
+      }
+
+      try {
+        const errorStorageKey =
+          result.outcome === "validation_failed" && result.errorBlob
+            ? await this.errorBlobStore.putErrorBlob(jobId, result.errorBlob)
+            : undefined;
+
+        await this.jobRepository.finalize(jobId, {
+          phase: "complete",
+          outcome: result.outcome,
+          processedCount: result.processedCount,
+          errorCount: result.errorCount,
+          errorStorageKey,
+          completedAt: new Date(),
+        });
+        await this.progressPublisher.publishTerminal(jobId, {
+          phase: "complete",
+        });
+      } catch (postDomainError) {
+        this.logger.error(
+          `Post-domain finalize failed for job ${jobId}`,
+          postDomainError,
+        );
+        const row = await this.jobRepository.findById(jobId);
+        if (row?.phase === "processing") {
+          await this.jobRepository.finalize(jobId, {
+            phase: "failed",
+            outcome: "failed",
+            completedAt: new Date(),
+          });
+        }
+      }
+    } finally {
       await this.activeJobLock.release(domainKind, jobId);
+      for (const source of verifiedForCleanup) {
+        try {
+          await this.sourceReader.deleteLocator(source.verifiedLocator);
+        } catch (cleanupError) {
+          this.logger.warn(
+            `deleteLocator failed for job ${jobId}`,
+            cleanupError,
+          );
+        }
+      }
     }
   }
 }
 ```
+
+Add **`isHeldBy(jobId, domainKind)`** on **`ProcessingActiveJobLock`** (compare Redis key value) for step 2 orphan cleanup — or inline **`GET`** + compare in the worker.
 
 ---
 
@@ -611,13 +688,16 @@ interface ProcessingProgressSseService {
 1. Client opens `GET jobs/:jobId/events`.
 2. Handler loads **`ProcessingJob`** from DB — if already `complete` or `failed`, emit one snapshot and close.
 3. Subscribe to progress and terminal Redis channels for `jobId`.
-4. On **progress** — forward `{ jobId, progress }` to client (domain shape).
+4. On **progress** — forward `{ jobId, progress }` to client (domain shape); reset idle timer.
 5. On **terminal** — **reload `ProcessingJob` from DB**, emit full snapshot (`phase`, `outcome`, counts, `errorStorageKey`), close stream.
 6. Heartbeat while subscribed; unsubscribe on client disconnect.
+7. **Idle fallback** — if no terminal event within **`SSE_IDLE_TIMEOUT_MS`** (e.g. 60s) after last progress/heartbeat, **reload `ProcessingJob` from DB**:
+   - If terminal → emit snapshot and close.
+   - If still `queued` or `processing` → emit current DB snapshot (optional) and keep subscribed, or close with guidance to poll **`GET jobs/:jobId`**.
 
-Worker publishes **terminal** immediately after successful `finalize` (including `validation_failed` with `phase: complete`).
+Worker publishes **terminal** immediately after successful **`finalize`** (including `validation_failed` with `phase: complete`). Clients should still poll **`GET jobs/:jobId`** if SSE closes without a terminal snapshot.
 
-Client upload/start sequences: [import-upload-handoff](../import-upload-handoff/SKILL.md). Poll **`GET jobs/:jobId`** after SSE closes for history.
+Client upload/start sequences: [import-upload-handoff](../import-upload-handoff/SKILL.md).
 
 ---
 
@@ -680,27 +760,32 @@ export class AsyncProcessingModule {}
 8. **No BullMQ retry after terminal finalize** — `attempts: 1` or worker idempotency guard.
 9. **Conditional phase transition** — `claimProcessingPhase` must be single-winner when duplicate workers exist.
 10. **BullMQ ≠ domain lock** — worker concurrency or per-domain queues do not replace `ProcessingActiveJobLock`.
+11. **Lock release before locator cleanup** — **`finally`** releases Redis lock even when **`deleteLocator`** fails.
+12. **Separate domain vs post-domain errors** — post-success **`finalize`** must not be overwritten by a broad **`catch`**.
 
 ---
 
 ## What not to do
 
-| Anti-pattern                               | Why                                                        |
-| ------------------------------------------ | ---------------------------------------------------------- |
-| `Import` in processing/domain type names   | Use `DomainRunner`, `domainKind`, `processedCount`         |
-| Separate manifest registry + repository    | Single `ProcessingJobRepository` (Prisma)                  |
-| Redis-only job history                     | DB holds durable `ProcessingJob`                           |
-| Write domain progress every tick to DB     | Redis pub/sub for live SSE                                 |
-| Business rows in `ProcessingJob`           | Domain layer owns domain models                            |
-| File bytes on BullMQ job or in DB JSON     | Locators in manifest; blobs in object store                |
-| API/event entry points in this module      | Belong in import-upload-handoff                            |
-| Re-verify locators inside `openStream`     | Worker verifies once; pass `verifiedLocator`               |
-| Default BullMQ retries on processing jobs  | Double domain runs after `finalize`                        |
-| Acquire lock before job row exists         | Failed acquire blocks domain with no rollback target       |
-| Nest `ConflictException` in lock service   | Throw `ActiveJobConflictError`; adapter maps to 409        |
-| BullMQ concurrency as `global_singleton`   | Queues jobs instead of 409; use Redis lock at orchestrator |
-| Check-then-set active key without `SET NX` | Race allows two concurrent starts — use atomic acquire     |
-| Redis-buffer job meta + upload bytes stack | Use DB `ProcessingJob`, object-store locators, handoff skills |
+| Anti-pattern                                        | Why                                                           |
+| --------------------------------------------------- | ------------------------------------------------------------- |
+| `Import` in processing/domain type names            | Use `DomainRunner`, `domainKind`, `processedCount`            |
+| Separate manifest registry + repository             | Single `ProcessingJobRepository` (Prisma)                     |
+| Redis-only job history                              | DB holds durable `ProcessingJob`                              |
+| Write domain progress every tick to DB              | Redis pub/sub for live SSE                                    |
+| Business rows in `ProcessingJob`                    | Domain layer owns domain models                               |
+| File bytes on BullMQ job or in DB JSON              | Locators in manifest; blobs in object store                   |
+| API/event entry points in this module               | Belong in import-upload-handoff                               |
+| Re-verify locators inside `openStream`              | Worker verifies once; pass `verifiedLocator`                  |
+| Default BullMQ retries on processing jobs           | Double domain runs after `finalize`                           |
+| Acquire lock before job row exists                  | Failed acquire blocks domain with no rollback target          |
+| Nest `ConflictException` in lock service            | Throw `ActiveJobConflictError`; adapter maps to 409           |
+| BullMQ concurrency as `global_singleton`            | Queues jobs instead of 409; use Redis lock at orchestrator    |
+| Check-then-set active key without `SET NX`          | Race allows two concurrent starts — use atomic acquire        |
+| Redis-buffer job meta + upload bytes stack          | Use DB `ProcessingJob`, object-store locators, handoff skills |
+| Broad try/catch around finalize + publishTerminal   | Post-domain errors overwrite terminal success rows            |
+| deleteLocator before release in finally             | Locator failure blocks lock release — release first           |
+| Optional refreshLease on long global_singleton runs | TTL expiry allows double start mid-job                        |
 
 ---
 
