@@ -418,9 +418,14 @@ Local multipart: [upload-local-multipart](../upload-local-multipart/SKILL.md).
 
 ## Suggested module layout
 
+Nest under **`async-processing/`**. **`StartProcessingAdaptersModule`** imports **`AsyncProcessingCoreModule`**; the umbrella **`AsyncProcessingModule`** imports both. Upload-* modules import **`AsyncProcessingModule`** (or **`UploadSessionStore`** via that export) to call **`save`**.
+
 ```text
-import/
+async-processing/
+  async-processing-core.module.ts
+  async-processing.module.ts             # umbrella — AppModule imports this
   start-processing-adapters/
+    start-processing-adapters.module.ts
     upload-session.types.ts
     upload-session.store.ts              # Redis or DB — canonical sources for deferred start
     start-processing-input.schema.ts
@@ -429,7 +434,7 @@ import/
     api-start-processing.adapter.ts
     processing-start-requested.listener.ts
     event-start-processing.adapter.ts
-  upload/
+  upload/                                # upload-* skills (future)
     local-multipart/
     s3-direct/
     cos-direct/

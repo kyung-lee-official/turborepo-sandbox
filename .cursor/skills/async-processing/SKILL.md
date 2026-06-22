@@ -16,7 +16,7 @@ description: >-
 
 **Storage verification** runs in the worker after **`claimProcessingPhase`**, before **`domainRunner.run`**. Upload and start API/event paths are upstream.
 
-Implement under **`processing/`** (see [Suggested module layout](#suggested-module-layout)). Async import uses **only** this skill set — start-processing-adapters, upload-\*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
+Implement under **`async-processing/`** (see [Suggested module layout](#suggested-module-layout)). **`AppModule`** imports **`AsyncProcessingModule`** only (umbrella). Async import uses **only** this skill set — start-processing-adapters, upload-\*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
 
 ---
 
@@ -764,9 +764,12 @@ Use **BullMQ** via `@nestjs/bullmq` for async dispatch after `startProcessing`.
 
 ### Module registration
 
+**Core** (`AsyncProcessingCoreModule`) — orchestrator, worker, job repo, SSE. **Umbrella** (`AsyncProcessingModule`) imports core plus [start-processing-adapters](../start-processing-adapters/SKILL.md); **`AppModule`** imports the umbrella only.
+
 ```typescript
 @Module({
   imports: [
+    PrismaModule,
     RedisModule,
     BullModule.registerQueue({ name: ASYNC_PROCESSING_QUEUE }),
   ],
@@ -781,9 +784,22 @@ Use **BullMQ** via `@nestjs/bullmq` for async dispatch after `startProcessing`.
     ProcessingProcessor,
     DomainRegistry,
   ],
+  exports: [
+    ProcessingOrchestratorService,
+    DomainRegistry,
+    ProcessingJobRepository,
+  ],
+})
+export class AsyncProcessingCoreModule {}
+
+@Module({
+  imports: [AsyncProcessingCoreModule, StartProcessingAdaptersModule],
+  exports: [AsyncProcessingCoreModule, StartProcessingAdaptersModule],
 })
 export class AsyncProcessingModule {}
 ```
+
+`StartProcessingAdaptersModule` imports **`AsyncProcessingCoreModule`** (not the umbrella) to avoid a circular dependency.
 
 ### Queue payload rules
 
@@ -851,18 +867,24 @@ export class AsyncProcessingModule {}
 ## Suggested module layout
 
 ```text
-processing/
+async-processing/
   async-processing.types.ts
-  async-processing.module.ts
+  async-processing-core.module.ts        # orchestrator, worker, repo, SSE — engine
+  async-processing.module.ts             # umbrella: core + start-processing-adapters
   domain-registry.service.ts
   processing-orchestrator.service.ts
-  processing-active-job.lock.ts          # Redis SET NX + compare-and-delete release
-  processing-job.repository.ts           # Prisma — job + manifest
+  processing-active-job.lock.ts
+  processing-job.repository.ts
   processing-source.reader.ts
   processing-error-blob.store.ts
   processing-progress-publisher.service.ts
   processing-progress-sse.service.ts
   processing.processor.ts
+  processing.controller.ts
+  start-processing-adapters/             # start-processing-adapters skill
+    start-processing-adapters.module.ts
+    upload-session.store.ts
+    ...
 ```
 
 Prisma schema — `packages/database/prisma/schema.prisma` (or app-owned schema). Run **`prisma generate`** after edits; user applies migrations.
