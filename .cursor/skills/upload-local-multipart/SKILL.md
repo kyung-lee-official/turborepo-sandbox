@@ -51,9 +51,9 @@ Inject **`UploadSessionStore`** from handoff — do not duplicate session persis
 | Term | Meaning |
 | ---- | ------- |
 | **`LocalUploadSession`** | Per-request **form fields**: `domainKind`, `autoStart`, optional client `uploadSessionId` hint |
-| **`UploadSession`** | Persisted record in handoff store — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-sources) |
+| **`UploadSession`** | Persisted record in handoff store — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-types) |
 | **`sourceId`** | Multipart **file** field name — must match domain **`sourceSpecs`** |
-| **`UploadHandoffSources`** | Built server-side — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-sources) |
+| **`UploadHandoffSources`** | Built server-side — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-types) |
 | **`uploadSessionId`** | Server id returned to client; client sends it on **`POST .../start`** (server generates if omitted) |
 
 ---
@@ -215,7 +215,7 @@ const sources: UploadHandoffSources = {
 };
 ```
 
-Type: [import-upload-handoff — Handoff sources](../import-upload-handoff/SKILL.md#handoff-sources).
+Type: [import-upload-handoff — Handoff types](../import-upload-handoff/SKILL.md#handoff-types).
 
 ---
 
