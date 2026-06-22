@@ -8,7 +8,7 @@ import {
   PARTIAL_INVALID_RATE,
   PRODUCT_NAME_SUFFIXES,
 } from "./sales-fixture.constants";
-import { skuFromPool, type SkuPool } from "./sku-pool";
+import { type SkuPool, skuFromPool } from "./sku-pool";
 
 type BuildProductDescriptionsOptions = {
   filepath: string;

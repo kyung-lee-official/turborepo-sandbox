@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common";
+import { SalesImportFixturesController } from "./sales-import-fixtures.controller";
 import { GenerateTestFixturesService } from "./services/generate-test-fixtures/generate-test-fixtures.service";
-import { UploadLargeXlsxController } from "./upload-large-xlsx.controller";
 
 @Module({
-  controllers: [UploadLargeXlsxController],
+  controllers: [SalesImportFixturesController],
   providers: [GenerateTestFixturesService],
 })
-export class UploadLargeXlsxModule {}
+export class SalesImportFixturesModule {}

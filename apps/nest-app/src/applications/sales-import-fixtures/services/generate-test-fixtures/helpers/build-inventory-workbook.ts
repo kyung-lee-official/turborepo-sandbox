@@ -8,7 +8,7 @@ import {
   PARTIAL_INVALID_RATE,
   ROWS_PER_SHEET,
 } from "./sales-fixture.constants";
-import { skuFromPool, type SkuPool } from "./sku-pool";
+import { type SkuPool, skuFromPool } from "./sku-pool";
 
 type BuildInventoryOptions = {
   filepath: string;
@@ -31,7 +31,11 @@ export async function buildInventoryWorkbook(
     width: 18,
   }));
 
-  for (let batchStart = 0; batchStart < ROWS_PER_SHEET; batchStart += EXCEL_BATCH_SIZE) {
+  for (
+    let batchStart = 0;
+    batchStart < ROWS_PER_SHEET;
+    batchStart += EXCEL_BATCH_SIZE
+  ) {
     const batch: Record<string, string | number>[] = [];
     const batchEnd = Math.min(batchStart + EXCEL_BATCH_SIZE, ROWS_PER_SHEET);
 

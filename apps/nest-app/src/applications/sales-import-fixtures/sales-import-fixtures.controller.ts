@@ -5,11 +5,11 @@ import { GenerateTestFixturesService } from "./services/generate-test-fixtures/g
 import {
   generateTestFixturesApiBody,
   generateTestFixturesApiOperation,
-} from "./swagger/upload-large-xlsx.swagger";
+} from "./swagger/sales-import-fixtures.swagger";
 
-@ApiTags("Upload Large Xlsx")
-@Controller("applications/upload-large-xlsx")
-export class UploadLargeXlsxController {
+@ApiTags("Sales Import Fixtures")
+@Controller("applications/sales-import-fixtures")
+export class SalesImportFixturesController {
   constructor(
     private readonly generateTestFixturesService: GenerateTestFixturesService,
   ) {}

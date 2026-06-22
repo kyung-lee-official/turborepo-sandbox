@@ -36,10 +36,10 @@ export const filesBlockLinks = [
       "Tencent COS demos: direct browser upload with STS credentials, list bucket objects, signed URL download, plus a deprecated server-relay upload.",
   },
   {
-    link: "/files/upload-large-xlsx-to-database",
-    text: "generate large xlsx test data",
+    link: "/files/sales-import-fixtures",
+    text: "generate sales import test fixtures",
     description:
-      "Generate 500k-row valid and invalid Excel test files via Nest and save them under apps/nest-app/temp.",
+      "Generate sales-import fixture bundles (XLSX + JSONL) for async import testing and save them under apps/nest-app/temp.",
   },
   {
     link: "/files/upload-multiple-excel",

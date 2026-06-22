@@ -17,7 +17,7 @@ function formatBundleSummary(bundle: ScenarioBundle): string {
   );
 }
 
-export const GenerateXlsx = () => {
+export const GenerateSalesImportFixtures = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const generateFixtures = async () => {

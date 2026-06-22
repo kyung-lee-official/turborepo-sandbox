@@ -9,7 +9,7 @@ import {
   ROWS_PER_SHEET,
   SALES_DATA_SHEETS,
 } from "./sales-fixture.constants";
-import { skuFromPool, unknownSku, type SkuPool } from "./sku-pool";
+import { type SkuPool, skuFromPool, unknownSku } from "./sku-pool";
 
 type BuildSalesDataOptions = {
   filepath: string;
@@ -40,7 +40,11 @@ async function writeProductsSheet(
     style: header === "Unit Price" ? { numFmt: "#,##0.00" } : undefined,
   }));
 
-  for (let batchStart = 0; batchStart < ROWS_PER_SHEET; batchStart += EXCEL_BATCH_SIZE) {
+  for (
+    let batchStart = 0;
+    batchStart < ROWS_PER_SHEET;
+    batchStart += EXCEL_BATCH_SIZE
+  ) {
     const batch: Record<string, string | number>[] = [];
     const batchEnd = Math.min(batchStart + EXCEL_BATCH_SIZE, ROWS_PER_SHEET);
 
@@ -91,7 +95,11 @@ async function writeLineItemsSheet(
     width: 18,
   }));
 
-  for (let batchStart = 0; batchStart < ROWS_PER_SHEET; batchStart += EXCEL_BATCH_SIZE) {
+  for (
+    let batchStart = 0;
+    batchStart < ROWS_PER_SHEET;
+    batchStart += EXCEL_BATCH_SIZE
+  ) {
     const batch: Record<string, string | number>[] = [];
     const batchEnd = Math.min(batchStart + EXCEL_BATCH_SIZE, ROWS_PER_SHEET);
 

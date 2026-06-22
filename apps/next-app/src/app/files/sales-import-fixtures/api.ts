@@ -25,15 +25,16 @@ export type GenerateTestFixturesResponse = {
   totalTimeMs: number;
 };
 
-export const generateTestFixtures = async (): Promise<GenerateTestFixturesResponse> => {
-  const res = await axios.post<GenerateTestFixturesResponse>(
-    "/applications/upload-large-xlsx/generate-test-fixtures",
-    {},
-    {
-      baseURL: process.env.NEXT_PUBLIC_NESTJS,
-      headers: { "Content-Type": "application/json" },
-      timeout: 20 * 60 * 1000,
-    },
-  );
-  return res.data;
-};
+export const generateTestFixtures =
+  async (): Promise<GenerateTestFixturesResponse> => {
+    const res = await axios.post<GenerateTestFixturesResponse>(
+      "/applications/sales-import-fixtures/generate-test-fixtures",
+      {},
+      {
+        baseURL: process.env.NEXT_PUBLIC_NESTJS,
+        headers: { "Content-Type": "application/json" },
+        timeout: 20 * 60 * 1000,
+      },
+    );
+    return res.data;
+  };
