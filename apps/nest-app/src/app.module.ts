@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ApplicationsModule } from "./applications/applications.module";
+import { AsyncProcessingModule } from "./async-processing/async-processing.module";
 import { AssessmentsModule } from "./cerbos-authorization/assessments/assessments.module";
 import { AuthneticationModule } from "./cerbos-authorization/authnetication/authnetication.module";
 import { MembersModule } from "./cerbos-authorization/members/members.module";
@@ -37,6 +38,7 @@ import { WebsocketsModule } from "./websockets/websockets.module";
     PerformancesModule,
     AssessmentsModule,
     ApplicationsModule,
+    AsyncProcessingModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
