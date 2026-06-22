@@ -2,35 +2,35 @@
 name: import-plugin-tabular-xlsx
 description: >-
   Format plugins layer — tabular-xlsx: ExcelJS workbook load, headers, cell.text,
-  row errors, TabularImportProgress, validation error XLSX. Use when implementing
-  or extending import/plugins/tabular-xlsx for an async import upload slot.
+  row errors, TabularProcessingProgress, validation error XLSX. Use when implementing
+  or extending import/plugins/tabular-xlsx for an async `.xlsx` sourceId.
 ---
 
 # Format plugins layer — tabular-xlsx
 
-Shared by all async `.xlsx` upload slots. See [async-processing](../async-processing/SKILL.md) for processing, domain, `ErrorDetail`, SSE, and outcomes. Upload is independent — see [import-batch-contract](../import-batch-contract/SKILL.md).
+Shared by all async `.xlsx` sources. See [async-processing](../async-processing/SKILL.md) for processing records and SSE. Domain `ErrorDetail` — domain / plugin contract below. Upload handoff: [import-upload-handoff](../import-upload-handoff/SKILL.md).
 
 ## When to use
 
-- Any `.xlsx` slot in an async import (`import/plugins/tabular-xlsx/`).
+- Any `.xlsx` `sourceId` in async processing (`import/plugins/tabular-xlsx/`).
 - Building or extending the validation error XLSX from `ErrorDetail[]`.
 
 ## Must not
 
-- BullMQ, Redis, `importKind` routing, business rules, DB models.
+- BullMQ, Redis, `domainKind` routing, business rules, DB models.
 
 ## Types
 
 ```typescript
-type TabularImportPhase =
+type TabularProcessingPhase =
   | "parsing_workbook"
   | "validating_rows"
   | "saving_database";
 
-/** Stored in JobMeta.progress when domain reports XLSX work */
-type TabularImportProgress = {
-  phase: TabularImportPhase;
-  uploadSlotId: string;
+/** Published via Redis during domainRunner.run — forwarded by SSE */
+type TabularProcessingProgress = {
+  phase: TabularProcessingPhase;
+  sourceId: string;
   originalName?: string;
   worksheetName?: string;
   percent?: number;
@@ -40,9 +40,16 @@ type TabularSheetSpec = {
   sheetName: string;
   headers: readonly string[];
 };
-```
 
-`ErrorDetail` is defined in async-processing (processing/domain contract).
+type ErrorDetail = {
+  message: string;
+  sourceId?: string;
+  originalName?: string;
+  worksheetName?: string;
+  rowNumber?: number;
+  rawData?: string;
+};
+```
 
 ## Responsibilities
 
@@ -53,21 +60,21 @@ type TabularSheetSpec = {
 | Validate headers against `TabularSheetSpec` | yes |
 | Read cells with **`cell.text`** (trim at ingest) | yes |
 | Row loop, skip blank rows, `sourceRowNumber` | yes |
-| Scoped error helper (attach slot / worksheet) | yes |
+| Scoped error helper (attach `sourceId` / worksheet) | yes |
 | Build validation error **XLSX** buffer from `ErrorDetail[]` | yes |
 
 ## Error XLSX columns
 
 | Column | Include when |
 | ------ | ------------ |
-| Upload slot | any error has `uploadSlotId` |
+| Source | any error has `sourceId` |
 | Original name | any error has `originalName` |
 | Worksheet | any error has `worksheetName` |
 | Row Number, Message, Raw Data | always |
 
 Processing layer stores the buffer; this plugin builds it.
 
-Domain passes `TabularSheetSpec`; plugin validates headers and yields raw row maps (batch) or calls a row callback (streaming).
+Domain passes `TabularSheetSpec`; plugin validates headers and yields raw row maps (chunk) or calls a row callback (streaming).
 
 ### Progress helper
 
@@ -82,10 +89,10 @@ await reportTabularProgress(onProgress, "parsing_workbook", "mainWorkbook", {
 
 ```text
 import/plugins/tabular-xlsx/
-  tabular-import.types.ts
+  tabular-processing.types.ts
   load-workbook.ts
   parse-sheet-rows.ts
-  scope-import-errors.ts
+  scope-processing-errors.ts
   build-tabular-error-xlsx.ts
   report-tabular-progress.ts
 ```
@@ -94,6 +101,6 @@ import/plugins/tabular-xlsx/
 
 ```text
 - [ ] Shared build-tabular-error-xlsx used on validation_failed
-- [ ] Errors scoped with uploadSlotId / worksheetName at parse site
+- [ ] Errors scoped with sourceId / worksheetName at parse site
 - [ ] cell.text + trim at ingest for string fields
 ```
