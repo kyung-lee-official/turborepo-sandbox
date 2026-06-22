@@ -54,7 +54,7 @@ enabled = true   # language server tools; servers launch lazily when used
 # Rules are "Tool" or "Tool(specifier)"; e.g. Bash(go test:*), Edit(src/**).
 mode  = "ask"
 # deny = ["Bash(rm -rf*)", "Bash(git push*)"]   # hard-blocked in every mode
-allow = ["Bash(ls -la \".cursor/skills\" 2>&1)"]
+allow = ["Bash(ls -la \".cursor/skills\" 2>&1)", "Bash(cd \"C:\\Data\\user-data\\projects\\typescript\\turborepo-sandbox\" && git status --short 2>&1)", "Bash(cd \"C:\\Data\\user-data\\projects\\typescript\\turborepo-sandbox\" && git log --oneline -5 2>&1)", "Bash(cd \"C:\\Data\\user-data\\projects\\typescript\\turborepo-sandbox\" && git diff --stat HEAD~1..HEAD 2>&1)"]
 # ask = ["Edit(src/**)"]   # force a prompt even if otherwise allowed
 
 [sandbox]
