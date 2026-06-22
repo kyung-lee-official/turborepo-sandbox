@@ -8,7 +8,7 @@ description: >-
 
 # Format plugins layer — jsonl
 
-Shared by all async JSONL **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [import-upload-handoff](../import-upload-handoff/SKILL.md). Validation error download merges into tabular-xlsx — [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md).
+Shared by all async JSONL **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [start-processing-adapters](../start-processing-adapters/SKILL.md). Validation error download merges into tabular-xlsx — [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md).
 
 ---
 
@@ -52,7 +52,7 @@ type JsonlProcessingPhase =
 type JsonlProcessingProgress = {
   phase: JsonlProcessingPhase;
   sourceId: string;
-  /** Display filename — set from VerifiedProcessingSource.label (handoff originalName) */
+  /** Display filename — set from VerifiedProcessingSource.label (upload originalName) */
   originalName?: string;
   percent?: number;
 };
@@ -247,4 +247,4 @@ Extract shared **`ErrorDetail`** typing to a small shared module later if tabula
 | JSONL parse, line progress | `import-plugin-jsonl` |
 | Merged error XLSX | `import-plugin-tabular-xlsx` + this skill |
 | DomainRunner, SSE, job records | `async-processing` |
-| Upload, deferred start | `import-upload-handoff` + upload-* |
+| Upload, deferred start | `start-processing-adapters` + upload-* |

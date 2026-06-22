@@ -10,19 +10,19 @@ description: >-
 
 ## Goal
 
-**Everything from `startProcessing` onward.** Source-agnostic job orchestration — inputs arrive as validated **`StartProcessingInput`** from [import-upload-handoff](../import-upload-handoff/SKILL.md) adapters.
+**Everything from `startProcessing` onward.** Source-agnostic job orchestration — inputs arrive as validated **`StartProcessingInput`** from [start-processing-adapters](../start-processing-adapters/SKILL.md) adapters.
 
 **Processing records** (`ProcessingJob`, `ProcessingManifest`) persist in **DB**. **Redis** is for **BullMQ** and **live domain progress** (SSE during the run). Domain business logic and **`ErrorDetail`** — plugin skills.
 
 **Storage verification** runs in the worker after **`claimProcessingPhase`**, before **`domainRunner.run`**. Upload and start API/event paths are upstream.
 
-Implement under **`processing/`** (see [Suggested module layout](#suggested-module-layout)). Async import uses **only** this skill set — handoff, upload-\*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
+Implement under **`processing/`** (see [Suggested module layout](#suggested-module-layout)). Async import uses **only** this skill set — start-processing-adapters, upload-\*, async-processing, domain runners, format plugins — not a separate Redis-buffer transport stack.
 
 ---
 
 ## Architecture
 
-Boundary at **`startProcessing`**. Dashed arrows: upstream API and event adapters (handoff layer).
+Boundary at **`startProcessing`**. Dashed arrows: upstream API and event adapters (start-processing-adapters).
 
 ```mermaid
 ---
@@ -49,7 +49,7 @@ flowchart TD
   verify --> domain
 ```
 
-Solid arrows: this skill. Dashed arrows: handoff layer — see [import-upload-handoff](../import-upload-handoff/SKILL.md).
+Solid arrows: this skill. Dashed arrows: start adapters — see [start-processing-adapters](../start-processing-adapters/SKILL.md).
 
 | Component                                                           | Role                                                                               |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -69,7 +69,7 @@ Solid arrows: this skill. Dashed arrows: handoff layer — see [import-upload-ha
 
 | Term                                                                                           | Meaning                                                                 |
 | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| **[StartProcessingInput](#inbound-from-adapters)**                                             | Inbound DTO — built by handoff adapters                                 |
+| **[StartProcessingInput](#inbound-from-adapters)**                                             | Inbound DTO — built by start adapters                                 |
 | **[domainKind](#domainregistry)**                                                              | Registry key (e.g. `sales-report`)                                      |
 | **[DomainKindRegistration](#domainregistry)**                                                  | `domainRunner` + `sourceSpecs` + `lockPolicy`                           |
 | **[SourceSpec](#domainregistry)**                                                              | Required/optional `sourceId` in a registration                          |
@@ -89,7 +89,7 @@ Solid arrows: this skill. Dashed arrows: handoff layer — see [import-upload-ha
 | **[DomainRunner](#domain-boundary)**                                                           | Per-`domainKind` handler invoked by the worker                          |
 | **[ActiveJobConflictError](#processingactivejoblock)**                                         | Thrown when `global_singleton` acquire fails — adapter maps to HTTP 409 |
 
-Upload handoff vocabulary: [import-upload-handoff](../import-upload-handoff/SKILL.md). **`ErrorDetail`** — plugin skills (domain-internal).
+Start vocabulary: [start-processing-adapters](../start-processing-adapters/SKILL.md). **`ErrorDetail`** — plugin skills (domain-internal).
 
 ---
 
@@ -367,7 +367,7 @@ Worker calls **`DomainRunner`** from the registry. Domain-internal validation us
 
 ## ProcessingOrchestratorService
 
-**Single entry point** for handoff adapters. Owns validation, lock acquisition, DB write, and enqueue.
+**Single entry point** for start adapters. Owns validation, lock acquisition, DB write, and enqueue.
 
 ```typescript
 interface ProcessingOrchestratorService {
@@ -754,7 +754,7 @@ interface ProcessingProgressSseService {
 
 Worker publishes **terminal** immediately after successful **`finalize`** (including `validation_failed` with `phase: complete`). Clients should still poll **`GET jobs/:jobId`** if SSE closes without a terminal snapshot.
 
-Client upload/start sequences: [import-upload-handoff](../import-upload-handoff/SKILL.md).
+Client upload/start sequences: [start-processing-adapters](../start-processing-adapters/SKILL.md).
 
 ---
 
@@ -833,14 +833,14 @@ export class AsyncProcessingModule {}
 | Write domain progress every tick to DB              | Redis pub/sub for live SSE                                    |
 | Business rows in `ProcessingJob`                    | Domain layer owns domain models                               |
 | File bytes on BullMQ job or in DB JSON              | Locators in manifest; blobs in object store                   |
-| API/event entry points in this module               | Belong in import-upload-handoff                               |
+| API/event entry points in this module               | Belong in start-processing-adapters                               |
 | Re-verify locators inside `openStream`              | Worker verifies once; pass `verifiedLocator`                  |
 | Default BullMQ retries on processing jobs           | Double domain runs after `finalize`                           |
 | Acquire lock before job row exists                  | Failed acquire blocks domain with no rollback target          |
 | Nest `ConflictException` in lock service            | Throw `ActiveJobConflictError`; adapter maps to 409           |
 | BullMQ concurrency as `global_singleton`            | Queues jobs instead of 409; use Redis lock at orchestrator    |
 | Check-then-set active key without `SET NX`          | Race allows two concurrent starts — use atomic acquire        |
-| Redis-buffer job meta + upload bytes stack          | Use DB `ProcessingJob`, object-store locators, handoff skills |
+| Redis-buffer job meta + upload bytes stack          | Use DB `ProcessingJob`, object-store locators, start-processing-adapters + upload-* |
 | Broad try/catch around finalize + publishTerminal   | Post-domain errors overwrite terminal success rows            |
 | deleteLocator before release in finally             | Locator failure blocks lock release — release first when terminal |
 | release while DB phase is processing                | Opens global_singleton while row stuck — gate release on terminal phase |
@@ -873,6 +873,6 @@ Prisma schema — `packages/database/prisma/schema.prisma` (or app-owned schema)
 
 | Task                                          | Skills                                            |
 | --------------------------------------------- | ------------------------------------------------- |
-| Upload, handoff sources, API/event adapters   | `import-upload-handoff`                           |
+| Upload, start API/event adapters   | `start-processing-adapters`                           |
 | Orchestrator, worker, processing records, SSE | `async-processing`                                |
 | Domain runner implementation, ErrorDetail     | plugin skills (+ `DomainRunResult` in this skill) |

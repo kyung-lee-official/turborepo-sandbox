@@ -1,15 +1,15 @@
 ---
 name: upload-local-multipart
 description: >-
-  Local disk upload via NestJS multipart proxy ingest. Part of import-upload-handoff
-  layer. Use with import-upload-handoff for local proxy ingest before startProcessing.
+  Local disk upload via NestJS multipart proxy ingest. Use with
+  start-processing-adapters for local proxy ingest before startProcessing.
 ---
 
 # Upload — local multipart (proxy ingest)
 
 ## Goal
 
-Client sends files to **NestJS** via **`multipart/form-data`**. Server writes bytes to **disk**, builds handoff **`sources`**, then either saves **`UploadSession`** and returns **`{ uploadSessionId }`** (deferred) or emits **`processing.start-requested`** (autoStart). Stops before **`startProcessing`** — see [import-upload-handoff](../import-upload-handoff/SKILL.md). Job orchestration: [async-processing](../async-processing/SKILL.md).
+Client sends files to **NestJS** via **`multipart/form-data`**. Server writes bytes to **disk**, builds **`UploadSessionSources`**, then either saves **`UploadSession`** and returns **`{ uploadSessionId }`** (deferred) or emits **`processing.start-requested`** (autoStart). Stops before **`startProcessing`** — see [start-processing-adapters](../start-processing-adapters/SKILL.md). Job orchestration: [async-processing](../async-processing/SKILL.md).
 
 **Upload progress:** Nest stream meter — not job SSE ([async-processing](../async-processing/SKILL.md) SSE).
 
@@ -19,13 +19,13 @@ Client sends files to **NestJS** via **`multipart/form-data`**. Server writes by
 
 ## Scope
 
-| This skill owns | [import-upload-handoff](../import-upload-handoff/SKILL.md) owns |
+| This skill owns | [start-processing-adapters](../start-processing-adapters/SKILL.md) owns |
 | --- | --- |
 | Multer, disk paths, rollback | **`UploadSession`** type + **`UploadSessionStore`** |
-| Build **`UploadHandoffSources`** | Start API, adapters, deferred trust model |
-| **`LocalUploadSession`** form fields | `mapUploadHandoffToInput`, `POST .../start` |
+| Build **`UploadSessionSources`** | Start API, adapters, deferred trust model |
+| **`LocalUploadSession`** form fields | `mapSessionSourcesToStartInput`, `POST .../start` |
 
-Inject **`UploadSessionStore`** from handoff — do not duplicate session persistence here.
+Inject **`UploadSessionStore`** from start-processing-adapters — do not duplicate session persistence here.
 
 ---
 
@@ -37,12 +37,12 @@ Inject **`UploadSessionStore`** from handoff — do not duplicate session persis
 
 ## Must not
 
-- Call **`startProcessing`** from upload code — handoff adapters only.
+- Call **`startProcessing`** from upload code — start adapters only.
 - Write **`ProcessingJobRepository`** or acquire **`ProcessingActiveJobLock`** at upload time.
 - **HEAD/stat** locators at upload — worker **verify** step in [async-processing](../async-processing/SKILL.md#worker).
 - Accept client-supplied **`path`** or use **`originalName`** as the on-disk filename.
-- Put file **buffers** on BullMQ or in Redis — persist to disk; handoff carries **`SourceLocator`** only.
-- Return handoff **`sources`** or **locators** to the client on **deferred** success — only **`uploadSessionId`** ([handoff trust model](../import-upload-handoff/SKILL.md#deferred-start-trust-model)).
+- Put file **buffers** on BullMQ or in Redis — persist to disk; adapters carry **`SourceLocator`** only.
+- Return **`sources`** or **locators** to the client on **deferred** success — only **`uploadSessionId`** ([deferred start trust model](../start-processing-adapters/SKILL.md#deferred-start-trust-model)).
 
 ---
 
@@ -51,9 +51,9 @@ Inject **`UploadSessionStore`** from handoff — do not duplicate session persis
 | Term | Meaning |
 | ---- | ------- |
 | **`LocalUploadSession`** | Per-request **form fields**: `domainKind`, `autoStart`, optional client `uploadSessionId` hint |
-| **`UploadSession`** | Persisted record in handoff store — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-types) |
+| **`UploadSession`** | Persisted record in session store — [start-processing-adapters](../start-processing-adapters/SKILL.md#session-source-types) |
 | **`sourceId`** | Multipart **file** field name — must match domain **`sourceSpecs`** |
-| **`UploadHandoffSources`** | Built server-side — [import-upload-handoff](../import-upload-handoff/SKILL.md#handoff-types) |
+| **`UploadSessionSources`** | Built server-side — [start-processing-adapters](../start-processing-adapters/SKILL.md#session-source-types) |
 | **`uploadSessionId`** | Server id returned to client; client sends it on **`POST .../start`** (server generates if omitted) |
 
 ---
@@ -75,13 +75,13 @@ type LocalUploadSession = {
 | `false` (default) | **`UploadSessionStore.save`** → return `{ uploadSessionId }` only |
 | `true` | Emit `{ domainKind, sources }` in-process → event adapter |
 
-On **`global_singleton`** conflict during autoStart, event adapter **logs and skips** (no HTTP 409) — [import-upload-handoff — Event adapter](../import-upload-handoff/SKILL.md#event-adapter).
+On **`global_singleton`** conflict during autoStart, event adapter **logs and skips** (no HTTP 409) — [start-processing-adapters — Event adapter](../start-processing-adapters/SKILL.md#event-adapter).
 
 ---
 
 ## Flow
 
-Solid arrows: this skill. Dashed arrows: [import-upload-handoff](../import-upload-handoff/SKILL.md) adapters.
+Solid arrows: this skill. Dashed arrows: [start-processing-adapters](../start-processing-adapters/SKILL.md) adapters.
 
 **Deferred start (`autoStart: false`):**
 
@@ -198,10 +198,10 @@ Set **`declaredSizeBytes`** from Multer **`file.size`** after write.
 
 ---
 
-## Build handoff `sources`
+## Build session sources
 
 ```typescript
-const sources: UploadHandoffSources = {
+const sources: UploadSessionSources = {
   mainWorkbook: {
     sourceId: "mainWorkbook",
     originalName: file.originalname,
@@ -215,7 +215,7 @@ const sources: UploadHandoffSources = {
 };
 ```
 
-Type: [import-upload-handoff — Handoff types](../import-upload-handoff/SKILL.md#handoff-types).
+Type: [start-processing-adapters — Session source types](../start-processing-adapters/SKILL.md#session-source-types).
 
 ---
 
@@ -234,9 +234,9 @@ await this.uploadSessionStore.save({
 return { uploadSessionId };
 ```
 
-**`UploadSessionStore`** — handoff module ([import-upload-handoff](../import-upload-handoff/SKILL.md#suggested-module-layout)). Payload matches handoff **`UploadSession`** type.
+**`UploadSessionStore`** — [start-processing-adapters](../start-processing-adapters/SKILL.md#suggested-module-layout) module.
 
-Client **`POST .../start`** with **`uploadSessionId`** only — [deferred start trust model](../import-upload-handoff/SKILL.md#deferred-start-trust-model).
+Client **`POST .../start`** with **`uploadSessionId`** only — [deferred start trust model](../start-processing-adapters/SKILL.md#deferred-start-trust-model).
 
 **autoStart (`autoStart: true`):**
 
@@ -272,7 +272,7 @@ Run cheap validation before the first disk write when possible.
 | Save **`UploadSession`** via injected store (deferred) | yes |
 | Return **`{ uploadSessionId }`** only on deferred success | yes |
 | Emit **`processing.start-requested`** (autoStart) | yes |
-| Implement **`UploadSessionStore`** | **no** — handoff |
+| Implement **`UploadSessionStore`** | **no** — start-processing-adapters |
 | Locator verify / job / lock / **`startProcessing`** | **no** |
 
 ---
@@ -283,12 +283,12 @@ Run cheap validation before the first disk write when possible.
 import/upload/local-multipart/
   local-upload-session.types.ts
   local-multipart-upload.controller.ts
-  local-multipart-upload.service.ts      # inject UploadSessionStore from handoff
+  local-multipart-upload.service.ts      # inject UploadSessionStore from start-processing-adapters
   multer-disk-storage.factory.ts
-  build-upload-handoff-sources.ts
+  build-upload-session-sources.ts
   rollback-saved-paths.ts
 
-import/handoff/
+import/start-processing-adapters/
   upload-session.store.ts                # shared with S3/COS deferred start
 ```
 
@@ -312,6 +312,6 @@ import/handoff/
 
 | Task | Skills |
 | ---- | ------ |
-| Multipart disk upload, autoStart | `upload-local-multipart` + `import-upload-handoff` |
-| UploadSession store, start adapters | `import-upload-handoff` |
+| Multipart disk upload, autoStart | `upload-local-multipart` + `start-processing-adapters` |
+| UploadSession store, start adapters | `start-processing-adapters` |
 | Worker verify, job, lock, SSE | `async-processing` |

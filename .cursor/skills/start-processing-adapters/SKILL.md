@@ -1,17 +1,17 @@
 ---
-name: import-upload-handoff
+name: start-processing-adapters
 description: >-
-  Handoff contract and start adapters before startProcessing: UploadHandoffSources,
-  API/event entry points, normalize to StartProcessingInput, session-backed deferred
-  start. Ingest implementations are upload-* skills. Use when wiring start API or
-  event adapters.
+  API and event adapters that call startProcessing: UploadSessionStore,
+  UploadSessionSources, normalize to StartProcessingInput, session-backed deferred
+  start. Upload ingest is upload-* skills. Use when wiring POST .../start or
+  processing.start-requested.
 ---
 
-# Import upload and handoff
+# Start processing adapters
 
 ## Goal
 
-**Shared contract and start paths before `startProcessing`.** Upload-* skills persist bytes and build handoff **`sources`** server-side; **this skill** defines the envelope, **`UploadSessionStore`**, **who may start processing**, and **adapters** that call [**`ProcessingOrchestratorService.startProcessing`**](../async-processing/SKILL.md#processingorchestratorservice) — the async-processing boundary.
+**How upload paths trigger `startProcessing`.** Upload-* skills persist bytes and build **`UploadSessionSources`** server-side; **this skill** defines **`UploadSessionStore`**, **API/event adapters**, and the mapping to [**`ProcessingOrchestratorService.startProcessing`**](../async-processing/SKILL.md#processingorchestratorservice).
 
 - **Upload failed** — cleanup partial blobs; **no** processing job record, **no** event.
 - **Upload succeeded (deferred)** — ingest saves **`UploadSession`**, returns **`{ uploadSessionId }`** to client only — not locators.
@@ -20,7 +20,7 @@ description: >-
 
 **Upload progress** — upload-* skills (Nest stream, S3/COS SDK). **Job progress** — [async-processing](../async-processing/SKILL.md) (SSE).
 
-**Ingest implementations:** [upload-local-multipart](../upload-local-multipart/SKILL.md) · [upload-s3-direct](../upload-s3-direct/SKILL.md) · [upload-cos-direct](../upload-cos-direct/SKILL.md)
+**Upload ingest:** [upload-local-multipart](../upload-local-multipart/SKILL.md) · [upload-s3-direct](../upload-s3-direct/SKILL.md) · [upload-cos-direct](../upload-cos-direct/SKILL.md)
 
 ---
 
@@ -28,7 +28,7 @@ description: >-
 
 | This skill owns | Upload-* skills own |
 | --- | --- |
-| `UploadHandoffSources`, handoff → `StartProcessingInput` map | Multipart, presigned PUT, COS STS |
+| **`UploadSessionSources`**, map → **`StartProcessingInput`** | Multipart, presigned PUT, COS STS |
 | API controller + **API adapter** | Disk paths, presigned URLs, rollback |
 | Event subscriber + **event adapter** | `autoStart` emit from upload handler |
 | **Deferred start trust model** (`uploadSessionId`) + **`UploadSessionStore`** | Writing bytes, building locators |
@@ -79,7 +79,7 @@ flowchart TD
 
 | Term | Meaning |
 | ---- | ------- |
-| **handoff `sources`** | `UploadHandoffSources` — server-built locators from ingest |
+| **`UploadSessionSources`** | Server-built locators from ingest — stored on session or passed in-process |
 | **`uploadSessionId`** | Server id; start API loads canonical `sources` — **do not trust client locators** |
 | **`UploadSession`** | Server-stored `{ domainKind, sources, expiresAt }`; optional **`startedJobId`** for idempotent replay |
 | **`UploadSessionStore`** | `save` / `get` / `consume` — ingest saves; adapter loads and consumes on successful start |
@@ -88,15 +88,15 @@ flowchart TD
 | **SourceLocator** | `local` path or `object` bucket/key — **server-generated at ingest** |
 | **autoStart** | Ingest emits event; requires `domainKind` on upload session |
 | **StartProcessingInput** | Adapter output — [async-processing inbound](../async-processing/SKILL.md#inbound-from-adapters) |
-| **API / event adapter** | Only handoff code that may call `startProcessing` |
+| **API / event adapter** | Only start-adapter code that may call `startProcessing` |
 | **ActiveJobConflictError** | `global_singleton` busy — API → **409**; event → log + skip (default) |
 
 ---
 
-## Handoff types
+## Session source types
 
 ```typescript
-type UploadHandoffEntry = {
+type UploadSourceEntry = {
   sourceId: string;
   originalName: string;
   mimeType?: string;
@@ -113,7 +113,7 @@ type SourceLocator =
       declaredSizeBytes?: number;
     };
 
-type UploadHandoffSources = Record<string, UploadHandoffEntry>;
+type UploadSessionSources = Record<string, UploadSourceEntry>;
 ```
 
 Types may live in `upload-session.types.ts` alongside **`UploadSession`** below.
@@ -124,7 +124,7 @@ Types may live in `upload-session.types.ts` alongside **`UploadSession`** below.
 type UploadSession = {
   uploadSessionId: string;
   domainKind: string;
-  sources: UploadHandoffSources;
+  sources: UploadSessionSources;
   expiresAt: Date;
   /** Set after first successful start — optional idempotent replay */
   startedJobId?: string;
@@ -177,7 +177,7 @@ Content-Type: application/json
 { "uploadSessionId": "sess_abc", "domainKind": "sales-report" }
 ```
 
-Parse with **`startApiBodySchema.strict()`** — reject bodies that include client **`sources`**. Load session via **`UploadSessionStore.get`**, map with **`mapUploadHandoffToInput`**, then **`startProcessing`**. See **API adapter** below for **`consume`** and failure retry behavior.
+Parse with **`startApiBodySchema.strict()`** — reject bodies that include client **`sources`**. Load session via **`UploadSessionStore.get`**, map with **`mapSessionSourcesToStartInput`**, then **`startProcessing`**. See **API adapter** below for **`consume`** and failure retry behavior.
 
 When using **`consume`** after success, a replayed **`uploadSessionId`** gets **404** (session gone). With **`startedJobId`** idempotency instead, return stored **`{ jobId, manifestId }`** on replay.
 
@@ -291,7 +291,7 @@ class ApiStartProcessingAdapter {
       return { jobId: session.startedJobId, manifestId: session.startedManifestId };
     }
 
-    const input = mapUploadHandoffToInput(session.domainKind, session.sources);
+    const input = mapSessionSourcesToStartInput(session.domainKind, session.sources);
     try {
       const result = await this.processingOrchestrator.startProcessing(input);
       await this.uploadSessionStore.consume(body.uploadSessionId);
@@ -345,17 +345,17 @@ class EventStartProcessingAdapter {
 }
 ```
 
-### Handoff to processing map
+### Map session sources to StartProcessingInput
 
 ```typescript
-function mapUploadHandoffToInput(
+function mapSessionSourcesToStartInput(
   domainKind: string,
-  handoffSources: UploadHandoffSources,
+  sessionSources: UploadSessionSources,
 ): StartProcessingInput {
   return {
     domainKind,
     sources: Object.fromEntries(
-      Object.entries(handoffSources).map(([key, entry]) => {
+      Object.entries(sessionSources).map(([key, entry]) => {
         if (key !== entry.sourceId) {
           throw new BadRequestException(`sourceId mismatch: ${key} vs ${entry.sourceId}`);
         }
@@ -390,7 +390,7 @@ Local multipart: [upload-local-multipart](../upload-local-multipart/SKILL.md).
 ## Invariants
 
 1. **Fail → cleanup only** — no processing job record, no event.
-2. **Ingest → handoff `sources` or session only** — no `startProcessing` from upload code.
+2. **Ingest → session or in-process sources only** — no `startProcessing` from upload code.
 3. **Deferred start → session-backed locators** — adapter loads `sources` from **`UploadSessionStore`**.
 4. **Consume session after successful start** — prevent replay double-jobs (or use **`startedJobId`** idempotency).
 5. **Entry then adapter** — controller/subscriber forward raw input.
@@ -420,11 +420,11 @@ Local multipart: [upload-local-multipart](../upload-local-multipart/SKILL.md).
 
 ```text
 import/
-  handoff/
+  start-processing-adapters/
     upload-session.types.ts
     upload-session.store.ts              # Redis or DB — canonical sources for deferred start
     start-processing-input.schema.ts
-    map-upload-handoff-to-input.ts
+    map-session-sources-to-start-input.ts
     start-processing.controller.ts       # POST .../start — 202
     api-start-processing.adapter.ts
     processing-start-requested.listener.ts
@@ -439,7 +439,7 @@ import/
 
 ## Checklists
 
-**New handoff / start wiring (this skill):**
+**New start adapters (this skill):**
 
 ```text
 - [ ] UploadSessionStore: save, get, consume (+ TTL on save)
@@ -448,10 +448,10 @@ import/
 - [ ] Keep session on start failure so client can retry
 - [ ] API adapter: ActiveJobConflictError → 409; controller @HttpCode(202)
 - [ ] Event adapter: ActiveJobConflictError → log warn + return
-- [ ] mapUploadHandoffToInput + sourceLocatorSchema for event path
+- [ ] mapSessionSourcesToStartInput + sourceLocatorSchema for event path
 ```
 
-**New ingest path (upload-* skill + handoff ingest rules):**
+**New ingest path (upload-* skill + ingest rules above):**
 
 ```text
 - [ ] Fail → cleanup blobs, no event, no ProcessingJobRepository
@@ -465,6 +465,6 @@ import/
 
 | Task | Skills |
 | ---- | ------ |
-| Handoff types, session store, start adapters | `import-upload-handoff` |
+| Session store, start API/event adapters | `start-processing-adapters` |
 | Multipart / S3 / COS ingest | upload-* + this skill (ingest rules) |
 | Orchestrator, worker, SSE, lock | `async-processing` |

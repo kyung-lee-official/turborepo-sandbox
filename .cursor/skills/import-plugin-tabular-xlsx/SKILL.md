@@ -8,7 +8,7 @@ description: >-
 
 # Format plugins layer — tabular-xlsx
 
-Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [import-upload-handoff](../import-upload-handoff/SKILL.md). JSONL errors merge into the same error XLSX — [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md).
+Shared by all async `.xlsx` **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [start-processing-adapters](../start-processing-adapters/SKILL.md). JSONL errors merge into the same error XLSX — [import-plugin-jsonl](../import-plugin-jsonl/SKILL.md).
 
 ---
 
@@ -47,7 +47,7 @@ type TabularProcessingPhase = TabularPluginPhase | "saving_database";
 type TabularProcessingProgress = {
   phase: TabularProcessingPhase;
   sourceId: string;
-  /** Display filename — set from VerifiedProcessingSource.label (handoff originalName) */
+  /** Display filename — set from VerifiedProcessingSource.label (upload originalName) */
   originalName?: string;
   worksheetName?: string;
   percent?: number;
