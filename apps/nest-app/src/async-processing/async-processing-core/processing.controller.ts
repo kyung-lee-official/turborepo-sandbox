@@ -1,8 +1,7 @@
 import { Controller, Get, NotFoundException, Param, Res } from "@nestjs/common";
 import type { Response } from "express";
-import { VALIDATION_ERROR_XLSX_CONTENT_TYPE } from "@/import/shared/build-validation-error-xlsx";
-import { ProcessingErrorBlobStore } from "./processing-error-blob.store";
 import { ProcessingJobRepository } from "./processing-job.repository";
+import { ProcessingJobErrorRepository } from "./processing-job-error.repository";
 import { ProcessingProgressSseService } from "./processing-progress-sse.service";
 
 @Controller("jobs")
@@ -10,7 +9,7 @@ export class ProcessingController {
   constructor(
     private readonly jobRepository: ProcessingJobRepository,
     private readonly progressSseService: ProcessingProgressSseService,
-    private readonly errorBlobStore: ProcessingErrorBlobStore,
+    private readonly jobErrorRepository: ProcessingJobErrorRepository,
   ) {}
 
   @Get(":jobId")
@@ -27,7 +26,7 @@ export class ProcessingController {
       outcome: job.outcome,
       processedCount: job.processedCount,
       errorCount: job.errorCount,
-      errorStorageKey: job.errorStorageKey,
+      hasErrors: (job.errorCount ?? 0) > 0,
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),
       completedAt: job.completedAt?.toISOString() ?? null,
@@ -35,25 +34,27 @@ export class ProcessingController {
   }
 
   @Get(":jobId/errors")
-  async downloadErrors(@Param("jobId") jobId: string, @Res() res: Response) {
+  async getErrors(@Param("jobId") jobId: string) {
     const job = await this.jobRepository.findById(jobId);
-    if (!job?.errorStorageKey) {
+    if (!job) {
+      throw new NotFoundException(`Processing job not found: ${jobId}`);
+    }
+
+    if (job.outcome !== "validation_failed" || (job.errorCount ?? 0) === 0) {
       throw new NotFoundException(`No error report for job: ${jobId}`);
     }
 
-    const blob = await this.errorBlobStore.getErrorBlob(jobId);
-    if (!blob) {
-      throw new NotFoundException(
-        `Error report file missing for job: ${jobId}`,
-      );
+    const errors = await this.jobErrorRepository.listPayloadsByJobId(jobId);
+    if (errors.length === 0) {
+      throw new NotFoundException(`No error report for job: ${jobId}`);
     }
 
-    res.setHeader("Content-Type", VALIDATION_ERROR_XLSX_CONTENT_TYPE);
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="validation-errors-${jobId}.xlsx"`,
-    );
-    res.send(blob);
+    return {
+      jobId: job.id,
+      domainKind: job.domainKind,
+      errorCount: job.errorCount,
+      errors,
+    };
   }
 
   @Get(":jobId/events")

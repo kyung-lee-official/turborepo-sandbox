@@ -10,7 +10,6 @@ import { scopeJsonlError } from "@/import/plugins/jsonl/scope-jsonl-errors";
 import { loadWorkbookFromStream } from "@/import/plugins/tabular-xlsx/load-workbook-from-buffer";
 import { parseSheetRows } from "@/import/plugins/tabular-xlsx/parse-sheet-rows";
 import { scopeTabularError } from "@/import/plugins/tabular-xlsx/scope-tabular-errors";
-import { buildValidationErrorXlsxBuffer } from "@/import/shared/build-validation-error-xlsx";
 import type { ErrorDetail } from "@/import/shared/import-error.types";
 import { reportDomainProgress } from "@/import/shared/report-domain-progress";
 import { PrismaService } from "@/recipes/prisma/prisma.service";
@@ -222,12 +221,11 @@ export class SalesImportDomainRunner implements DomainRunner {
     );
 
     if (errors.length > 0) {
-      const errorBlob = await buildValidationErrorXlsxBuffer(errors);
       return {
         outcome: "validation_failed",
         processedCount: validRows.length,
         errorCount: errors.length,
-        errorBlob,
+        errors,
       };
     }
 

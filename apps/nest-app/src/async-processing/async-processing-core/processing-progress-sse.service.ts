@@ -12,7 +12,7 @@ type JobSnapshot = {
   outcome: string | null;
   processedCount: number | null;
   errorCount: number | null;
-  errorStorageKey: string | null;
+  hasErrors: boolean;
   completedAt: string | null;
 };
 
@@ -131,7 +131,6 @@ export class ProcessingProgressSseService {
     outcome: string | null;
     processedCount: number | null;
     errorCount: number | null;
-    errorStorageKey: string | null;
     completedAt: Date | null;
   }): JobSnapshot {
     return {
@@ -141,7 +140,7 @@ export class ProcessingProgressSseService {
       outcome: job.outcome,
       processedCount: job.processedCount,
       errorCount: job.errorCount,
-      errorStorageKey: job.errorStorageKey,
+      hasErrors: (job.errorCount ?? 0) > 0,
       completedAt: job.completedAt?.toISOString() ?? null,
     };
   }

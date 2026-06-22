@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { SalesImportFixturesNav } from "../sales-import-fixtures/SalesImportFixturesNav";
 import {
-  downloadProcessingErrors,
+  fetchProcessingErrors,
   type ProcessingJobResponse,
   startSalesImportProcessing,
   triggerValidationErrorDownload,
@@ -102,9 +102,9 @@ export const ImportSalesTestFixtures = () => {
       setLastJob(job);
       setStatusMessage(formatJobSummary(job));
 
-      if (job.outcome === "validation_failed" && job.errorStorageKey) {
-        const blob = await downloadProcessingErrors(jobId);
-        triggerValidationErrorDownload(jobId, blob);
+      if (job.outcome === "validation_failed" && job.hasErrors) {
+        const report = await fetchProcessingErrors(jobId);
+        triggerValidationErrorDownload(jobId, report);
       }
     } catch (error) {
       console.error("Sales import failed:", error);
@@ -199,8 +199,8 @@ export const ImportSalesTestFixtures = () => {
           <p className="mt-1 font-mono text-xs">{formatJobSummary(lastJob)}</p>
           {lastJob.outcome === "validation_failed" ? (
             <p className="mt-2 text-amber-800">
-              Validation errors were saved — error XLSX download should have
-              started automatically.
+              Validation errors were saved — JSON error report download should
+              have started automatically.
             </p>
           ) : null}
         </div>

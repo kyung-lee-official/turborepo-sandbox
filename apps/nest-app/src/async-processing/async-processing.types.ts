@@ -4,6 +4,7 @@ import type {
   ProcessingOutcome as PrismaProcessingOutcome,
   ProcessingPhase as PrismaProcessingPhase,
 } from "@repo/database";
+import type { ErrorDetail } from "@/import/shared/import-error.types";
 
 export const ASYNC_PROCESSING_QUEUE = "async-processing" as const;
 
@@ -48,7 +49,7 @@ export type DomainRunResult =
       outcome: "validation_failed";
       processedCount: number;
       errorCount: number;
-      errorBlob?: Buffer;
+      errors: readonly ErrorDetail[];
     };
 
 export type DomainRunnerIo = {

@@ -7,8 +7,8 @@ import { DomainRegistry } from "./domain-registry.service";
 import { ProcessingController } from "./processing.controller";
 import { ProcessingProcessor } from "./processing.processor";
 import { ProcessingActiveJobLock } from "./processing-active-job.lock";
-import { ProcessingErrorBlobStore } from "./processing-error-blob.store";
 import { ProcessingJobRepository } from "./processing-job.repository";
+import { ProcessingJobErrorRepository } from "./processing-job-error.repository";
 import { ProcessingOrchestratorService } from "./processing-orchestrator.service";
 import { ProcessingProgressPublisher } from "./processing-progress-publisher.service";
 import { ProcessingProgressSseService } from "./processing-progress-sse.service";
@@ -24,8 +24,8 @@ import { ProcessingSourceReader } from "./processing-source.reader";
   providers: [
     ProcessingOrchestratorService,
     ProcessingJobRepository,
+    ProcessingJobErrorRepository,
     ProcessingSourceReader,
-    ProcessingErrorBlobStore,
     ProcessingActiveJobLock,
     ProcessingProgressPublisher,
     ProcessingProgressSseService,
@@ -36,7 +36,7 @@ import { ProcessingSourceReader } from "./processing-source.reader";
     ProcessingOrchestratorService,
     DomainRegistry,
     ProcessingJobRepository,
-    ProcessingErrorBlobStore,
+    ProcessingJobErrorRepository,
   ],
 })
 export class AsyncProcessingCoreModule {}

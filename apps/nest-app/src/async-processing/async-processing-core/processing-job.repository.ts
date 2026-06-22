@@ -62,7 +62,6 @@ export class ProcessingJobRepository {
       outcome?: ProcessingOutcome;
       processedCount?: number;
       errorCount?: number;
-      errorStorageKey?: string;
       completedAt: Date;
     },
   ): Promise<void> {

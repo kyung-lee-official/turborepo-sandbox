@@ -13,8 +13,8 @@ import {
 } from "../async-processing.types";
 import { DomainRegistry } from "./domain-registry.service";
 import { ProcessingActiveJobLock } from "./processing-active-job.lock";
-import { ProcessingErrorBlobStore } from "./processing-error-blob.store";
 import { ProcessingJobRepository } from "./processing-job.repository";
+import { ProcessingJobErrorRepository } from "./processing-job-error.repository";
 import { ProcessingProgressPublisher } from "./processing-progress-publisher.service";
 import { ProcessingSourceReader } from "./processing-source.reader";
 
@@ -29,7 +29,7 @@ export class ProcessingProcessor extends WorkerHost {
     private readonly domainRegistry: DomainRegistry,
     private readonly sourceReader: ProcessingSourceReader,
     private readonly progressPublisher: ProcessingProgressPublisher,
-    private readonly errorBlobStore: ProcessingErrorBlobStore,
+    private readonly jobErrorRepository: ProcessingJobErrorRepository,
     private readonly activeJobLock: ProcessingActiveJobLock,
   ) {
     super();
@@ -174,12 +174,8 @@ export class ProcessingProcessor extends WorkerHost {
     jobId: string,
     result: DomainRunResult,
   ): Promise<void> {
-    let errorStorageKey: string | undefined;
-    if (result.outcome === "validation_failed" && result.errorBlob) {
-      errorStorageKey = await this.errorBlobStore.putErrorBlob(
-        jobId,
-        result.errorBlob,
-      );
+    if (result.outcome === "validation_failed") {
+      await this.jobErrorRepository.createManyFromErrors(jobId, result.errors);
     }
 
     await this.jobRepository.finalize(jobId, {
@@ -187,7 +183,6 @@ export class ProcessingProcessor extends WorkerHost {
       outcome: result.outcome,
       processedCount: result.processedCount,
       errorCount: result.errorCount,
-      errorStorageKey,
       completedAt: new Date(),
     });
   }

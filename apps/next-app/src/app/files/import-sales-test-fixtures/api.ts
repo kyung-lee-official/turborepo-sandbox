@@ -2,6 +2,15 @@ import axios from "axios";
 
 export const SALES_REPORT_DOMAIN_KIND = "sales-report" as const;
 
+export type ImportErrorDetail = {
+  message: string;
+  sourceId?: string;
+  originalName?: string;
+  worksheetName?: string;
+  rowNumber?: number;
+  rawData?: string;
+};
+
 export type UploadSessionResponse = {
   uploadSessionId: string;
 };
@@ -18,10 +27,17 @@ export type ProcessingJobResponse = {
   outcome: "pending" | "success" | "validation_failed" | "failed" | null;
   processedCount: number | null;
   errorCount: number | null;
-  errorStorageKey: string | null;
+  hasErrors: boolean;
   createdAt: string;
   updatedAt: string;
   completedAt: string | null;
+};
+
+export type ProcessingJobErrorsResponse = {
+  jobId: string;
+  domainKind: string;
+  errorCount: number | null;
+  errors: ImportErrorDetail[];
 };
 
 const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS;
@@ -74,24 +90,29 @@ export const getProcessingJob = async (
   return res.data;
 };
 
-export const downloadProcessingErrors = async (
+export const fetchProcessingErrors = async (
   jobId: string,
-): Promise<Blob> => {
-  const res = await axios.get(`/jobs/${jobId}/errors`, {
-    baseURL: nestBaseUrl,
-    responseType: "blob",
-  });
+): Promise<ProcessingJobErrorsResponse> => {
+  const res = await axios.get<ProcessingJobErrorsResponse>(
+    `/jobs/${jobId}/errors`,
+    {
+      baseURL: nestBaseUrl,
+    },
+  );
   return res.data;
 };
 
 export function triggerValidationErrorDownload(
   jobId: string,
-  blob: Blob,
+  report: ProcessingJobErrorsResponse,
 ): void {
+  const blob = new Blob([JSON.stringify(report, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `validation-errors-${jobId}.xlsx`;
+  anchor.download = `validation-errors-${jobId}.json`;
   anchor.click();
   URL.revokeObjectURL(url);
 }

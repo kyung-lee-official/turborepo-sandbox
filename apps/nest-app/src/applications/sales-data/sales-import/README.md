@@ -102,7 +102,7 @@ Parse-time errors (bad headers, invalid JSON, and so on) come from format plugin
 
 - Return **`validation_failed`**
 - Set **`processedCount`** / **`errorCount`**
-- Build error XLSX via **`buildValidationErrorXlsxBuffer`** (worker stores blob)
+- Build error report via **`ProcessingJobError`** rows (`payload` JSON per error)
 
 If all rows pass → **`success`**.
 
