@@ -42,6 +42,12 @@ export const filesBlockLinks = [
       "Generate sales-import fixture bundles (XLSX + JSONL) for async import testing and save them under apps/nest-app/temp.",
   },
   {
+    link: "/files/import-sales-test-fixtures",
+    text: "import sales test fixtures",
+    description:
+      "Select salesData.xlsx, inventory.xlsx, and productDescriptions.jsonl to upload and run the sales-report async import job.",
+  },
+  {
     link: "/files/upload-multiple-excel",
     text: "compress and upload multiple excel files in individual inputs",
     description:

@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { generateTestFixtures, type ScenarioBundle } from "./api";
+import { SalesImportFixturesNav } from "./SalesImportFixturesNav";
 
 function formatBundleSummary(bundle: ScenarioBundle): string {
   const files = bundle.uploadSlots
@@ -44,6 +46,7 @@ export const GenerateSalesImportFixtures = () => {
         Generate Sales Import Test Fixtures
       </h1>
 
+      <SalesImportFixturesNav current="generate" />
       <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
         <h2 className="mb-4 font-semibold text-xl">Generate Test Files</h2>
         <div className="mb-4 space-y-3">
@@ -157,8 +160,14 @@ export const GenerateSalesImportFixtures = () => {
           <p>
             <strong>Upload slots:</strong> Use multipart field names{" "}
             <code>salesData</code>, <code>inventory</code>,{" "}
-            <code>productDescriptions</code> when the async import runner is
-            implemented.
+            <code>productDescriptions</code> on the{" "}
+            <Link
+              href="/files/import-sales-test-fixtures"
+              className="font-medium text-blue-700 underline hover:text-blue-900"
+            >
+              import sales test fixtures
+            </Link>{" "}
+            page.
           </p>
         </div>
       </div>
