@@ -269,3 +269,51 @@ model UploadLargeXlsxError {
 
     @@index([taskId])
 }
+
+/**
+ * async-processing — durable job lifecycle and input snapshot
+ * Live progress in Redis; terminal state and counts here
+ */
+enum ProcessingPhase {
+    queued
+    processing
+    complete
+    failed
+}
+
+enum ProcessingOutcome {
+    success
+    validation_failed
+    failed
+}
+
+model ProcessingJob {
+    id              String             @id
+    domainKind      String
+    phase           ProcessingPhase    @default(queued)
+    outcome         ProcessingOutcome?
+    processedCount  Int?
+    errorCount      Int?
+    errorStorageKey String?
+    createdAt       DateTime           @default(now())
+    updatedAt       DateTime           @updatedAt
+    completedAt     DateTime?
+
+    manifest ProcessingManifest?
+
+    @@index([domainKind])
+    @@index([phase])
+    @@index([domainKind, phase])
+}
+
+model ProcessingManifest {
+    id         String   @id
+    jobId      String   @unique
+    domainKind String
+    sources    Json
+    createdAt  DateTime @default(now())
+
+    job ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@index([domainKind])
+}
