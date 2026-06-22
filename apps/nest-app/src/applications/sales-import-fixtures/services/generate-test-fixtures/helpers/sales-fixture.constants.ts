@@ -22,7 +22,7 @@ export const LINE_ITEMS_HEADERS = [
 export const INVENTORY_HEADERS = ["SKU", "Inventory Qty"] as const;
 
 export const ROWS_PER_SHEET = 50_000;
-export const JSONL_LINE_COUNT = 100_000;
+/** One JSONL line per catalog SKU — unique sku/description pairs only */
 export const UNIQUE_SKU_COUNT = 5_000;
 export const EXCEL_BATCH_SIZE = 10_000;
 export const JSONL_BATCH_SIZE = 5_000;

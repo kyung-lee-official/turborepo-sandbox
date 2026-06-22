@@ -4,11 +4,11 @@ import type { TestFixtureScenario } from "../../../dto/generate-test-fixtures.dt
 import {
   DESCRIPTION_ADJECTIVES,
   JSONL_BATCH_SIZE,
-  JSONL_LINE_COUNT,
   PARTIAL_INVALID_RATE,
   PRODUCT_NAME_SUFFIXES,
+  UNIQUE_SKU_COUNT,
 } from "./sales-fixture.constants";
-import { type SkuPool, skuFromPool } from "./sku-pool";
+import type { SkuPool } from "./sku-pool";
 
 type BuildProductDescriptionsOptions = {
   filepath: string;
@@ -32,11 +32,12 @@ export async function buildProductDescriptionsJsonl(
   options: BuildProductDescriptionsOptions,
 ): Promise<{ lineCount: number }> {
   const stream = createWriteStream(options.filepath, { encoding: "utf8" });
+  const skus = options.pool.skus;
 
   let buffer = "";
 
-  for (let i = 0; i < JSONL_LINE_COUNT; i++) {
-    const sku = skuFromPool(options.pool, i + 7);
+  for (let i = 0; i < skus.length; i++) {
+    const sku = skus[i]!;
     const invalidate =
       shouldInvalidate(options.scenario) ||
       (options.scenario === "partial" && i === 0);
@@ -67,5 +68,5 @@ export async function buildProductDescriptionsJsonl(
   stream.end();
   await finished(stream);
 
-  return { lineCount: JSONL_LINE_COUNT };
+  return { lineCount: UNIQUE_SKU_COUNT };
 }
