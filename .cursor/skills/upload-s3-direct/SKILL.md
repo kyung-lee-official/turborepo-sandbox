@@ -1,36 +1,177 @@
 ---
 name: upload-s3-direct
 description: >-
-  S3 direct upload via presigned PUT. Backend issues URL and object key; client
-  uploads with native progress; complete verifies HEAD and registerReady ImportBatch.
-  Use when implementing production object-store ingest for async imports.
+  S3 direct upload via presigned PUT. Use with start-processing-adapters for
+  object-store ingest before startProcessing.
 ---
 
 # Upload — S3 direct (presigned PUT)
 
 ## Goal
 
-Client uploads **directly to S3**. Backend issues a **presigned PUT**, verifies on **complete**, then **`registerReady`**. See [import-batch-contract](../import-batch-contract/SKILL.md). Processing via [async-processing](../async-processing/SKILL.md).
+Client uploads **directly to S3** with a server-generated **`objectKey`**. Server saves **`UploadSession`** on complete; client starts processing with **`uploadSessionId`** only. Stops before **`startProcessing`** — [start-processing-adapters](../start-processing-adapters/SKILL.md). Job orchestration — [async-processing](../async-processing/SKILL.md).
 
-**Upload progress:** S3 client / `fetch` / `xhr.upload` — not job SSE.
+**Upload progress:** browser / AWS SDK — **not** job SSE.
+
+**Not implemented yet** under `async-processing/upload/s3-direct/` — this skill is the target contract.
+
+---
+
+## Scope
+
+| This skill owns | [start-processing-adapters](../start-processing-adapters/SKILL.md) owns |
+| --- | --- |
+| Initiate (presigned PUT + server **`key`**) | **`UploadSession`** type + **`UploadSessionStore`** |
+| Complete → build **`UploadSessionSources`** | Start API, adapters, deferred trust model |
+| Pending upload state between initiate and complete | `mapSessionSourcesToStartInput`, `POST .../start` |
+| S3 CORS / bucket policy notes | Session **`consume`** after successful start |
+
+Inject **`UploadSessionStore`** from start-processing-adapters — do not duplicate session persistence here.
+
+---
+
+## When to use
+
+- Large files; avoid proxying bytes through Nest.
+- Browser or mobile client can **`PUT`** to S3.
+- **Deferred start (default):** complete returns **`{ uploadSessionId }`**; client **`POST .../start`**.
+
+## Must not
+
+- Call **`startProcessing`** from upload code — start adapters only.
+- Write **`ProcessingJobRepository`** or acquire **`ProcessingActiveJobLock`** at upload time.
+- **HeadObject** / stat at complete — worker **verify** in [async-processing](../async-processing/SKILL.md#worker).
+- Accept client-supplied **`bucket`** / **`key`** on complete — server owns keys from initiate.
+- Return **`sources`** or **locators** to the client on deferred success — only **`uploadSessionId`** ([deferred start trust model](../start-processing-adapters/SKILL.md#deferred-start-trust-model)).
+- **`autoStart`** on object-store paths unless explicitly designed — default **deferred** (same as [start-processing-adapters — On upload success](../start-processing-adapters/SKILL.md#on-upload-success)).
+
+---
+
+## Terminology
+
+| Term | Meaning |
+| ---- | ------- |
+| **`uploadSessionId`** | Server id spanning initiate + complete; returned to client; used on **`POST .../start`** |
+| **`sourceId`** | Domain **`SourceSpec`** key (multipart field name equivalent) |
+| **`objectKey`** | Server-generated S3 key — never from client |
+| **`UploadSessionSources`** | Built server-side on complete — [session source types](../start-processing-adapters/SKILL.md#session-source-types) |
+| **Initiate** | Allocate keys + presigned PUT URLs per requested **`sourceId`** |
+| **Complete** | Confirm uploads registered; **`UploadSessionStore.save`** |
 
 ---
 
 ## Flow
 
-```text
-POST /upload/s3/sessions/:batchId/slots/:uploadSlotId/initiate
-  { originalName, mimeType, sizeBytes }
-  → { kind: "presigned_put", url, headers, objectKey, expiresAt }
+Solid arrows: this skill. Dashed: start-processing-adapters.
 
-PUT <presigned url>  (client; progress from client)
+```mermaid
+---
+config:
+  theme: neo-dark
+---
+flowchart LR
+  initiate["POST initiate presigned PUT"]
+  put["client PUT to S3"]
+  complete["POST complete save session"]
+  fail["fail no session"]
+  apiCtrl["POST start"]
+  boundary["startProcessing"]
 
-POST /upload/s3/sessions/:batchId/slots/:uploadSlotId/complete
-  { objectKey }
-  → slot committed; when all required slots done → registerReady → { batchId }
-
-POST .../batches/:batchId/start { importKind }  → { jobId }
+  initiate --> put
+  put --> complete
+  complete -->|fail| fail
+  complete -->|success| apiCtrl
+  apiCtrl -.-> boundary
 ```
+
+Worker **HeadObject** runs at job time — not on complete.
+
+---
+
+## HTTP surface (sketch)
+
+Resolve **`sourceSpecs`** from **`DomainRegistry.getByDomainKind(domainKind)`** on initiate — same as [upload-local-multipart](../upload-local-multipart/SKILL.md#validation-and-sourcespecs).
+
+### Initiate
+
+```http
+POST /applications/:domainKind/upload/s3/initiate
+Content-Type: application/json
+
+{
+  "uploadSessionId": "optional-client-hint",
+  "files": [
+    { "sourceId": "mainWorkbook", "originalName": "data.xlsx", "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+  ]
+}
+```
+
+Server:
+
+1. Validate each **`sourceId`** against **`sourceSpecs`** (required/optional, MIME allowlist).
+2. Generate **`uploadSessionId`** if omitted.
+3. For each file: **`key = {prefix}/{uploadSessionId}/{sourceId}-{nanoid}{ext}`** (server prefix from env).
+4. Presign **`PutObject`** (include **`Content-Type`** in signature when enforced).
+5. Store **pending upload** record (Redis): `{ uploadSessionId, domainKind, pending: Record<sourceId, { bucket, key, originalName, mimeType }> }` with TTL.
+
+Response:
+
+```typescript
+{
+  uploadSessionId: string;
+  uploads: Record<string, {
+    sourceId: string;
+    bucket: string;
+    key: string;
+    presignedPutUrl: string;
+    requiredHeaders?: { "Content-Type"?: string };
+  }>;
+}
+```
+
+### Complete
+
+```http
+POST /applications/:domainKind/upload/s3/complete
+Content-Type: application/json
+
+{
+  "uploadSessionId": "sess_abc",
+  "files": [
+    { "sourceId": "mainWorkbook", "declaredSizeBytes": 12345 }
+  ]
+}
+```
+
+Server:
+
+1. Load pending record; reject unknown or expired session.
+2. Build **`UploadSessionSources`** with **`provider: "s3"`** locators (no HeadObject).
+3. **`UploadSessionStore.save`**, delete pending record.
+4. Return **`{ uploadSessionId }`** only.
+
+On failure after partial client PUT: do **not** save session; optionally enqueue orphan-key cleanup (background) — document policy per deployment.
+
+---
+
+## Session source entry (object locator)
+
+```typescript
+{
+  sourceId: "mainWorkbook",
+  originalName: clientFileName,
+  mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  locator: {
+    kind: "object",
+    provider: "s3",
+    bucket: string,
+    key: string,
+    declaredSizeBytes?: number,
+  },
+}
+```
+
+Type: [start-processing-adapters — Session source types](../start-processing-adapters/SKILL.md#session-source-types).
 
 ---
 
@@ -38,56 +179,39 @@ POST .../batches/:batchId/start { importKind }  → { jobId }
 
 | Concern | This path |
 | ------- | --------- |
-| Server-generated `objectKey` | yes |
-| Presigned PUT scoped to one key, short TTL | yes |
-| `HEAD` verify size (and etag) on complete | yes |
-| `registerReady` with `source: { kind: "object", provider: "s3", ... }` | yes |
-| Client upload progress | yes (browser) |
-| Proxy file bytes through Nest | **no** |
-| Enqueue jobs | **no** |
+| Server-generated **`objectKey`** | yes |
+| Presigned PUT per **`sourceId`** | yes |
+| Validate against **`sourceSpecs`** on initiate | yes |
+| Pending state initiate → complete | yes |
+| Complete → **`UploadSessionStore.save`**, return **`{ uploadSessionId }`** | yes |
+| Fail → no manifest / job record | yes |
+| HeadObject on complete | **no** — worker |
+| **`processing.start-requested`** | **no** (default) |
+| Implement **`UploadSessionStore`** | **no** — start-processing-adapters |
 
 ---
 
-## DirectUploadGrant (this path)
+## Operations notes
 
-```typescript
-type S3PresignedGrant = {
-  kind: "presigned_put";
-  uploadSlotId: string;
-  objectKey: string;
-  url: string;
-  headers: Record<string, string>;
-  expiresAt: string;
-};
-```
-
-MinIO and other S3-compatible stores use the same pattern.
-
----
-
-## ImportBatchSource
-
-```typescript
-source: {
-  kind: "object";
-  provider: "s3";
-  bucket: string;
-  key: string;
-  sizeBytes: number;
-  etag?: string;
-}
-```
-
-Worker reads via `ImportBatchSlotReader` (`GetObject`).
+- **CORS** on bucket for browser **`PUT`** (allowed origin, **`PUT`**, exposed headers if needed).
+- **Bucket policy** — restrict writes to server key prefix when possible.
+- **MIME** — validate before presign; bind **`Content-Type`** in signature when enforcing.
+- **Multi-file domains** — one initiate/complete round-trip; map key per **`sourceId`**.
 
 ---
 
 ## Suggested files
 
 ```text
-upload/s3-direct/
-  s3-upload.controller.ts
-  s3-presigned.service.ts
+async-processing/upload/s3-direct/
+  s3-direct-upload.controller.ts
+  s3-direct-upload.service.ts           # inject UploadSessionStore
+  s3-presigned-put.service.ts
+  s3-pending-upload.store.ts            # Redis TTL between initiate and complete
+  build-s3-upload-session-sources.ts
+
+async-processing/start-processing-adapters/
+  upload-session.store.ts               # shared with local / COS
 ```
 
 ---
@@ -95,8 +219,22 @@ upload/s3-direct/
 ## Checklist
 
 ```text
-- [ ] Server generates objectKey; client never picks final key
-- [ ] Do not mark ready without HEAD verify
-- [ ] CORS on bucket for browser PUT if needed
-- [ ] Lifecycle rule for orphan prefixes under uploads/
+- [ ] Initiate validates sourceSpecs; server keys only
+- [ ] Pending upload state with TTL between initiate and complete
+- [ ] Complete saves UploadSession; return { uploadSessionId } only (no locators)
+- [ ] No ProcessingJobRepository at upload time
+- [ ] No HeadObject on complete
+- [ ] CORS for browser PUT if needed
+- [ ] Client POST .../start with uploadSessionId
 ```
+
+---
+
+## Agent invocation
+
+| Task | Skills |
+| ---- | ------ |
+| S3 presigned initiate/complete | `upload-s3-direct` + `start-processing-adapters` |
+| Session store, start adapters | `start-processing-adapters` |
+| Worker verify HeadObject, job, SSE | `async-processing` |
+| COS direct upload (peer path) | `upload-cos-direct` |
