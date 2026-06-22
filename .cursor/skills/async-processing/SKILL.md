@@ -160,14 +160,17 @@ type DomainRunResult =
       errorBlob?: Buffer;
     };
 
+type DomainRunnerIo = {
+  openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
+  onProgress: (detail: unknown) => Promise<void>;
+};
+
 type DomainRunner = {
   domainKind: string;
   run(
+    jobId: string,
     sources: Map<string, VerifiedProcessingSource>,
-    io: {
-      openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
-      onProgress: (detail: unknown) => Promise<void>;
-    },
+    io: DomainRunnerIo,
   ): Promise<DomainRunResult>;
 };
 ```
@@ -604,19 +607,23 @@ export class ProcessingProcessor extends WorkerHost {
 
         let result: DomainRunResult;
         try {
-          result = await registration.domainRunner.run(verifiedSources, {
-            openStream: (source) =>
-              this.sourceReader.openReadStream(source.verifiedLocator),
-            onProgress: async (detail) => {
-              await this.progressPublisher.publishProgress(jobId, detail);
-              await this.refreshLeaseIfNeeded(
-                registration,
-                domainKind,
-                jobId,
-                false,
-              );
+          result = await registration.domainRunner.run(
+            jobId,
+            verifiedSources,
+            {
+              openStream: (source) =>
+                this.sourceReader.openReadStream(source.verifiedLocator),
+              onProgress: async (detail) => {
+                await this.progressPublisher.publishProgress(jobId, detail);
+                await this.refreshLeaseIfNeeded(
+                  registration,
+                  domainKind,
+                  jobId,
+                  false,
+                );
+              },
             },
-          });
+          );
         } catch (domainError) {
           await this.markJobFailed(jobId);
           this.logger.error(`Domain run failed for job ${jobId}`, domainError);
