@@ -2,6 +2,14 @@
 
 import { useRef, useState } from "react";
 import { SalesImportFixturesNav } from "../sales-import-fixtures/SalesImportFixturesNav";
+import {
+  downloadProcessingErrors,
+  type ProcessingJobResponse,
+  startSalesImportProcessing,
+  triggerValidationErrorDownload,
+  uploadSalesImportFiles,
+  waitForProcessingJob,
+} from "./api";
 
 type UploadSlot = {
   sourceId: "salesData" | "inventory" | "productDescriptions";
@@ -33,11 +41,28 @@ const UPLOAD_SLOTS: UploadSlot[] = [
   },
 ];
 
+function formatJobSummary(job: ProcessingJobResponse): string {
+  const parts = [
+    `Job ${job.jobId}`,
+    `phase=${job.phase}`,
+    job.outcome ? `outcome=${job.outcome}` : null,
+    job.processedCount != null
+      ? `processed=${job.processedCount.toLocaleString()}`
+      : null,
+    job.errorCount != null ? `errors=${job.errorCount.toLocaleString()}` : null,
+  ].filter(Boolean);
+  return parts.join(" · ");
+}
+
 export const ImportSalesTestFixtures = () => {
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [selectedFiles, setSelectedFiles] = useState<
     Record<string, File | undefined>
   >({});
+  const [isRunning, setIsRunning] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [lastJob, setLastJob] = useState<ProcessingJobResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const allSelected = UPLOAD_SLOTS.every(
     (slot) => selectedFiles[slot.sourceId],
@@ -45,17 +70,51 @@ export const ImportSalesTestFixtures = () => {
 
   const handleFileChange = (sourceId: string, file: File | undefined) => {
     setSelectedFiles((prev) => ({ ...prev, [sourceId]: file }));
+    setErrorMessage(null);
   };
 
-  const handleUpload = () => {
-    if (!allSelected) {
+  const handleUpload = async () => {
+    const salesData = selectedFiles.salesData;
+    const inventory = selectedFiles.inventory;
+    const productDescriptions = selectedFiles.productDescriptions;
+
+    if (!salesData || !inventory || !productDescriptions) {
       return;
     }
-    alert(
-      "Upload and start processing are not wired yet.\n\n" +
-        "Next backend steps: upload-local-multipart (3 fields), UploadSessionStore, " +
-        "POST /applications/async-processing/start, and the sales-report domain runner.",
-    );
+
+    setIsRunning(true);
+    setStatusMessage("Uploading files…");
+    setErrorMessage(null);
+    setLastJob(null);
+
+    try {
+      const { uploadSessionId } = await uploadSalesImportFiles({
+        salesData,
+        inventory,
+        productDescriptions,
+      });
+
+      setStatusMessage("Starting processing job…");
+      const { jobId } = await startSalesImportProcessing(uploadSessionId);
+
+      setStatusMessage(`Job ${jobId} queued — waiting for completion…`);
+      const job = await waitForProcessingJob(jobId);
+      setLastJob(job);
+      setStatusMessage(formatJobSummary(job));
+
+      if (job.outcome === "validation_failed" && job.errorStorageKey) {
+        const blob = await downloadProcessingErrors(jobId);
+        triggerValidationErrorDownload(jobId, blob);
+      }
+    } catch (error) {
+      console.error("Sales import failed:", error);
+      const message =
+        error instanceof Error ? error.message : "Sales import failed";
+      setErrorMessage(message);
+      setStatusMessage(null);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -101,7 +160,8 @@ export const ImportSalesTestFixtures = () => {
                 }}
                 type="file"
                 accept={slot.accept}
-                className="block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-medium file:text-blue-700 hover:file:bg-blue-100"
+                disabled={isRunning}
+                className="block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:font-medium file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
                 onChange={(event) => {
                   handleFileChange(
                     slot.sourceId,
@@ -117,24 +177,40 @@ export const ImportSalesTestFixtures = () => {
       <button
         type="button"
         onClick={handleUpload}
-        disabled={!allSelected}
+        disabled={!allSelected || isRunning}
         className={`rounded-lg px-6 py-3 font-medium ${
-          allSelected
+          allSelected && !isRunning
             ? "bg-blue-600 text-white hover:bg-blue-700"
             : "cursor-not-allowed bg-gray-300 text-gray-500"
         } transition-colors`}
       >
-        Upload and start import
+        {isRunning ? "Running import…" : "Upload and start import"}
       </button>
 
-      <div className="mt-6 border-amber-400 border-l-4 bg-amber-50 p-4">
-        <p className="text-amber-900 text-sm">
-          <strong>Backend pending:</strong> multipart upload, session store, and
-          domain runner are not implemented yet. This page defines the
-          three-file UX aligned with{" "}
-          <code>applications/sales-import/README.md</code>.
-        </p>
-      </div>
+      {statusMessage ? (
+        <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-blue-900 text-sm">
+          {statusMessage}
+        </div>
+      ) : null}
+
+      {lastJob ? (
+        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-800 text-sm">
+          <p className="font-medium">Last job</p>
+          <p className="mt-1 font-mono text-xs">{formatJobSummary(lastJob)}</p>
+          {lastJob.outcome === "validation_failed" ? (
+            <p className="mt-2 text-amber-800">
+              Validation errors were saved — error XLSX download should have
+              started automatically.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {errorMessage ? (
+        <div className="mt-4 border-red-400 border-l-4 bg-red-50 p-4 text-red-900 text-sm">
+          {errorMessage}
+        </div>
+      ) : null}
     </div>
   );
 };

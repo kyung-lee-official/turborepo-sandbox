@@ -18,9 +18,7 @@ export function SalesImportFixturesNav({
           >
             Import sales test fixtures
           </Link>
-          {
-            " — select the three files and run the sales import job (when wired)."
-          }
+          {" — select the three files and run the sales import job."}
         </p>
       ) : (
         <p className="text-gray-700">
