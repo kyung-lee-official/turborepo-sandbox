@@ -11,12 +11,12 @@ description: >-
 
 ## Goal
 
-**Shared contract and start paths before `startProcessing`.** Upload-* skills persist bytes and build handoff **`sources`**; **this skill** defines the envelope, **who may start processing**, and **adapters** that call **`ProcessingOrchestratorService.startProcessing`** — the [async-processing](../async-processing/SKILL.md) boundary.
+**Shared contract and start paths before `startProcessing`.** Upload-* skills persist bytes and build handoff **`sources`** server-side; **this skill** defines the envelope, **`UploadSessionStore`**, **who may start processing**, and **adapters** that call [**`ProcessingOrchestratorService.startProcessing`**](../async-processing/SKILL.md#processingorchestratorservice) — the async-processing boundary.
 
 - **Upload failed** — cleanup partial blobs; **no** processing job record, **no** event.
-- **Upload succeeded** — ingest returns **`sources`** (and optional **`uploadSessionId`**); see upload-* skills.
-- **Deferred start** — client **`POST .../start`** with **`uploadSessionId`** (recommended) → **API adapter** loads canonical sources → `startProcessing`.
-- **autoStart** — ingest emits **`processing.start-requested`** → **event adapter** → `startProcessing`.
+- **Upload succeeded (deferred)** — ingest saves **`UploadSession`**, returns **`{ uploadSessionId }`** to client only — not locators.
+- **Upload succeeded (autoStart)** — ingest emits **`processing.start-requested`** with in-process `{ domainKind, sources }`.
+- **Deferred start** — client **`POST .../start`** with **`uploadSessionId`** → **API adapter** loads session → `startProcessing` → **consumes session**.
 
 **Upload progress** — upload-* skills (Nest stream, S3/COS SDK). **Job progress** — [async-processing](../async-processing/SKILL.md) (SSE).
 
@@ -31,7 +31,7 @@ description: >-
 | `UploadHandoffSources`, handoff → `StartProcessingInput` map | Multipart, presigned PUT, COS STS |
 | API controller + **API adapter** | Disk paths, presigned URLs, rollback |
 | Event subscriber + **event adapter** | `autoStart` emit from upload handler |
-| **Deferred start trust model** (`uploadSessionId`) | Writing bytes, building locators |
+| **Deferred start trust model** (`uploadSessionId`) + **`UploadSessionStore`** | Writing bytes, building locators |
 | Start API **202** / **409** mapping | Upload routes and checklists |
 
 | Neither this skill nor upload-* | [async-processing](../async-processing/SKILL.md) owns |
@@ -52,7 +52,7 @@ config:
 flowchart TD
   upload["upload path upload-* skill"]
   fail["fail cleanup blobs"]
-  store["store UploadSession optional"]
+  store["save UploadSession required"]
   ret["return uploadSessionId"]
   emit["emit processing.start-requested"]
   apiCtrl["API controller POST start"]
@@ -81,7 +81,8 @@ flowchart TD
 | ---- | ------- |
 | **handoff `sources`** | `UploadHandoffSources` — server-built locators from ingest |
 | **`uploadSessionId`** | Server id; start API loads canonical `sources` — **do not trust client locators** |
-| **`UploadSession`** | Server-stored `{ domainKind, sources, expiresAt }` keyed by `uploadSessionId` |
+| **`UploadSession`** | Server-stored `{ domainKind, sources, expiresAt }`; optional **`startedJobId`** for idempotent replay |
+| **`UploadSessionStore`** | `save` / `get` / `consume` — ingest saves; adapter loads and consumes on successful start |
 | **sourceId** | Routing key (e.g. `mainWorkbook`); map key should match `entry.sourceId` |
 | **originalName** | Client filename; maps to `ProcessingSource.label` |
 | **SourceLocator** | `local` path or `object` bucket/key — **server-generated at ingest** |
@@ -92,7 +93,7 @@ flowchart TD
 
 ---
 
-## Handoff sources
+## Handoff types
 
 ```typescript
 type UploadHandoffEntry = {
@@ -113,14 +114,44 @@ type SourceLocator =
     };
 
 type UploadHandoffSources = Record<string, UploadHandoffEntry>;
+```
 
+Types may live in `upload-session.types.ts` alongside **`UploadSession`** below.
+
+## Upload session
+
+```typescript
 type UploadSession = {
   uploadSessionId: string;
   domainKind: string;
   sources: UploadHandoffSources;
   expiresAt: Date;
+  /** Set after first successful start — optional idempotent replay */
+  startedJobId?: string;
+  startedManifestId?: string;
 };
+
+interface UploadSessionStore {
+  save(session: UploadSession): Promise<void>;
+  get(uploadSessionId: string): Promise<UploadSession | null>;
+  /** Delete session after successful start (default) */
+  consume(uploadSessionId: string): Promise<void>;
+}
 ```
+
+Ingest calls **`save`** after building `sources`. Adapters call **`get`**; API adapter calls **`consume`** after successful **`startProcessing`** (or sets **`startedJobId`** for idempotent retry — pick one policy per deployment).
+
+### Session lifecycle (deferred start)
+
+| Step | Session state |
+| ---- | ------------- |
+| Ingest success | **`save`** — session pending |
+| **`POST .../start`** loads session | **`get`** — must exist and `expiresAt` in future |
+| **`startProcessing` succeeds** | **`consume`** (recommended) **or** set **`startedJobId`** / **`startedManifestId`** and return same ids on replay |
+| **`startProcessing` fails** (409, enqueue error) | **Keep session** — client may retry start with same **`uploadSessionId`** |
+| Second **`POST .../start`** after **`consume`** | **`get`** → null → **404** — client must re-upload |
+
+**Recommended:** **`consume`** immediately after successful **`startProcessing`**. Client retries that lost the 202 response must re-upload (or implement **`startedJobId`** idempotency instead of consume).
 
 **Ingest rules** (upload-* skills)
 
@@ -146,20 +177,11 @@ Content-Type: application/json
 { "uploadSessionId": "sess_abc", "domainKind": "sales-report" }
 ```
 
-```typescript
-async resolveSourcesForStart(body: StartApiBody): Promise<StartProcessingInput> {
-  const session = await this.uploadSessionStore.get(body.uploadSessionId);
-  if (!session || session.expiresAt < new Date()) {
-    throw new NotFoundException("Upload session expired or unknown");
-  }
-  if (body.domainKind && body.domainKind !== session.domainKind) {
-    throw new BadRequestException("domainKind mismatch");
-  }
-  return mapUploadHandoffToInput(session.domainKind, session.sources);
-}
-```
+Parse with **`startApiBodySchema.strict()`** — reject bodies that include client **`sources`**. Load session via **`UploadSessionStore.get`**, map with **`mapUploadHandoffToInput`**, then **`startProcessing`**. See **API adapter** below for **`consume`** and failure retry behavior.
 
-Reject start bodies that carry **`sources` with locators** unless behind an explicit **signed-locator** mode (HMAC token from upload response) — not the default.
+When using **`consume`** after success, a replayed **`uploadSessionId`** gets **404** (session gone). With **`startedJobId`** idempotency instead, return stored **`{ jobId, manifestId }`** on replay.
+
+Reject **signed-locator** mode only when explicitly implemented — not the default.
 
 **autoStart (event path):** payload `{ domainKind, sources }` is **in-process** from ingest — locators are trusted because upload code just built them. Same process, no client round-trip.
 
@@ -193,14 +215,33 @@ type ProcessingSource = {
 - Resolve **`StartProcessingInput`** via session store or trusted in-process payload.
 - Shape checks: non-empty `domainKind`, at least one source, each `sourceId` key matches `entry.sourceId`, locators present.
 
-**Orchestrator** ([async-processing](../async-processing/SKILL.md)): validate against **`DomainKindRegistration.sourceSpecs`** (required keys). Adapters do **not** duplicate registry rules.
+**Orchestrator** ([async-processing — `startProcessing`](../async-processing/SKILL.md#processingorchestratorservice)): validate against **`DomainKindRegistration.sourceSpecs`**. Adapters do **not** duplicate registry rules.
 
 ```typescript
-const startApiBodySchema = z.object({
-  uploadSessionId: z.string().min(1),
-  domainKind: z.string().min(1).optional(),
-});
+const sourceLocatorSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("local"),
+    path: z.string().min(1),
+    declaredSizeBytes: z.number().int().nonnegative().optional(),
+  }),
+  z.object({
+    kind: z.literal("object"),
+    provider: z.enum(["s3", "cos"]),
+    bucket: z.string().min(1),
+    key: z.string().min(1),
+    declaredSizeBytes: z.number().int().nonnegative().optional(),
+  }),
+]);
 
+/** POST .../start — session id only; rejects unknown keys (e.g. client sources) */
+const startApiBodySchema = z
+  .object({
+    uploadSessionId: z.string().min(1),
+    domainKind: z.string().min(1).optional(),
+  })
+  .strict();
+
+/** Event path only — in-process payload from ingest */
 const processingStartRequestedSchema = z.object({
   domainKind: z.string().min(1),
   sources: z.record(
@@ -241,9 +282,20 @@ Controller sets **202 Accepted**; adapter returns `{ jobId, manifestId }`.
 ```typescript
 class ApiStartProcessingAdapter {
   async handle(raw: unknown): Promise<{ jobId: string; manifestId: string }> {
-    const input = await this.resolveAndValidateStartInput(raw);
+    const body = startApiBodySchema.parse(raw);
+    const session = await this.uploadSessionStore.get(body.uploadSessionId);
+    if (!session || session.expiresAt < new Date()) {
+      throw new NotFoundException("Upload session expired or unknown");
+    }
+    if (session.startedJobId && session.startedManifestId) {
+      return { jobId: session.startedJobId, manifestId: session.startedManifestId };
+    }
+
+    const input = mapUploadHandoffToInput(session.domainKind, session.sources);
     try {
-      return await this.processingOrchestrator.startProcessing(input);
+      const result = await this.processingOrchestrator.startProcessing(input);
+      await this.uploadSessionStore.consume(body.uploadSessionId);
+      return result;
     } catch (error) {
       if (error instanceof ActiveJobConflictError) {
         throw new ConflictException({
@@ -256,6 +308,8 @@ class ApiStartProcessingAdapter {
   }
 }
 ```
+
+On **`startProcessing` failure**, do **not** **`consume`** — client may retry with the same **`uploadSessionId`**. Alternative idempotency: persist **`startedJobId`** on session instead of **`consume`**, and return stored ids when set (omit **`consume`** in that mode).
 
 ### Event subscriber (entry)
 
@@ -337,11 +391,12 @@ Local multipart: [upload-local-multipart](../upload-local-multipart/SKILL.md).
 
 1. **Fail → cleanup only** — no processing job record, no event.
 2. **Ingest → handoff `sources` or session only** — no `startProcessing` from upload code.
-3. **Deferred start → session-backed locators** — adapter loads `sources` from server store.
-4. **Entry then adapter** — controller/subscriber forward raw input.
-5. **Only adapters call `startProcessing`**.
-6. **No storage verify** at ingest time.
-7. **Upload progress ≠ job SSE**.
+3. **Deferred start → session-backed locators** — adapter loads `sources` from **`UploadSessionStore`**.
+4. **Consume session after successful start** — prevent replay double-jobs (or use **`startedJobId`** idempotency).
+5. **Entry then adapter** — controller/subscriber forward raw input.
+6. **Only adapters call `startProcessing`**.
+7. **No storage verify** at ingest time.
+8. **Upload progress ≠ job SSE**.
 
 ---
 
@@ -356,6 +411,8 @@ Local multipart: [upload-local-multipart](../upload-local-multipart/SKILL.md).
 | HEAD/stat at ingest | Worker verify in async-processing |
 | Swallow `ActiveJobConflictError` on API start | Map to HTTP 409 |
 | Rethrow `ActiveJobConflictError` on autoStart default | Log + skip — upload already succeeded |
+| Start without `consume` / idempotency | Same `uploadSessionId` can enqueue duplicate jobs |
+| `startApiBodySchema` without `.strict()` | Client can POST forged `sources` alongside session id |
 
 ---
 
@@ -385,11 +442,13 @@ import/
 **New handoff / start wiring (this skill):**
 
 ```text
-- [ ] UploadSession store + TTL for deferred start
-- [ ] POST .../start accepts uploadSessionId; adapter loads sources server-side
-- [ ] API adapter maps ActiveJobConflictError → 409; controller @HttpCode(202)
+- [ ] UploadSessionStore: save, get, consume (+ TTL on save)
+- [ ] startApiBodySchema.strict() — uploadSessionId only on POST .../start
+- [ ] Consume session after successful startProcessing (or startedJobId idempotency)
+- [ ] Keep session on start failure so client can retry
+- [ ] API adapter: ActiveJobConflictError → 409; controller @HttpCode(202)
 - [ ] Event adapter: ActiveJobConflictError → log warn + return
-- [ ] mapUploadHandoffToInput + Zod schemas
+- [ ] mapUploadHandoffToInput + sourceLocatorSchema for event path
 ```
 
 **New ingest path (upload-* skill + handoff ingest rules):**
