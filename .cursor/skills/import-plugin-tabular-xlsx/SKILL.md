@@ -84,16 +84,17 @@ type ErrorDetail = {
 /** Read stream from io.openStream, then load workbook */
 async function loadWorkbookFromBuffer(buffer: Buffer): Promise<ExcelJS.Workbook>;
 
+type TabularParseContext = { sourceId: string; label?: string };
+
 type TabularRowHandler = (row: {
   rowNumber: number;
   cells: Record<string, string>;
 }) => void | Promise<void>;
 
-/** Streaming — preferred for large sheets */
 async function parseSheetRows(
   workbook: ExcelJS.Workbook,
   spec: TabularSheetSpec,
-  ctx: { sourceId: string; label?: string },
+  ctx: TabularParseContext,
   handlers: {
     onRow: TabularRowHandler;
     onProgress?: (percent: number) => Promise<void>;
@@ -101,21 +102,49 @@ async function parseSheetRows(
   },
 ): Promise<void>;
 
-/** Build downloadable error report — apply freeze + filter on header row */
+function scopeTabularError(
+  detail: ErrorDetail,
+  scope: { sourceId: string; originalName?: string; worksheetName?: string },
+): ErrorDetail;
+
+async function reportTabularProgress(
+  onProgress: ((detail: unknown) => Promise<void>) | undefined,
+  phase: TabularProcessingPhase,
+  sourceId: string,
+  options?: { worksheetName?: string; originalName?: string; percent?: number },
+): Promise<void>;
+
 async function buildTabularErrorXlsxBuffer(
   errors: readonly ErrorDetail[],
 ): Promise<Buffer>;
 ```
 
-After **`loadWorkbookFromBuffer`**, domain validates business rules in **`onRow`**, collects **`ErrorDetail[]`**, and may emit **`saving_database`** progress itself.
+After **`loadWorkbookFromBuffer`**, domain validates business rules in **`onRow`**, collects **`ErrorDetail[]`**, and emits **`validating_rows`** / **`saving_database`** via **`reportTabularProgress`**. **`parseSheetRows`** scopes parse-time errors with **`scopeTabularError`** before **`pushError`**.
 
 ---
 
 ## Domain integration
 
-1. **`domainRunner.run`** receives **`VerifiedProcessingSource`** — get bytes from **`io.openStream(source)`** (buffer the stream, or use project stream helper).
-2. **`loadWorkbookFromBuffer`** → **`parseSheetRows`** per **`TabularSheetSpec`** owned by the domain module.
-3. Scope errors with **`sourceId`**, **`label` → `originalName`**, **`worksheetName`**, **`rowNumber`** (1-based Excel row).
+1. **`domainRunner.run`** — **`stream = await io.openStream(source)`**, buffer via **`readStreamToBuffer`** / **`loadWorkbookFromStream`**, then **`loadWorkbookFromBuffer`**.
+2. **`parseSheetRows`** per domain-owned **`TabularSheetSpec`**:
+
+```typescript
+await parseSheetRows(workbook, sheetSpec, { sourceId: source.sourceId, label: source.label }, {
+  pushError: (detail) => tabularErrors.push(detail),
+  onProgress: async (percent) => {
+    await reportTabularProgress(io.onProgress, "parsing_workbook", source.sourceId, {
+      originalName: source.label,
+      worksheetName: sheetSpec.sheetName,
+      percent,
+    });
+  },
+  onRow: async ({ rowNumber, cells }) => {
+    // business rules; scopeTabularError(...) into tabularErrors
+  },
+});
+```
+
+3. Scope errors with **`sourceId`**, **`label` → `originalName`**, **`worksheetName`**, **`rowNumber`** (1-based Excel sheet row).
 4. Merge tabular errors with JSONL **`ErrorDetail[]`** when the domain has multiple plugins.
 5. On validation failures:
 
@@ -137,11 +166,27 @@ return { outcome: "success", processedCount, errorCount: 0 };
 
 Worker stores **`errorBlob`** via **`ProcessingErrorBlobStore`** — [async-processing](../async-processing/SKILL.md#processingerrorblobstore). When **`errorCount > 0`**, always return **`errorBlob`**.
 
-**`saving_database`** progress — domain calls **`reportTabularProgress`** during persistence; plugin does not emit this phase.
+**`validating_rows`** and **`saving_database`** — domain calls **`reportTabularProgress`**; plugin emits **`parsing_workbook`** only (via domain **`onProgress`** wrapper).
 
 ---
 
-## Responsibilities
+## Progress
+
+| Phase | Who emits | Helper |
+| ----- | --------- | ------ |
+| **`parsing_workbook`** | **`parseSheetRows`** (via domain **`onProgress`** wrapper) | **`reportTabularProgress`** |
+| **`validating_rows`** | Domain in **`onRow`** / batch validation | **`reportTabularProgress`** |
+| **`saving_database`** | Domain during persistence | **`reportTabularProgress`** |
+
+```typescript
+await reportTabularProgress(io.onProgress, "validating_rows", "mainWorkbook", {
+  originalName: source.label,
+  worksheetName: sheetSpec.sheetName,
+  percent: 60,
+});
+```
+
+---
 
 | Concern | tabular-xlsx plugin |
 | ------- | ------------------- |
@@ -171,28 +216,7 @@ Processing layer stores bytes; this plugin builds the buffer only.
 
 ---
 
-## Progress helper
-
-```typescript
-await reportTabularProgress(onProgress, "parsing_workbook", "mainWorkbook", {
-  worksheetName: "Orders",
-  originalName: source.label,
-  percent: 42,
-});
-```
-
-**`saving_database`:**
-
-```typescript
-await reportTabularProgress(onProgress, "saving_database", "mainWorkbook", {
-  originalName: source.label,
-  percent: 80,
-});
-```
-
----
-
-## Suggested files
+## Responsibilities
 
 ```text
 import/plugins/tabular-xlsx/
@@ -217,6 +241,7 @@ import/plugins/tabular-xlsx/
 - [ ] buildTabularErrorXlsxBuffer on validation_failed → DomainRunResult.errorBlob
 - [ ] Merge JSONL ErrorDetail[] when domain has jsonl sources
 - [ ] Error XLSX: freeze header row + auto-filter
+- [ ] No index.ts barrel re-exports
 ```
 
 ---

@@ -10,68 +10,64 @@ description: >-
 
 Shared by all async JSONL **`sourceId`** values. Domain **`DomainRunner`** calls this plugin; [async-processing](../async-processing/SKILL.md) owns **`DomainRunResult`**, SSE, and error blob storage. Upload: [start-processing-adapters](../start-processing-adapters/SKILL.md). Validation error download merges into tabular-xlsx — [import-plugin-tabular-xlsx](../import-plugin-tabular-xlsx/SKILL.md).
 
+Implement under **`apps/nest-app/src/import/plugins/jsonl/`** (no barrel **`index.ts`** — import concrete files).
+
 ---
 
 ## Scope
 
 | This plugin owns | Domain runner owns |
 | --- | --- |
-| Read/parse a **`Readable`** line by line | **`io.openStream(source)`** per **`VerifiedProcessingSource`** |
-| **`JSON.parse`**, trim string fields at ingest | Business rules in **`onLine`** |
-| Parse-site **`ErrorDetail`** (bad JSON, non-object line) | **`validating_rows`** and **`saving_database`** progress |
-| **`parsing_lines`** progress via **`reportJsonlProgress`** | Merge errors, **`buildTabularErrorXlsxBuffer`**, **`DomainRunResult`** |
+| Read **`Readable`**, split lines, **`JSON.parse`** per line | **`io.openStream(source)`** per **`VerifiedProcessingSource`** |
+| Parse-site **`ErrorDetail`** (bad JSON, non-object line) | Business rules in **`onLine`** |
+| Trim **string** fields at ingest before **`onLine`** | **`validating_rows`** and **`saving_database`** progress |
+| **`parsing_lines`** via optional percent callback | Merge errors, **`buildTabularErrorXlsxBuffer`**, **`DomainRunResult`** |
 
 | Must not (plugin) | |
 | --- | --- |
 | BullMQ, Redis, `domainKind` routing, Prisma | |
 | **`io.openStream`** or locator verification | |
-| Separate JSONL error download file | |
+| **`buildTabularErrorXlsxBuffer`** or separate JSONL error download | |
 
 ---
 
 ## When to use
 
 - Line-delimited JSON **`sourceId`** values (`.jsonl`, `application/x-ndjson`).
-- Implementing `import/plugins/jsonl/` (e.g. `productDescriptions` on `sales-report`).
+- Example: `productDescriptions` on a `sales-report` **`domainKind`**.
 
 ---
 
 ## Types
 
+**`ErrorDetail`** — canonical definition in [import-plugin-tabular-xlsx § Types](../import-plugin-tabular-xlsx/SKILL.md#types) (`tabular-processing.types.ts`). JSONL errors use the same shape; **omit `worksheetName`**. **`rowNumber`** is the **1-based physical line** in the file (error XLSX column header stays **Row Number** when merged with tabular errors).
+
 ```typescript
-/** Plugin-emitted phase only — read + JSON.parse per line */
+/** Plugin-emitted phase only */
 type JsonlPluginPhase = "parsing_lines";
 
-/** SSE progress — plugin + domain phases */
+/** Plugin phase + domain-only phases (same union pattern as tabular-xlsx) */
 type JsonlProcessingPhase =
   | JsonlPluginPhase
   | "validating_rows"
   | "saving_database";
 
-/** Published via io.onProgress during domainRunner.run — Redis/SSE in async-processing */
 type JsonlProcessingProgress = {
   phase: JsonlProcessingPhase;
   sourceId: string;
-  /** Display filename — set from VerifiedProcessingSource.label (upload originalName) */
+  /** From VerifiedProcessingSource.label (upload originalName) */
   originalName?: string;
   percent?: number;
 };
 
-/**
- * Same contract as tabular-xlsx ErrorDetail — omit worksheetName on JSONL errors.
- * See import-plugin-tabular-xlsx § Types.
- */
-type ErrorDetail = {
-  message: string;
-  sourceId?: string;
-  /** Set from VerifiedProcessingSource.label at scope site */
+type JsonlParseContext = {
+  sourceId: string;
+  label?: string;
+};
+
+type JsonlErrorScope = {
+  sourceId: string;
   originalName?: string;
-  /**
-   * 1-based source line (physical line in the file).
-   * Maps to the "Row Number" column in merged buildTabularErrorXlsxBuffer output.
-   */
-  rowNumber?: number;
-  rawData?: string;
 };
 ```
 
@@ -81,52 +77,54 @@ type ErrorDetail = {
 
 | Input | Behavior |
 | ----- | -------- |
-| Empty or whitespace-only line | **Skip** — do not call **`onLine`**, do not **`pushError`** |
-| Invalid JSON on a line | **`pushError`** with message, **`rowNumber`**, **`rawData`** = original line text (trim outer whitespace only for storage) |
-| JSON parses to non-object (array, string, number, null) | **`pushError`** — one object per line required |
-| Valid object line | Trim **string** field values once inside parser; pass trimmed **`record`** to **`onLine`** |
-| UTF-8 | Expected; strip optional BOM on first line only |
-| **`percent`** during parse | Optional — use lines processed when total unknown; omit or estimate if no line count |
+| Empty or whitespace-only line | **Skip** — no **`onLine`**, no **`pushError`** |
+| Invalid JSON | **`pushError`** — scoped parse error with **`rowNumber`**, **`rawData`** = line text (trim outer whitespace only for storage) |
+| JSON parses to non-object (`null`, array, primitive) | **`pushError`** — one object per line required; `{}` is valid |
+| Valid object line | Trim **top-level string** values once; pass **`record`** to **`onLine`** |
+| Line endings | Split on `\n`; strip trailing `\r` (CRLF) |
+| UTF-8 | Expected; strip BOM on first line only when present |
+| Final line | Line without trailing `\n` is still parsed |
+| **`rowNumber`** | Always **1-based physical line in the file** (blank lines still increment the counter) |
+| Progress | Optional **`onProgress(percent)`** — **`percent`** from **non-blank lines processed** vs total non-blank lines when known; omit **`percent`** when total unknown |
 
-Domain **`onLine`** receives strings **as trimmed at ingest** — do not re-trim for business logic.
+Domain **`onLine`** receives strings **as trimmed at ingest** — do not re-trim for business logic ([coding convention](../../../.cursor/rules/coding-convention.mdc)).
+
+**`parseJsonlLines`** applies **`scopeJsonlError`** for parse-time errors before **`pushError`**. Domain appends business **`ErrorDetail`** via **`scopeJsonlError`** (or equivalent) in **`onLine`**.
 
 ---
 
 ## Plugin API (sketch)
 
+Mirror [import-plugin-tabular-xlsx § Plugin API](../import-plugin-tabular-xlsx/SKILL.md#plugin-api-sketch): optional percent callback on parse; domain wraps with **`reportJsonlProgress`**.
+
 ```typescript
 type JsonlLineHandler = (line: {
   rowNumber: number;
-  /** Parsed object; string fields already trimmed at ingest */
   record: Record<string, unknown>;
 }) => void | Promise<void>;
 
-/**
- * Domain opens stream; plugin reads until EOF.
- * Internally calls reportJsonlProgress(..., "parsing_lines", ...) at start and
- * every N lines (and on completion). Does not emit validating_rows or saving_database.
- */
+/** Domain opens stream; plugin reads until EOF. Does not call io.openStream. */
 async function parseJsonlLines(
   stream: Readable,
-  ctx: { sourceId: string; label?: string },
+  ctx: JsonlParseContext,
   handlers: {
     onLine: JsonlLineHandler;
-    onProgress: (detail: unknown) => Promise<void>;
+    /** Optional — plugin calls with 0–100 while iterating lines */
+    onProgress?: (percent: number) => Promise<void>;
     pushError: (detail: ErrorDetail) => void;
   },
 ): Promise<void>;
 
 async function reportJsonlProgress(
-  onProgress: (detail: unknown) => Promise<void>,
+  onProgress: ((detail: unknown) => Promise<void>) | undefined,
   phase: JsonlProcessingPhase,
   sourceId: string,
-  opts?: { originalName?: string; percent?: number },
+  options?: { originalName?: string; percent?: number },
 ): Promise<void>;
 
-/** Attach sourceId / originalName from ctx at parse site */
 function scopeJsonlError(
-  detail: Omit<ErrorDetail, "sourceId" | "originalName">,
-  ctx: { sourceId: string; label?: string },
+  detail: ErrorDetail,
+  scope: JsonlErrorScope,
 ): ErrorDetail;
 ```
 
@@ -135,10 +133,34 @@ function scopeJsonlError(
 ## Domain integration
 
 1. **`domainRunner.run`** — for each JSONL source: **`stream = await io.openStream(source)`**.
-2. **`parseJsonlLines(stream, { sourceId, label: source.label }, { onLine, onProgress: io.onProgress, pushError })`**.
-3. In **`onLine`**: run business rules; append domain **`ErrorDetail[]`** (use **`scopeJsonlError`** or equivalent); call **`reportJsonlProgress(io.onProgress, "validating_rows", ...)`** during heavy validation if useful.
+2. **`parseJsonlLines`** with **`ctx: { sourceId: source.sourceId, label: source.label }`**:
+
+```typescript
+await parseJsonlLines(stream, { sourceId: source.sourceId, label: source.label }, {
+  pushError: (detail) => jsonlErrors.push(detail),
+  onProgress: async (percent) => {
+    await reportJsonlProgress(io.onProgress, "parsing_lines", source.sourceId, {
+      originalName: source.label,
+      percent,
+    });
+  },
+  onLine: async ({ rowNumber, record }) => {
+    const message = validateRecord(record);
+    if (message) {
+      jsonlErrors.push(
+        scopeJsonlError(
+          { message, rowNumber, rawData: JSON.stringify(record) },
+          { sourceId: source.sourceId, originalName: source.label },
+        ),
+      );
+    }
+  },
+});
+```
+
+3. During heavy validation: **`reportJsonlProgress(io.onProgress, "validating_rows", ...)`**.
 4. During DB writes: **`reportJsonlProgress(io.onProgress, "saving_database", ...)`**.
-5. Merge tabular + JSONL errors; on failures:
+5. Merge tabular + JSONL **`ErrorDetail[]`**; on failures:
 
 ```typescript
 const errors: ErrorDetail[] = [...tabularErrors, ...jsonlErrors];
@@ -160,54 +182,15 @@ Worker stores **`errorBlob`** via **`ProcessingErrorBlobStore`** — [async-proc
 
 ---
 
-## Responsibilities
-
-| Concern | jsonl plugin |
-| ------- | ------------ |
-| Read **`Readable`**, split on newlines, **`JSON.parse`** per line | yes |
-| Skip blank lines; error on invalid JSON / non-object | yes |
-| Trim string fields at ingest before **`onLine`** | yes |
-| Set **`ErrorDetail.rowNumber`** (1-based source line) | yes |
-| **`scopeJsonlError`** at parse site | yes |
-| **`reportJsonlProgress`** for **`parsing_lines`** only | yes |
-| Open stream (**`io.openStream`**) | **no** — domain |
-| Business validation progress (**`validating_rows`**) | **no** — domain |
-| **`buildTabularErrorXlsxBuffer`** | **no** — tabular-xlsx plugin |
-
-Large files: line callback streaming only (no full-file buffer in plugin).
-
----
-
 ## Progress
 
-**Plugin** — **`parseJsonlLines`** calls **`reportJsonlProgress`** with phase **`parsing_lines`**:
+| Phase | Who emits | Helper |
+| ----- | --------- | ------ |
+| **`parsing_lines`** | **`parseJsonlLines`** (via domain **`onProgress`** wrapper) | **`reportJsonlProgress`** |
+| **`validating_rows`** | Domain in **`onLine`** / batch validation | **`reportJsonlProgress`** |
+| **`saving_database`** | Domain during persistence | **`reportJsonlProgress`** |
 
-```typescript
-await reportJsonlProgress(onProgress, "parsing_lines", "productDescriptions", {
-  originalName: source.label,
-  percent: 42, // optional when line total unknown
-});
-```
-
-**Domain** — **`validating_rows`** during **`onLine`** / batch validation:
-
-```typescript
-await reportJsonlProgress(onProgress, "validating_rows", "productDescriptions", {
-  originalName: source.label,
-  percent: 60,
-});
-```
-
-**Domain** — **`saving_database`** during persistence:
-
-```typescript
-await reportJsonlProgress(onProgress, "saving_database", "productDescriptions", {
-  originalName: source.label,
-  percent: 80,
-});
-```
-
-Clients may receive **`JsonlProcessingProgress`** or **`TabularProcessingProgress`** on the same job when the domain uses both plugins — discriminate on **`phase`** / shape.
+Same job may interleave **`TabularProcessingProgress`** and **`JsonlProcessingProgress`** events — clients discriminate on **`phase`** (and optional **`worksheetName`** on tabular events only).
 
 ---
 
@@ -215,13 +198,11 @@ Clients may receive **`JsonlProcessingProgress`** or **`TabularProcessingProgres
 
 ```text
 import/plugins/jsonl/
-  jsonl-processing.types.ts
+  jsonl-processing.types.ts     # JsonlProcessingProgress, JsonlParseContext; import ErrorDetail from tabular-xlsx
   parse-jsonl-lines.ts
   scope-jsonl-errors.ts
   report-jsonl-progress.ts
 ```
-
-Extract shared **`ErrorDetail`** typing to a small shared module later if tabular and jsonl drift.
 
 ---
 
@@ -229,13 +210,14 @@ Extract shared **`ErrorDetail`** typing to a small shared module later if tabula
 
 ```text
 - [ ] Domain opens io.openStream; plugin receives Readable only
-- [ ] Blank lines skipped; invalid JSON / non-object → ErrorDetail with rawData
-- [ ] Trim string fields in parser before onLine; domain does not re-trim
+- [ ] ErrorDetail from tabular-xlsx types — no duplicate definition
+- [ ] Blank lines skipped; invalid JSON / non-object → scoped ErrorDetail with rawData
+- [ ] Trim top-level string fields before onLine; domain does not re-trim
 - [ ] rowNumber = 1-based source line; no worksheetName on JSONL errors
 - [ ] originalName from VerifiedProcessingSource.label on errors/progress
-- [ ] Plugin emits parsing_lines only; domain emits validating_rows + saving_database
-- [ ] parseJsonlLines calls reportJsonlProgress internally during line loop
+- [ ] Plugin: parsing_lines only (percent callback); domain: validating_rows + saving_database
 - [ ] Domain merges errors → buildTabularErrorXlsxBuffer → DomainRunResult.errorBlob
+- [ ] No index.ts barrel re-exports
 ```
 
 ---
