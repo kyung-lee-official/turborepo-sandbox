@@ -81,7 +81,7 @@ export class ProcessingProcessor extends WorkerHost {
 
         let result: DomainRunResult;
         try {
-          result = await registration.domainRunner.run(verifiedSources, {
+          result = await registration.domainRunner.run(jobId, verifiedSources, {
             openStream: (source) =>
               this.sourceReader.openReadStream(source.verifiedLocator),
             onProgress: async (detail) => {

@@ -51,14 +51,17 @@ export type DomainRunResult =
       errorBlob?: Buffer;
     };
 
+export type DomainRunnerIo = {
+  openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
+  onProgress: (detail: unknown) => Promise<void>;
+};
+
 export type DomainRunner = {
   domainKind: string;
   run(
+    jobId: string,
     sources: Map<string, VerifiedProcessingSource>,
-    io: {
-      openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
-      onProgress: (detail: unknown) => Promise<void>;
-    },
+    io: DomainRunnerIo,
   ): Promise<DomainRunResult>;
 };
 
