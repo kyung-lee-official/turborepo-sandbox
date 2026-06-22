@@ -299,7 +299,8 @@ model ProcessingJob {
     updatedAt       DateTime           @updatedAt
     completedAt     DateTime?
 
-    manifest ProcessingManifest?
+    manifest               ProcessingManifest?
+    salesImportMergedLines SalesImportMergedLine[]
 
     @@index([domainKind])
     @@index([phase])
@@ -316,4 +317,38 @@ model ProcessingManifest {
     job ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
     @@index([domainKind])
+}
+
+/**
+ * sales-report domain — one persisted row per LineItems sheet row after merge.
+ * Base fields from salesData.xlsx LineItems; supplement fields joined by SKU from
+ * Products (same workbook), inventory.xlsx, and productDescriptions.jsonl.
+ */
+model SalesImportMergedLine {
+    id               Int      @id @default(autoincrement())
+    processingJobId  String
+    /** 1-based Excel row in LineItems (audit / error correlation) */
+    sourceLineNumber Int
+
+    orderId   String
+    sku       String
+    quantity  Int
+    saleDate  DateTime @db.Date
+
+    productName  String?
+    category     String?
+    unitPrice    Decimal? @db.Decimal(10, 2)
+
+    inventoryQty Int?
+
+    description String?
+
+    createdAt DateTime @default(now())
+
+    processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
+
+    @@unique([processingJobId, sourceLineNumber])
+    @@index([processingJobId])
+    @@index([sku])
+    @@index([orderId])
 }
