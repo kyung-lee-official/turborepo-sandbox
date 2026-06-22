@@ -42,7 +42,8 @@ flowchart TD
   apiAdp -.-> orch
   eventAdp -.-> orch
   orch --> persist
-  persist --> enqueue
+  persist --> lock["ProcessingActiveJobLock acquire"]
+  lock --> enqueue
   enqueue --> worker
   worker --> verify
   verify --> domain
@@ -536,12 +537,13 @@ Key convention: e.g. `processing-errors/{jobId}.xlsx`. Bytes never go in DB or B
 9. Store error blob when present; compute **`errorStorageKey`**.
 10. **`finalize`** `phase: complete` with outcome from **`DomainRunResult`**.
 11. **`publishTerminal`** `{ phase: "complete" }`.
-12. **`finally`** (always): **`release(domainKind, jobId)`** first; then **best-effort** **`deleteLocator`** (log per-source failures).
+12. **`finally`** (always): reload **`ProcessingJob`** — **`release(domainKind, jobId)`** only when phase is **`complete`** or **`failed`**; then **best-effort** **`deleteLocator`** (log per-source failures).
 
 **Error paths**
 
-- **Domain throw (step 8):** **`finalize`** `failed`, **`publishTerminal`** `{ phase: "failed" }` (best effort), rethrow.
-- **Post-domain failure (steps 9–11):** log; **retry `finalize` once** with the same **`DomainRunResult`** when the domain succeeded. **Do not** map to `failed` when a valid **`DomainRunResult`** is already in scope. If retry fails, **`publishTerminal`** (best effort) after checking DB phase; leave row as-is when already terminal.
+- **Pre-domain throw (steps 3–7):** **`finalize`** `failed`, **`publishTerminal`** `{ phase: "failed" }` (best effort). Do not **`release`** while phase is still **`processing`** — **`finally`** gates release on terminal phase.
+- **Domain throw (step 8):** **`markJobFailed`** — do not rethrow into pre-domain handler (avoids double finalize).
+- **Post-domain failure (steps 9–11):** log; **retry `finalizeSuccess` once** with the same **`DomainRunResult`**. **Do not** map to `failed` when domain succeeded. **`publishTerminal`** only when DB phase is already terminal; otherwise rely on SSE idle fallback + **`GET jobs/:jobId`** poll.
 - **Never** wrap steps 9–11 in the same **`catch`** as step 8.
 
 ```typescript
@@ -572,89 +574,92 @@ export class ProcessingProcessor extends WorkerHost {
     }
 
     try {
-      const jobRow = await this.jobRepository.findById(jobId);
-      domainKind = jobRow!.domainKind;
-      const registration = this.domainRegistry.getByDomainKind(domainKind);
-      await this.refreshLeaseIfNeeded(registration, domainKind, jobId, true);
-
-      const manifest =
-        await this.jobRepository.getManifestByManifestId(manifestId);
-      if (!manifest) {
-        await this.jobRepository.finalize(jobId, {
-          phase: "failed",
-          outcome: "failed",
-          completedAt: new Date(),
-        });
-        await this.progressPublisher.publishTerminal(jobId, {
-          phase: "failed",
-        });
-        return;
-      }
-
-      domainKind = manifest.domainKind;
-      const verifiedSources = await this.buildVerifiedSources(
-        manifest.sources,
-        verifiedForCleanup,
-      );
-
-      await this.refreshLeaseIfNeeded(
-        registration,
-        domainKind,
-        jobId,
-        true,
-      );
-
-      let result: DomainRunResult;
       try {
-        result = await registration.domainRunner.run(verifiedSources, {
-          openStream: (source) =>
-            this.sourceReader.openReadStream(source.verifiedLocator),
-          onProgress: async (detail) => {
-            await this.progressPublisher.publishProgress(jobId, detail);
-            await this.refreshLeaseIfNeeded(
-              registration,
-              domainKind,
-              jobId,
-              false,
-            );
-          },
-        });
-      } catch (domainError) {
-        await this.jobRepository.finalize(jobId, {
-          phase: "failed",
-          outcome: "failed",
-          completedAt: new Date(),
-        });
-        await this.progressPublisher.publishTerminal(jobId, {
-          phase: "failed",
-        });
-        throw domainError;
-      }
+        const jobRow = await this.jobRepository.findById(jobId);
+        domainKind = jobRow!.domainKind;
+        let registration = this.domainRegistry.getByDomainKind(domainKind);
+        await this.refreshLeaseIfNeeded(registration, domainKind, jobId, true);
 
-      try {
-        await this.finalizeSuccess(jobId, result);
-        await this.progressPublisher.publishTerminal(jobId, {
-          phase: "complete",
-        });
-      } catch (postDomainError) {
-        this.logger.error(
-          `Post-domain finalize failed for job ${jobId}`,
-          postDomainError,
+        const manifest =
+          await this.jobRepository.getManifestByManifestId(manifestId);
+        if (!manifest) {
+          await this.markJobFailed(jobId);
+          return;
+        }
+
+        domainKind = manifest.domainKind;
+        registration = this.domainRegistry.getByDomainKind(domainKind);
+
+        const verifiedSources = await this.buildVerifiedSources(
+          manifest.sources,
+          verifiedForCleanup,
         );
+
+        await this.refreshLeaseIfNeeded(
+          registration,
+          domainKind,
+          jobId,
+          true,
+        );
+
+        let result: DomainRunResult;
+        try {
+          result = await registration.domainRunner.run(verifiedSources, {
+            openStream: (source) =>
+              this.sourceReader.openReadStream(source.verifiedLocator),
+            onProgress: async (detail) => {
+              await this.progressPublisher.publishProgress(jobId, detail);
+              await this.refreshLeaseIfNeeded(
+                registration,
+                domainKind,
+                jobId,
+                false,
+              );
+            },
+          });
+        } catch (domainError) {
+          await this.markJobFailed(jobId);
+          this.logger.error(`Domain run failed for job ${jobId}`, domainError);
+          return;
+        }
+
         try {
           await this.finalizeSuccess(jobId, result);
-          await this.progressPublisher.publishTerminal(jobId, {
-            phase: "complete",
-          });
-        } catch (retryError) {
-          this.logger.error(`Post-domain retry failed for job ${jobId}`, retryError);
-          await this.progressPublisher.publishTerminal(jobId, {
-            phase: "complete",
-          });
+          await this.publishTerminalIfTerminal(jobId);
+        } catch (postDomainError) {
+          this.logger.error(
+            `Post-domain finalize failed for job ${jobId}`,
+            postDomainError,
+          );
+          try {
+            await this.finalizeSuccess(jobId, result);
+          } catch (retryError) {
+            this.logger.error(
+              `Post-domain retry failed for job ${jobId}`,
+              retryError,
+            );
+          }
+          await this.publishTerminalIfTerminal(jobId);
         }
+      } catch (preDomainError) {
+        const row = await this.jobRepository.findById(jobId);
+        if (row?.phase === "processing") {
+          await this.markJobFailed(jobId);
+        }
+        this.logger.error(
+          `Pre-domain step failed for job ${jobId}`,
+          preDomainError,
+        );
       }
     } finally {
-      await this.activeJobLock.release(domainKind, jobId);
+      const row = await this.jobRepository.findById(jobId);
+      if (
+        row &&
+        (row.phase === "complete" || row.phase === "failed") &&
+        (await this.activeJobLock.isHeldBy(jobId, row.domainKind))
+      ) {
+        await this.activeJobLock.release(row.domainKind, jobId);
+      }
       for (const source of verifiedForCleanup) {
         try {
           await this.sourceReader.deleteLocator(source.verifiedLocator);
@@ -666,6 +671,29 @@ export class ProcessingProcessor extends WorkerHost {
         }
       }
     }
+  }
+
+  private async markJobFailed(jobId: string): Promise<void> {
+    await this.jobRepository.finalize(jobId, {
+      phase: "failed",
+      outcome: "failed",
+      completedAt: new Date(),
+    });
+    try {
+      await this.progressPublisher.publishTerminal(jobId, { phase: "failed" });
+    } catch {
+      // best effort
+    }
+  }
+
+  private async publishTerminalIfTerminal(jobId: string): Promise<void> {
+    const row = await this.jobRepository.findById(jobId);
+    if (!row || (row.phase !== "complete" && row.phase !== "failed")) {
+      return;
+    }
+    await this.progressPublisher.publishTerminal(jobId, {
+      phase: row.phase === "complete" ? "complete" : "failed",
+    });
   }
 
   private async releaseOrphanLockIfTerminal(
@@ -699,7 +727,7 @@ export class ProcessingProcessor extends WorkerHost {
 }
 ```
 
-Extract **`finalizeSuccess`** (error blob + **`finalize` complete**) in the worker module. **`isHeldBy`** supports steps 1–2 orphan cleanup.
+Worker helpers: **`finalizeSuccess`** (error blob + **`finalize` complete**), **`markJobFailed`**, **`publishTerminalIfTerminal`**. **`finally`** **`release`** only when DB phase is terminal and **`isHeldBy`** matches.
 
 ---
 
@@ -789,8 +817,9 @@ export class AsyncProcessingModule {}
 8. **No BullMQ retry after terminal finalize** — `attempts: 1` or worker idempotency guard.
 9. **Conditional phase transition** — `claimProcessingPhase` must be single-winner when duplicate workers exist.
 10. **BullMQ ≠ domain lock** — worker concurrency or per-domain queues do not replace `ProcessingActiveJobLock`.
-11. **Lock release before locator cleanup** — **`finally`** releases Redis lock even when **`deleteLocator`** fails.
+11. **Lock release before locator cleanup** — **`finally`** releases Redis lock only when DB phase is terminal.
 12. **Separate domain vs post-domain errors** — post-success **`finalize`** must not be overwritten by a broad **`catch`**.
+13. **Terminalize before lock release** — pre-domain and domain throws **`finalize` `failed`** so **`finally`** can **`release`** safely.
 
 ---
 
@@ -813,7 +842,8 @@ export class AsyncProcessingModule {}
 | Check-then-set active key without `SET NX`          | Race allows two concurrent starts — use atomic acquire        |
 | Redis-buffer job meta + upload bytes stack          | Use DB `ProcessingJob`, object-store locators, handoff skills |
 | Broad try/catch around finalize + publishTerminal   | Post-domain errors overwrite terminal success rows            |
-| deleteLocator before release in finally             | Locator failure blocks lock release — release first           |
+| deleteLocator before release in finally             | Locator failure blocks lock release — release first when terminal |
+| release while DB phase is processing                | Opens global_singleton while row stuck — gate release on terminal phase |
 | Optional refreshLease on long global_singleton runs | TTL expiry allows double start mid-job                        |
 
 ---
