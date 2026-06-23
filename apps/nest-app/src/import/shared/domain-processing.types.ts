@@ -1,5 +1,8 @@
 /** Post-parse phases emitted by domain runners — not format plugins */
-export type DomainProcessingPhase = "validating_rows" | "saving_database";
+export type DomainProcessingPhase =
+  | "loading_source"
+  | "validating_rows"
+  | "saving_database";
 
 export type DomainProcessingProgress = {
   phase: DomainProcessingPhase;

@@ -121,6 +121,11 @@ function formatDomainStageDetail(
         : undefined;
   const worksheet =
     typeof record.worksheetName === "string" ? record.worksheetName : undefined;
+
+  if (record.phase === "loading_source") {
+    return sourceLabel;
+  }
+
   const context = [worksheet, sourceLabel].filter(Boolean).join(" · ");
   if (context) {
     parts.push(context);

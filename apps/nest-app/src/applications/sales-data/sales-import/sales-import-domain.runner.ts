@@ -12,6 +12,7 @@ import { parseSheetRows } from "@/import/plugins/tabular-xlsx/parse-sheet-rows";
 import { scopeTabularError } from "@/import/plugins/tabular-xlsx/scope-tabular-errors";
 import { createThrottledDomainProgressReporter } from "@/import/shared/create-throttled-domain-progress";
 import type { ErrorDetail } from "@/import/shared/import-error.types";
+import { reportDomainProgress } from "@/import/shared/report-domain-progress";
 import { PrismaService } from "@/recipes/prisma/prisma.service";
 import {
   SALES_IMPORT_DOMAIN_KIND,
@@ -55,6 +56,12 @@ export class SalesImportDomainRunner implements DomainRunner {
 
     const errors: ErrorDetail[] = [];
 
+    await reportDomainProgress(
+      io.onProgress,
+      "loading_source",
+      salesData.sourceId,
+      { originalName: salesData.label },
+    );
     const salesStream = await io.openStream(salesData);
     const salesWorkbook = await loadWorkbookFromStream(salesStream);
 
@@ -96,6 +103,12 @@ export class SalesImportDomainRunner implements DomainRunner {
     );
 
     const inventoryBySku = new Map<string, InventoryBySku>();
+    await reportDomainProgress(
+      io.onProgress,
+      "loading_source",
+      inventory.sourceId,
+      { originalName: inventory.label },
+    );
     const inventoryStream = await io.openStream(inventory);
     const inventoryWorkbook = await loadWorkbookFromStream(inventoryStream);
     const inventoryCtx = {
@@ -127,6 +140,12 @@ export class SalesImportDomainRunner implements DomainRunner {
     );
 
     const descriptionsBySku = new Map<string, string>();
+    await reportDomainProgress(
+      io.onProgress,
+      "loading_source",
+      productDescriptions.sourceId,
+      { originalName: productDescriptions.label },
+    );
     const jsonlStream = await io.openStream(productDescriptions);
     const jsonlCtx = {
       sourceId: productDescriptions.sourceId,
