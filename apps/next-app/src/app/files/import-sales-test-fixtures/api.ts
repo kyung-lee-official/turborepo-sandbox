@@ -33,11 +33,11 @@ export type ProcessingJobResponse = {
   completedAt: string | null;
 };
 
-export type ProcessingJobErrorsResponse = {
+export type ProcessingJobErrorsJsonlHeader = {
+  kind: "header";
   jobId: string;
   domainKind: string;
-  errorCount: number | null;
-  errors: ImportErrorDetail[];
+  errorCount: number;
 };
 
 const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS;
@@ -90,29 +90,27 @@ export const getProcessingJob = async (
   return res.data;
 };
 
-export const fetchProcessingErrors = async (
+export const fetchProcessingErrorsJsonl = async (
   jobId: string,
-): Promise<ProcessingJobErrorsResponse> => {
-  const res = await axios.get<ProcessingJobErrorsResponse>(
-    `/jobs/${jobId}/errors`,
-    {
-      baseURL: nestBaseUrl,
-    },
-  );
+): Promise<string> => {
+  const res = await axios.get<string>(`/jobs/${jobId}/errors`, {
+    baseURL: nestBaseUrl,
+    responseType: "text",
+  });
   return res.data;
 };
 
 export function triggerValidationErrorDownload(
   jobId: string,
-  report: ProcessingJobErrorsResponse,
+  jsonl: string,
 ): void {
-  const blob = new Blob([JSON.stringify(report, null, 2)], {
-    type: "application/json",
+  const blob = new Blob([jsonl], {
+    type: "application/x-ndjson",
   });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `validation-errors-${jobId}.json`;
+  anchor.download = `validation-errors-${jobId}.jsonl`;
   anchor.click();
   URL.revokeObjectURL(url);
 }

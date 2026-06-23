@@ -5,9 +5,12 @@ import {
   NotFoundException,
   Param,
   Query,
+  Res,
   Sse,
 } from "@nestjs/common";
+import type { Response } from "express";
 import { Observable } from "rxjs";
+import { buildProcessingJobErrorsJsonl } from "@/import/shared/build-processing-job-errors-jsonl";
 import { listProcessingJobsQuerySchema } from "./list-processing-jobs.schema";
 import { ProcessingJobRepository } from "./processing-job.repository";
 import { ProcessingJobErrorRepository } from "./processing-job-error.repository";
@@ -49,7 +52,10 @@ export class ProcessingController {
   }
 
   @Get(":jobId/errors")
-  async getErrors(@Param("jobId") jobId: string) {
+  async getErrors(
+    @Param("jobId") jobId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const job = await this.jobRepository.findById(jobId);
     if (!job) {
       throw new NotFoundException(`Processing job not found: ${jobId}`);
@@ -64,12 +70,19 @@ export class ProcessingController {
       throw new NotFoundException(`No error report for job: ${jobId}`);
     }
 
-    return {
+    const body = buildProcessingJobErrorsJsonl({
       jobId: job.id,
       domainKind: job.domainKind,
-      errorCount: job.errorCount,
+      errorCount: job.errorCount ?? errors.length,
       errors,
-    };
+    });
+
+    res.set({
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Content-Disposition": `attachment; filename="validation-errors-${jobId}.jsonl"`,
+    });
+
+    return body;
   }
 
   @Sse(":jobId/events")

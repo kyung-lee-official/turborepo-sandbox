@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { SalesDataNav } from "../sales-data/SalesDataNav";
 import {
-  fetchProcessingErrors,
+  fetchProcessingErrorsJsonl,
   getProcessingJob,
   type ProcessingJobResponse,
   startSalesImportProcessing,
@@ -132,8 +132,8 @@ export const ImportSalesTestFixtures = () => {
     setErrorMessage(null);
 
     try {
-      const report = await fetchProcessingErrors(lastJob.jobId);
-      triggerValidationErrorDownload(lastJob.jobId, report);
+      const jsonl = await fetchProcessingErrorsJsonl(lastJob.jobId);
+      triggerValidationErrorDownload(lastJob.jobId, jsonl);
     } catch (error) {
       console.error("Failed to download validation errors:", error);
       setErrorMessage(
@@ -228,7 +228,7 @@ export const ImportSalesTestFixtures = () => {
           {showErrorDownload ? (
             <div className="mt-3 space-y-2">
               <p className="text-amber-800">
-                Validation errors were saved to the database. Download the JSON
+                Validation errors were saved to the database. Download the JSONL
                 report to review them.
               </p>
               <button
@@ -239,7 +239,7 @@ export const ImportSalesTestFixtures = () => {
               >
                 {isDownloadingErrors
                   ? "Preparing download…"
-                  : "Download validation errors (JSON)"}
+                  : "Download validation errors (JSONL)"}
               </button>
             </div>
           ) : null}

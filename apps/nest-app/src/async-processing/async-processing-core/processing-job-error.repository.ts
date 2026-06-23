@@ -29,12 +29,12 @@ export class ProcessingJobErrorRepository {
     }
   }
 
-  async listPayloadsByJobId(processingJobId: string): Promise<unknown[]> {
+  async listPayloadsByJobId(processingJobId: string): Promise<ErrorDetail[]> {
     const rows = await this.prisma.client.processingJobError.findMany({
       where: { processingJobId },
       orderBy: { sequence: "asc" },
       select: { payload: true },
     });
-    return rows.map((row) => row.payload);
+    return rows.map((row) => row.payload as ErrorDetail);
   }
 }
