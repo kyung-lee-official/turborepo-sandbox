@@ -77,6 +77,53 @@ export class ProcessingJobRepository {
     });
   }
 
+  async findMany(input: {
+    phases?: ProcessingPhase[];
+    domainKind?: string;
+    limit: number;
+    cursor?: string;
+  }): Promise<{ jobs: ProcessingJob[]; nextCursor: string | null }> {
+    const where: Prisma.ProcessingJobWhereInput = {};
+
+    if (input.phases?.length) {
+      where.phase = { in: input.phases };
+    }
+    if (input.domainKind) {
+      where.domainKind = input.domainKind;
+    }
+
+    if (input.cursor) {
+      const cursorJob = await this.findById(input.cursor);
+      if (cursorJob) {
+        where.AND = [
+          {
+            OR: [
+              { createdAt: { lt: cursorJob.createdAt } },
+              {
+                createdAt: cursorJob.createdAt,
+                id: { lt: cursorJob.id },
+              },
+            ],
+          },
+        ];
+      }
+    }
+
+    const rows = await this.prisma.client.processingJob.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: input.limit + 1,
+    });
+
+    let nextCursor: string | null = null;
+    if (rows.length > input.limit) {
+      const overflow = rows.pop();
+      nextCursor = overflow?.id ?? null;
+    }
+
+    return { jobs: rows, nextCursor };
+  }
+
   async deleteById(jobId: string): Promise<void> {
     await this.prisma.client.processingJob.delete({
       where: { id: jobId },

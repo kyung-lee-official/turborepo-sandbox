@@ -4,11 +4,14 @@ import {
   MessageEvent,
   NotFoundException,
   Param,
+  Query,
   Sse,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
+import { listProcessingJobsQuerySchema } from "./list-processing-jobs.schema";
 import { ProcessingJobRepository } from "./processing-job.repository";
 import { ProcessingJobErrorRepository } from "./processing-job-error.repository";
+import { mapProcessingJobToResponse } from "./processing-job-response.mapper";
 import { ProcessingProgressSseService } from "./processing-progress-sse.service";
 
 @Controller("jobs")
@@ -19,6 +22,22 @@ export class ProcessingController {
     private readonly jobErrorRepository: ProcessingJobErrorRepository,
   ) {}
 
+  @Get()
+  async listJobs(@Query() query: unknown) {
+    const parsed = listProcessingJobsQuerySchema.parse(query ?? {});
+    const { jobs, nextCursor } = await this.jobRepository.findMany({
+      phases: parsed.phase,
+      domainKind: parsed.domainKind,
+      limit: parsed.limit,
+      cursor: parsed.cursor,
+    });
+
+    return {
+      jobs: jobs.map(mapProcessingJobToResponse),
+      nextCursor,
+    };
+  }
+
   @Get(":jobId")
   async getJob(@Param("jobId") jobId: string) {
     const job = await this.jobRepository.findById(jobId);
@@ -26,18 +45,7 @@ export class ProcessingController {
       throw new NotFoundException(`Processing job not found: ${jobId}`);
     }
 
-    return {
-      jobId: job.id,
-      domainKind: job.domainKind,
-      phase: job.phase,
-      outcome: job.outcome,
-      processedCount: job.processedCount,
-      errorCount: job.errorCount,
-      hasErrors: (job.errorCount ?? 0) > 0,
-      createdAt: job.createdAt.toISOString(),
-      updatedAt: job.updatedAt.toISOString(),
-      completedAt: job.completedAt?.toISOString() ?? null,
-    };
+    return mapProcessingJobToResponse(job);
   }
 
   @Get(":jobId/errors")
