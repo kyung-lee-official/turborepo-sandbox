@@ -1,7 +1,8 @@
-import { PassThrough, type Readable } from "node:stream";
+import type { MessageEvent } from "@nestjs/common";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
+import { Observable } from "rxjs";
 import { SSE_IDLE_TIMEOUT_MS } from "../async-processing.types";
 import { ProcessingJobRepository } from "./processing-job.repository";
 
@@ -23,99 +24,119 @@ export class ProcessingProgressSseService {
     private readonly jobRepository: ProcessingJobRepository,
   ) {}
 
-  async streamJobEvents(jobId: string): Promise<Readable> {
-    const job = await this.jobRepository.findById(jobId);
-    if (!job) {
-      throw new NotFoundException(`Processing job not found: ${jobId}`);
-    }
+  streamJobEvents(jobId: string): Observable<MessageEvent> {
+    return new Observable((subscriber) => {
+      let closed = false;
+      let idleTimer: ReturnType<typeof setTimeout> | undefined;
+      let subscriberRedis: Redis | undefined;
+      const progressChannel = `async-processing:progress:${jobId}`;
+      const terminalChannel = `async-processing:terminal:${jobId}`;
 
-    const stream = new PassThrough();
+      const cleanup = async () => {
+        if (closed) {
+          return;
+        }
+        closed = true;
+        if (idleTimer) {
+          clearTimeout(idleTimer);
+        }
+        if (subscriberRedis) {
+          await subscriberRedis.unsubscribe(progressChannel, terminalChannel);
+          subscriberRedis.disconnect();
+          subscriberRedis = undefined;
+        }
+      };
 
-    if (job.phase === "complete" || job.phase === "failed") {
-      stream.write(`data: ${JSON.stringify(this.toSnapshot(job))}\n\n`);
-      stream.end();
-      return stream;
-    }
+      const emitSnapshot = (job: {
+        id: string;
+        domainKind: string;
+        phase: string;
+        outcome: string | null;
+        processedCount: number | null;
+        errorCount: number | null;
+        completedAt: Date | null;
+      }) => {
+        subscriber.next({ data: this.toSnapshot(job) });
+      };
 
-    const subscriber = this.createSubscriber();
-    const progressChannel = `async-processing:progress:${jobId}`;
-    const terminalChannel = `async-processing:terminal:${jobId}`;
+      const resetIdleTimer = () => {
+        if (idleTimer) {
+          clearTimeout(idleTimer);
+        }
+        idleTimer = setTimeout(async () => {
+          const row = await this.jobRepository.findById(jobId);
+          if (!row) {
+            await cleanup();
+            subscriber.complete();
+            return;
+          }
+          emitSnapshot(row);
+          if (row.phase === "complete" || row.phase === "failed") {
+            await cleanup();
+            subscriber.complete();
+            return;
+          }
+          resetIdleTimer();
+        }, SSE_IDLE_TIMEOUT_MS);
+      };
 
-    let idleTimer: ReturnType<typeof setTimeout> | undefined;
-    let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
-    let closed = false;
-
-    const cleanup = async () => {
-      if (closed) {
-        return;
-      }
-      closed = true;
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-      }
-      if (heartbeatTimer) {
-        clearInterval(heartbeatTimer);
-      }
-      await subscriber.unsubscribe(progressChannel, terminalChannel);
-      subscriber.disconnect();
-      if (!stream.destroyed) {
-        stream.end();
-      }
-    };
-
-    const resetIdleTimer = () => {
-      if (idleTimer) {
-        clearTimeout(idleTimer);
-      }
-      idleTimer = setTimeout(async () => {
+      const emitSnapshotAndComplete = async () => {
         const row = await this.jobRepository.findById(jobId);
-        if (!row) {
-          await cleanup();
-          return;
+        if (row) {
+          emitSnapshot(row);
         }
-        if (row.phase === "complete" || row.phase === "failed") {
-          stream.write(`data: ${JSON.stringify(this.toSnapshot(row))}\n\n`);
+        await cleanup();
+        subscriber.complete();
+      };
+
+      void (async () => {
+        try {
+          const job = await this.jobRepository.findById(jobId);
+          if (!job) {
+            subscriber.error(
+              new NotFoundException(`Processing job not found: ${jobId}`),
+            );
+            return;
+          }
+
+          if (job.phase === "complete" || job.phase === "failed") {
+            emitSnapshot(job);
+            subscriber.complete();
+            return;
+          }
+
+          subscriberRedis = this.createSubscriber();
+
+          subscriberRedis.on("message", (channel, message) => {
+            if (channel === progressChannel) {
+              try {
+                subscriber.next({
+                  data: JSON.parse(message) as Record<string, unknown>,
+                });
+              } catch {
+                subscriber.next({ data: message });
+              }
+              resetIdleTimer();
+              return;
+            }
+
+            if (channel === terminalChannel) {
+              void emitSnapshotAndComplete();
+            }
+          });
+
+          await subscriberRedis.subscribe(progressChannel, terminalChannel);
+          resetIdleTimer();
+        } catch (error) {
           await cleanup();
-          return;
+          subscriber.error(error);
         }
-        stream.write(`data: ${JSON.stringify(this.toSnapshot(row))}\n\n`);
-        resetIdleTimer();
-      }, SSE_IDLE_TIMEOUT_MS);
-    };
+      })();
 
-    const emitSnapshotAndClose = async () => {
-      const row = await this.jobRepository.findById(jobId);
-      if (row) {
-        stream.write(`data: ${JSON.stringify(this.toSnapshot(row))}\n\n`);
-      }
-      await cleanup();
-    };
-
-    subscriber.on("message", async (channel, message) => {
-      if (channel === progressChannel) {
-        stream.write(`data: ${message}\n\n`);
-        resetIdleTimer();
-        return;
-      }
-
-      if (channel === terminalChannel) {
-        await emitSnapshotAndClose();
-      }
+      return () => {
+        void cleanup();
+      };
     });
-
-    stream.on("close", () => {
-      void cleanup();
-    });
-
-    await subscriber.subscribe(progressChannel, terminalChannel);
-    heartbeatTimer = setInterval(() => {
-      if (!stream.destroyed) {
-        stream.write(": heartbeat\n\n");
-      }
-    }, 15_000);
-    resetIdleTimer();
-
-    return stream;
   }
 
   private createSubscriber(): Redis {

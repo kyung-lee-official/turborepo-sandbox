@@ -1,5 +1,12 @@
-import { Controller, Get, NotFoundException, Param, Res } from "@nestjs/common";
-import type { Response } from "express";
+import {
+  Controller,
+  Get,
+  MessageEvent,
+  NotFoundException,
+  Param,
+  Sse,
+} from "@nestjs/common";
+import { Observable } from "rxjs";
 import { ProcessingJobRepository } from "./processing-job.repository";
 import { ProcessingJobErrorRepository } from "./processing-job-error.repository";
 import { ProcessingProgressSseService } from "./processing-progress-sse.service";
@@ -57,12 +64,8 @@ export class ProcessingController {
     };
   }
 
-  @Get(":jobId/events")
-  async streamEvents(@Param("jobId") jobId: string, @Res() res: Response) {
-    const stream = await this.progressSseService.streamJobEvents(jobId);
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-    stream.pipe(res);
+  @Sse(":jobId/events")
+  streamEvents(@Param("jobId") jobId: string): Observable<MessageEvent> {
+    return this.progressSseService.streamJobEvents(jobId);
   }
 }
