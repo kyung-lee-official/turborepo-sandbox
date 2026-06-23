@@ -10,8 +10,8 @@ import { scopeJsonlError } from "@/import/plugins/jsonl/scope-jsonl-errors";
 import { loadWorkbookFromStream } from "@/import/plugins/tabular-xlsx/load-workbook-from-buffer";
 import { parseSheetRows } from "@/import/plugins/tabular-xlsx/parse-sheet-rows";
 import { scopeTabularError } from "@/import/plugins/tabular-xlsx/scope-tabular-errors";
+import { createThrottledDomainProgressReporter } from "@/import/shared/create-throttled-domain-progress";
 import type { ErrorDetail } from "@/import/shared/import-error.types";
-import { reportDomainProgress } from "@/import/shared/report-domain-progress";
 import { PrismaService } from "@/recipes/prisma/prisma.service";
 import {
   SALES_IMPORT_DOMAIN_KIND,
@@ -149,7 +149,8 @@ export class SalesImportDomainRunner implements DomainRunner {
       },
     });
 
-    await reportDomainProgress(
+    const validRows: MergedLineInsert[] = [];
+    const validatingProgress = createThrottledDomainProgressReporter(
       io.onProgress,
       "validating_rows",
       salesData.sourceId,
@@ -159,13 +160,26 @@ export class SalesImportDomainRunner implements DomainRunner {
       },
     );
 
-    const validRows: MergedLineInsert[] = [];
+    let validCount = 0;
+    let lineItemErrorCount = 0;
+    let lastValidatedTotal = 0;
+    let lastValidatedProcessed = 0;
 
     await parseSheetRows(
       salesWorkbook,
       salesImportLineItemsSheetSpec,
       salesCtx,
       {
+        onProgress: async ({ processedCount, totalCount }) => {
+          lastValidatedTotal = totalCount;
+          lastValidatedProcessed = processedCount;
+          await validatingProgress.report({
+            totalCount,
+            processedCount,
+            validCount,
+            errorCount: lineItemErrorCount,
+          });
+        },
         onRow: ({ rowNumber, cells }) => {
           const result = mergeLineItemRow(
             rowNumber,
@@ -175,6 +189,7 @@ export class SalesImportDomainRunner implements DomainRunner {
             descriptionsBySku,
           );
           if (!result.ok) {
+            lineItemErrorCount++;
             errors.push(
               scopeTabularError(result.error, {
                 sourceId: salesData.sourceId,
@@ -184,6 +199,7 @@ export class SalesImportDomainRunner implements DomainRunner {
             );
             return;
           }
+          validCount++;
           validRows.push(result.row);
         },
         pushError: (error) => {
@@ -198,27 +214,42 @@ export class SalesImportDomainRunner implements DomainRunner {
       },
     );
 
-    await reportDomainProgress(
+    await validatingProgress.flush({
+      totalCount: lastValidatedTotal,
+      processedCount: lastValidatedProcessed,
+      validCount,
+      errorCount: lineItemErrorCount,
+    });
+
+    const savingProgress = createThrottledDomainProgressReporter(
       io.onProgress,
       "saving_database",
       salesData.sourceId,
       {
         originalName: salesData.label,
-        percent: 0,
       },
     );
 
-    await this.insertMergedLines(jobId, validRows);
+    const totalToSave = validRows.length;
+    await savingProgress.flush({
+      totalCount: totalToSave,
+      processedCount: 0,
+      validCount: 0,
+    });
 
-    await reportDomainProgress(
-      io.onProgress,
-      "saving_database",
-      salesData.sourceId,
-      {
-        originalName: salesData.label,
-        percent: 100,
-      },
-    );
+    await this.insertMergedLines(jobId, validRows, async (insertedCount) => {
+      await savingProgress.report({
+        totalCount: totalToSave,
+        processedCount: insertedCount,
+        validCount: insertedCount,
+      });
+    });
+
+    await savingProgress.flush({
+      totalCount: totalToSave,
+      processedCount: totalToSave,
+      validCount: totalToSave,
+    });
 
     if (errors.length > 0) {
       return {
@@ -239,7 +270,9 @@ export class SalesImportDomainRunner implements DomainRunner {
   private async insertMergedLines(
     jobId: string,
     rows: readonly MergedLineInsert[],
+    onBatchInserted?: (insertedCount: number) => Promise<void>,
   ): Promise<void> {
+    let insertedCount = 0;
     for (let offset = 0; offset < rows.length; offset += INSERT_BATCH_SIZE) {
       const batch = rows.slice(offset, offset + INSERT_BATCH_SIZE);
       await this.prisma.client.salesImportMergedLine.createMany({
@@ -257,6 +290,8 @@ export class SalesImportDomainRunner implements DomainRunner {
           description: row.description,
         })),
       });
+      insertedCount += batch.length;
+      await onBatchInserted?.(insertedCount);
     }
   }
 }
