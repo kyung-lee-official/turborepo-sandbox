@@ -30,7 +30,7 @@ import {
   type ProductBySku,
 } from "./sales-import-domain.validation";
 
-const INSERT_BATCH_SIZE = 1000;
+const INSERT_BATCH_SIZE = 5000;
 
 @Injectable()
 export class SalesImportDomainRunner implements DomainRunner {
@@ -57,6 +57,10 @@ export class SalesImportDomainRunner implements DomainRunner {
 
     const salesStream = await io.openStream(salesData);
     const salesWorkbook = await loadWorkbookFromStream(salesStream);
+
+    if (!salesWorkbook.getWorksheet(SALES_IMPORT_SHEETS.products)) {
+      throw new Error(`Worksheet not found: ${SALES_IMPORT_SHEETS.products}`);
+    }
 
     if (!salesWorkbook.getWorksheet(SALES_IMPORT_SHEETS.lineItems)) {
       throw new Error(`Worksheet not found: ${SALES_IMPORT_SHEETS.lineItems}`);
