@@ -13,6 +13,7 @@ import {
 import { ImportJobProgressPanel } from "./ImportJobProgressPanel";
 import {
   type CurrentJobPhase,
+  describeUploadProgress,
   waitForProcessingJobViaSse,
 } from "./processing-job-sse";
 
@@ -96,12 +97,23 @@ export const ImportSalesTestFixtures = () => {
     setCurrentPhase(null);
 
     try {
-      setCurrentPhase({ label: "Uploading files" });
-      const { uploadSessionId } = await uploadSalesImportFiles({
-        salesData,
-        inventory,
-        productDescriptions,
+      setCurrentPhase({
+        label: "Uploading files",
+        detail: "Preparing upload…",
+        percent: 0,
       });
+      const { uploadSessionId } = await uploadSalesImportFiles(
+        {
+          salesData,
+          inventory,
+          productDescriptions,
+        },
+        {
+          onUploadProgress: ({ loaded, total }) => {
+            setCurrentPhase(describeUploadProgress(loaded, total));
+          },
+        },
+      );
 
       setCurrentPhase({ label: "Starting job" });
       const { jobId } = await startSalesImportProcessing(uploadSessionId);

@@ -23,6 +23,34 @@ export type CurrentJobPhase = {
   percent?: number;
 };
 
+function formatByteCount(bytes: number): string {
+  if (bytes < 1024) {
+    return `${bytes.toLocaleString()} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function describeUploadProgress(
+  loaded: number,
+  total?: number,
+): CurrentJobPhase {
+  if (total != null && total > 0) {
+    return {
+      label: "Uploading files",
+      detail: `${formatByteCount(loaded)} / ${formatByteCount(total)}`,
+      percent: Math.min(100, Math.round((loaded / total) * 100)),
+    };
+  }
+
+  return {
+    label: "Uploading files",
+    detail: `${formatByteCount(loaded)} uploaded`,
+  };
+}
+
 function readCount(
   record: Record<string, unknown>,
   key: string,

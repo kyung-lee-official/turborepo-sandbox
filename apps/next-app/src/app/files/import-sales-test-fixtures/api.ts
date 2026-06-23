@@ -42,11 +42,21 @@ export type ProcessingJobErrorsJsonlHeader = {
 
 const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS;
 
-export const uploadSalesImportFiles = async (files: {
-  salesData: File;
-  inventory: File;
-  productDescriptions: File;
-}): Promise<UploadSessionResponse> => {
+export type UploadProgressUpdate = {
+  loaded: number;
+  total?: number;
+};
+
+export const uploadSalesImportFiles = async (
+  files: {
+    salesData: File;
+    inventory: File;
+    productDescriptions: File;
+  },
+  options?: {
+    onUploadProgress?: (update: UploadProgressUpdate) => void;
+  },
+): Promise<UploadSessionResponse> => {
   const formData = new FormData();
   formData.append("salesData", files.salesData);
   formData.append("inventory", files.inventory);
@@ -59,6 +69,12 @@ export const uploadSalesImportFiles = async (files: {
       baseURL: nestBaseUrl,
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 20 * 60 * 1000,
+      onUploadProgress: (event) => {
+        options?.onUploadProgress?.({
+          loaded: event.loaded,
+          total: event.total,
+        });
+      },
     },
   );
   return res.data;
