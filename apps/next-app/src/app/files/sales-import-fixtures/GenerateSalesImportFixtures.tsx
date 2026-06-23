@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { SalesDataNav } from "../sales-data/SalesDataNav";
 import { generateTestFixtures, type ScenarioBundle } from "./api";
-import { SalesImportFixturesNav } from "./SalesImportFixturesNav";
 
 function formatBundleSummary(bundle: ScenarioBundle): string {
   const files = bundle.uploadSlots
@@ -42,11 +42,11 @@ export const GenerateSalesImportFixtures = () => {
 
   return (
     <div className="mx-auto max-w-4xl p-6">
+      <SalesDataNav current="generate" />
+
       <h1 className="mb-6 font-bold text-3xl">
         Generate Sales Import Test Fixtures
       </h1>
-
-      <SalesImportFixturesNav current="generate" />
       <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
         <h2 className="mb-4 font-semibold text-xl">Generate Test Files</h2>
         <div className="mb-4 space-y-3">

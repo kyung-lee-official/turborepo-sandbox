@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { ProcessingJobResponse } from "../import-sales-test-fixtures/api";
+import { SalesDataNav } from "../sales-data/SalesDataNav";
 import {
   ACTIVE_JOB_PHASES,
   HISTORY_JOB_PHASES,
@@ -101,20 +101,14 @@ export function ProcessingJobsList() {
 
   return (
     <div className="mx-auto max-w-5xl p-6">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="mb-2 font-bold text-3xl">Processing jobs</h1>
-          <p className="text-gray-600">
-            Async import jobs from <code className="text-sm">GET /jobs</code>{" "}
-            with phase filters.
-          </p>
-        </div>
-        <Link
-          href="/files/import-sales-test-fixtures"
-          className="rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-800 text-sm hover:bg-gray-50"
-        >
-          Back to import
-        </Link>
+      <SalesDataNav current="jobs" />
+
+      <div className="mb-6">
+        <h1 className="mb-2 font-bold text-3xl">Processing jobs</h1>
+        <p className="text-gray-600">
+          Async import jobs from <code className="text-sm">GET /jobs</code> with
+          phase filters.
+        </p>
       </div>
 
       <div className="mb-4 flex gap-2">

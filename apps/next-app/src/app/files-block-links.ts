@@ -37,21 +37,9 @@ export const filesBlockLinks = [
   },
   {
     link: "/files/sales-import-fixtures",
-    text: "generate sales import test fixtures",
+    text: "sales data",
     description:
-      "Generate sales-import fixture bundles (XLSX + JSONL) for async import testing and save them under apps/nest-app/temp.",
-  },
-  {
-    link: "/files/import-sales-test-fixtures",
-    text: "import sales test fixtures",
-    description:
-      "Select salesData.xlsx, inventory.xlsx, and productDescriptions.jsonl to upload and run the sales-report async import job.",
-  },
-  {
-    link: "/files/processing-jobs",
-    text: "processing jobs",
-    description:
-      "List active and historical async processing jobs with phase filters from GET /jobs.",
+      "Generate import fixtures, run sales-report async import (three upload slots), and list active or historical processing jobs.",
   },
   {
     link: "/files/upload-multiple-excel",

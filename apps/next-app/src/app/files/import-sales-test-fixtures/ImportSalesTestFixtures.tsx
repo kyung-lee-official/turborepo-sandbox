@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { SalesImportFixturesNav } from "../sales-import-fixtures/SalesImportFixturesNav";
+import { SalesDataNav } from "../sales-data/SalesDataNav";
 import {
   fetchProcessingErrors,
   getProcessingJob,
@@ -151,14 +151,14 @@ export const ImportSalesTestFixtures = () => {
 
   return (
     <div className="mx-auto max-w-4xl p-6">
+      <SalesDataNav current="import" />
+
       <h1 className="mb-2 font-bold text-3xl">Import Sales Test Fixtures</h1>
       <p className="mb-4 text-gray-600">
         Upload the three sources for{" "}
         <code className="text-sm">sales-report</code> async import. LineItems
         rows merge with Products, inventory, and JSONL by SKU.
       </p>
-
-      <SalesImportFixturesNav current="import" />
 
       <div className="mb-6 space-y-4">
         {UPLOAD_SLOTS.map((slot) => {
