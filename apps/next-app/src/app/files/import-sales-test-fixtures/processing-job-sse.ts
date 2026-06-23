@@ -17,17 +17,12 @@ export type ProcessingJobSnapshot = Pick<
   | "completedAt"
 >;
 
-export type ProgressLine = {
-  id: string;
-  timestamp: Date;
+export type CurrentJobPhase = {
   label: string;
   detail?: string;
 };
 
-export function describeProcessingProgress(progress: unknown): {
-  label: string;
-  detail?: string;
-} {
+export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
   if (!progress || typeof progress !== "object") {
     return { label: "Processing" };
   }
@@ -66,15 +61,14 @@ export function describeProcessingProgress(progress: unknown): {
   }
 }
 
-export function describeJobSnapshot(snapshot: ProcessingJobSnapshot): {
-  label: string;
-  detail?: string;
-} {
+export function describeJobSnapshot(
+  snapshot: ProcessingJobSnapshot,
+): CurrentJobPhase {
   switch (snapshot.phase) {
     case "queued":
-      return { label: "Job queued" };
+      return { label: "Queued" };
     case "processing":
-      return { label: "Job processing" };
+      return { label: "Processing" };
     case "complete": {
       const parts = [
         snapshot.outcome ?? "complete",
@@ -85,12 +79,12 @@ export function describeJobSnapshot(snapshot: ProcessingJobSnapshot): {
           ? `${snapshot.errorCount.toLocaleString()} errors`
           : null,
       ].filter(Boolean);
-      return { label: "Job complete", detail: parts.join(" · ") };
+      return { label: "Complete", detail: parts.join(" · ") };
     }
     case "failed":
-      return { label: "Job failed" };
+      return { label: "Failed" };
     default:
-      return { label: `Job ${snapshot.phase}` };
+      return { label: snapshot.phase };
   }
 }
 
@@ -154,7 +148,7 @@ export function waitForProcessingJobViaSse(
   jobId: string,
   nestBaseUrl: string | undefined,
   handlers: {
-    onProgressLine?: (line: ProgressLine) => void;
+    onPhaseChange?: (phase: CurrentJobPhase) => void;
     timeoutMs?: number;
   } = {},
 ): Promise<ProcessingJobSnapshot> {
@@ -174,21 +168,8 @@ export function waitForProcessingJobViaSse(
       action();
     };
 
-    let lastLabel: string | undefined;
-    let lastDetail: string | undefined;
-
-    const pushLine = (label: string, detail?: string) => {
-      if (lastLabel === label && lastDetail === detail) {
-        return;
-      }
-      lastLabel = label;
-      lastDetail = detail;
-      handlers.onProgressLine?.({
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        timestamp: new Date(),
-        label,
-        detail,
-      });
+    const updatePhase = (phase: CurrentJobPhase) => {
+      handlers.onPhaseChange?.(phase);
     };
 
     const timeoutId = setTimeout(() => {
@@ -198,12 +179,10 @@ export function waitForProcessingJobViaSse(
     try {
       unsubscribe = subscribeProcessingJobEvents(jobId, nestBaseUrl, {
         onProgress: (event) => {
-          const { label, detail } = describeProcessingProgress(event.progress);
-          pushLine(label, detail);
+          updatePhase(describeProcessingProgress(event.progress));
         },
         onSnapshot: (snapshot) => {
-          const { label, detail } = describeJobSnapshot(snapshot);
-          pushLine(label, detail);
+          updatePhase(describeJobSnapshot(snapshot));
           if (snapshot.phase === "complete" || snapshot.phase === "failed") {
             finish(() => resolve(snapshot));
           }
@@ -213,24 +192,4 @@ export function waitForProcessingJobViaSse(
       finish(() => reject(error));
     }
   });
-}
-
-export function appendProgressLine(
-  lines: ProgressLine[],
-  label: string,
-  detail?: string,
-): ProgressLine[] {
-  const last = lines.at(-1);
-  if (last && last.label === label && last.detail === detail) {
-    return lines;
-  }
-  return [
-    ...lines,
-    {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      timestamp: new Date(),
-      label,
-      detail,
-    },
-  ];
 }

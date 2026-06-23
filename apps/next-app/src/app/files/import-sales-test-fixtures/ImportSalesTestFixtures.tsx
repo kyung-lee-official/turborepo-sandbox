@@ -12,8 +12,7 @@ import {
 } from "./api";
 import { ImportJobProgressPanel } from "./ImportJobProgressPanel";
 import {
-  appendProgressLine,
-  type ProgressLine,
+  type CurrentJobPhase,
   waitForProcessingJobViaSse,
 } from "./processing-job-sse";
 
@@ -66,7 +65,9 @@ export const ImportSalesTestFixtures = () => {
     Record<string, File | undefined>
   >({});
   const [isRunning, setIsRunning] = useState(false);
-  const [progressLines, setProgressLines] = useState<ProgressLine[]>([]);
+  const [currentPhase, setCurrentPhase] = useState<CurrentJobPhase | null>(
+    null,
+  );
   const [lastJob, setLastJob] = useState<ProcessingJobResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDownloadingErrors, setIsDownloadingErrors] = useState(false);
@@ -92,39 +93,21 @@ export const ImportSalesTestFixtures = () => {
     setIsRunning(true);
     setErrorMessage(null);
     setLastJob(null);
-    setProgressLines([]);
-
-    const pushProgress = (label: string, detail?: string) => {
-      setProgressLines((prev) => appendProgressLine(prev, label, detail));
-    };
+    setCurrentPhase(null);
 
     try {
-      pushProgress("Uploading files");
+      setCurrentPhase({ label: "Uploading files" });
       const { uploadSessionId } = await uploadSalesImportFiles({
         salesData,
         inventory,
         productDescriptions,
       });
-      pushProgress("Upload complete", uploadSessionId);
 
-      pushProgress("Starting processing job");
+      setCurrentPhase({ label: "Starting job" });
       const { jobId } = await startSalesImportProcessing(uploadSessionId);
-      pushProgress("Job accepted", jobId);
 
       await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_NESTJS, {
-        onProgressLine: (line) => {
-          setProgressLines((prev) => {
-            const last = prev.at(-1);
-            if (
-              last &&
-              last.label === line.label &&
-              last.detail === line.detail
-            ) {
-              return prev;
-            }
-            return [...prev, line];
-          });
-        },
+        onPhaseChange: setCurrentPhase,
       });
 
       const job = await getProcessingJob(jobId);
@@ -134,7 +117,7 @@ export const ImportSalesTestFixtures = () => {
       const message =
         error instanceof Error ? error.message : "Sales import failed";
       setErrorMessage(message);
-      pushProgress("Import failed", message);
+      setCurrentPhase({ label: "Failed", detail: message });
     } finally {
       setIsRunning(false);
     }
@@ -236,7 +219,7 @@ export const ImportSalesTestFixtures = () => {
         {isRunning ? "Running import…" : "Upload and start import"}
       </button>
 
-      <ImportJobProgressPanel lines={progressLines} isLive={isRunning} />
+      <ImportJobProgressPanel phase={currentPhase} isLive={isRunning} />
 
       {lastJob ? (
         <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-800 text-sm">
