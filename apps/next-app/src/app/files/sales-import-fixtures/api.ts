@@ -1,6 +1,9 @@
 import axios from "axios";
 
-export type TestFixtureScenario = "perfect" | "partial" | "fail_fast";
+export type ProductsSheetVariant =
+  | "perfect"
+  | "partially_available"
+  | "fail_fast";
 
 export type GeneratedFixtureFile = {
   originalName: string;
@@ -11,17 +14,22 @@ export type GeneratedFixtureFile = {
   lineCount?: number;
 };
 
-export type ScenarioBundle = {
-  scenario: TestFixtureScenario;
-  bundleDir: string;
+export type SalesDataFixtureFile = GeneratedFixtureFile & {
+  productsVariant: ProductsSheetVariant;
   expectedOutcome: "success" | "validation_failed" | "failed";
-  uploadSlots: GeneratedFixtureFile[];
+};
+
+export type FixtureBundle = {
+  bundleDir: string;
+  inventory: GeneratedFixtureFile;
+  productDescriptions: GeneratedFixtureFile;
+  salesDataVariants: SalesDataFixtureFile[];
   generationTimeMs: number;
 };
 
 export type GenerateTestFixturesResponse = {
   success: true;
-  bundles: ScenarioBundle[];
+  bundle: FixtureBundle;
   totalTimeMs: number;
 };
 

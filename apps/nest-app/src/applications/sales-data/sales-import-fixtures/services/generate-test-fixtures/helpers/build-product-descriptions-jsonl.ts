@@ -1,10 +1,8 @@
 import { createWriteStream } from "node:fs";
 import { finished } from "node:stream/promises";
-import type { TestFixtureScenario } from "../../../dto/generate-test-fixtures.dto";
 import {
   DESCRIPTION_ADJECTIVES,
   JSONL_BATCH_SIZE,
-  PARTIAL_INVALID_RATE,
   PRODUCT_NAME_SUFFIXES,
   UNIQUE_SKU_COUNT,
 } from "./sales-fixture.constants";
@@ -12,13 +10,8 @@ import type { SkuPool } from "./sku-pool";
 
 type BuildProductDescriptionsOptions = {
   filepath: string;
-  scenario: TestFixtureScenario;
   pool: SkuPool;
 };
-
-function shouldInvalidate(scenario: TestFixtureScenario): boolean {
-  return scenario === "partial" && Math.random() < PARTIAL_INVALID_RATE;
-}
 
 function descriptionForLine(index: number, sku: string): string {
   const adjective =
@@ -38,22 +31,10 @@ export async function buildProductDescriptionsJsonl(
 
   for (let i = 0; i < skus.length; i++) {
     const sku = skus[i]!;
-    const invalidate =
-      shouldInvalidate(options.scenario) ||
-      (options.scenario === "partial" && i === 0);
-
-    let lineSku = sku;
-    let description = descriptionForLine(i, sku);
-
-    if (invalidate) {
-      if (i % 2 === 0) {
-        lineSku = "";
-      } else {
-        description = "";
-      }
-    }
-
-    buffer += `${JSON.stringify({ sku: lineSku, description })}\n`;
+    buffer += `${JSON.stringify({
+      sku,
+      description: descriptionForLine(i, sku),
+    })}\n`;
 
     if ((i + 1) % JSONL_BATCH_SIZE === 0) {
       stream.write(buffer);

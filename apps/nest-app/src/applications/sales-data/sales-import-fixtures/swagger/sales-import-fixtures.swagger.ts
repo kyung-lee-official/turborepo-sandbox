@@ -1,24 +1,16 @@
 import type { ApiBodyOptions, ApiOperationOptions } from "@nestjs/swagger";
 
 export const generateTestFixturesApiOperation: ApiOperationOptions = {
-  summary: "Generate sales-import test fixture bundles",
+  summary: "Generate sales-import test fixture bundle",
   description:
-    "Generate three skill-aligned fixture bundles (perfect, partial, fail_fast). Each bundle contains salesData.xlsx, inventory.xlsx, and productDescriptions.jsonl under nest-app/temp.",
+    "Generate one fixture bundle under nest-app/temp with perfect inventory.xlsx, perfect productDescriptions.jsonl, and three salesData workbooks that differ only on the Products sheet (perfect, partially_available, fail_fast). LineItems is always perfect.",
 };
 
 export const generateTestFixturesApiBody: ApiBodyOptions = {
-  description: "Optional scenario filter",
+  description: "No request body fields",
   required: false,
   schema: {
     type: "object",
-    properties: {
-      scenarios: {
-        type: "array",
-        items: {
-          type: "string",
-          enum: ["perfect", "partial", "fail_fast"],
-        },
-      },
-    },
+    additionalProperties: false,
   },
 };

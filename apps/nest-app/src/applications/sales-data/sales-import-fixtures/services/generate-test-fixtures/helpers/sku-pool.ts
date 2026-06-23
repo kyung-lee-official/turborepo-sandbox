@@ -35,7 +35,3 @@ export function buildSkuPool(): SkuPool {
 export function skuFromPool(pool: SkuPool, index: number): string {
   return pool.skus[index % pool.skus.length] ?? pool.skus[0]!;
 }
-
-export function unknownSku(index: number): string {
-  return `UNKNOWN-${String(index).padStart(5, "0")}`;
-}

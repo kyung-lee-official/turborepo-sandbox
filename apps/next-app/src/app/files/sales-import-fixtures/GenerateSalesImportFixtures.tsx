@@ -3,19 +3,36 @@
 import Link from "next/link";
 import { useState } from "react";
 import { SalesDataNav } from "../sales-data/SalesDataNav";
-import { generateTestFixtures, type ScenarioBundle } from "./api";
+import { type FixtureBundle, generateTestFixtures } from "./api";
 
-function formatBundleSummary(bundle: ScenarioBundle): string {
-  const files = bundle.uploadSlots
-    .map(
-      (f) =>
-        `  • ${f.originalName}${f.lineCount ? ` (${f.lineCount.toLocaleString()} lines)` : f.rowCount ? ` (${f.rowCount.toLocaleString()} rows incl. header)` : ""}`,
-    )
-    .join("\n");
+function formatFileSummary(file: {
+  originalName: string;
+  lineCount?: number;
+  rowCount?: number;
+}): string {
+  if (file.lineCount) {
+    return `${file.originalName} (${file.lineCount.toLocaleString()} lines)`;
+  }
+  if (file.rowCount) {
+    return `${file.originalName} (${file.rowCount.toLocaleString()} rows incl. header)`;
+  }
+  return file.originalName;
+}
+
+function formatBundleSummary(bundle: FixtureBundle): string {
+  const shared = [
+    `  • ${formatFileSummary(bundle.inventory)}`,
+    `  • ${formatFileSummary(bundle.productDescriptions)}`,
+  ];
+  const salesData = bundle.salesDataVariants.map(
+    (file) =>
+      `  • ${formatFileSummary(file)} — Products ${file.productsVariant} → expected ${file.expectedOutcome}`,
+  );
+
   return (
-    `${bundle.scenario} → expected ${bundle.expectedOutcome}\n` +
-    `  dir: ${bundle.bundleDir}\n` +
-    files
+    `dir: ${bundle.bundleDir}\n` +
+    `shared:\n${shared.join("\n")}\n` +
+    `salesData variants:\n${salesData.join("\n")}`
   );
 }
 
@@ -27,10 +44,9 @@ export const GenerateSalesImportFixtures = () => {
 
     try {
       const result = await generateTestFixtures();
-      const summary = result.bundles.map(formatBundleSummary).join("\n\n");
 
       alert(
-        `Test fixture bundles generated (${(result.totalTimeMs / 1000).toFixed(1)}s total):\n\n${summary}`,
+        `Test fixture bundle generated (${(result.totalTimeMs / 1000).toFixed(1)}s total):\n\n${formatBundleSummary(result.bundle)}`,
       );
     } catch (error) {
       console.error("Error generating test fixtures:", error);
@@ -51,80 +67,61 @@ export const GenerateSalesImportFixtures = () => {
         <h2 className="mb-4 font-semibold text-xl">Generate Test Files</h2>
         <div className="mb-4 space-y-3">
           <p className="text-gray-600">
-            Generates three <code className="text-sm">sales-import</code>{" "}
-            bundles aligned with async import upload slots. Each bundle
-            includes:
+            Generates one <code className="text-sm">sales-import</code> bundle
+            with shared perfect inventory and JSONL files, plus three{" "}
+            <code className="text-sm">salesData</code> workbooks that differ
+            only on the Products sheet.
           </p>
           <div className="space-y-4 text-gray-700 text-sm">
             <div>
               <p className="font-medium">
-                <strong>salesData.xlsx</strong> — upload slot{" "}
-                <code className="text-xs">salesData</code>, ~50k data rows per
-                sheet (plus header row)
-              </p>
-              <ul className="mt-1 list-inside list-disc space-y-1 pl-2">
-                <li>
-                  Worksheet <strong>Products</strong>:{" "}
-                  <code className="text-xs">SKU</code>,{" "}
-                  <code className="text-xs">Product Name</code>,{" "}
-                  <code className="text-xs">Category</code>,{" "}
-                  <code className="text-xs">Unit Price</code>
-                </li>
-                <li>
-                  Worksheet <strong>LineItems</strong>:{" "}
-                  <code className="text-xs">Order ID</code>,{" "}
-                  <code className="text-xs">SKU</code>,{" "}
-                  <code className="text-xs">Quantity</code>,{" "}
-                  <code className="text-xs">Sale Date</code> (omitted in{" "}
-                  <strong>fail_fast</strong> bundles)
-                </li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-medium">
                 <strong>inventory.xlsx</strong> — upload slot{" "}
-                <code className="text-xs">inventory</code>, ~50k data rows
+                <code className="text-xs">inventory</code>, always perfect
               </p>
-              <ul className="mt-1 list-inside list-disc pl-2">
-                <li>
-                  Worksheet <strong>Inventory</strong>:{" "}
-                  <code className="text-xs">SKU</code>,{" "}
-                  <code className="text-xs">Inventory Qty</code>
-                </li>
-              </ul>
             </div>
             <div>
               <p className="font-medium">
                 <strong>productDescriptions.jsonl</strong> — upload slot{" "}
-                <code className="text-xs">productDescriptions</code>,{" "}
-                {`5k unique sku/description lines (one per catalog SKU)`}
+                <code className="text-xs">productDescriptions</code>, always
+                perfect
               </p>
-              <ul className="mt-1 list-inside list-disc pl-2">
+            </div>
+            <div>
+              <p className="font-medium">
+                <strong>salesData-*.xlsx</strong> — upload slot{" "}
+                <code className="text-xs">salesData</code> (pick one variant)
+              </p>
+              <ul className="mt-1 list-inside list-disc space-y-1 pl-2">
                 <li>
-                  <code className="text-xs">sku</code> (string)
+                  LineItems is always perfect (~50k data rows plus header)
                 </li>
                 <li>
-                  <code className="text-xs">description</code> (string)
+                  Products varies by file:{" "}
+                  <code className="text-xs">salesData-perfect.xlsx</code>,{" "}
+                  <code className="text-xs">
+                    salesData-partially_available.xlsx
+                  </code>
+                  , <code className="text-xs">salesData-fail_fast.xlsx</code>
                 </li>
               </ul>
             </div>
           </div>
           <div className="border-green-400 border-l-4 bg-green-50 p-3">
             <p className="text-green-700 text-sm">
-              <strong>perfect:</strong> All slots valid — expected outcome{" "}
+              <strong>perfect:</strong> full Products catalog — expected{" "}
               <code>success</code>.
             </p>
           </div>
           <div className="border-orange-400 border-l-4 bg-orange-50 p-3">
             <p className="text-orange-700 text-sm">
-              <strong>partial:</strong> ~10% invalid XLSX rows + JSONL lines —
-              expected <code>validation_failed</code> when import runs.
+              <strong>partially_available:</strong> every 10th catalog SKU
+              omitted from Products — expected <code>validation_failed</code>.
             </p>
           </div>
           <div className="border-red-400 border-l-4 bg-red-50 p-3">
             <p className="text-red-700 text-sm">
-              <strong>fail_fast:</strong> salesData missing LineItems sheet —
-              expected <code>failed</code>.
+              <strong>fail_fast:</strong> Products sheet omitted — expected{" "}
+              <code>failed</code>.
             </p>
           </div>
         </div>
@@ -144,7 +141,7 @@ export const GenerateSalesImportFixtures = () => {
               Generating Test Fixtures...
             </span>
           ) : (
-            "Generate All Test Fixtures"
+            "Generate Test Fixtures"
           )}
         </button>
       </div>
@@ -152,10 +149,8 @@ export const GenerateSalesImportFixtures = () => {
       <div className="border-blue-400 border-l-4 bg-blue-50 p-4">
         <div className="ml-3 space-y-2 text-blue-700 text-sm">
           <p>
-            <strong>File location:</strong> Bundles are saved under{" "}
-            <code>
-              apps/nest-app/temp/sales-import-&#123;scenario&#125;-&#123;timestamp&#125;/
-            </code>
+            <strong>File location:</strong> Bundle is saved under{" "}
+            <code>apps/nest-app/temp/sales-import-&#123;timestamp&#125;/</code>
           </p>
           <p>
             <strong>Upload slots:</strong> Use multipart field names{" "}
@@ -167,7 +162,8 @@ export const GenerateSalesImportFixtures = () => {
             >
               import sales test fixtures
             </Link>{" "}
-            page.
+            page. Rename the chosen <code>salesData-*.xlsx</code> locally if
+            your uploader expects <code>salesData.xlsx</code>.
           </p>
         </div>
       </div>

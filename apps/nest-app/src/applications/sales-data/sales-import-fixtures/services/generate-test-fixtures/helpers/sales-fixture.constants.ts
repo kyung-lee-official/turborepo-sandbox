@@ -26,13 +26,25 @@ export const ROWS_PER_SHEET = 50_000;
 export const UNIQUE_SKU_COUNT = 5_000;
 export const EXCEL_BATCH_SIZE = 10_000;
 export const JSONL_BATCH_SIZE = 5_000;
-export const PARTIAL_INVALID_RATE = 0.1;
+/** Share of catalog SKUs omitted from Products in partially_available fixtures */
+export const PARTIALLY_AVAILABLE_OMIT_EVERY_N_SKUS = 10;
 
 export const FIXTURE_FILE_NAMES = {
-  salesData: "salesData.xlsx",
   inventory: "inventory.xlsx",
   productDescriptions: "productDescriptions.jsonl",
 } as const;
+
+export const SALES_DATA_VARIANT_FILE_NAMES = {
+  perfect: "salesData-perfect.xlsx",
+  partially_available: "salesData-partially_available.xlsx",
+  fail_fast: "salesData-fail_fast.xlsx",
+} as const;
+
+export const ALL_PRODUCTS_SHEET_VARIANTS = [
+  "perfect",
+  "partially_available",
+  "fail_fast",
+] as const;
 
 export const MIME_TYPES = {
   xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

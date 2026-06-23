@@ -1,35 +1,45 @@
 import * as ExcelJS from "exceljs";
-import type { TestFixtureScenario } from "../../../dto/generate-test-fixtures.dto";
+import type { ProductsSheetVariant } from "../../../dto/generate-test-fixtures.dto";
 import { applyDefaultExportedSheetView } from "./apply-exported-sheet-view";
 import {
   EXCEL_BATCH_SIZE,
   LINE_ITEMS_HEADERS,
-  PARTIAL_INVALID_RATE,
+  PARTIALLY_AVAILABLE_OMIT_EVERY_N_SKUS,
   PRODUCTS_HEADERS,
   ROWS_PER_SHEET,
   SALES_DATA_SHEETS,
 } from "./sales-fixture.constants";
-import { type SkuPool, skuFromPool, unknownSku } from "./sku-pool";
+import { type SkuPool, skuFromPool } from "./sku-pool";
 
 type BuildSalesDataOptions = {
   filepath: string;
-  scenario: TestFixtureScenario;
+  productsVariant: ProductsSheetVariant;
   pool: SkuPool;
-  includeLineItemsSheet: boolean;
 };
-
-function shouldInvalidate(scenario: TestFixtureScenario): boolean {
-  return scenario === "partial" && Math.random() < PARTIAL_INVALID_RATE;
-}
 
 function formatSaleDate(index: number): string {
   const day = (index % 28) + 1;
   return `2026-06-${String(day).padStart(2, "0")}`;
 }
 
+function catalogSkuNumber(sku: string): number {
+  const match = /^SKU-(\d+)$/.exec(sku);
+  return match ? Number.parseInt(match[1]!, 10) : 0;
+}
+
+function shouldOmitProductFromCatalog(
+  variant: ProductsSheetVariant,
+  sku: string,
+): boolean {
+  if (variant !== "partially_available") {
+    return false;
+  }
+  return catalogSkuNumber(sku) % PARTIALLY_AVAILABLE_OMIT_EVERY_N_SKUS === 0;
+}
+
 async function writeProductsSheet(
   workbook: ExcelJS.Workbook,
-  scenario: TestFixtureScenario,
+  productsVariant: ProductsSheetVariant,
   pool: SkuPool,
 ) {
   const worksheet = workbook.addWorksheet(SALES_DATA_SHEETS.products);
@@ -50,44 +60,28 @@ async function writeProductsSheet(
 
     for (let i = batchStart; i < batchEnd; i++) {
       const sku = skuFromPool(pool, i);
-      const invalidate =
-        shouldInvalidate(scenario) || (scenario === "partial" && i === 0);
-
-      let rowSku = sku;
-      let unitPrice = Number(((i % 500) + 1 + (i % 100) / 100).toFixed(2));
-      let productName = pool.productNameBySku.get(sku) ?? `Item ${i}`;
-      const category = pool.categoryBySku.get(sku) ?? "General";
-
-      if (invalidate) {
-        const defect = i % 3;
-        if (defect === 0) {
-          rowSku = "";
-        } else if (defect === 1) {
-          unitPrice = -unitPrice;
-        } else {
-          productName = "";
-        }
+      if (shouldOmitProductFromCatalog(productsVariant, sku)) {
+        continue;
       }
 
+      const unitPrice = Number(((i % 500) + 1 + (i % 100) / 100).toFixed(2));
       batch.push({
-        SKU: rowSku,
-        "Product Name": productName,
-        Category: category,
+        SKU: sku,
+        "Product Name": pool.productNameBySku.get(sku) ?? `Item ${i}`,
+        Category: pool.categoryBySku.get(sku) ?? "General",
         "Unit Price": unitPrice,
       });
     }
 
-    worksheet.addRows(batch);
+    if (batch.length > 0) {
+      worksheet.addRows(batch);
+    }
   }
 
   applyDefaultExportedSheetView(worksheet, PRODUCTS_HEADERS.length);
 }
 
-async function writeLineItemsSheet(
-  workbook: ExcelJS.Workbook,
-  scenario: TestFixtureScenario,
-  pool: SkuPool,
-) {
+async function writeLineItemsSheet(workbook: ExcelJS.Workbook, pool: SkuPool) {
   const worksheet = workbook.addWorksheet(SALES_DATA_SHEETS.lineItems);
   worksheet.columns = LINE_ITEMS_HEADERS.map((header) => ({
     header,
@@ -105,29 +99,11 @@ async function writeLineItemsSheet(
 
     for (let i = batchStart; i < batchEnd; i++) {
       const sku = skuFromPool(pool, i + 17);
-      const invalidate =
-        shouldInvalidate(scenario) || (scenario === "partial" && i === 0);
-
-      let rowSku = sku;
-      let quantity = (i % 20) + 1;
-      let saleDate = formatSaleDate(i);
-
-      if (invalidate) {
-        const defect = i % 3;
-        if (defect === 0) {
-          quantity = 0;
-        } else if (defect === 1) {
-          saleDate = "not-a-date";
-        } else {
-          rowSku = unknownSku(i);
-        }
-      }
-
       batch.push({
         "Order ID": `ORD-${String(i + 1).padStart(8, "0")}`,
-        SKU: rowSku,
-        Quantity: quantity,
-        "Sale Date": saleDate,
+        SKU: sku,
+        Quantity: (i % 20) + 1,
+        "Sale Date": formatSaleDate(i),
       });
     }
 
@@ -143,13 +119,13 @@ export async function buildSalesDataWorkbook(
   const workbook = new ExcelJS.Workbook();
   const worksheets: string[] = [];
 
-  await writeProductsSheet(workbook, options.scenario, options.pool);
-  worksheets.push(SALES_DATA_SHEETS.products);
-
-  if (options.includeLineItemsSheet) {
-    await writeLineItemsSheet(workbook, options.scenario, options.pool);
-    worksheets.push(SALES_DATA_SHEETS.lineItems);
+  if (options.productsVariant !== "fail_fast") {
+    await writeProductsSheet(workbook, options.productsVariant, options.pool);
+    worksheets.push(SALES_DATA_SHEETS.products);
   }
+
+  await writeLineItemsSheet(workbook, options.pool);
+  worksheets.push(SALES_DATA_SHEETS.lineItems);
 
   await workbook.xlsx.writeFile(options.filepath);
 

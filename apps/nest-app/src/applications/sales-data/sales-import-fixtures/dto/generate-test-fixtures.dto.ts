@@ -1,16 +1,14 @@
 import { z } from "zod";
 
-export const testFixtureScenarioSchema = z.enum([
+export const productsSheetVariantSchema = z.enum([
   "perfect",
-  "partial",
+  "partially_available",
   "fail_fast",
 ]);
 
-export type TestFixtureScenario = z.infer<typeof testFixtureScenarioSchema>;
+export type ProductsSheetVariant = z.infer<typeof productsSheetVariantSchema>;
 
-export const generateTestFixturesBodySchema = z.object({
-  scenarios: z.array(testFixtureScenarioSchema).optional(),
-});
+export const generateTestFixturesBodySchema = z.object({});
 
 export type GenerateTestFixturesBodyDto = z.infer<
   typeof generateTestFixturesBodySchema
@@ -25,16 +23,21 @@ export type GeneratedFixtureFile = {
   lineCount?: number;
 };
 
-export type ScenarioBundle = {
-  scenario: TestFixtureScenario;
-  bundleDir: string;
+export type SalesDataFixtureFile = GeneratedFixtureFile & {
+  productsVariant: ProductsSheetVariant;
   expectedOutcome: "success" | "validation_failed" | "failed";
-  uploadSlots: GeneratedFixtureFile[];
+};
+
+export type FixtureBundle = {
+  bundleDir: string;
+  inventory: GeneratedFixtureFile;
+  productDescriptions: GeneratedFixtureFile;
+  salesDataVariants: SalesDataFixtureFile[];
   generationTimeMs: number;
 };
 
 export type GenerateTestFixturesResult = {
   success: true;
-  bundles: ScenarioBundle[];
+  bundle: FixtureBundle;
   totalTimeMs: number;
 };

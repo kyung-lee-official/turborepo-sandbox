@@ -4,14 +4,14 @@ Business logic for merging three upload sources into **`SalesImportMergedLine`**
 
 Reusable pieces stay in:
 
-| Layer | Path | Role |
-| --- | --- | --- |
-| Tabular parse | `import/plugins/tabular-xlsx/` | `.xlsx` sheets to row maps |
-| JSONL parse | `import/plugins/jsonl/` | Lines to JSON objects |
-| Shared errors / error XLSX | `import/shared/` | `ErrorDetail`, `buildValidationErrorXlsxBuffer` |
-| Job orchestration | `async-processing/` | Worker, `DomainRegistry`, SSE |
-| Upload + start | `start-processing-adapters/`, upload-* skills | Session, `POST .../start` |
-| Test file generator | `applications/sales-data/sales-import-fixtures/` | Local fixture bundles |
+| Layer                      | Path                                             | Role                                            |
+| -------------------------- | ------------------------------------------------ | ----------------------------------------------- |
+| Tabular parse              | `import/plugins/tabular-xlsx/`                   | `.xlsx` sheets to row maps                      |
+| JSONL parse                | `import/plugins/jsonl/`                          | Lines to JSON objects                           |
+| Shared errors / error XLSX | `import/shared/`                                 | `ErrorDetail`, `buildValidationErrorXlsxBuffer` |
+| Job orchestration          | `async-processing/`                              | Worker, `DomainRegistry`, SSE                   |
+| Upload + start             | `start-processing-adapters/`, upload-\* skills   | Session, `POST .../start`                       |
+| Test file generator        | `applications/sales-data/sales-import-fixtures/` | Local fixture bundles                           |
 
 Agent skills for reusable layers remain under `.cursor/skills/`. **This folder uses this README only.**
 
@@ -19,10 +19,10 @@ Agent skills for reusable layers remain under `.cursor/skills/`. **This folder u
 
 ## Async processing registration
 
-| Constant | Value |
-| --- | --- |
+| Constant                       | Value                                         |
+| ------------------------------ | --------------------------------------------- |
 | **`SALES_IMPORT_DOMAIN_KIND`** | `"sales-report"` ( **`DomainRegistry`** key ) |
-| Lock policy | `global_singleton` (planned) |
+| Lock policy                    | `global_singleton` (planned)                  |
 
 **`DomainRunner.run(jobId, sources, io)`** — see `async-processing.types.ts`. The worker passes **`jobId`** so rows can set **`SalesImportMergedLine.processingJobId`**.
 
@@ -30,11 +30,11 @@ Agent skills for reusable layers remain under `.cursor/skills/`. **This folder u
 
 ## Upload sources
 
-| `sourceId` | File | Role |
-| --- | --- | --- |
-| **`salesData`** | `salesData.xlsx` | **Products** sheet (SKU catalog) + **LineItems** sheet (base rows) |
-| **`inventory`** | `inventory.xlsx` | **Inventory** sheet — supplement by SKU |
-| **`productDescriptions`** | `productDescriptions.jsonl` | One object per catalog SKU — supplement by SKU |
+| `sourceId`                | File                        | Role                                                               |
+| ------------------------- | --------------------------- | ------------------------------------------------------------------ |
+| **`salesData`**           | `salesData.xlsx`            | **Products** sheet (SKU catalog) + **LineItems** sheet (base rows) |
+| **`inventory`**           | `inventory.xlsx`            | **Inventory** sheet — supplement by SKU                            |
+| **`productDescriptions`** | `productDescriptions.jsonl` | One object per catalog SKU — supplement by SKU                     |
 
 Specs: **`sales-import.constants.ts`**, **`sales-import-merge.policy.ts`**.
 
@@ -64,14 +64,14 @@ flowchart TD
   jsonl --> merged
 ```
 
-| Output field | Source |
-| --- | --- |
-| `orderId`, `sku`, `quantity`, `saleDate` | LineItems |
-| `productName`, `category`, `unitPrice` | Products (same workbook, by SKU) |
-| `inventoryQty` | inventory.xlsx (by SKU) |
-| `description` | productDescriptions.jsonl (by SKU) |
-| `sourceLineNumber` | 1-based Excel row in LineItems |
-| `processingJobId` | `jobId` from `DomainRunner.run` |
+| Output field                             | Source                             |
+| ---------------------------------------- | ---------------------------------- |
+| `orderId`, `sku`, `quantity`, `saleDate` | LineItems                          |
+| `productName`, `category`, `unitPrice`   | Products (same workbook, by SKU)   |
+| `inventoryQty`                           | inventory.xlsx (by SKU)            |
+| `description`                            | productDescriptions.jsonl (by SKU) |
+| `sourceLineNumber`                       | 1-based Excel row in LineItems     |
+| `processingJobId`                        | `jobId` from `DomainRunner.run`    |
 
 **Products** and **inventory** are loaded into **`Map<sku, …>`** first. **JSONL** is one line per catalog SKU (unique pairs in fixtures).
 
@@ -81,16 +81,16 @@ flowchart TD
 
 Row-level rules (invalid row → **`ErrorDetail`**, still evaluate all rows):
 
-| Rule | Result |
-| --- | --- |
-| Empty **`sku`** | Error |
-| **`quantity`** ≤ 0 | Error |
-| Invalid **`Sale Date`** | Error |
-| Negative **`Unit Price`** | Error |
-| Negative **`Inventory Qty`** | Allowed |
-| SKU missing from **Products** | Error |
-| SKU missing from **inventory** | Error |
-| SKU missing from **JSONL** | Error |
+| Rule                           | Result  |
+| ------------------------------ | ------- |
+| Empty **`sku`**                | Error   |
+| **`quantity`** ≤ 0             | Error   |
+| Invalid **`Sale Date`**        | Error   |
+| Negative **`Unit Price`**      | Error   |
+| Negative **`Inventory Qty`**   | Allowed |
+| SKU missing from **Products**  | Error   |
+| SKU missing from **inventory** | Error   |
+| SKU missing from **JSONL**     | Error   |
 
 Parse-time errors (bad headers, invalid JSON, and so on) come from format plugins before business validation.
 
@@ -140,11 +140,13 @@ applications/sales-data/sales-import/
 
 Generate bundles from Next.js **`/files/sales-import-fixtures`** (Nest **`applications/sales-data/sales-import-fixtures`**).
 
-| Scenario | Expected job outcome |
-| --- | --- |
-| **perfect** | `success` |
-| **partial** | `validation_failed` + error XLSX |
-| **fail_fast** | `failed` (salesData missing LineItems sheet) |
+| Scenario                               | Expected job outcome                                        |
+| -------------------------------------- | ----------------------------------------------------------- |
+| **salesData-perfect.xlsx**             | `success`                                                   |
+| **salesData-partially_available.xlsx** | `validation_failed` (Products omits every 10th catalog SKU) |
+| **salesData-fail_fast.xlsx**           | `failed` (Products sheet missing; LineItems perfect)        |
+
+Shared in the same bundle: perfect **inventory.xlsx** and **productDescriptions.jsonl**.
 
 ---
 
