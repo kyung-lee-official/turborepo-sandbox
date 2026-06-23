@@ -17,11 +17,7 @@ export type ProcessingJobSnapshot = Pick<
   | "completedAt"
 >;
 
-export type JobLayerPhase = {
-  label: string;
-  detail?: string;
-  percent?: number;
-};
+export type ProcessingJobPhase = ProcessingJobResponse["phase"];
 
 export type DomainLayerStage = {
   label: string;
@@ -29,14 +25,16 @@ export type DomainLayerStage = {
   percent?: number;
 };
 
-export type ImportJobProgressDisplay = {
-  jobPhase: JobLayerPhase;
-  domainStage?: DomainLayerStage | null;
+export type UploadProgress = {
+  detail?: string;
+  percent?: number;
 };
 
-/** @deprecated Use ImportJobProgressDisplay */
-export type CurrentJobPhase = JobLayerPhase & {
-  percent?: number;
+export type ImportJobProgressDisplay = {
+  upload?: UploadProgress | null;
+  jobPhase: ProcessingJobPhase | null;
+  jobPhaseDetail?: string;
+  domainStage: DomainLayerStage | null;
 };
 
 function formatByteCount(bytes: number): string {
@@ -49,26 +47,28 @@ function formatByteCount(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function describeUploadProgressDisplay(
+export function describeUploadProgress(
   loaded: number,
   total?: number,
-): ImportJobProgressDisplay {
+): UploadProgress {
   if (total != null && total > 0) {
     return {
-      jobPhase: {
-        label: "Uploading files",
-        detail: `${formatByteCount(loaded)} / ${formatByteCount(total)}`,
-        percent: Math.min(100, Math.round((loaded / total) * 100)),
-      },
-      domainStage: null,
+      detail: `${formatByteCount(loaded)} / ${formatByteCount(total)}`,
+      percent: Math.min(100, Math.round((loaded / total) * 100)),
     };
   }
 
   return {
-    jobPhase: {
-      label: "Uploading files",
-      detail: `${formatByteCount(loaded)} uploaded`,
-    },
+    detail: `${formatByteCount(loaded)} uploaded`,
+  };
+}
+
+export function uploadOnlyProgressDisplay(
+  upload: UploadProgress,
+): ImportJobProgressDisplay {
+  return {
+    upload,
+    jobPhase: null,
     domainStage: null,
   };
 }
@@ -83,7 +83,7 @@ function readCount(
     : undefined;
 }
 
-function formatPhaseProgressDetail(
+function formatDomainStageDetail(
   record: Record<string, unknown>,
 ): string | undefined {
   const processedCount = readCount(record, "processedCount");
@@ -113,17 +113,6 @@ function formatPhaseProgressDetail(
     parts.push(`${validCount.toLocaleString()} valid`);
   }
 
-  return parts.length > 0 ? parts.join(" · ") : undefined;
-}
-
-export function describeDomainStageFromProgress(
-  progress: unknown,
-): DomainLayerStage {
-  if (!progress || typeof progress !== "object") {
-    return { label: "Processing" };
-  }
-
-  const record = progress as Record<string, unknown>;
   const sourceLabel =
     typeof record.originalName === "string"
       ? record.originalName
@@ -133,73 +122,65 @@ export function describeDomainStageFromProgress(
   const worksheet =
     typeof record.worksheetName === "string" ? record.worksheetName : undefined;
   const context = [worksheet, sourceLabel].filter(Boolean).join(" · ");
-  const progressDetail = formatPhaseProgressDetail(record);
-  const detail =
-    [progressDetail, context].filter(Boolean).join(" · ") || undefined;
+  if (context) {
+    parts.push(context);
+  }
+
+  return parts.length > 0 ? parts.join(" · ") : undefined;
+}
+
+export function describeDomainStageFromProgress(
+  progress: unknown,
+): DomainLayerStage {
+  if (!progress || typeof progress !== "object") {
+    return { label: "unknown" };
+  }
+
+  const record = progress as Record<string, unknown>;
+  const label = typeof record.phase === "string" ? record.phase : "unknown";
+  const detail = formatDomainStageDetail(record);
   const percent =
     typeof record.percent === "number" && Number.isFinite(record.percent)
       ? Math.min(100, Math.max(0, Math.round(record.percent)))
       : undefined;
 
-  switch (record.phase) {
-    case "validating_rows":
-      return { label: "Validating rows", detail, percent };
-    case "saving_database":
-      return { label: "Saving to database", detail, percent };
-    case "parsing_workbook":
-      return {
-        label: "Parsing workbook",
-        detail: context || undefined,
-        percent,
-      };
-    case "parsing_lines":
-      return { label: "Parsing JSONL", detail: context || undefined, percent };
-    default:
-      return {
-        label: typeof record.phase === "string" ? record.phase : "Processing",
-        detail: detail ?? (context || undefined),
-        percent,
-      };
-  }
+  return { label, detail, percent };
 }
 
-/** @deprecated Use describeDomainStageFromProgress */
-export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
-  return describeDomainStageFromProgress(progress);
-}
-
-export function describeJobLayerPhaseFromSnapshot(
+export function jobPhaseDetailFromSnapshot(
   snapshot: ProcessingJobSnapshot,
-): JobLayerPhase {
-  switch (snapshot.phase) {
-    case "queued":
-      return { label: "Queued", detail: "queued" };
-    case "processing":
-      return { label: "Processing", detail: "processing" };
-    case "complete": {
-      const parts = [
-        snapshot.outcome ?? "complete",
-        snapshot.processedCount != null
-          ? `${snapshot.processedCount.toLocaleString()} processed`
-          : null,
-        snapshot.errorCount != null && snapshot.errorCount > 0
-          ? `${snapshot.errorCount.toLocaleString()} errors`
-          : null,
-      ].filter(Boolean);
-      return { label: "Complete", detail: parts.join(" · ") };
-    }
-    case "failed":
-      return { label: "Failed", detail: "failed" };
-    default:
-      return { label: snapshot.phase, detail: snapshot.phase };
+): string | undefined {
+  if (snapshot.phase !== "complete") {
+    return undefined;
   }
+
+  const parts = [
+    snapshot.outcome ?? undefined,
+    snapshot.processedCount != null
+      ? `${snapshot.processedCount.toLocaleString()} processed`
+      : null,
+    snapshot.errorCount != null && snapshot.errorCount > 0
+      ? `${snapshot.errorCount.toLocaleString()} errors`
+      : null,
+  ].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(" · ") : undefined;
 }
 
-/** @deprecated Use describeJobLayerPhaseFromSnapshot */
-export function describeJobSnapshot(
-  snapshot: ProcessingJobSnapshot,
-): CurrentJobPhase {
-  return describeJobLayerPhaseFromSnapshot(snapshot);
+export function buildImportJobProgressDisplay(options: {
+  upload?: UploadProgress | null;
+  snapshot: ProcessingJobSnapshot;
+  domainStage?: DomainLayerStage | null;
+}): ImportJobProgressDisplay {
+  return {
+    upload: options.upload ?? null,
+    jobPhase: options.snapshot.phase,
+    jobPhaseDetail: jobPhaseDetailFromSnapshot(options.snapshot),
+    domainStage:
+      options.snapshot.phase === "processing"
+        ? (options.domainStage ?? null)
+        : null,
+  };
 }
 
 function isProgressEvent(data: unknown): data is ProcessingProgressEvent {
@@ -262,9 +243,8 @@ export function waitForProcessingJobViaSse(
   jobId: string,
   nestBaseUrl: string | undefined,
   handlers: {
+    initialSnapshot?: ProcessingJobSnapshot;
     onDisplayChange?: (display: ImportJobProgressDisplay) => void;
-    /** @deprecated Use onDisplayChange */
-    onPhaseChange?: (phase: CurrentJobPhase) => void;
     timeoutMs?: number;
   } = {},
 ): Promise<ProcessingJobSnapshot> {
@@ -273,7 +253,16 @@ export function waitForProcessingJobViaSse(
   return new Promise((resolve, reject) => {
     let settled = false;
     let unsubscribe: (() => void) | undefined;
-    let lastJobPhase: JobLayerPhase = { label: "Processing" };
+    let lastSnapshot: ProcessingJobSnapshot = handlers.initialSnapshot ?? {
+      jobId,
+      domainKind: "",
+      phase: "queued",
+      outcome: null,
+      processedCount: null,
+      errorCount: null,
+      hasErrors: false,
+      completedAt: null,
+    };
     let lastDomainStage: DomainLayerStage | null = null;
 
     const finish = (action: () => void) => {
@@ -287,13 +276,17 @@ export function waitForProcessingJobViaSse(
     };
 
     const emitDisplay = () => {
-      const display: ImportJobProgressDisplay = {
-        jobPhase: lastJobPhase,
-        domainStage: lastDomainStage,
-      };
-      handlers.onDisplayChange?.(display);
-      handlers.onPhaseChange?.(lastDomainStage ?? lastJobPhase);
+      handlers.onDisplayChange?.(
+        buildImportJobProgressDisplay({
+          snapshot: lastSnapshot,
+          domainStage: lastDomainStage,
+        }),
+      );
     };
+
+    if (handlers.initialSnapshot) {
+      emitDisplay();
+    }
 
     const timeoutId = setTimeout(() => {
       finish(() => reject(new Error(`Timed out waiting for job ${jobId}`)));
@@ -306,7 +299,7 @@ export function waitForProcessingJobViaSse(
           emitDisplay();
         },
         onSnapshot: (snapshot) => {
-          lastJobPhase = describeJobLayerPhaseFromSnapshot(snapshot);
+          lastSnapshot = snapshot;
           if (snapshot.phase !== "processing") {
             lastDomainStage = null;
           }

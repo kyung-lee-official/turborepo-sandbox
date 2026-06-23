@@ -33,13 +33,15 @@ function LayerBlock({
   label,
   detail,
   percent,
-  emphasized,
+  emphasized = false,
+  mono = false,
 }: {
   title: string;
   label: string;
   detail?: string;
   percent?: number;
   emphasized?: boolean;
+  mono?: boolean;
 }) {
   return (
     <div className="min-w-0">
@@ -48,8 +50,8 @@ function LayerBlock({
       </p>
       <p
         className={`mt-1 text-lg ${
-          emphasized ? "font-semibold text-blue-900" : "text-gray-900"
-        }`}
+          mono ? "font-mono" : ""
+        } ${emphasized ? "font-semibold text-blue-900" : "font-medium text-gray-900"}`}
       >
         {label}
       </p>
@@ -69,28 +71,43 @@ export function ImportJobProgressPanel({
     return null;
   }
 
+  const showUpload = display.upload != null;
+  const showJobPhase = display.jobPhase != null;
   const showDomainStage =
-    display.domainStage != null && display.jobPhase.label === "Processing";
+    display.domainStage != null && display.jobPhase === "processing";
+
+  if (!showUpload && !showJobPhase && !showDomainStage) {
+    return null;
+  }
 
   return (
     <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-5">
-          <LayerBlock
-            title="Job phase"
-            label={display.jobPhase.label}
-            detail={display.jobPhase.detail}
-            percent={
-              display.domainStage == null ? display.jobPhase.percent : undefined
-            }
-            emphasized={isLive && !showDomainStage}
-          />
+          {showUpload && display.upload ? (
+            <LayerBlock
+              title="Upload"
+              label="multipart upload"
+              detail={display.upload.detail}
+              percent={display.upload.percent}
+              emphasized={isLive && !showJobPhase}
+            />
+          ) : null}
+          {showJobPhase ? (
+            <LayerBlock
+              title="Job phase"
+              label={display.jobPhase!}
+              detail={display.jobPhaseDetail}
+              mono
+            />
+          ) : null}
           {showDomainStage && display.domainStage ? (
             <LayerBlock
               title="Domain stage"
               label={display.domainStage.label}
               detail={display.domainStage.detail}
               percent={display.domainStage.percent}
+              mono
               emphasized={isLive}
             />
           ) : null}

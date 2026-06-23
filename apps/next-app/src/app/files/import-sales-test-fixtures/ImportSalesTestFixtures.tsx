@@ -12,8 +12,9 @@ import {
 } from "./api";
 import { ImportJobProgressPanel } from "./ImportJobProgressPanel";
 import {
-  describeUploadProgressDisplay,
+  describeUploadProgress,
   type ImportJobProgressDisplay,
+  uploadOnlyProgressDisplay,
   waitForProcessingJobViaSse,
 } from "./processing-job-sse";
 
@@ -96,14 +97,12 @@ export const ImportSalesTestFixtures = () => {
     setProgressDisplay(null);
 
     try {
-      setProgressDisplay({
-        jobPhase: {
-          label: "Uploading files",
+      setProgressDisplay(
+        uploadOnlyProgressDisplay({
           detail: "Preparing upload…",
           percent: 0,
-        },
-        domainStage: null,
-      });
+        }),
+      );
       const { uploadSessionId } = await uploadSalesImportFiles(
         {
           salesData,
@@ -112,32 +111,28 @@ export const ImportSalesTestFixtures = () => {
         },
         {
           onUploadProgress: ({ loaded, total }) => {
-            setProgressDisplay(describeUploadProgressDisplay(loaded, total));
+            setProgressDisplay(
+              uploadOnlyProgressDisplay(describeUploadProgress(loaded, total)),
+            );
           },
         },
       );
 
-      setProgressDisplay({
-        jobPhase: { label: "Starting job", detail: "starting" },
-        domainStage: null,
-      });
       const { jobId } = await startSalesImportProcessing(uploadSessionId);
+      const initialJob = await getProcessingJob(jobId);
 
       await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_NESTJS, {
+        initialSnapshot: initialJob,
         onDisplayChange: setProgressDisplay,
       });
 
-      const job = await getProcessingJob(jobId);
-      setLastJob(job);
+      setLastJob(await getProcessingJob(jobId));
     } catch (error) {
       console.error("Sales import failed:", error);
       const message =
         error instanceof Error ? error.message : "Sales import failed";
       setErrorMessage(message);
-      setProgressDisplay({
-        jobPhase: { label: "Failed", detail: message },
-        domainStage: null,
-      });
+      setProgressDisplay(null);
     } finally {
       setIsRunning(false);
     }
