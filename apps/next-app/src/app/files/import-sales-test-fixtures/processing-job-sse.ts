@@ -17,9 +17,25 @@ export type ProcessingJobSnapshot = Pick<
   | "completedAt"
 >;
 
-export type CurrentJobPhase = {
+export type JobLayerPhase = {
   label: string;
   detail?: string;
+  percent?: number;
+};
+
+export type DomainLayerStage = {
+  label: string;
+  detail?: string;
+  percent?: number;
+};
+
+export type ImportJobProgressDisplay = {
+  jobPhase: JobLayerPhase;
+  domainStage?: DomainLayerStage | null;
+};
+
+/** @deprecated Use ImportJobProgressDisplay */
+export type CurrentJobPhase = JobLayerPhase & {
   percent?: number;
 };
 
@@ -33,21 +49,27 @@ function formatByteCount(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function describeUploadProgress(
+export function describeUploadProgressDisplay(
   loaded: number,
   total?: number,
-): CurrentJobPhase {
+): ImportJobProgressDisplay {
   if (total != null && total > 0) {
     return {
-      label: "Uploading files",
-      detail: `${formatByteCount(loaded)} / ${formatByteCount(total)}`,
-      percent: Math.min(100, Math.round((loaded / total) * 100)),
+      jobPhase: {
+        label: "Uploading files",
+        detail: `${formatByteCount(loaded)} / ${formatByteCount(total)}`,
+        percent: Math.min(100, Math.round((loaded / total) * 100)),
+      },
+      domainStage: null,
     };
   }
 
   return {
-    label: "Uploading files",
-    detail: `${formatByteCount(loaded)} uploaded`,
+    jobPhase: {
+      label: "Uploading files",
+      detail: `${formatByteCount(loaded)} uploaded`,
+    },
+    domainStage: null,
   };
 }
 
@@ -94,7 +116,9 @@ function formatPhaseProgressDetail(
   return parts.length > 0 ? parts.join(" · ") : undefined;
 }
 
-export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
+export function describeDomainStageFromProgress(
+  progress: unknown,
+): DomainLayerStage {
   if (!progress || typeof progress !== "object") {
     return { label: "Processing" };
   }
@@ -139,14 +163,19 @@ export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
   }
 }
 
-export function describeJobSnapshot(
+/** @deprecated Use describeDomainStageFromProgress */
+export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
+  return describeDomainStageFromProgress(progress);
+}
+
+export function describeJobLayerPhaseFromSnapshot(
   snapshot: ProcessingJobSnapshot,
-): CurrentJobPhase {
+): JobLayerPhase {
   switch (snapshot.phase) {
     case "queued":
-      return { label: "Queued" };
+      return { label: "Queued", detail: "queued" };
     case "processing":
-      return { label: "Processing" };
+      return { label: "Processing", detail: "processing" };
     case "complete": {
       const parts = [
         snapshot.outcome ?? "complete",
@@ -160,10 +189,17 @@ export function describeJobSnapshot(
       return { label: "Complete", detail: parts.join(" · ") };
     }
     case "failed":
-      return { label: "Failed" };
+      return { label: "Failed", detail: "failed" };
     default:
-      return { label: snapshot.phase };
+      return { label: snapshot.phase, detail: snapshot.phase };
   }
+}
+
+/** @deprecated Use describeJobLayerPhaseFromSnapshot */
+export function describeJobSnapshot(
+  snapshot: ProcessingJobSnapshot,
+): CurrentJobPhase {
+  return describeJobLayerPhaseFromSnapshot(snapshot);
 }
 
 function isProgressEvent(data: unknown): data is ProcessingProgressEvent {
@@ -226,6 +262,8 @@ export function waitForProcessingJobViaSse(
   jobId: string,
   nestBaseUrl: string | undefined,
   handlers: {
+    onDisplayChange?: (display: ImportJobProgressDisplay) => void;
+    /** @deprecated Use onDisplayChange */
     onPhaseChange?: (phase: CurrentJobPhase) => void;
     timeoutMs?: number;
   } = {},
@@ -235,6 +273,8 @@ export function waitForProcessingJobViaSse(
   return new Promise((resolve, reject) => {
     let settled = false;
     let unsubscribe: (() => void) | undefined;
+    let lastJobPhase: JobLayerPhase = { label: "Processing" };
+    let lastDomainStage: DomainLayerStage | null = null;
 
     const finish = (action: () => void) => {
       if (settled) {
@@ -246,8 +286,13 @@ export function waitForProcessingJobViaSse(
       action();
     };
 
-    const updatePhase = (phase: CurrentJobPhase) => {
-      handlers.onPhaseChange?.(phase);
+    const emitDisplay = () => {
+      const display: ImportJobProgressDisplay = {
+        jobPhase: lastJobPhase,
+        domainStage: lastDomainStage,
+      };
+      handlers.onDisplayChange?.(display);
+      handlers.onPhaseChange?.(lastDomainStage ?? lastJobPhase);
     };
 
     const timeoutId = setTimeout(() => {
@@ -257,10 +302,15 @@ export function waitForProcessingJobViaSse(
     try {
       unsubscribe = subscribeProcessingJobEvents(jobId, nestBaseUrl, {
         onProgress: (event) => {
-          updatePhase(describeProcessingProgress(event.progress));
+          lastDomainStage = describeDomainStageFromProgress(event.progress);
+          emitDisplay();
         },
         onSnapshot: (snapshot) => {
-          updatePhase(describeJobSnapshot(snapshot));
+          lastJobPhase = describeJobLayerPhaseFromSnapshot(snapshot);
+          if (snapshot.phase !== "processing") {
+            lastDomainStage = null;
+          }
+          emitDisplay();
           if (snapshot.phase === "complete" || snapshot.phase === "failed") {
             finish(() => resolve(snapshot));
           }

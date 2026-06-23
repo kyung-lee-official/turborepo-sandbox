@@ -12,8 +12,8 @@ import {
 } from "./api";
 import { ImportJobProgressPanel } from "./ImportJobProgressPanel";
 import {
-  type CurrentJobPhase,
-  describeUploadProgress,
+  describeUploadProgressDisplay,
+  type ImportJobProgressDisplay,
   waitForProcessingJobViaSse,
 } from "./processing-job-sse";
 
@@ -66,9 +66,8 @@ export const ImportSalesTestFixtures = () => {
     Record<string, File | undefined>
   >({});
   const [isRunning, setIsRunning] = useState(false);
-  const [currentPhase, setCurrentPhase] = useState<CurrentJobPhase | null>(
-    null,
-  );
+  const [progressDisplay, setProgressDisplay] =
+    useState<ImportJobProgressDisplay | null>(null);
   const [lastJob, setLastJob] = useState<ProcessingJobResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isDownloadingErrors, setIsDownloadingErrors] = useState(false);
@@ -94,13 +93,16 @@ export const ImportSalesTestFixtures = () => {
     setIsRunning(true);
     setErrorMessage(null);
     setLastJob(null);
-    setCurrentPhase(null);
+    setProgressDisplay(null);
 
     try {
-      setCurrentPhase({
-        label: "Uploading files",
-        detail: "Preparing upload…",
-        percent: 0,
+      setProgressDisplay({
+        jobPhase: {
+          label: "Uploading files",
+          detail: "Preparing upload…",
+          percent: 0,
+        },
+        domainStage: null,
       });
       const { uploadSessionId } = await uploadSalesImportFiles(
         {
@@ -110,16 +112,19 @@ export const ImportSalesTestFixtures = () => {
         },
         {
           onUploadProgress: ({ loaded, total }) => {
-            setCurrentPhase(describeUploadProgress(loaded, total));
+            setProgressDisplay(describeUploadProgressDisplay(loaded, total));
           },
         },
       );
 
-      setCurrentPhase({ label: "Starting job" });
+      setProgressDisplay({
+        jobPhase: { label: "Starting job", detail: "starting" },
+        domainStage: null,
+      });
       const { jobId } = await startSalesImportProcessing(uploadSessionId);
 
       await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_NESTJS, {
-        onPhaseChange: setCurrentPhase,
+        onDisplayChange: setProgressDisplay,
       });
 
       const job = await getProcessingJob(jobId);
@@ -129,7 +134,10 @@ export const ImportSalesTestFixtures = () => {
       const message =
         error instanceof Error ? error.message : "Sales import failed";
       setErrorMessage(message);
-      setCurrentPhase({ label: "Failed", detail: message });
+      setProgressDisplay({
+        jobPhase: { label: "Failed", detail: message },
+        domainStage: null,
+      });
     } finally {
       setIsRunning(false);
     }
@@ -231,7 +239,7 @@ export const ImportSalesTestFixtures = () => {
         {isRunning ? "Running import…" : "Upload and start import"}
       </button>
 
-      <ImportJobProgressPanel phase={currentPhase} isLive={isRunning} />
+      <ImportJobProgressPanel display={progressDisplay} isLive={isRunning} />
 
       {lastJob ? (
         <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 text-gray-800 text-sm">
