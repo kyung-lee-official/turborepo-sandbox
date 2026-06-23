@@ -21,18 +21,29 @@ export function SalesImportFixturesNav({
           {" — select the three files and run the sales import job."}
         </p>
       ) : (
-        <p className="text-gray-700">
-          Need files first?{" "}
-          <Link
-            href="/files/sales-import-fixtures"
-            className="font-medium text-blue-600 underline hover:text-blue-800"
-          >
-            Generate sales import test fixtures
-          </Link>
-          {
-            " — create perfect, partial, and fail_fast bundles under nest-app/temp."
-          }
-        </p>
+        <>
+          <p className="text-gray-700">
+            Need files first?{" "}
+            <Link
+              href="/files/sales-import-fixtures"
+              className="font-medium text-blue-600 underline hover:text-blue-800"
+            >
+              Generate sales import test fixtures
+            </Link>
+            {
+              " — create perfect, partial, and fail_fast bundles under nest-app/temp."
+            }
+          </p>
+          <p className="mt-2 text-gray-700">
+            <Link
+              href="/files/processing-jobs"
+              className="font-medium text-blue-600 underline hover:text-blue-800"
+            >
+              View processing jobs
+            </Link>
+            {" — active and completed async import jobs."}
+          </p>
+        </>
       )}
     </nav>
   );

@@ -48,6 +48,12 @@ export const filesBlockLinks = [
       "Select salesData.xlsx, inventory.xlsx, and productDescriptions.jsonl to upload and run the sales-report async import job.",
   },
   {
+    link: "/files/processing-jobs",
+    text: "processing jobs",
+    description:
+      "List active and historical async processing jobs with phase filters from GET /jobs.",
+  },
+  {
     link: "/files/upload-multiple-excel",
     text: "compress and upload multiple excel files in individual inputs",
     description:
