@@ -111,6 +111,14 @@ export async function parseSheetRows(
   const totalDataRows = countNonBlankDataRows(worksheet, spec.headers);
   let processedDataRows = 0;
 
+  if (handlers.onProgress && totalDataRows > 0) {
+    await handlers.onProgress({
+      processedCount: 0,
+      totalCount: totalDataRows,
+      percent: 0,
+    });
+  }
+
   for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
     const row = worksheet.getRow(rowNumber);
     if (!rowHasContent(row, spec.headers)) {
@@ -123,7 +131,11 @@ export async function parseSheetRows(
 
     if (handlers.onProgress && totalDataRows > 0) {
       const percent = Math.round((processedDataRows / totalDataRows) * 100);
-      await handlers.onProgress(percent);
+      await handlers.onProgress({
+        processedCount: processedDataRows,
+        totalCount: totalDataRows,
+        percent,
+      });
     }
   }
 }

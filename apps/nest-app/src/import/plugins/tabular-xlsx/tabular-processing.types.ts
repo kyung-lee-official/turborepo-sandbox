@@ -23,9 +23,15 @@ export type TabularRowHandler = (row: {
   cells: Record<string, string>;
 }) => void | Promise<void>;
 
+export type SheetRowProgress = {
+  processedCount: number;
+  totalCount: number;
+  percent: number;
+};
+
 export type ParseSheetRowsHandlers = {
   onRow: TabularRowHandler;
-  onProgress?: (percent: number) => Promise<void>;
+  onProgress?: (detail: SheetRowProgress) => Promise<void>;
   pushError: (detail: ErrorDetail) => void;
 };
 

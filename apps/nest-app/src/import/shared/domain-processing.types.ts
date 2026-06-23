@@ -7,5 +7,9 @@ export type DomainProcessingProgress = {
   originalName?: string;
   /** When progress relates to a tabular worksheet */
   worksheetName?: string;
+  totalCount?: number;
+  processedCount?: number;
+  validCount?: number;
+  errorCount?: number;
   percent?: number;
 };
