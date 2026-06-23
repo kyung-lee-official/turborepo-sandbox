@@ -30,6 +30,26 @@ export function ImportJobProgressPanel({
           {phase.detail ? (
             <p className="mt-1 text-gray-600 text-sm">{phase.detail}</p>
           ) : null}
+          {phase.percent != null ? (
+            <div className="mt-3">
+              <div className="mb-1 flex items-center justify-between text-gray-600 text-xs">
+                <span>Progress</span>
+                <span>{phase.percent}%</span>
+              </div>
+              <div
+                className="h-2 overflow-hidden rounded-full bg-gray-200"
+                role="progressbar"
+                aria-valuenow={phase.percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <div
+                  className="h-full rounded-full bg-blue-600 transition-[width] duration-300 ease-out"
+                  style={{ width: `${phase.percent}%` }}
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
         {isLive ? (
           <span className="rounded-full bg-green-100 px-2.5 py-0.5 font-medium text-green-800 text-xs">

@@ -20,7 +20,51 @@ export type ProcessingJobSnapshot = Pick<
 export type CurrentJobPhase = {
   label: string;
   detail?: string;
+  percent?: number;
 };
+
+function readCount(
+  record: Record<string, unknown>,
+  key: string,
+): number | undefined {
+  const value = record[key];
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
+}
+
+function formatPhaseProgressDetail(
+  record: Record<string, unknown>,
+): string | undefined {
+  const processedCount = readCount(record, "processedCount");
+  const totalCount = readCount(record, "totalCount");
+  const validCount = readCount(record, "validCount");
+  const errorCount = readCount(record, "errorCount");
+
+  const parts: string[] = [];
+
+  if (processedCount != null && totalCount != null && totalCount > 0) {
+    parts.push(
+      `${processedCount.toLocaleString()} / ${totalCount.toLocaleString()} rows`,
+    );
+  } else if (typeof record.percent === "number") {
+    parts.push(`${record.percent}%`);
+  }
+
+  if (validCount != null && errorCount != null && errorCount > 0) {
+    parts.push(
+      `${validCount.toLocaleString()} valid · ${errorCount.toLocaleString()} errors`,
+    );
+  } else if (
+    validCount != null &&
+    processedCount != null &&
+    validCount !== processedCount
+  ) {
+    parts.push(`${validCount.toLocaleString()} valid`);
+  }
+
+  return parts.length > 0 ? parts.join(" · ") : undefined;
+}
 
 export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
   if (!progress || typeof progress !== "object") {
@@ -37,26 +81,32 @@ export function describeProcessingProgress(progress: unknown): CurrentJobPhase {
   const worksheet =
     typeof record.worksheetName === "string" ? record.worksheetName : undefined;
   const context = [worksheet, sourceLabel].filter(Boolean).join(" · ");
+  const progressDetail = formatPhaseProgressDetail(record);
+  const detail =
+    [progressDetail, context].filter(Boolean).join(" · ") || undefined;
+  const percent =
+    typeof record.percent === "number" && Number.isFinite(record.percent)
+      ? Math.min(100, Math.max(0, Math.round(record.percent)))
+      : undefined;
 
   switch (record.phase) {
     case "validating_rows":
-      return { label: "Validating rows", detail: context || undefined };
+      return { label: "Validating rows", detail, percent };
     case "saving_database":
-      return {
-        label: "Saving to database",
-        detail:
-          typeof record.percent === "number"
-            ? `${record.percent}%`
-            : context || undefined,
-      };
+      return { label: "Saving to database", detail, percent };
     case "parsing_workbook":
-      return { label: "Parsing workbook", detail: context || undefined };
+      return {
+        label: "Parsing workbook",
+        detail: context || undefined,
+        percent,
+      };
     case "parsing_lines":
-      return { label: "Parsing JSONL", detail: context || undefined };
+      return { label: "Parsing JSONL", detail: context || undefined, percent };
     default:
       return {
         label: typeof record.phase === "string" ? record.phase : "Processing",
-        detail: context || undefined,
+        detail: detail ?? (context || undefined),
+        percent,
       };
   }
 }
