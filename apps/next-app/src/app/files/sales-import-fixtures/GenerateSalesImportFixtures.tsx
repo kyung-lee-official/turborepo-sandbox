@@ -93,7 +93,7 @@ export const GenerateSalesImportFixtures = () => {
               </p>
               <ul className="mt-1 list-inside list-disc space-y-1 pl-2">
                 <li>
-                  LineItems is always perfect (~50k data rows plus header)
+                  LineItems is always perfect (~150k data rows plus header)
                 </li>
                 <li>
                   Products varies by file:{" "}
