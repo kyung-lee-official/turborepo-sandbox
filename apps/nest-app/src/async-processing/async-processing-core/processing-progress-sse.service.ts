@@ -126,6 +126,7 @@ export class ProcessingProgressSseService {
           });
 
           await subscriberRedis.subscribe(progressChannel, terminalChannel);
+          emitSnapshot(job);
           resetIdleTimer();
         } catch (error) {
           await cleanup();
