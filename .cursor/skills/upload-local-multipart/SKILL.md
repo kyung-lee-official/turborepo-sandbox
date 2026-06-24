@@ -50,7 +50,7 @@ Inject **`UploadSessionStore`** from start-processing-adapters — do not duplic
 
 | Term | Meaning |
 | ---- | ------- |
-| **`LocalUploadSession`** | Per-request **form fields**: `domainKind`, `autoStart`, optional client `uploadSessionId` hint |
+| **`LocalUploadSession`** | Per-request **form fields**: `domainKind`, `autoStart`, optional client `uploadSessionId` hint, optional **`context`** |
 | **`UploadSession`** | Persisted record in session store — [start-processing-adapters](../start-processing-adapters/SKILL.md#session-source-types) |
 | **`sourceId`** | Multipart **file** field name — must match domain **`sourceSpecs`** |
 | **`UploadSessionSources`** | Built server-side — [start-processing-adapters](../start-processing-adapters/SKILL.md#session-source-types) |
@@ -67,13 +67,14 @@ type LocalUploadSession = {
   domainKind: string;
   autoStart?: boolean; // default false
   uploadSessionId?: string; // optional client hint; server may generate nanoid()
+  context?: Record<string, unknown>;
 };
 ```
 
 | `autoStart` | On success |
 | --- | --- |
 | `false` (default) | **`UploadSessionStore.save`** → return `{ uploadSessionId }` only |
-| `true` | Emit `{ domainKind, sources }` in-process → event adapter |
+| `true` | Emit `{ domainKind, sources, context? }` in-process → event adapter |
 
 On **`global_singleton`** conflict during autoStart, event adapter **logs and skips** (no HTTP 409) — [start-processing-adapters — Event adapter](../start-processing-adapters/SKILL.md#event-adapter).
 
@@ -141,14 +142,22 @@ export class LocalMultipartUploadController {
   async upload(
     @Param("domainKind") domainKindFromRoute: string,
     @UploadedFiles() uploadedFiles: Express.Multer.File[] | undefined,
-    @Body("autoStart") autoStartRaw: string | undefined,
-    @Body("uploadSessionId") uploadSessionId: string | undefined,
+    @Body() body: Record<string, string | undefined>,
     @Req() req: RequestWithSessionId,
   ) {
     const registration = this.domainRegistry.getByDomainKind(domainKindFromRoute);
+    const session: LocalUploadSession = {
+      domainKind: domainKindFromRoute,
+      autoStart: body.autoStart === "true",
+      uploadSessionId: body.uploadSessionId,
+      context: buildUploadSessionContextFromMultipartBody(
+        body,
+        registration.sourceSpecs.map((spec) => spec.sourceId),
+      ),
+    };
     return this.localMultipartUploadService.handleUpload(
       groupUploadedFiles(uploadedFiles),
-      { domainKind: domainKindFromRoute, autoStart: autoStartRaw === "true", uploadSessionId },
+      session,
       registration,
       req,
     );
@@ -159,8 +168,35 @@ export class LocalMultipartUploadController {
 - Resolve **`DomainKindRegistration`** (not just `sourceSpecs`) — includes optional **`upload`** MIME policy.
 - File field names = **`sourceId`** values from registration.
 - Form fields: **`autoStart`**, optional **`uploadSessionId`** hint.
+- **Extra non-file form fields** (for example `yearMonth`, `timezone`) become **`LocalUploadSession.context`** via **`buildUploadSessionContextFromMultipartBody`** — reserved keys: `autoStart`, `uploadSessionId`, and each **`sourceId`** file field name.
 
 ### MIME validation
+
+```typescript
+// build-upload-session-context.ts — extra non-file form fields → session/manifest context
+export function buildUploadSessionContext(
+  fields: Record<string, string | undefined>,
+): Record<string, unknown> | undefined {
+  const context: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(fields)) {
+    const trimmed = value?.trim();
+    if (trimmed) context[key] = trimmed;
+  }
+  return Object.keys(context).length > 0 ? context : undefined;
+}
+
+export function buildUploadSessionContextFromMultipartBody(
+  body: Record<string, string | undefined>,
+  sourceFieldNames: readonly string[],
+): Record<string, unknown> | undefined {
+  const reserved = new Set(["autoStart", "uploadSessionId", ...sourceFieldNames]);
+  const fields: Record<string, string | undefined> = {};
+  for (const [key, value] of Object.entries(body)) {
+    if (!reserved.has(key)) fields[key] = value;
+  }
+  return buildUploadSessionContext(fields);
+}
+```
 
 ```typescript
 // build-upload-session-sources.ts — uses registration.upload when present
@@ -226,6 +262,7 @@ await this.uploadSessionStore.save({
   domainKind: session.domainKind,
   sources,
   expiresAt: addHours(new Date(), 24),
+  context: session.context,
 });
 return { uploadSessionId };
 ```
@@ -240,6 +277,7 @@ Client **`POST .../start`** with **`uploadSessionId`** only — [deferred start 
 this.eventEmitter.emit("processing.start-requested", {
   domainKind: session.domainKind,
   sources,
+  context: session.context,
 });
 return { accepted: true }; // do not return locators to client
 ```
@@ -282,6 +320,7 @@ import/upload/local-multipart/
   local-multipart-upload.service.ts      # inject UploadSessionStore from start-processing-adapters
   multer-disk-storage.factory.ts
   build-upload-session-sources.ts
+  build-upload-session-context.ts
   rollback-saved-paths.ts
 
 import/start-processing-adapters/

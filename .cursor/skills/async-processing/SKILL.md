@@ -72,6 +72,7 @@ Types and constants: **`async-processing.types.ts`**.
 type StartProcessingInput = {
   domainKind: string;
   sources: Record<string, ProcessingSource>;
+  context?: Record<string, unknown>;
 };
 
 type ProcessingSource = {
@@ -111,6 +112,7 @@ type DomainRunResult =
 type DomainRunnerIo = {
   openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
   onProgress: (detail: unknown) => Promise<void>;
+  context?: Record<string, unknown>;
 };
 
 type DomainRunner = {
@@ -161,6 +163,8 @@ export class ActiveJobConflictError extends Error {
 
 On **`validation_failed`**: **`ProcessingJobErrorRepository.createManyFromErrors`**. Download: **`GET jobs/:jobId/errors`** (`application/x-ndjson`).
 
+**`ProcessingManifest.sources`** — frozen file locators for the worker. **`ProcessingManifest.context`** — optional JSON job parameters collected at upload/start (for example `yearMonth`, `timezone`); not file locators. Domain runners validate **`io.context`** with a domain Zod schema; BullMQ payload stays `{ jobId, domainKind, manifestId }` only.
+
 Redis channels: `async-processing:progress:{jobId}`, `async-processing:terminal:{jobId}`. BullMQ payload carries **refs only** — load `sources` from manifest by `manifestId`.
 
 | Constant | Default | Use |
@@ -196,6 +200,7 @@ model ProcessingManifest {
   jobId      String   @unique
   domainKind String
   sources    Json
+  context    Json? // optional job parameters (not file locators)
   createdAt  DateTime @default(now())
   job        ProcessingJob @relation(...)
 }
@@ -223,6 +228,7 @@ interface ProcessingJobRepository {
     domainKind: string;
     manifestId: string;
     sources: Record<string, ProcessingSource>;
+    context?: Record<string, unknown>;
   }): Promise<ProcessingJob>;
   claimProcessingPhase(jobId: string): Promise<boolean>; // single-winner queued → processing
   finalize(jobId: string, patch: {
@@ -238,6 +244,7 @@ interface ProcessingJobRepository {
   getManifestByManifestId(manifestId: string): Promise<{
     manifestId: string; jobId: string; domainKind: string;
     sources: Record<string, ProcessingSource>;
+    context?: Record<string, unknown>;
   } | null>;
 }
 ```
@@ -251,7 +258,13 @@ async createQueued(input) {
       data: { id: input.jobId, domainKind: input.domainKind, phase: "queued" },
     });
     await tx.processingManifest.create({
-      data: { id: input.manifestId, jobId: input.jobId, domainKind: input.domainKind, sources: input.sources },
+      data: {
+        id: input.manifestId,
+        jobId: input.jobId,
+        domainKind: input.domainKind,
+        sources: input.sources,
+        context: input.context,
+      },
     });
     return job;
   });
@@ -299,7 +312,13 @@ async startProcessing(input: StartProcessingInput) {
   validateSources(input.sources, registration.sourceSpecs);
   const jobId = nanoid();
   const manifestId = nanoid();
-  await jobRepository.createQueued({ jobId, domainKind: input.domainKind, manifestId, sources: input.sources });
+  await jobRepository.createQueued({
+    jobId,
+    domainKind: input.domainKind,
+    manifestId,
+    sources: input.sources,
+    context: input.context,
+  });
 
   let lockAcquired = false;
   try {
@@ -376,7 +395,7 @@ async refreshLease(domainKind, jobId) {
 5. Re-resolve registration from manifest **`domainKind`**.
 6. **`verifyLocator`** each source → **`Map`**, track **`verifiedForCleanup`**.
 7. **`refreshLease`** (force) before domain run.
-8. **`domainRunner.run`** — `openStream` → `openReadStream`; `onProgress` → `publishProgress` + throttled **`refreshLease`**.
+8. **`domainRunner.run`** — `openStream` → `openReadStream`; `onProgress` → `publishProgress` + throttled **`refreshLease`**; pass **`context`** from manifest snapshot.
 9. **`finalizeSuccess`** — persist errors when `validation_failed`; **`finalize`** `complete`.
 10. **`publishTerminalIfTerminal`**.
 
@@ -425,6 +444,7 @@ class ProcessingProcessor extends WorkerHost {
               await progressPublisher.publishProgress(jobId, detail);
               await refreshLeaseIfNeeded(registration, domainKind, jobId, false);
             },
+            context: manifest.context,
           });
         } catch {
           await markJobFailed(jobId);
