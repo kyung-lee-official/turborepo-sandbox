@@ -1,26 +1,18 @@
 import type { SourceSpec } from "@/async-processing/async-processing.types";
 import type { UploadSessionSources } from "@/async-processing/start-processing-adapters/upload-session.types";
 
-const ALLOWED_MIME_BY_SOURCE: Record<string, readonly string[]> = {
-  salesData: [
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ],
-  inventory: [
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ],
-  productDescriptions: [
-    "application/x-ndjson",
-    "application/json",
-    "application/octet-stream",
-  ],
-};
+/** Default allowlist for tabular XLSX uploads (see import-plugin-tabular-xlsx). */
+export const DEFAULT_TABULAR_XLSX_MIMES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/octet-stream",
+] as const;
 
 export function assertAllowedMimeType(
   sourceId: string,
   mimeType: string,
+  allowedMimeTypes: readonly string[] = DEFAULT_TABULAR_XLSX_MIMES,
 ): void {
-  const allowed = ALLOWED_MIME_BY_SOURCE[sourceId];
-  if (!allowed?.includes(mimeType)) {
+  if (!allowedMimeTypes.includes(mimeType)) {
     throw new Error(
       `Invalid MIME type for ${sourceId}: ${mimeType || "(empty)"}`,
     );
@@ -30,8 +22,14 @@ export function assertAllowedMimeType(
 export function buildUploadSessionSources(
   filesBySourceId: Record<string, Express.Multer.File>,
   sourceSpecs: readonly SourceSpec[],
+  options?: {
+    allowedMimeBySourceId?: Record<string, readonly string[]>;
+    defaultAllowedMimeTypes?: readonly string[];
+  },
 ): UploadSessionSources {
   const sources: UploadSessionSources = {};
+  const defaultAllowed =
+    options?.defaultAllowedMimeTypes ?? DEFAULT_TABULAR_XLSX_MIMES;
 
   for (const spec of sourceSpecs) {
     const file = filesBySourceId[spec.sourceId];
@@ -42,7 +40,9 @@ export function buildUploadSessionSources(
       continue;
     }
 
-    assertAllowedMimeType(spec.sourceId, file.mimetype);
+    const allowed =
+      options?.allowedMimeBySourceId?.[spec.sourceId] ?? defaultAllowed;
+    assertAllowedMimeType(spec.sourceId, file.mimetype, [...allowed]);
 
     sources[spec.sourceId] = {
       sourceId: spec.sourceId,

@@ -7,7 +7,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { AnyFilesInterceptor } from "@nestjs/platform-express";
 import type { Request } from "express";
 import { DomainRegistry } from "@/async-processing/async-processing-core/domain-registry.service";
 import { LocalMultipartUploadService } from "./local-multipart-upload.service";
@@ -21,6 +21,18 @@ type RequestWithSessionId = Request & {
   [RESOLVED_UPLOAD_SESSION_ID]?: string;
 };
 
+function groupUploadedFiles(
+  files: Express.Multer.File[] | undefined,
+): Record<string, Express.Multer.File[] | undefined> {
+  const grouped: Record<string, Express.Multer.File[]> = {};
+  for (const file of files ?? []) {
+    const bucket = grouped[file.fieldname] ?? [];
+    bucket.push(file);
+    grouped[file.fieldname] = bucket;
+  }
+  return grouped;
+}
+
 @Controller("applications/async-processing")
 export class LocalMultipartUploadController {
   constructor(
@@ -29,20 +41,10 @@ export class LocalMultipartUploadController {
   ) {}
 
   @Post(":domainKind/upload")
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: "salesData", maxCount: 1 },
-        { name: "inventory", maxCount: 1 },
-        { name: "productDescriptions", maxCount: 1 },
-      ],
-      createLocalMultipartMulterOptions(),
-    ),
-  )
+  @UseInterceptors(AnyFilesInterceptor(createLocalMultipartMulterOptions()))
   async upload(
     @Param("domainKind") domainKindFromRoute: string,
-    @UploadedFiles()
-    files: Record<string, Express.Multer.File[] | undefined>,
+    @UploadedFiles() uploadedFiles: Express.Multer.File[] | undefined,
     @Body("autoStart") autoStartRaw: string | undefined,
     @Body("uploadSessionId") uploadSessionId: string | undefined,
     @Req() req: RequestWithSessionId,
@@ -56,9 +58,9 @@ export class LocalMultipartUploadController {
     };
 
     return this.localMultipartUploadService.handleUpload(
-      files,
+      groupUploadedFiles(uploadedFiles),
       session,
-      registration.sourceSpecs,
+      registration,
       req,
     );
   }

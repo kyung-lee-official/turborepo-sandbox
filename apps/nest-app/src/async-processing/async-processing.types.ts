@@ -88,10 +88,17 @@ export type ProcessingLockPolicy =
   | { type: "none" }
   | { type: "global_singleton" };
 
+/** Optional ingest policy for upload-* adapters (local multipart, S3, COS). */
+export type DomainUploadPolicy = {
+  allowedMimeBySourceId?: Record<string, readonly string[]>;
+  defaultAllowedMimeTypes?: readonly string[];
+};
+
 export type DomainKindRegistration = {
   domainRunner: DomainRunner;
   sourceSpecs: SourceSpec[];
   lockPolicy: ProcessingLockPolicy;
+  upload?: DomainUploadPolicy;
 };
 
 export class ActiveJobConflictError extends Error {

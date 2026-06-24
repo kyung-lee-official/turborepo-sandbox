@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { nanoid } from "nanoid";
-import type { SourceSpec } from "@/async-processing/async-processing.types";
+import type { DomainKindRegistration } from "@/async-processing/async-processing.types";
 import { UploadSessionStore } from "@/async-processing/start-processing-adapters/upload-session.store";
 import {
   DEFAULT_UPLOAD_SESSION_TTL_SECONDS,
@@ -28,9 +28,10 @@ export class LocalMultipartUploadService {
   async handleUpload(
     files: Record<string, Express.Multer.File[] | undefined>,
     session: LocalUploadSession,
-    sourceSpecs: readonly SourceSpec[],
+    registration: DomainKindRegistration,
     req: RequestWithSessionId,
   ): Promise<{ uploadSessionId: string } | { accepted: true }> {
+    const { sourceSpecs, upload: uploadPolicy } = registration;
     const savedPaths: string[] = [];
     const filesBySourceId: Record<string, Express.Multer.File> = {};
 
@@ -66,7 +67,10 @@ export class LocalMultipartUploadService {
         }
       }
 
-      const sources = buildUploadSessionSources(filesBySourceId, sourceSpecs);
+      const sources = buildUploadSessionSources(filesBySourceId, sourceSpecs, {
+        allowedMimeBySourceId: uploadPolicy?.allowedMimeBySourceId,
+        defaultAllowedMimeTypes: uploadPolicy?.defaultAllowedMimeTypes,
+      });
       const uploadSessionId =
         req[RESOLVED_UPLOAD_SESSION_ID] ??
         session.uploadSessionId?.trim() ??

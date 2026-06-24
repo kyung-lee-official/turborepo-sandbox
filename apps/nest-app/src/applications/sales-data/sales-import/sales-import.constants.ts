@@ -6,6 +6,9 @@ import {
   SALES_IMPORT_SOURCE_IDS,
 } from "./sales-import-merge.policy";
 
+const XLSX_MIME =
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" as const;
+
 export const salesImportSourceSpecs = [
   { sourceId: SALES_IMPORT_SOURCE_IDS.salesData, required: true },
   { sourceId: SALES_IMPORT_SOURCE_IDS.inventory, required: true },
@@ -14,6 +17,24 @@ export const salesImportSourceSpecs = [
     required: true,
   },
 ] as const;
+
+export const salesImportUploadPolicy = {
+  allowedMimeBySourceId: {
+    [SALES_IMPORT_SOURCE_IDS.salesData]: [
+      XLSX_MIME,
+      "application/octet-stream",
+    ],
+    [SALES_IMPORT_SOURCE_IDS.inventory]: [
+      XLSX_MIME,
+      "application/octet-stream",
+    ],
+    [SALES_IMPORT_SOURCE_IDS.productDescriptions]: [
+      "application/x-ndjson",
+      "application/json",
+      "application/octet-stream",
+    ],
+  },
+} as const;
 
 export const salesImportProductsSheetSpec = {
   sheetName: SALES_IMPORT_SHEETS.products,
