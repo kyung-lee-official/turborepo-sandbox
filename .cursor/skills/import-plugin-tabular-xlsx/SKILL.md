@@ -20,7 +20,7 @@ Implement under **`apps/nest-app/src/import/plugins/tabular-xlsx/`** (no barrel 
 | ExcelJS load, headers, **`cell.text`**, row maps | **`TabularSheetSpec`** per sheet (exact header strings) |
 | Parse-site **`ErrorDetail`** via **`scopeTabularError`** | Business rules in **`onRow`**, persistence |
 | **`parsing_workbook`** via optional percent callback | **`validating_rows`**, **`saving_database`** — [import-shared](../import-shared/SKILL.md) |
-| | **`buildValidationErrorXlsxBuffer`**, **`DomainRunResult`** |
+| | Return **`errors: ErrorDetail[]`** in **`DomainRunResult`** |
 
 | Must not (plugin) | |
 | --- | --- |

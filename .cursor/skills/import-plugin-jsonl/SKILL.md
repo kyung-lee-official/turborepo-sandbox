@@ -20,7 +20,7 @@ Implement under **`apps/nest-app/src/import/plugins/jsonl/`** (no barrel **`inde
 | Read **`Readable`**, split lines, **`JSON.parse`** per line | **`io.openStream(source)`** per **`VerifiedProcessingSource`** |
 | Parse-site **`ErrorDetail`** (bad JSON, non-object line) | Business rules in **`onLine`** |
 | Trim **string** fields at ingest before **`onLine`** | **`validating_rows`**, **`saving_database`** — [import-shared](../import-shared/SKILL.md) |
-| **`parsing_lines`** via optional percent callback | **`buildValidationErrorXlsxBuffer`**, **`DomainRunResult`** |
+| **`parsing_lines`** via optional percent callback | Return **`errors: ErrorDetail[]`** in **`DomainRunResult`** |
 
 | Must not (plugin) | |
 | --- | --- |

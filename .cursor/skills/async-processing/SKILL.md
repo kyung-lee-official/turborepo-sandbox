@@ -22,7 +22,7 @@ description: >-
 
 Verify locators in the worker after **`claimProcessingPhase`**, before **`domainRunner.run`**. Domain logic and **`ErrorDetail`** — [import-shared](../import-shared/SKILL.md). Format parse — plugin skills.
 
-Implement under `apps/nest-app/src/async-processing/`. **`AppModule`** imports **`AsyncProcessingModule`** only.
+Implement under `apps/nest-app/src/async-processing/`. Upload ingest lives in **`import/upload/`** (generic). Domain apps register in **`applications/*/`**. **`AppModule`**: **`AsyncProcessingModule`** + **`LocalMultipartUploadModule`** + domain modules.
 
 **Greenfield rule:** numbered flows describe behavior; **`Implementation patterns`** blocks are the required code shape — replicate them, do not substitute a flat single try/catch.
 
@@ -54,7 +54,7 @@ flowchart TD
 | **ProcessingOrchestratorService** | `processing-orchestrator.service.ts` | `startProcessing` |
 | **ProcessingJobRepository** | `processing-job.repository.ts` | Job + manifest |
 | **ProcessingJobErrorRepository** | `processing-job-error.repository.ts` | `ErrorDetail[]` on `validation_failed` |
-| **DomainRegistry** | `domain-registry.service.ts` | `domainKind` → runner, specs, lock |
+| **DomainRegistry** | `domain-registry.service.ts` | `domainKind` → runner, specs, lock, optional **`upload`** policy |
 | **ProcessingSourceReader** | `processing-source.reader.ts` | verify, stream, delete locators |
 | **ProcessingProcessor** | `processing.processor.ts` | BullMQ worker |
 | **ProcessingProgressPublisher** | `processing-progress-publisher.service.ts` | Redis pub/sub |
@@ -136,6 +136,13 @@ type DomainKindRegistration = {
   domainRunner: DomainRunner;
   sourceSpecs: SourceSpec[];
   lockPolicy: ProcessingLockPolicy;
+  /** Optional MIME allowlists for upload-* adapters */
+  upload?: DomainUploadPolicy;
+};
+
+type DomainUploadPolicy = {
+  allowedMimeBySourceId?: Record<string, readonly string[]>;
+  defaultAllowedMimeTypes?: readonly string[];
 };
 
 export class ActiveJobConflictError extends Error {
@@ -623,8 +630,17 @@ domainRegistry.register("sales-report", {
     { sourceId: "productDescriptions", required: true },
   ],
   lockPolicy: { type: "global_singleton" },
+  upload: {
+    allowedMimeBySourceId: {
+      salesData: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream"],
+      inventory: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream"],
+      productDescriptions: ["application/x-ndjson", "application/json", "application/octet-stream"],
+    },
+  },
 });
 ```
+
+Domain modules live under **`applications/<domain>/`**. They import **`AsyncProcessingModule`** only to inject **`DomainRegistry`** — no upload code in domain folders.
 
 ---
 
@@ -645,7 +661,8 @@ domainRegistry.register("sales-report", {
 | **`ActiveJobConflictError`** in lock service | Adapter maps to HTTP 409, not Nest `ConflictException` |
 | Lock after **`createQueued`** | Rollback target exists on acquire/enqueue failure |
 | Redis pub/sub for live progress | Do not persist every tick to DB |
-| No re-verify in **`openStream`** | Pass **`verifiedLocator`** |
+| No sales/domain code in **`async-processing/`** or **`import/`** | Domains register via **`DomainRegistry`** only |
+| Upload in **`import/upload/`**, not **`applications/*/`** | Domain supplies **`upload`** policy on registration |
 
 ---
 

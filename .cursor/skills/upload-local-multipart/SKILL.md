@@ -54,7 +54,7 @@ Inject **`UploadSessionStore`** from start-processing-adapters — do not duplic
 | **`UploadSession`** | Persisted record in session store — [start-processing-adapters](../start-processing-adapters/SKILL.md#session-source-types) |
 | **`sourceId`** | Multipart **file** field name — must match domain **`sourceSpecs`** |
 | **`UploadSessionSources`** | Built server-side — [start-processing-adapters](../start-processing-adapters/SKILL.md#session-source-types) |
-| **`uploadSessionId`** | Server id returned to client; client sends it on **`POST .../start`** (server generates if omitted) |
+| **`uploadSessionId`** | Folder name under upload base dir; returned to client; **not** `jobId` |
 
 ---
 
@@ -131,39 +131,47 @@ flowchart LR
 
 ## HTTP / Nest surface
 
-Use **`multipart/form-data`** for files **and** session fields — not a separate JSON body.
+Route: **`POST applications/async-processing/:domainKind/upload`**. Module: **`LocalMultipartUploadModule`** under **`import/upload/local-multipart/`**. **`AppModule`** imports it alongside **`AsyncProcessingModule`**.
 
 ```typescript
-@Post(":domainKind/upload")
-@UseInterceptors(
-  FileFieldsInterceptor(
-    sourceSpecs.map((s) => ({ name: s.sourceId, maxCount: 1 })),
-  ),
-)
-async upload(
-  @Param("domainKind") domainKindFromRoute: string,
-  @UploadedFiles() files: Record<string, Express.Multer.File[]>,
-  @Body("autoStart") autoStartRaw?: string,
-  @Body("uploadSessionId") uploadSessionId?: string,
-) {
-  const registration = this.domainRegistry.getByDomainKind(domainKindFromRoute);
-  const session: LocalUploadSession = {
-    domainKind: domainKindFromRoute,
-    autoStart: autoStartRaw === "true",
-    uploadSessionId,
-  };
-  return this.localMultipartUploadService.handleUpload(
-    files,
-    session,
-    registration.sourceSpecs,
-  );
+@Controller("applications/async-processing")
+export class LocalMultipartUploadController {
+  @Post(":domainKind/upload")
+  @UseInterceptors(AnyFilesInterceptor(createLocalMultipartMulterOptions()))
+  async upload(
+    @Param("domainKind") domainKindFromRoute: string,
+    @UploadedFiles() uploadedFiles: Express.Multer.File[] | undefined,
+    @Body("autoStart") autoStartRaw: string | undefined,
+    @Body("uploadSessionId") uploadSessionId: string | undefined,
+    @Req() req: RequestWithSessionId,
+  ) {
+    const registration = this.domainRegistry.getByDomainKind(domainKindFromRoute);
+    return this.localMultipartUploadService.handleUpload(
+      groupUploadedFiles(uploadedFiles),
+      { domainKind: domainKindFromRoute, autoStart: autoStartRaw === "true", uploadSessionId },
+      registration,
+      req,
+    );
+  }
 }
 ```
 
-- **`sourceSpecs`** — from **`DomainRegistry.getByDomainKind(domainKind)`** per request (or route param).
-- **File fields** — one per **`sourceId`** (e.g. `mainWorkbook`).
-- **Text fields** — `autoStart`, optional `uploadSessionId`; **`domainKind`** from route or `@Body("domainKind")` when not in path.
-- **Limits** — Multer/body size; MIME allowlist before disk write.
+- Resolve **`DomainKindRegistration`** (not just `sourceSpecs`) — includes optional **`upload`** MIME policy.
+- File field names = **`sourceId`** values from registration.
+- Form fields: **`autoStart`**, optional **`uploadSessionId`** hint.
+
+### MIME validation
+
+```typescript
+// build-upload-session-sources.ts — uses registration.upload when present
+buildUploadSessionSources(filesBySourceId, sourceSpecs, {
+  allowedMimeBySourceId: registration.upload?.allowedMimeBySourceId,
+  defaultAllowedMimeTypes: registration.upload?.defaultAllowedMimeTypes,
+});
+// default when domain omits upload policy: DEFAULT_TABULAR_XLSX_MIMES
+```
+
+Domains declare **`upload`** on **`DomainRegistry.register`** — see [async-processing — Domain registration](../async-processing/SKILL.md#module-layout).
 
 ---
 
@@ -173,10 +181,9 @@ Use Multer **`diskStorage`** (not memory + Redis buffer).
 
 **Path rules**
 
-1. Base directory — e.g. `{TMP}/processing-uploads/` (env-configured).
-2. **Server-generated path** — `{base}/{uploadSessionId}/{sourceId}-{nanoid}{ext}`.
-3. Extension from validated MIME or safe default (`.bin`).
-4. Restrictive directory permissions; reject `..` in client metadata.
+1. Base: **`PROCESSING_UPLOAD_BASE_DIR`** or `{cwd}/temp/processing-uploads/`.
+2. Per session: **`{base}/{uploadSessionId}/`** — folder uses **`uploadSessionId`**, not **`jobId`**.
+3. Filename: **`{fieldname}-{nanoid}{ext}`** (Multer `diskStorage`).
 
 ```typescript
 function buildSavedPath(sessionId: string, sourceId: string, mimeType: string): string {
@@ -198,24 +205,13 @@ Set **`declaredSizeBytes`** from Multer **`file.size`** after write.
 
 ---
 
-## Build session sources
-
 ```typescript
-const sources: UploadSessionSources = {
-  mainWorkbook: {
-    sourceId: "mainWorkbook",
-    originalName: file.originalname,
-    mimeType: file.mimetype,
-    locator: {
-      kind: "local",
-      path: savedPath,
-      declaredSizeBytes: file.size,
-    },
-  },
-};
+async handleUpload(files, session, registration: DomainKindRegistration, req) {
+  const { sourceSpecs, upload: uploadPolicy } = registration;
+  // validate fields vs sourceSpecs; build sources via buildUploadSessionSources(..., uploadPolicy)
+  // deferred: uploadSessionStore.save; autoStart: emit PROCESSING_START_REQUESTED_EVENT
+}
 ```
-
-Type: [start-processing-adapters — Session source types](../start-processing-adapters/SKILL.md#session-source-types).
 
 ---
 
@@ -291,6 +287,8 @@ import/upload/local-multipart/
 import/start-processing-adapters/
   upload-session.store.ts                # shared with S3/COS deferred start
 ```
+
+**Do not** place upload code under **`applications/<domain>/`** — domains only register **`upload`** policy on **`DomainRegistry`**.
 
 ---
 

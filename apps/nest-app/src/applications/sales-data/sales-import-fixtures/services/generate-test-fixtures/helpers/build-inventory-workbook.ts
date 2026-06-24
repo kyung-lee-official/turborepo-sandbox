@@ -1,5 +1,5 @@
 import * as ExcelJS from "exceljs";
-import { applyDefaultExportedSheetView } from "./apply-exported-sheet-view";
+import { applyDefaultExportedSheetView } from "@/import/shared/apply-exported-sheet-view";
 import {
   EXCEL_BATCH_SIZE,
   INVENTORY_HEADERS,

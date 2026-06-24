@@ -1,6 +1,6 @@
 import * as ExcelJS from "exceljs";
+import { applyDefaultExportedSheetView } from "@/import/shared/apply-exported-sheet-view";
 import type { ProductsSheetVariant } from "../../../dto/generate-test-fixtures.dto";
-import { applyDefaultExportedSheetView } from "./apply-exported-sheet-view";
 import {
   EXCEL_BATCH_SIZE,
   LINE_ITEMS_HEADERS,

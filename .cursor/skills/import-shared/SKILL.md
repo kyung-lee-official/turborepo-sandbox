@@ -1,25 +1,21 @@
 ---
 name: import-shared
 description: >-
-  Shared import layer — ErrorDetail, validation error XLSX export, domain post-parse
-  progress. Used by format plugins and domain runners; not tied to xlsx or jsonl parsing.
+  Shared import layer — ErrorDetail, domain progress, validation error XLSX export,
+  job error NDJSON. Used by format plugins, domain runners, and async-processing.
 ---
 
 # Import shared layer
 
 Cross-format utilities under **`apps/nest-app/src/import/shared/`** (no barrel **`index.ts`** — import concrete files).
 
-Format plugins (**tabular-xlsx**, **jsonl**) are **peer, business-agnostic parsers**. This folder holds types and helpers **neither plugin should own**.
+| Owns | Format plugins own | Domain runners own |
+| --- | --- | --- |
+| **`ErrorDetail`**, progress helpers | Parse rows/lines, plugin-phase progress | Business rules, **`DomainRunResult`**, persistence |
+| **`buildValidationErrorXlsxBuffer`** (optional client export) | Scoped parse errors | **`loading_source`**, **`validating_rows`**, **`saving_database`** |
+| **`buildProcessingJobErrorsJsonl`** | | Collect **`errors[]` for worker |
 
----
-
-## Scope
-
-| This layer owns                      | Format plugins own                                          | Domain runners own                                                          |
-| ------------------------------------ | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **`ErrorDetail`** shape              | Parse uploaded files into generic rows/lines                | Business validation, persistence, **`DomainRunResult`**                     |
-| **`buildValidationErrorXlsxBuffer`** | Plugin parse progress (`parsing_workbook`, `parsing_lines`) | **`validating_rows`**, **`saving_database`** via **`reportDomainProgress`** |
-| **`DomainProcessingProgress`**       | Scoped parse errors per format                              | Which plugins to call, error collection, outcome                            |
+Worker persists errors via **`ProcessingJobErrorRepository`** — domain returns **`errors: ErrorDetail[]`**, not blobs. Download: **`GET jobs/:jobId/errors`** ([async-processing](../async-processing/SKILL.md)).
 
 ---
 
@@ -30,98 +26,125 @@ type ErrorDetail = {
   message: string;
   sourceId?: string;
   originalName?: string;
-  worksheetName?: string; // tabular sources only
+  worksheetName?: string; // tabular only
   rowNumber?: number;
   rawData?: string;
 };
 
-type DomainProcessingPhase = "validating_rows" | "saving_database";
+type DomainProcessingPhase =
+  | "loading_source"
+  | "validating_rows"
+  | "saving_database";
 
 type DomainProcessingProgress = {
   phase: DomainProcessingPhase;
   sourceId: string;
   originalName?: string;
   worksheetName?: string;
+  totalCount?: number;
+  processedCount?: number;
+  validCount?: number;
+  errorCount?: number;
   percent?: number;
 };
 ```
 
 ---
 
-## API (sketch)
+## Implementation patterns
 
 ```typescript
-async function buildValidationErrorXlsxBuffer(
-  errors: readonly ErrorDetail[],
-): Promise<Buffer>;
-
-async function reportDomainProgress(
+// report-domain-progress.ts — immediate emit (use for loading_source)
+export async function reportDomainProgress(
   onProgress: ((detail: unknown) => Promise<void>) | undefined,
   phase: DomainProcessingPhase,
   sourceId: string,
-  options?: { originalName?: string; worksheetName?: string; percent?: number },
-): Promise<void>;
-```
+  options?: Partial<Omit<DomainProcessingProgress, "phase" | "sourceId">>,
+): Promise<void> {
+  if (!onProgress) return;
+  await onProgress({ phase, sourceId, ...options });
+}
 
-**`VALIDATION_ERROR_XLSX_CONTENT_TYPE`** — MIME for error download blobs.
-
-Error XLSX columns (dynamic): Source, Original Name, Worksheet (when present), Row Number, Message, Raw Data. Freeze header row and enable auto-filter on the error sheet.
-
----
-
-## Domain integration
-
-When validation fails, the **domain runner** (not a format plugin) builds the error blob:
-
-```typescript
-import { buildValidationErrorXlsxBuffer } from "../../shared/build-validation-error-xlsx";
-import type { ErrorDetail } from "../../shared/import-error.types";
-
-const errors: ErrorDetail[] = [...parseErrorsFromAllSources];
-
-if (errors.length > 0) {
-  const errorBlob = await buildValidationErrorXlsxBuffer(errors);
+// create-throttled-domain-progress.ts — validating_rows / saving_database (~1s)
+export function createThrottledDomainProgressReporter(
+  onProgress,
+  phase: "validating_rows" | "saving_database",
+  sourceId: string,
+  context?: { originalName?: string; worksheetName?: string },
+) {
+  let lastAt = 0;
   return {
-    outcome: "validation_failed",
-    processedCount,
-    errorCount: errors.length,
-    errorBlob,
+    async report(counts: { processedCount; totalCount; validCount?; errorCount? }) {
+      const now = Date.now();
+      if (now - lastAt < 1000 && counts.processedCount < counts.totalCount) return;
+      lastAt = now;
+      await reportDomainProgress(onProgress, phase, sourceId, { ...context, ...counts });
+    },
   };
 }
 ```
 
-Domains may use **one format only** (xlsx-only or jsonl-only) or **combine** several plugins — merge is a domain choice, not a plugin requirement.
-
-Post-parse progress:
+```typescript
+// DomainRunResult on validation_failed — worker persists errors; no errorBlob
+return {
+  outcome: "validation_failed",
+  processedCount: validCount,
+  errorCount: errors.length,
+  errors,
+};
+```
 
 ```typescript
-await reportDomainProgress(io.onProgress, "validating_rows", source.sourceId, {
-  originalName: source.label,
-  worksheetName: sheetSpec.sheetName,
-  percent: 60,
-});
+// build-processing-job-errors-jsonl.ts — used by ProcessingController
+export function buildProcessingJobErrorsJsonl(options: {
+  jobId: string;
+  domainKind: string;
+  errorCount: number;
+  errors: readonly ErrorDetail[];
+}): string {
+  const header = { kind: "header", jobId: options.jobId, domainKind: options.domainKind, errorCount: options.errorCount };
+  return [JSON.stringify(header), ...options.errors.map((e) => JSON.stringify(e))].join("\n") + "\n";
+}
+```
+
+```typescript
+// build-validation-error-xlsx.ts — optional; not stored by worker by default
+export async function buildValidationErrorXlsxBuffer(errors: readonly ErrorDetail[]): Promise<Buffer> {
+  // columns: Source, Original Name, Worksheet, Row Number, Message, Raw Data
+  // applyDefaultExportedSheetView(worksheet, columnCount) on error sheet
+}
+```
+
+```typescript
+// apply-exported-sheet-view.ts — freeze row 1 + autoFilter on exported data sheets
+export function applyDefaultExportedSheetView(worksheet: ExcelJS.Worksheet, columnCount?: number): void {
+  worksheet.views = [{ state: "frozen", ySplit: 1 }];
+  worksheet.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: columnCount ?? worksheet.columnCount } };
+}
 ```
 
 ---
 
-## Suggested files
+## Files
 
 ```text
 import/shared/
   import-error.types.ts
-  build-validation-error-xlsx.ts
-  apply-exported-sheet-view.ts
   domain-processing.types.ts
   report-domain-progress.ts
+  create-throttled-domain-progress.ts
+  percent-from-counts.ts
+  build-validation-error-xlsx.ts
+  build-processing-job-errors-jsonl.ts
+  apply-exported-sheet-view.ts
 ```
 
 ---
 
-## Agent invocation
+## Related skills
 
-| Task                                           | Skills                       |
-| ---------------------------------------------- | ---------------------------- |
-| Shared error type, error XLSX, domain progress | `import-shared`              |
-| XLSX parse                                     | `import-plugin-tabular-xlsx` |
-| JSONL parse                                    | `import-plugin-jsonl`        |
-| Job orchestration, error blob storage          | `async-processing`           |
+| Task | Skill |
+| --- | --- |
+| XLSX / JSONL parse | `import-plugin-tabular-xlsx` / `import-plugin-jsonl` |
+| Worker, errors API | `async-processing` |
+| Domain business logic | Domain README (e.g. `applications/sales-data/sales-import/README.md`) |
