@@ -313,6 +313,7 @@ model ProcessingManifest {
     jobId      String   @unique
     domainKind String
     sources    Json
+    context    Json?
     createdAt  DateTime @default(now())
 
     job ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
