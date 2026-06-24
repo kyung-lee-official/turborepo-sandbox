@@ -9,7 +9,9 @@ import {
 } from "@aws-sdk/client-s3";
 import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import * as COS from "cos-nodejs-sdk-v5";
+
+import COS = require("cos-nodejs-sdk-v5");
+
 import type {
   SourceLocator,
   VerifiedSourceLocator,
@@ -66,15 +68,10 @@ export class ProcessingSourceReader {
           };
         }
 
-        const region = this.configService.get<string>("REGION");
-        if (!region) {
-          throw new InternalServerErrorException("REGION is required for COS");
-        }
-
         const head = await this.headCosObject(
           locator.bucket,
           locator.key,
-          region,
+          this.getCosRegion(),
         );
         return {
           ...locator,
@@ -107,12 +104,11 @@ export class ProcessingSourceReader {
           return response.Body as Readable;
         }
 
-        const region = this.configService.get<string>("REGION");
-        if (!region) {
-          throw new InternalServerErrorException("REGION is required for COS");
-        }
-
-        return this.getCosReadStream(locator.bucket, locator.key, region);
+        return this.getCosReadStream(
+          locator.bucket,
+          locator.key,
+          this.getCosRegion(),
+        );
       }
       default: {
         const _exhaustive: never = locator;
@@ -137,12 +133,11 @@ export class ProcessingSourceReader {
           return;
         }
 
-        const region = this.configService.get<string>("REGION");
-        if (!region) {
-          throw new InternalServerErrorException("REGION is required for COS");
-        }
-
-        await this.deleteCosObject(locator.bucket, locator.key, region);
+        await this.deleteCosObject(
+          locator.bucket,
+          locator.key,
+          this.getCosRegion(),
+        );
         return;
       }
       default: {
@@ -150,6 +145,14 @@ export class ProcessingSourceReader {
         return _exhaustive;
       }
     }
+  }
+
+  private getCosRegion(): string {
+    const region = this.configService.get<string>("REGION");
+    if (!region) {
+      throw new InternalServerErrorException("REGION is required for COS");
+    }
+    return region;
   }
 
   private headCosObject(

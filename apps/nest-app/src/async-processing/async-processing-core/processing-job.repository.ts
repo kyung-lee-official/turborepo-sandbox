@@ -40,13 +40,6 @@ export class ProcessingJobRepository {
     });
   }
 
-  async updatePhase(jobId: string, phase: ProcessingPhase): Promise<void> {
-    await this.prisma.client.processingJob.update({
-      where: { id: jobId },
-      data: { phase },
-    });
-  }
-
   async claimProcessingPhase(jobId: string): Promise<boolean> {
     const result = await this.prisma.client.processingJob.updateMany({
       where: { id: jobId, phase: "queued" },
