@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { ActiveJobConflictError } from "../async-processing.types";
 import { ProcessingOrchestratorService } from "../async-processing-core/processing-orchestrator.service";
-import { mapSessionSourcesToStartInput } from "./map-session-sources-to-start-input";
+import { mapUploadSessionToStartInput } from "./map-session-sources-to-start-input";
 import { startApiBodySchema } from "./start-processing-input.schema";
 import { UploadSessionStore } from "./upload-session.store";
 
@@ -37,10 +37,7 @@ export class ApiStartProcessingAdapter {
       };
     }
 
-    const input = mapSessionSourcesToStartInput(
-      session.domainKind,
-      session.sources,
-    );
+    const input = mapUploadSessionToStartInput(session);
 
     try {
       const result = await this.processingOrchestrator.startProcessing(input);

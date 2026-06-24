@@ -32,6 +32,9 @@ export class EventStartProcessingAdapter {
 
   private normalizeAndValidateFromEvent(raw: unknown): StartProcessingInput {
     const payload = processingStartRequestedSchema.parse(raw);
-    return mapSessionSourcesToStartInput(payload.domainKind, payload.sources);
+    return {
+      ...mapSessionSourcesToStartInput(payload.domainKind, payload.sources),
+      context: payload.context,
+    };
   }
 }

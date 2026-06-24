@@ -16,6 +16,7 @@ export type UploadSession = {
   expiresAt: Date;
   startedJobId?: string;
   startedManifestId?: string;
+  context?: Record<string, unknown>;
 };
 
 export const PROCESSING_START_REQUESTED_EVENT =

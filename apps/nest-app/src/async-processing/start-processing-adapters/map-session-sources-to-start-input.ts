@@ -1,6 +1,9 @@
 import { BadRequestException } from "@nestjs/common";
 import type { StartProcessingInput } from "../async-processing.types";
-import type { UploadSessionSources } from "./upload-session.types";
+import type {
+  UploadSession,
+  UploadSessionSources,
+} from "./upload-session.types";
 
 export function mapSessionSourcesToStartInput(
   domainKind: string,
@@ -31,5 +34,14 @@ export function mapSessionSourcesToStartInput(
         ];
       }),
     ),
+  };
+}
+
+export function mapUploadSessionToStartInput(
+  session: Pick<UploadSession, "domainKind" | "sources" | "context">,
+): StartProcessingInput {
+  return {
+    ...mapSessionSourcesToStartInput(session.domainKind, session.sources),
+    context: session.context,
   };
 }

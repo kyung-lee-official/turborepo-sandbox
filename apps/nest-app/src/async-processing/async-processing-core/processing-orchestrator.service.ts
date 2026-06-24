@@ -37,6 +37,7 @@ export class ProcessingOrchestratorService {
       domainKind: input.domainKind,
       manifestId,
       sources: input.sources,
+      context: input.context,
     });
 
     let lockAcquired = false;

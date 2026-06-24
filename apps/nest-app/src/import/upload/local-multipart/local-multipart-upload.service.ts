@@ -80,6 +80,7 @@ export class LocalMultipartUploadService {
         this.eventEmitter.emit(PROCESSING_START_REQUESTED_EVENT, {
           domainKind: session.domainKind,
           sources,
+          context: session.context,
         });
         return { accepted: true };
       }
@@ -92,6 +93,7 @@ export class LocalMultipartUploadService {
         domainKind: session.domainKind,
         sources,
         expiresAt,
+        context: session.context,
       });
 
       return { uploadSessionId };

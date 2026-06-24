@@ -17,6 +17,7 @@ export class ProcessingJobRepository {
     domainKind: string;
     manifestId: string;
     sources: Record<string, ProcessingSource>;
+    context?: Record<string, unknown>;
   }): Promise<ProcessingJob> {
     return this.prisma.client.$transaction(async (tx) => {
       const job = await tx.processingJob.create({
@@ -33,6 +34,7 @@ export class ProcessingJobRepository {
           jobId: input.jobId,
           domainKind: input.domainKind,
           sources: input.sources as Prisma.InputJsonValue,
+          context: input.context as Prisma.InputJsonValue | undefined,
         },
       });
 
@@ -128,6 +130,7 @@ export class ProcessingJobRepository {
     jobId: string;
     domainKind: string;
     sources: Record<string, ProcessingSource>;
+    context?: Record<string, unknown>;
   } | null> {
     const manifest = await this.prisma.client.processingManifest.findUnique({
       where: { id: manifestId },
@@ -141,6 +144,7 @@ export class ProcessingJobRepository {
       jobId: manifest.jobId,
       domainKind: manifest.domainKind,
       sources: manifest.sources as Record<string, ProcessingSource>,
+      context: manifest.context as Record<string, unknown> | undefined,
     };
   }
 }

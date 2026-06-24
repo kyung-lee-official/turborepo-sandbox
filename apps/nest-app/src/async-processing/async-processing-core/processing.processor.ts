@@ -93,6 +93,7 @@ export class ProcessingProcessor extends WorkerHost {
                 false,
               );
             },
+            context: manifest.context,
           });
         } catch (domainError) {
           await this.markJobFailed(jobId);

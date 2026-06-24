@@ -32,6 +32,7 @@ export type ProcessingSource = {
 export type StartProcessingInput = {
   domainKind: string;
   sources: Record<string, ProcessingSource>;
+  context?: Record<string, unknown>;
 };
 
 export type VerifiedSourceLocator = SourceLocator & {
@@ -55,6 +56,7 @@ export type DomainRunResult =
 export type DomainRunnerIo = {
   openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
   onProgress: (detail: unknown) => Promise<void>;
+  context?: Record<string, unknown>;
 };
 
 export type DomainRunner = {

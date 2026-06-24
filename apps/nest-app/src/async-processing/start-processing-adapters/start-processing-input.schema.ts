@@ -34,4 +34,5 @@ export const startApiBodySchema = z
 export const processingStartRequestedSchema = z.object({
   domainKind: z.string().min(1),
   sources: z.record(z.string(), uploadSourceEntrySchema),
+  context: z.record(z.string(), z.unknown()).optional(),
 });

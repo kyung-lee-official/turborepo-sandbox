@@ -10,6 +10,7 @@ import {
 import { AnyFilesInterceptor } from "@nestjs/platform-express";
 import type { Request } from "express";
 import { DomainRegistry } from "@/async-processing/async-processing-core/domain-registry.service";
+import { buildUploadSessionContextFromMultipartBody } from "./build-upload-session-context";
 import { LocalMultipartUploadService } from "./local-multipart-upload.service";
 import type { LocalUploadSession } from "./local-upload-session.types";
 import {
@@ -45,16 +46,19 @@ export class LocalMultipartUploadController {
   async upload(
     @Param("domainKind") domainKindFromRoute: string,
     @UploadedFiles() uploadedFiles: Express.Multer.File[] | undefined,
-    @Body("autoStart") autoStartRaw: string | undefined,
-    @Body("uploadSessionId") uploadSessionId: string | undefined,
+    @Body() body: Record<string, string | undefined>,
     @Req() req: RequestWithSessionId,
   ) {
     const registration =
       this.domainRegistry.getByDomainKind(domainKindFromRoute);
     const session: LocalUploadSession = {
       domainKind: domainKindFromRoute,
-      autoStart: autoStartRaw === "true",
-      uploadSessionId,
+      autoStart: body.autoStart === "true",
+      uploadSessionId: body.uploadSessionId,
+      context: buildUploadSessionContextFromMultipartBody(
+        body,
+        registration.sourceSpecs.map((spec) => spec.sourceId),
+      ),
     };
 
     return this.localMultipartUploadService.handleUpload(
