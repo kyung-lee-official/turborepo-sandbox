@@ -17,10 +17,11 @@ export type StagingFile = {
 export type UploadedStagingFile = {
   name: string;
   objectKey: string;
-  url: string;
+  signedDownloadUrl: string;
 };
 
 const NEST_TO_ALIYUN_OSS_PREFIX = "nest-to-aliyun-oss";
+const SIGNED_DOWNLOAD_EXPIRES_SECONDS = 600;
 
 @Injectable()
 export class AliyunOssService {
@@ -68,6 +69,26 @@ export class AliyunOssService {
 
   private objectKeyForStagingFile(fileName: string): string {
     return `${NEST_TO_ALIYUN_OSS_PREFIX}/${fileName}`;
+  }
+
+  private assertSignableObjectKey(objectKey: string): void {
+    const prefix = this.nestToAliyunOssPrefix();
+    if (!objectKey.startsWith(prefix) || objectKey.length <= prefix.length) {
+      throw new BadRequestException(
+        `objectKey must name an object under ${prefix}`,
+      );
+    }
+  }
+
+  async getSignedDownloadUrl(objectKey: string): Promise<string> {
+    this.assertSignableObjectKey(objectKey);
+    const client = this.createOssClient();
+    return client.signatureUrlV4(
+      "GET",
+      SIGNED_DOWNLOAD_EXPIRES_SECONDS,
+      { headers: {} },
+      objectKey,
+    );
   }
 
   /** OSS has no real folders; ensure a zero-byte prefix marker exists when empty. */
@@ -131,11 +152,12 @@ export class AliyunOssService {
     for (const file of pending) {
       const localPath = join(this.stagingDir, file.name);
       const objectKey = this.objectKeyForStagingFile(file.name);
-      const result = await client.put(objectKey, localPath);
+      await client.put(objectKey, localPath);
+      const signedDownloadUrl = await this.getSignedDownloadUrl(objectKey);
       uploaded.push({
         name: file.name,
         objectKey,
-        url: result.url,
+        signedDownloadUrl,
       });
     }
 

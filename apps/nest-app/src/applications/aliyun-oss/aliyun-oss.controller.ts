@@ -1,4 +1,10 @@
-import { Controller, Get, Post } from "@nestjs/common";
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+} from "@nestjs/common";
 import {
   AliyunOssService,
   type StagingFile,
@@ -25,5 +31,18 @@ export class AliyunOssController {
     return this.aliyunOssService
       .uploadStagingFiles()
       .then((uploaded) => ({ uploaded }));
+  }
+
+  @Post("download-signed-url")
+  getDownloadSignedUrl(
+    @Body() body: { objectKey?: string },
+  ): Promise<{ url: string }> {
+    const objectKey = body.objectKey?.trim();
+    if (!objectKey) {
+      throw new BadRequestException("objectKey is required");
+    }
+    return this.aliyunOssService
+      .getSignedDownloadUrl(objectKey)
+      .then((url) => ({ url }));
   }
 }

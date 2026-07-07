@@ -5,6 +5,9 @@ import { useCallback, useEffect, useState } from "react";
 
 const STAGING_PATH = "apps/nest-app/temp/upload-to-aliyun-oss";
 
+/** Keep in sync with `SIGNED_DOWNLOAD_EXPIRES_SECONDS` in nest `aliyun-oss.service.ts`. */
+const SIGNED_DOWNLOAD_EXPIRES_SECONDS = 600;
+
 type StagingFile = {
   name: string;
   sizeBytes: number;
@@ -13,10 +16,18 @@ type StagingFile = {
 type UploadedFile = {
   name: string;
   objectKey: string;
-  url: string;
+  signedDownloadUrl: string;
 };
 
 const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+
+async function openSignedOssDownload(objectKey: string): Promise<void> {
+  const res = await axios.post<{ url: string }>(
+    `${nestBaseUrl}/aliyun-oss/download-signed-url`,
+    { objectKey },
+  );
+  window.open(res.data.url, "_blank", "noopener,noreferrer");
+}
 
 export const Content = () => {
   const [stagingDir, setStagingDir] = useState<string>("");
@@ -82,8 +93,8 @@ export const Content = () => {
         <h1 className="font-semibold text-xl">nestjs upload to aliyun oss</h1>
         <p className="text-neutral-700 text-sm">
           This demo uploads files from a local NestJS staging folder to Aliyun
-          OSS. The browser does not send file bytes; Nest reads disk and calls
-          the OSS SDK.
+          OSS. Nest uploads and signs download URLs; the browser fetches bytes
+          directly from OSS (no Nest relay).
         </p>
       </div>
 
@@ -118,6 +129,27 @@ export const Content = () => {
         <code className="rounded bg-neutral-200 px-1">ALIYUN_OSS_BUCKET</code>{" "}
         in the env files used when starting nest-app.
       </p>
+
+      <section className="space-y-2 rounded border border-neutral-200 bg-neutral-50 p-4 text-neutral-700 text-sm">
+        <h2 className="font-medium text-neutral-900">Signed downloads</h2>
+        <p>
+          <code className="rounded bg-neutral-200 px-1">
+            SIGNED_DOWNLOAD_EXPIRES_SECONDS
+          </code>{" "}
+          ({SIGNED_DOWNLOAD_EXPIRES_SECONDS}s,{" "}
+          {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes) is how long each
+          presigned GET URL stays valid. After that, OSS rejects the link. Nest
+          only signs; the browser downloads directly from OSS.
+        </p>
+        <p>
+          <strong>Download from OSS</strong> is a button, not a plain link,
+          because the bucket is private. Each click calls Nest to mint a fresh
+          signed URL, then opens OSS. A static{" "}
+          <code className="rounded bg-neutral-200 px-1">href</code> would either
+          fail with bucket ACL errors or expire after{" "}
+          {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes.
+        </p>
+      </section>
 
       <div className="flex flex-wrap gap-2">
         <button
@@ -175,14 +207,13 @@ export const Content = () => {
               <li key={file.objectKey} className="rounded bg-neutral-100 p-3">
                 <div>{file.name}</div>
                 <div className="text-neutral-600">{file.objectKey}</div>
-                <a
-                  href={file.url}
-                  className="break-all text-blue-600 underline"
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  className="text-left text-blue-600 underline"
+                  onClick={() => void openSignedOssDownload(file.objectKey)}
                 >
-                  {file.url}
-                </a>
+                  Download from OSS (signed URL)
+                </button>
               </li>
             ))}
           </ul>
