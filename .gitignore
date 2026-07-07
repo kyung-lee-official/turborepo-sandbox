@@ -76,3 +76,6 @@ file-uploads/*
 # But track project-scoped skills and memories
 !.reasonix/skills/
 !.reasonix/memories/
+
+# MiCode session state
+.mimocode/
