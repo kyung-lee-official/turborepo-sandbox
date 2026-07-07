@@ -11,8 +11,9 @@ import { PrismaService } from "@/recipes/prisma/prisma.service";
 import { ASYNC_GENERATE_PDF_DOMAIN_KIND } from "./async-generate-pdf.constants";
 import {
   AUDIT_ENTRIES_PER_INVOICE,
+  buildMockInfoRow,
   LINE_ITEMS_PER_INVOICE,
-  MOCK_INFO_ROWS,
+  listMockInfoSummaryRows,
   MOCK_INVOICE_COUNT,
 } from "./async-generate-pdf.mock-data";
 
@@ -76,11 +77,7 @@ export class AsyncGeneratePdfService {
         lineItemsPerInvoice: LINE_ITEMS_PER_INVOICE,
         auditEntriesPerInvoice: AUDIT_ENTRIES_PER_INVOICE,
       },
-      rows: MOCK_INFO_ROWS.map(({ lineItems, auditEntries, ...row }) => ({
-        ...row,
-        lineItemCount: lineItems.length,
-        auditEntryCount: auditEntries.length,
-      })),
+      rows: listMockInfoSummaryRows(),
     };
   }
 

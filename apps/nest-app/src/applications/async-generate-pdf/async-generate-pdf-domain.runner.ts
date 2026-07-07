@@ -8,7 +8,10 @@ import type {
   VerifiedProcessingSource,
 } from "@/async-processing/async-processing.types";
 import { ASYNC_GENERATE_PDF_DOMAIN_KIND } from "./async-generate-pdf.constants";
-import { MOCK_INFO_ROWS } from "./async-generate-pdf.mock-data";
+import {
+  buildMockInfoRow,
+  MOCK_INVOICE_COUNT,
+} from "./async-generate-pdf.mock-data";
 import type { AsyncGeneratePdfProgress } from "./async-generate-pdf.progress.types";
 import {
   buildJobOutputFolderName,
@@ -91,11 +94,11 @@ export class AsyncGeneratePdfDomainRunner implements DomainRunner {
 
     await mkdir(outputDir, { recursive: true });
 
-    const rows = MOCK_INFO_ROWS;
-    const totalSteps = rows.length * 2 + 2;
+    const totalSteps = MOCK_INVOICE_COUNT * 2 + 2;
     let stepIndex = 0;
 
-    for (const row of rows) {
+    for (let index = 0; index < MOCK_INVOICE_COUNT; index += 1) {
+      const row = buildMockInfoRow(index);
       stepIndex += 1;
       await reportProgress(io.onProgress, {
         phase: "generating_pdf",
@@ -137,7 +140,7 @@ export class AsyncGeneratePdfDomainRunner implements DomainRunner {
 
     return {
       outcome: "success",
-      processedCount: rows.length,
+      processedCount: MOCK_INVOICE_COUNT,
       errorCount: 0,
     };
   }

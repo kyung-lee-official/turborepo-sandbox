@@ -200,7 +200,10 @@ export const Content = () => {
       ) : null}
 
       <section className="space-y-2">
-        <h2 className="font-medium">Mock info</h2>
+        <h2 className="font-medium">
+          Mock info
+          {mockMeta ? ` (${mockMeta.invoiceCount.toLocaleString()} rows)` : ""}
+        </h2>
         {mockRows.length === 0 ? (
           <p className="text-neutral-600 text-sm">No mock rows loaded.</p>
         ) : (

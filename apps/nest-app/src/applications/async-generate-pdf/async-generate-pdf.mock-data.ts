@@ -17,8 +17,17 @@ export type AsyncGeneratePdfInfoRow = {
   auditEntries: string[];
 };
 
-/** Enough invoices for per-file SSE progress without artificial delays. */
-export const MOCK_INVOICE_COUNT = 90;
+export type AsyncGeneratePdfInfoSummaryRow = {
+  name: string;
+  email: string;
+  age: number;
+  gender: string;
+  invoiceDate: string;
+  lineItemCount: number;
+  auditEntryCount: number;
+};
+
+export const MOCK_INVOICE_COUNT = 1000;
 
 /** Large line-item tables make each pdfkit document costly to lay out. */
 export const LINE_ITEMS_PER_INVOICE = 200;
@@ -117,14 +126,30 @@ const SERVICE_CATEGORIES = [
   "Log retention",
 ] as const;
 
-function emailFromName(name: string): string {
-  return `${name.toLowerCase().replace(/\s+/g, ".")}@example.com`;
-}
-
 function invoiceDateFromIndex(index: number): string {
   const month = String((index % 12) + 1).padStart(2, "0");
   const day = String((index % 27) + 1).padStart(2, "0");
   return `2026-${month}-${day}`;
+}
+
+function buildMockInfoIdentity(
+  index: number,
+): Pick<
+  AsyncGeneratePdfInfoRow,
+  "name" | "email" | "age" | "gender" | "invoiceDate"
+> {
+  const serial = index + 1;
+  const firstName = FIRST_NAMES[index % FIRST_NAMES.length];
+  const lastName =
+    LAST_NAMES[Math.floor(index / FIRST_NAMES.length) % LAST_NAMES.length];
+
+  return {
+    name: `${firstName} ${lastName} ${serial}`,
+    email: `invoice-${String(serial).padStart(4, "0")}@example.com`,
+    age: 28 + ((index * 3) % 35),
+    gender: GENDERS[index % GENDERS.length],
+    invoiceDate: invoiceDateFromIndex(index),
+  };
 }
 
 function buildLineItemDescription(
@@ -160,7 +185,7 @@ function buildLineItems(personIndex: number): AsyncGeneratePdfLineItem[] {
     const unitAmount = 18 + ((personIndex * 11 + itemIndex * 5) % 240);
 
     return {
-      sku: `SKU-${String(personIndex + 1).padStart(2, "0")}-${String(itemIndex + 1).padStart(3, "0")}`,
+      sku: `SKU-${String(personIndex + 1).padStart(4, "0")}-${String(itemIndex + 1).padStart(3, "0")}`,
       description: buildLineItemDescription(category, personIndex, itemIndex),
       quantity,
       unitPrice: unitAmount.toFixed(2),
@@ -174,25 +199,26 @@ function buildAuditEntries(personIndex: number): string[] {
   );
 }
 
-function buildMockInfoRows(): AsyncGeneratePdfInfoRow[] {
-  return Array.from({ length: MOCK_INVOICE_COUNT }, (_, index) => {
-    const firstName = FIRST_NAMES[index % FIRST_NAMES.length];
-    const lastName =
-      LAST_NAMES[
-        (index + Math.floor(index / FIRST_NAMES.length)) % LAST_NAMES.length
-      ];
-    const name = `${firstName} ${lastName}`;
-
-    return {
-      name,
-      email: emailFromName(name),
-      age: 28 + ((index * 3) % 35),
-      gender: GENDERS[index % GENDERS.length],
-      invoiceDate: invoiceDateFromIndex(index),
-      lineItems: buildLineItems(index),
-      auditEntries: buildAuditEntries(index),
-    };
-  });
+export function buildMockInfoSummaryRow(
+  index: number,
+): AsyncGeneratePdfInfoSummaryRow {
+  return {
+    ...buildMockInfoIdentity(index),
+    lineItemCount: LINE_ITEMS_PER_INVOICE,
+    auditEntryCount: AUDIT_ENTRIES_PER_INVOICE,
+  };
 }
 
-export const MOCK_INFO_ROWS: AsyncGeneratePdfInfoRow[] = buildMockInfoRows();
+export function buildMockInfoRow(index: number): AsyncGeneratePdfInfoRow {
+  return {
+    ...buildMockInfoIdentity(index),
+    lineItems: buildLineItems(index),
+    auditEntries: buildAuditEntries(index),
+  };
+}
+
+export function listMockInfoSummaryRows(): AsyncGeneratePdfInfoSummaryRow[] {
+  return Array.from({ length: MOCK_INVOICE_COUNT }, (_, index) =>
+    buildMockInfoSummaryRow(index),
+  );
+}
