@@ -62,14 +62,14 @@ export class AliyunOssController {
 
   @Post("download-signed-url")
   getDownloadSignedUrl(
-    @Body() body: { objectKey?: string },
+    @Body() body: { objectKey?: string; fileName?: string },
   ): Promise<{ url: string }> {
     const objectKey = body.objectKey?.trim();
     if (!objectKey) {
       throw new BadRequestException("objectKey is required");
     }
     return this.aliyunOssService
-      .getSignedDownloadUrl(objectKey)
+      .getSignedDownloadUrl(objectKey, body.fileName?.trim())
       .then((url) => ({ url }));
   }
 }

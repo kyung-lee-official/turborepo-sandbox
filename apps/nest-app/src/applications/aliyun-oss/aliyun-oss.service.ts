@@ -111,13 +111,27 @@ export class AliyunOssService {
     }
   }
 
-  async getSignedDownloadUrl(objectKey: string): Promise<string> {
+  async getSignedDownloadUrl(
+    objectKey: string,
+    fileName?: string,
+  ): Promise<string> {
     this.assertSignableObjectKey(objectKey);
     const client = this.createOssSigningClient();
+    const downloadFileName =
+      fileName?.trim() ||
+      objectKey.slice(objectKey.lastIndexOf("/") + 1) ||
+      "download";
+    const safeAsciiFileName = downloadFileName.replace(/["\\]/g, "_");
+    const encodedFileName = encodeURIComponent(downloadFileName);
+
     return client.signatureUrlV4(
       "GET",
       SIGNED_DOWNLOAD_EXPIRES_SECONDS,
-      { headers: {} },
+      {
+        queries: {
+          "response-content-disposition": `attachment; filename="${safeAsciiFileName}"; filename*=UTF-8''${encodedFileName}`,
+        },
+      },
       objectKey,
     );
   }
@@ -224,7 +238,10 @@ export class AliyunOssService {
       const localPath = join(this.stagingDir, file.name);
       const objectKey = this.objectKeyForStagingFile(file.name);
       await client.put(objectKey, localPath);
-      const signedDownloadUrl = await this.getSignedDownloadUrl(objectKey);
+      const signedDownloadUrl = await this.getSignedDownloadUrl(
+        objectKey,
+        file.name,
+      );
       uploaded.push({
         name: file.name,
         objectKey,

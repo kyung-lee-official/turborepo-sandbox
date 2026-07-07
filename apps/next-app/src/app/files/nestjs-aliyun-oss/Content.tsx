@@ -59,24 +59,16 @@ async function downloadFromOss(
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ objectKey }),
+      body: JSON.stringify({ objectKey, fileName }),
     },
   );
 
-  const fileResponse = await fetch(url);
-  if (!fileResponse.ok) {
-    throw new Error("Download from OSS failed");
-  }
-
-  const blob = await fileResponse.blob();
-  const objectUrl = window.URL.createObjectURL(blob);
   const anchor = document.createElement("a");
-  anchor.href = objectUrl;
-  anchor.download = fileName;
+  anchor.href = url;
+  anchor.rel = "noopener noreferrer";
   document.body.appendChild(anchor);
   anchor.click();
   document.body.removeChild(anchor);
-  window.URL.revokeObjectURL(objectUrl);
 }
 
 async function deleteOssObject(objectKey: string): Promise<void> {
@@ -191,8 +183,9 @@ export const Content = () => {
         <h1 className="font-semibold text-xl">nestjs upload to aliyun oss</h1>
         <p className="text-neutral-700 text-sm">
           This demo uploads files from a local NestJS staging folder to Aliyun
-          OSS. Nest uploads and signs download URLs; the browser fetches bytes
-          directly from OSS (no Nest relay).
+          OSS. Nest uploads and signs download URLs; the browser follows each
+          signed URL to OSS (no Nest relay, no cross-origin fetch from this
+          page).
         </p>
       </div>
 
@@ -237,13 +230,17 @@ export const Content = () => {
           ({SIGNED_DOWNLOAD_EXPIRES_SECONDS}s,{" "}
           {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes) is how long each
           presigned GET URL stays valid. After that, OSS rejects the link. Nest
-          only signs; the browser fetches the file from OSS and saves it locally
-          (no Nest relay).
+          only signs; the browser follows the signed URL straight to OSS and
+          saves the file (no Nest relay, no cross-origin fetch from this page).
         </p>
         <p>
           <strong>Download from OSS</strong> is a button, not a plain link,
           because the bucket is private. Each click calls Nest to mint a fresh
-          signed URL, then downloads the bytes into a save dialog. A static{" "}
+          signed URL (with{" "}
+          <code className="rounded bg-neutral-200 px-1">
+            Content-Disposition: attachment
+          </code>
+          ), then the browser downloads from OSS. A static{" "}
           <code className="rounded bg-neutral-200 px-1">href</code> would either
           fail with bucket ACL errors or expire after{" "}
           {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes.
