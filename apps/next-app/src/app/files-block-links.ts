@@ -6,6 +6,12 @@ export const filesBlockLinks = [
       "Upload to Aliyun OSS via a signed PUT URL from a Next.js API route, then list and download objects from the bucket.",
   },
   {
+    link: "/files/nestjs-aliyun-oss",
+    text: "nestjs upload to aliyun oss",
+    description:
+      "Place files in apps/nest-app/temp/upload-to-aliyun-oss, then upload to Aliyun OSS from NestJS disk staging.",
+  },
+  {
     link: "/files/conditionally-download-json-or-buffer",
     text: "conditionally download json or buffer",
     description:
