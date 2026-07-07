@@ -97,8 +97,10 @@ export const Content = () => {
         <li>Click Refresh to list pending files from that folder.</li>
         <li>
           Click Upload to push every file in the folder to Aliyun OSS under the{" "}
-          <code className="rounded bg-neutral-200 px-1">nestjs-staging/</code>{" "}
-          key prefix.
+          <code className="rounded bg-neutral-200 px-1">
+            nest-to-aliyun-oss/
+          </code>{" "}
+          prefix (created on the bucket when missing).
         </li>
       </ol>
 

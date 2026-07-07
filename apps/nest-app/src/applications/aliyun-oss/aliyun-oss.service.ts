@@ -20,6 +20,8 @@ export type UploadedStagingFile = {
   url: string;
 };
 
+const NEST_TO_ALIYUN_OSS_PREFIX = "nest-to-aliyun-oss";
+
 @Injectable()
 export class AliyunOssService {
   private readonly stagingDir = join(
@@ -55,8 +57,39 @@ export class AliyunOssService {
       accessKeySecret,
       region,
       bucket,
+      authorizationV4: true,
       endpoint: `https://${region}.aliyuncs.com`,
     });
+  }
+
+  private nestToAliyunOssPrefix(): string {
+    return `${NEST_TO_ALIYUN_OSS_PREFIX}/`;
+  }
+
+  private objectKeyForStagingFile(fileName: string): string {
+    return `${NEST_TO_ALIYUN_OSS_PREFIX}/${fileName}`;
+  }
+
+  /** OSS has no real folders; ensure a zero-byte prefix marker exists when empty. */
+  private async ensureNestToAliyunOssPrefix(client: OSS): Promise<void> {
+    const prefix = this.nestToAliyunOssPrefix();
+    const listResult = await client.list(
+      {
+        prefix,
+        "max-keys": 1,
+      },
+      {},
+    );
+
+    const hasObjects =
+      Array.isArray(listResult.objects) && listResult.objects.length > 0;
+    const hasPrefixes =
+      Array.isArray(listResult.prefixes) && listResult.prefixes.length > 0;
+    if (hasObjects || hasPrefixes) {
+      return;
+    }
+
+    await client.put(prefix, Buffer.alloc(0));
   }
 
   private async ensureStagingDir(): Promise<void> {
@@ -92,11 +125,12 @@ export class AliyunOssService {
     }
 
     const client = this.createOssClient();
+    await this.ensureNestToAliyunOssPrefix(client);
     const uploaded: UploadedStagingFile[] = [];
 
     for (const file of pending) {
       const localPath = join(this.stagingDir, file.name);
-      const objectKey = `nestjs-staging/${file.name}`;
+      const objectKey = this.objectKeyForStagingFile(file.name);
       const result = await client.put(objectKey, localPath);
       uploaded.push({
         name: file.name,
