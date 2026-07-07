@@ -48,6 +48,12 @@ export const filesBlockLinks = [
       "Generate import fixtures, run sales-report async import (three upload slots), and list active or historical processing jobs.",
   },
   {
+    link: "/files/async-generate-pdf-files",
+    text: "async-generate-pdf-files",
+    description:
+      "Placeholder for async PDF generation: start a job, track progress, and download generated PDF files.",
+  },
+  {
     link: "/files/upload-multiple-excel",
     text: "compress and upload multiple excel files in individual inputs",
     description:
