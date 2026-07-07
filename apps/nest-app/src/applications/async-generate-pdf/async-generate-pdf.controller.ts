@@ -1,9 +1,9 @@
-import { Controller, Get, Param, Post } from "@nestjs/common";
+import { Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
+import type { AsyncGeneratePdfInfoRow } from "./async-generate-pdf.mock-data";
 import {
-  type AsyncGeneratePdfInfoRow,
-  type AsyncGeneratePdfJob,
   AsyncGeneratePdfService,
   type GeneratedPdfFile,
+  type StartAsyncGeneratePdfJobResult,
 } from "./async-generate-pdf.service";
 
 @Controller("async-generate-pdf")
@@ -23,23 +23,16 @@ export class AsyncGeneratePdfController {
   }
 
   @Post("jobs")
-  startJob(): Promise<AsyncGeneratePdfJob> {
+  @HttpCode(202)
+  startJob(): Promise<StartAsyncGeneratePdfJobResult> {
     return this.asyncGeneratePdfService.startJob();
   }
 
-  @Get("jobs/:jobId")
-  getJob(@Param("jobId") jobId: string): AsyncGeneratePdfJob {
-    return this.asyncGeneratePdfService.getJobById(jobId);
-  }
-
-  @Get("files")
-  listOutputFiles(): Promise<{
+  @Get("jobs/:jobId/files")
+  listJobOutputFiles(@Param("jobId") jobId: string): Promise<{
     outputDir: string;
     files: GeneratedPdfFile[];
   }> {
-    return this.asyncGeneratePdfService.listOutputFiles().then((files) => ({
-      outputDir: this.asyncGeneratePdfService.getOutputDir(),
-      files,
-    }));
+    return this.asyncGeneratePdfService.listJobOutputFiles(jobId);
   }
 }

@@ -1,0 +1,113 @@
+import { mkdir } from "node:fs/promises";
+import { join } from "node:path";
+import { Injectable } from "@nestjs/common";
+import type {
+  DomainRunner,
+  DomainRunnerIo,
+  DomainRunResult,
+  VerifiedProcessingSource,
+} from "@/async-processing/async-processing.types";
+import { ASYNC_GENERATE_PDF_DOMAIN_KIND } from "./async-generate-pdf.constants";
+import { MOCK_INFO_ROWS } from "./async-generate-pdf.mock-data";
+import type { AsyncGeneratePdfProgress } from "./async-generate-pdf.progress.types";
+import {
+  buildInvoicePdfBuffer,
+  pdfFileNameFromEmail,
+  saveInvoicePdfBuffer,
+} from "./helpers/write-invoice-pdf";
+
+function readStartedAtTimestampFromContext(
+  context: Record<string, unknown> | undefined,
+): number {
+  const startedAtTimestamp = context?.startedAtTimestamp;
+  if (
+    typeof startedAtTimestamp !== "number" ||
+    !Number.isFinite(startedAtTimestamp)
+  ) {
+    throw new Error("startedAtTimestamp is required in manifest context");
+  }
+  return startedAtTimestamp;
+}
+
+function buildOutputDir(jobId: string, startedAtTimestamp: number): string {
+  return join(
+    process.cwd(),
+    "temp",
+    "async-generate-pdf",
+    `${startedAtTimestamp}-${jobId}`,
+  );
+}
+
+async function reportPdfProgress(
+  onProgress: DomainRunnerIo["onProgress"],
+  input: {
+    phase: AsyncGeneratePdfProgress["phase"];
+    email: string;
+    stepIndex: number;
+    totalSteps: number;
+  },
+): Promise<void> {
+  if (!onProgress) {
+    return;
+  }
+
+  const event: AsyncGeneratePdfProgress = {
+    phase: input.phase,
+    email: input.email,
+    processedCount: input.stepIndex,
+    totalCount: input.totalSteps,
+    percent: Math.min(
+      100,
+      Math.round((input.stepIndex / input.totalSteps) * 100),
+    ),
+  };
+  await onProgress(event);
+}
+
+@Injectable()
+export class AsyncGeneratePdfDomainRunner implements DomainRunner {
+  readonly domainKind = ASYNC_GENERATE_PDF_DOMAIN_KIND;
+
+  async run(
+    jobId: string,
+    _sources: Map<string, VerifiedProcessingSource>,
+    io: DomainRunnerIo,
+  ): Promise<DomainRunResult> {
+    const startedAtTimestamp = readStartedAtTimestampFromContext(io.context);
+    const outputDir = buildOutputDir(jobId, startedAtTimestamp);
+    await mkdir(outputDir, { recursive: true });
+
+    const rows = MOCK_INFO_ROWS;
+    const totalSteps = rows.length * 2;
+    let stepIndex = 0;
+
+    for (const row of rows) {
+      stepIndex += 1;
+      await reportPdfProgress(io.onProgress, {
+        phase: "generating_pdf",
+        email: row.email,
+        stepIndex,
+        totalSteps,
+      });
+
+      const pdfBuffer = await buildInvoicePdfBuffer(row);
+
+      stepIndex += 1;
+      await reportPdfProgress(io.onProgress, {
+        phase: "saving_pdf",
+        email: row.email,
+        stepIndex,
+        totalSteps,
+      });
+
+      const pdfPath = join(outputDir, pdfFileNameFromEmail(row.email));
+      await saveInvoicePdfBuffer(pdfPath, pdfBuffer);
+    }
+
+    return {
+      outcome: "success",
+      processedCount: rows.length,
+      errorCount: 0,
+    };
+  }
+}

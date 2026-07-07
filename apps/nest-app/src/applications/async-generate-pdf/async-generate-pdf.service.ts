@@ -1,85 +1,45 @@
 import { mkdir, readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { nanoid } from "nanoid";
-
-export type AsyncGeneratePdfJobStatus =
-  | "queued"
-  | "running"
-  | "completed"
-  | "failed";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { ActiveJobConflictError } from "@/async-processing/async-processing.types";
+import { ProcessingOrchestratorService } from "@/async-processing/async-processing-core/processing-orchestrator.service";
+import { PrismaService } from "@/recipes/prisma/prisma.service";
+import { ASYNC_GENERATE_PDF_DOMAIN_KIND } from "./async-generate-pdf.constants";
+import {
+  type AsyncGeneratePdfInfoRow,
+  MOCK_INFO_ROWS,
+} from "./async-generate-pdf.mock-data";
 
 export type GeneratedPdfFile = {
   name: string;
   sizeBytes: number;
 };
 
-export type AsyncGeneratePdfInfoRow = {
-  name: string;
-  email: string;
-  age: number;
-  gender: string;
-  invoiceDate: string;
-};
-
-const MOCK_INFO_ROWS: AsyncGeneratePdfInfoRow[] = [
-  {
-    name: "Ada Lovelace",
-    email: "ada.lovelace@example.com",
-    age: 36,
-    gender: "Female",
-    invoiceDate: "2026-01-15",
-  },
-  {
-    name: "Grace Hopper",
-    email: "grace.hopper@example.com",
-    age: 45,
-    gender: "Female",
-    invoiceDate: "2026-02-03",
-  },
-  {
-    name: "Alan Turing",
-    email: "alan.turing@example.com",
-    age: 41,
-    gender: "Male",
-    invoiceDate: "2026-02-18",
-  },
-  {
-    name: "Katherine Johnson",
-    email: "katherine.johnson@example.com",
-    age: 52,
-    gender: "Female",
-    invoiceDate: "2026-03-07",
-  },
-  {
-    name: "Tim Berners-Lee",
-    email: "tim.berners-lee@example.com",
-    age: 38,
-    gender: "Male",
-    invoiceDate: "2026-03-22",
-  },
-];
-
-export type AsyncGeneratePdfJob = {
-  id: string;
-  status: AsyncGeneratePdfJobStatus;
-  progressPercent: number;
-  createdAt: string;
-  updatedAt: string;
-  outputFiles: GeneratedPdfFile[];
+export type StartAsyncGeneratePdfJobResult = {
+  jobId: string;
+  manifestId: string;
+  outputDirName: string;
 };
 
 @Injectable()
 export class AsyncGeneratePdfService {
-  private readonly outputDir = join(
+  private readonly outputBaseDir = join(
     process.cwd(),
     "temp",
     "async-generate-pdf",
   );
-  private readonly jobsById = new Map<string, AsyncGeneratePdfJob>();
 
-  getOutputDir(): string {
-    return this.outputDir;
+  constructor(
+    private readonly processingOrchestrator: ProcessingOrchestratorService,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  getOutputBaseDir(): string {
+    return this.outputBaseDir;
   }
 
   listMockInfo(): AsyncGeneratePdfInfoRow[] {
@@ -88,57 +48,65 @@ export class AsyncGeneratePdfService {
 
   getTemplateInfo(): {
     module: string;
-    outputDir: string;
+    outputBaseDir: string;
+    domainKind: string;
     endpoints: string[];
   } {
     return {
       module: "async-generate-pdf",
-      outputDir: this.outputDir,
+      outputBaseDir: this.outputBaseDir,
+      domainKind: ASYNC_GENERATE_PDF_DOMAIN_KIND,
       endpoints: [
         "GET /async-generate-pdf/info",
         "POST /async-generate-pdf/jobs",
-        "GET /async-generate-pdf/jobs/:jobId",
-        "GET /async-generate-pdf/files",
+        "GET /async-generate-pdf/jobs/:jobId/files",
+        "GET /jobs/:jobId",
+        "GET /jobs/:jobId/events",
       ],
     };
   }
 
-  async startJob(): Promise<AsyncGeneratePdfJob> {
-    await mkdir(this.outputDir, { recursive: true });
+  async startJob(): Promise<StartAsyncGeneratePdfJobResult> {
+    const startedAtTimestamp = Date.now();
+    await mkdir(this.outputBaseDir, { recursive: true });
 
-    const now = new Date().toISOString();
-    const job: AsyncGeneratePdfJob = {
-      id: nanoid(),
-      status: "queued",
-      progressPercent: 0,
-      createdAt: now,
-      updatedAt: now,
-      outputFiles: [],
-    };
+    try {
+      const result = await this.processingOrchestrator.startProcessing({
+        domainKind: ASYNC_GENERATE_PDF_DOMAIN_KIND,
+        sources: {},
+        context: { startedAtTimestamp },
+      });
 
-    this.jobsById.set(job.id, job);
-    return job;
-  }
-
-  getJobById(jobId: string): AsyncGeneratePdfJob {
-    const job = this.jobsById.get(jobId);
-    if (!job) {
-      throw new NotFoundException(`Job not found: ${jobId}`);
+      return {
+        ...result,
+        outputDirName: `${startedAtTimestamp}-${result.jobId}`,
+      };
+    } catch (error) {
+      if (error instanceof ActiveJobConflictError) {
+        throw new ConflictException({
+          code: "PROCESSING_ACTIVE_JOB",
+          message: `A processing job is already active for domainKind ${ASYNC_GENERATE_PDF_DOMAIN_KIND}`,
+        });
+      }
+      throw error;
     }
-    return job;
   }
 
-  async listOutputFiles(): Promise<GeneratedPdfFile[]> {
-    await mkdir(this.outputDir, { recursive: true });
+  async listJobOutputFiles(jobId: string): Promise<{
+    outputDir: string;
+    files: GeneratedPdfFile[];
+  }> {
+    const outputDir = await this.resolveOutputDirForJob(jobId);
+    await mkdir(outputDir, { recursive: true });
 
-    const entries = await readdir(this.outputDir, { withFileTypes: true });
-    const files = entries.filter(
+    const entries = await readdir(outputDir, { withFileTypes: true });
+    const pdfEntries = entries.filter(
       (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".pdf"),
     );
 
-    return Promise.all(
-      files.map(async (entry) => {
-        const filePath = join(this.outputDir, entry.name);
+    const files = await Promise.all(
+      pdfEntries.map(async (entry) => {
+        const filePath = join(outputDir, entry.name);
         const fileStat = await stat(filePath);
         return {
           name: entry.name,
@@ -146,5 +114,31 @@ export class AsyncGeneratePdfService {
         };
       }),
     );
+
+    return { outputDir, files };
+  }
+
+  private async resolveOutputDirForJob(jobId: string): Promise<string> {
+    const manifest = await this.prisma.client.processingManifest.findUnique({
+      where: { jobId },
+    });
+    if (!manifest) {
+      throw new NotFoundException(
+        `Processing manifest not found for job: ${jobId}`,
+      );
+    }
+
+    const context = manifest.context as Record<string, unknown> | null;
+    const startedAtTimestamp = context?.startedAtTimestamp;
+    if (
+      typeof startedAtTimestamp !== "number" ||
+      !Number.isFinite(startedAtTimestamp)
+    ) {
+      throw new NotFoundException(
+        `Output directory context is missing for job: ${jobId}`,
+      );
+    }
+
+    return join(this.outputBaseDir, `${startedAtTimestamp}-${jobId}`);
   }
 }
