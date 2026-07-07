@@ -1,6 +1,5 @@
 "use client";
 
-import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 
 const STAGING_PATH = "apps/nest-app/temp/upload-to-aliyun-oss";
@@ -28,32 +27,70 @@ type OssBucketObject = {
 
 const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
 
-async function openSignedOssDownload(objectKey: string): Promise<void> {
-  const res = await axios.post<{ url: string }>(
+async function readNestErrorMessage(response: Response): Promise<string> {
+  try {
+    const body = (await response.json()) as { message?: string | string[] };
+    if (typeof body.message === "string") {
+      return body.message;
+    }
+    if (Array.isArray(body.message)) {
+      return body.message.join(", ");
+    }
+  } catch {
+    // Response body is not JSON.
+  }
+  return response.statusText || "Request failed";
+}
+
+async function fetchNestJson<T>(input: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(input, init);
+  if (!response.ok) {
+    throw new Error(await readNestErrorMessage(response));
+  }
+  return response.json() as Promise<T>;
+}
+
+async function downloadFromOss(
+  objectKey: string,
+  fileName: string,
+): Promise<void> {
+  const { url } = await fetchNestJson<{ url: string }>(
     `${nestBaseUrl}/aliyun-oss/download-signed-url`,
-    { objectKey },
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ objectKey }),
+    },
   );
-  window.open(res.data.url, "_blank", "noopener,noreferrer");
+
+  const fileResponse = await fetch(url);
+  if (!fileResponse.ok) {
+    throw new Error("Download from OSS failed");
+  }
+
+  const blob = await fileResponse.blob();
+  const objectUrl = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = fileName;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  window.URL.revokeObjectURL(objectUrl);
 }
 
 async function deleteOssObject(objectKey: string): Promise<void> {
-  await axios.delete<{ deleted: string }>(
-    `${nestBaseUrl}/aliyun-oss/bucket/object`,
-    { data: { objectKey } },
-  );
+  const response = await fetch(`${nestBaseUrl}/aliyun-oss/bucket/object`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ objectKey }),
+  });
+  if (!response.ok) {
+    throw new Error(await readNestErrorMessage(response));
+  }
 }
 
-function formatAxiosError(err: unknown, fallback: string): string {
-  if (axios.isAxiosError(err)) {
-    const message = err.response?.data?.message;
-    if (typeof message === "string") {
-      return message;
-    }
-    if (Array.isArray(message)) {
-      return message.join(", ");
-    }
-    return err.message;
-  }
+function formatRequestError(err: unknown, fallback: string): string {
   return err instanceof Error ? err.message : fallback;
 }
 
@@ -74,11 +111,11 @@ export const Content = () => {
     setIsLoadingOss(true);
     setError(null);
     try {
-      const res = await axios.get<{
+      const data = await fetchNestJson<{
         prefix: string;
         objects: OssBucketObject[];
       }>(`${nestBaseUrl}/aliyun-oss/bucket`);
-      setOssObjects(res.data.objects);
+      setOssObjects(data.objects);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to list OSS objects",
@@ -92,12 +129,12 @@ export const Content = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await axios.get<{
+      const data = await fetchNestJson<{
         stagingDir: string;
         files: StagingFile[];
       }>(`${nestBaseUrl}/aliyun-oss/staging`);
-      setStagingDir(res.data.stagingDir);
-      setFiles(res.data.files);
+      setStagingDir(data.stagingDir);
+      setFiles(data.files);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to list staging files",
@@ -117,14 +154,15 @@ export const Content = () => {
     setError(null);
     setUploaded(null);
     try {
-      const res = await axios.post<{ uploaded: UploadedFile[] }>(
+      const data = await fetchNestJson<{ uploaded: UploadedFile[] }>(
         `${nestBaseUrl}/aliyun-oss/staging/upload`,
+        { method: "POST" },
       );
-      setUploaded(res.data.uploaded);
+      setUploaded(data.uploaded);
       await refreshStaging();
       await refreshOssObjects();
     } catch (err) {
-      setError(formatAxiosError(err, "Upload failed"));
+      setError(formatRequestError(err, "Upload failed"));
     } finally {
       setIsUploading(false);
     }
@@ -141,7 +179,7 @@ export const Content = () => {
       );
       await refreshOssObjects();
     } catch (err) {
-      setError(formatAxiosError(err, "Delete failed"));
+      setError(formatRequestError(err, "Delete failed"));
     } finally {
       setDeletingObjectKey(null);
     }
@@ -199,12 +237,13 @@ export const Content = () => {
           ({SIGNED_DOWNLOAD_EXPIRES_SECONDS}s,{" "}
           {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes) is how long each
           presigned GET URL stays valid. After that, OSS rejects the link. Nest
-          only signs; the browser downloads directly from OSS.
+          only signs; the browser fetches the file from OSS and saves it locally
+          (no Nest relay).
         </p>
         <p>
           <strong>Download from OSS</strong> is a button, not a plain link,
           because the bucket is private. Each click calls Nest to mint a fresh
-          signed URL, then opens OSS. A static{" "}
+          signed URL, then downloads the bytes into a save dialog. A static{" "}
           <code className="rounded bg-neutral-200 px-1">href</code> would either
           fail with bucket ACL errors or expire after{" "}
           {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes.
@@ -287,7 +326,9 @@ export const Content = () => {
                   <button
                     type="button"
                     className="text-left text-blue-600 underline disabled:opacity-50"
-                    onClick={() => void openSignedOssDownload(object.objectKey)}
+                    onClick={() =>
+                      void downloadFromOss(object.objectKey, object.name)
+                    }
                     disabled={deletingObjectKey === object.objectKey}
                   >
                     Download from OSS (signed URL)
@@ -321,7 +362,9 @@ export const Content = () => {
                   <button
                     type="button"
                     className="text-left text-blue-600 underline disabled:opacity-50"
-                    onClick={() => void openSignedOssDownload(file.objectKey)}
+                    onClick={() =>
+                      void downloadFromOss(file.objectKey, file.name)
+                    }
                     disabled={deletingObjectKey === file.objectKey}
                   >
                     Download from OSS (signed URL)
