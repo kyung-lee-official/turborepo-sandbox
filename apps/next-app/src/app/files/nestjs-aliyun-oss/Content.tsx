@@ -36,6 +36,27 @@ async function openSignedOssDownload(objectKey: string): Promise<void> {
   window.open(res.data.url, "_blank", "noopener,noreferrer");
 }
 
+async function deleteOssObject(objectKey: string): Promise<void> {
+  await axios.delete<{ deleted: string }>(
+    `${nestBaseUrl}/aliyun-oss/bucket/object`,
+    { data: { objectKey } },
+  );
+}
+
+function formatAxiosError(err: unknown, fallback: string): string {
+  if (axios.isAxiosError(err)) {
+    const message = err.response?.data?.message;
+    if (typeof message === "string") {
+      return message;
+    }
+    if (Array.isArray(message)) {
+      return message.join(", ");
+    }
+    return err.message;
+  }
+  return err instanceof Error ? err.message : fallback;
+}
+
 export const Content = () => {
   const [stagingDir, setStagingDir] = useState<string>("");
   const [files, setFiles] = useState<StagingFile[]>([]);
@@ -45,6 +66,9 @@ export const Content = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingOss, setIsLoadingOss] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingObjectKey, setDeletingObjectKey] = useState<string | null>(
+    null,
+  );
 
   const refreshOssObjects = useCallback(async () => {
     setIsLoadingOss(true);
@@ -100,19 +124,26 @@ export const Content = () => {
       await refreshStaging();
       await refreshOssObjects();
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const message =
-          typeof err.response?.data?.message === "string"
-            ? err.response.data.message
-            : Array.isArray(err.response?.data?.message)
-              ? err.response.data.message.join(", ")
-              : err.message;
-        setError(message);
-      } else {
-        setError(err instanceof Error ? err.message : "Upload failed");
-      }
+      setError(formatAxiosError(err, "Upload failed"));
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const deleteOssResource = async (objectKey: string) => {
+    setDeletingObjectKey(objectKey);
+    setError(null);
+    try {
+      await deleteOssObject(objectKey);
+      setUploaded(
+        (current) =>
+          current?.filter((file) => file.objectKey !== objectKey) ?? null,
+      );
+      await refreshOssObjects();
+    } catch (err) {
+      setError(formatAxiosError(err, "Delete failed"));
+    } finally {
+      setDeletingObjectKey(null);
     }
   };
 
@@ -252,13 +283,26 @@ export const Content = () => {
                   {object.sizeBytes.toLocaleString()} bytes ·{" "}
                   {new Date(object.lastModified).toLocaleString()}
                 </div>
-                <button
-                  type="button"
-                  className="text-left text-blue-600 underline"
-                  onClick={() => void openSignedOssDownload(object.objectKey)}
-                >
-                  Download from OSS (signed URL)
-                </button>
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <button
+                    type="button"
+                    className="text-left text-blue-600 underline disabled:opacity-50"
+                    onClick={() => void openSignedOssDownload(object.objectKey)}
+                    disabled={deletingObjectKey === object.objectKey}
+                  >
+                    Download from OSS (signed URL)
+                  </button>
+                  <button
+                    type="button"
+                    className="text-left text-red-600 underline disabled:opacity-50"
+                    onClick={() => void deleteOssResource(object.objectKey)}
+                    disabled={deletingObjectKey === object.objectKey}
+                  >
+                    {deletingObjectKey === object.objectKey
+                      ? "Deleting…"
+                      : "Delete from OSS"}
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
@@ -273,13 +317,26 @@ export const Content = () => {
               <li key={file.objectKey} className="rounded bg-neutral-100 p-3">
                 <div>{file.name}</div>
                 <div className="text-neutral-600">{file.objectKey}</div>
-                <button
-                  type="button"
-                  className="text-left text-blue-600 underline"
-                  onClick={() => void openSignedOssDownload(file.objectKey)}
-                >
-                  Download from OSS (signed URL)
-                </button>
+                <div className="flex flex-wrap gap-3 pt-1">
+                  <button
+                    type="button"
+                    className="text-left text-blue-600 underline disabled:opacity-50"
+                    onClick={() => void openSignedOssDownload(file.objectKey)}
+                    disabled={deletingObjectKey === file.objectKey}
+                  >
+                    Download from OSS (signed URL)
+                  </button>
+                  <button
+                    type="button"
+                    className="text-left text-red-600 underline disabled:opacity-50"
+                    onClick={() => void deleteOssResource(file.objectKey)}
+                    disabled={deletingObjectKey === file.objectKey}
+                  >
+                    {deletingObjectKey === file.objectKey
+                      ? "Deleting…"
+                      : "Delete from OSS"}
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

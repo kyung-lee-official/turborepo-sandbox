@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Post,
 } from "@nestjs/common";
@@ -38,6 +39,18 @@ export class AliyunOssController {
         prefix: "nest-to-aliyun-oss/",
         objects,
       }));
+  }
+
+  @Delete("bucket/object")
+  async deleteNestToAliyunOssObject(
+    @Body() body: { objectKey?: string },
+  ): Promise<{ deleted: string }> {
+    const objectKey = body.objectKey?.trim();
+    if (!objectKey) {
+      throw new BadRequestException("objectKey is required");
+    }
+    await this.aliyunOssService.deleteNestToAliyunOssObject(objectKey);
+    return { deleted: objectKey };
   }
 
   @Post("staging/upload")

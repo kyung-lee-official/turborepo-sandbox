@@ -202,6 +202,12 @@ export class AliyunOssService {
     return objects.sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  async deleteNestToAliyunOssObject(objectKey: string): Promise<void> {
+    this.assertSignableObjectKey(objectKey);
+    const client = this.createOssApiClient();
+    await client.delete(objectKey);
+  }
+
   async uploadStagingFiles(): Promise<UploadedStagingFile[]> {
     const pending = await this.listStagingFiles();
     if (pending.length === 0) {
