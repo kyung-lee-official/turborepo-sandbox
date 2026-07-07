@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AliyunOssModule } from "./aliyun-oss/aliyun-oss.module";
 import { Import207ErrorXlsxModule } from "./import-207-error-xlsx/import-207-error-xlsx.module";
 import { MockDataModule } from "./mock-data/mock-data.module";
 import { ProgramLifecycleModule } from "./program-lifecycle/program-lifecycle.module";
@@ -14,6 +15,7 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     UploadLargeJsonModule,
     SalesDataModule,
     Import207ErrorXlsxModule,
+    AliyunOssModule,
   ],
   exports: [
     ProgramLifecycleModule,
@@ -22,6 +24,7 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     UploadLargeJsonModule,
     SalesDataModule,
     Import207ErrorXlsxModule,
+    AliyunOssModule,
   ],
 })
 export class ApplicationsModule {}
