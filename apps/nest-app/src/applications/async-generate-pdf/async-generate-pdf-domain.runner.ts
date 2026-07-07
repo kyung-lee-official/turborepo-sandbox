@@ -7,10 +7,7 @@ import type {
   DomainRunResult,
   VerifiedProcessingSource,
 } from "@/async-processing/async-processing.types";
-import {
-  ASYNC_GENERATE_PDF_DOMAIN_KIND,
-  DEMO_STAGE_DELAY_MS,
-} from "./async-generate-pdf.constants";
+import { ASYNC_GENERATE_PDF_DOMAIN_KIND } from "./async-generate-pdf.constants";
 import { MOCK_INFO_ROWS } from "./async-generate-pdf.mock-data";
 import type { AsyncGeneratePdfProgress } from "./async-generate-pdf.progress.types";
 import {
@@ -36,13 +33,6 @@ function readStartedAtTimestampFromContext(
     throw new Error("startedAtTimestamp is required in manifest context");
   }
   return startedAtTimestamp;
-}
-
-async function pauseForDemo(): Promise<void> {
-  if (DEMO_STAGE_DELAY_MS <= 0) {
-    return;
-  }
-  await new Promise((resolve) => setTimeout(resolve, DEMO_STAGE_DELAY_MS));
 }
 
 async function reportProgress(
@@ -113,8 +103,6 @@ export class AsyncGeneratePdfDomainRunner implements DomainRunner {
         stepIndex,
         totalSteps,
       });
-      await pauseForDemo();
-
       const pdfBuffer = await buildInvoicePdfBuffer(row);
 
       stepIndex += 1;
@@ -124,7 +112,6 @@ export class AsyncGeneratePdfDomainRunner implements DomainRunner {
         stepIndex,
         totalSteps,
       });
-      await pauseForDemo();
 
       const pdfPath = join(outputDir, pdfFileNameFromEmail(row.email));
       await saveInvoicePdfBuffer(pdfPath, pdfBuffer);
@@ -137,7 +124,6 @@ export class AsyncGeneratePdfDomainRunner implements DomainRunner {
       stepIndex,
       totalSteps,
     });
-    await pauseForDemo();
     await zipDirectory(outputDir, zipFilePath);
 
     stepIndex += 1;
@@ -147,7 +133,6 @@ export class AsyncGeneratePdfDomainRunner implements DomainRunner {
       stepIndex,
       totalSteps,
     });
-    await pauseForDemo();
     await removeDirectory(outputDir);
 
     return {

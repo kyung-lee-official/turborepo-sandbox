@@ -10,9 +10,31 @@ import { ProcessingOrchestratorService } from "@/async-processing/async-processi
 import { PrismaService } from "@/recipes/prisma/prisma.service";
 import { ASYNC_GENERATE_PDF_DOMAIN_KIND } from "./async-generate-pdf.constants";
 import {
-  type AsyncGeneratePdfInfoRow,
+  AUDIT_ENTRIES_PER_INVOICE,
+  LINE_ITEMS_PER_INVOICE,
   MOCK_INFO_ROWS,
+  MOCK_INVOICE_COUNT,
 } from "./async-generate-pdf.mock-data";
+
+export type MockInfoSummaryRow = {
+  name: string;
+  email: string;
+  age: number;
+  gender: string;
+  invoiceDate: string;
+  lineItemCount: number;
+  auditEntryCount: number;
+};
+
+export type MockInfoResponse = {
+  meta: {
+    invoiceCount: number;
+    lineItemsPerInvoice: number;
+    auditEntriesPerInvoice: number;
+  };
+  rows: MockInfoSummaryRow[];
+};
+
 import {
   buildJobOutputFolderName,
   buildJobOutputZipPath,
@@ -47,8 +69,19 @@ export class AsyncGeneratePdfService {
     return this.outputBaseDir;
   }
 
-  listMockInfo(): AsyncGeneratePdfInfoRow[] {
-    return MOCK_INFO_ROWS;
+  listMockInfo(): MockInfoResponse {
+    return {
+      meta: {
+        invoiceCount: MOCK_INVOICE_COUNT,
+        lineItemsPerInvoice: LINE_ITEMS_PER_INVOICE,
+        auditEntriesPerInvoice: AUDIT_ENTRIES_PER_INVOICE,
+      },
+      rows: MOCK_INFO_ROWS.map(({ lineItems, auditEntries, ...row }) => ({
+        ...row,
+        lineItemCount: lineItems.length,
+        auditEntryCount: auditEntries.length,
+      })),
+    };
   }
 
   getTemplateInfo(): {

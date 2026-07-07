@@ -12,7 +12,13 @@ type MockInfoRow = {
   age: number;
   gender: string;
   invoiceDate: string;
-  lineItems?: { sku: string }[];
+  lineItemCount: number;
+};
+
+type MockInfoMeta = {
+  invoiceCount: number;
+  lineItemsPerInvoice: number;
+  auditEntriesPerInvoice: number;
 };
 
 type JobOutputFile = {
@@ -44,6 +50,7 @@ async function readNestErrorMessage(response: Response): Promise<string> {
 
 export const Content = () => {
   const [mockRows, setMockRows] = useState<MockInfoRow[]>([]);
+  const [mockMeta, setMockMeta] = useState<MockInfoMeta | null>(null);
   const [outputDirName, setOutputDirName] = useState<string | null>(null);
   const [zipFile, setZipFile] = useState<JobOutputFile | null>(null);
   const [progressDisplay, setProgressDisplay] =
@@ -60,7 +67,11 @@ export const Content = () => {
       if (!response.ok) {
         throw new Error(await readNestErrorMessage(response));
       }
-      const data = (await response.json()) as { rows: MockInfoRow[] };
+      const data = (await response.json()) as {
+        meta: MockInfoMeta;
+        rows: MockInfoRow[];
+      };
+      setMockMeta(data.meta);
       setMockRows(data.rows);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load mock info");
@@ -134,9 +145,12 @@ export const Content = () => {
       <div className="space-y-2">
         <h1 className="font-semibold text-xl">async-generate-pdf-files</h1>
         <p className="text-neutral-700 text-sm">
-          Start an async-processing job over 15 mock invoice rows (12 line items
-          each). Progress ticks are paced so generating, saving, zipping, and
-          cleanup stages stay visible in the UI. The zip is saved as{" "}
+          Start an async-processing job over{" "}
+          {mockMeta
+            ? `${mockMeta.invoiceCount} mock invoice rows (${mockMeta.lineItemsPerInvoice} line items and ${mockMeta.auditEntriesPerInvoice} audit entries each)`
+            : "large mock invoice rows"}
+          . Progress reflects real pdfkit work per file, then archiver zips the
+          output folder. The zip is saved as{" "}
           <code className="rounded bg-neutral-200 px-1">
             apps/nest-app/temp/async-generate-pdf/{"{timestamp}-{jobId}.zip"}
           </code>
@@ -190,7 +204,7 @@ export const Content = () => {
         {mockRows.length === 0 ? (
           <p className="text-neutral-600 text-sm">No mock rows loaded.</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="max-h-80 overflow-x-auto overflow-y-auto">
             <table className="min-w-full border-collapse text-sm">
               <thead>
                 <tr className="border-neutral-300 border-b text-left">
@@ -210,7 +224,7 @@ export const Content = () => {
                     <td className="px-2 py-1">{row.age}</td>
                     <td className="px-2 py-1">{row.gender}</td>
                     <td className="px-2 py-1">{row.invoiceDate}</td>
-                    <td className="px-2 py-1">{row.lineItems?.length ?? 0}</td>
+                    <td className="px-2 py-1">{row.lineItemCount}</td>
                   </tr>
                 ))}
               </tbody>

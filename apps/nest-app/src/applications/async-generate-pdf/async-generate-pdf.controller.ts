@@ -1,8 +1,8 @@
 import { Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
-import type { AsyncGeneratePdfInfoRow } from "./async-generate-pdf.mock-data";
 import {
   AsyncGeneratePdfService,
   type JobOutputFile,
+  type MockInfoResponse,
   type StartAsyncGeneratePdfJobResult,
 } from "./async-generate-pdf.service";
 
@@ -18,8 +18,8 @@ export class AsyncGeneratePdfController {
   }
 
   @Get("info")
-  listMockInfo(): { rows: AsyncGeneratePdfInfoRow[] } {
-    return { rows: this.asyncGeneratePdfService.listMockInfo() };
+  listMockInfo(): MockInfoResponse {
+    return this.asyncGeneratePdfService.listMockInfo();
   }
 
   @Post("jobs")
