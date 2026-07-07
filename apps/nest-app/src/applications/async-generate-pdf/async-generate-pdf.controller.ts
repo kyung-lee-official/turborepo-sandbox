@@ -2,7 +2,7 @@ import { Controller, Get, HttpCode, Param, Post } from "@nestjs/common";
 import type { AsyncGeneratePdfInfoRow } from "./async-generate-pdf.mock-data";
 import {
   AsyncGeneratePdfService,
-  type GeneratedPdfFile,
+  type JobOutputFile,
   type StartAsyncGeneratePdfJobResult,
 } from "./async-generate-pdf.service";
 
@@ -30,8 +30,8 @@ export class AsyncGeneratePdfController {
 
   @Get("jobs/:jobId/files")
   listJobOutputFiles(@Param("jobId") jobId: string): Promise<{
-    outputDir: string;
-    files: GeneratedPdfFile[];
+    outputBaseDir: string;
+    zipFile: JobOutputFile | null;
   }> {
     return this.asyncGeneratePdfService.listJobOutputFiles(jobId);
   }

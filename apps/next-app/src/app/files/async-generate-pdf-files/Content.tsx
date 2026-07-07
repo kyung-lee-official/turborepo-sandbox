@@ -12,9 +12,10 @@ type MockInfoRow = {
   age: number;
   gender: string;
   invoiceDate: string;
+  lineItems?: { sku: string }[];
 };
 
-type GeneratedPdfFile = {
+type JobOutputFile = {
   name: string;
   sizeBytes: number;
 };
@@ -23,6 +24,7 @@ type StartJobResponse = {
   jobId: string;
   manifestId: string;
   outputDirName: string;
+  zipFileName: string;
 };
 
 async function readNestErrorMessage(response: Response): Promise<string> {
@@ -43,7 +45,7 @@ async function readNestErrorMessage(response: Response): Promise<string> {
 export const Content = () => {
   const [mockRows, setMockRows] = useState<MockInfoRow[]>([]);
   const [outputDirName, setOutputDirName] = useState<string | null>(null);
-  const [outputFiles, setOutputFiles] = useState<GeneratedPdfFile[]>([]);
+  const [zipFile, setZipFile] = useState<JobOutputFile | null>(null);
   const [progressDisplay, setProgressDisplay] =
     useState<ImportJobProgressDisplay | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,10 +81,10 @@ export const Content = () => {
       throw new Error(await readNestErrorMessage(response));
     }
     const data = (await response.json()) as {
-      outputDir: string;
-      files: GeneratedPdfFile[];
+      outputBaseDir: string;
+      zipFile: JobOutputFile | null;
     };
-    setOutputFiles(data.files);
+    setZipFile(data.zipFile);
     return data;
   }, []);
 
@@ -90,7 +92,7 @@ export const Content = () => {
     setIsGenerating(true);
     setError(null);
     setProgressDisplay(null);
-    setOutputFiles([]);
+    setZipFile(null);
     setOutputDirName(null);
 
     try {
@@ -132,12 +134,13 @@ export const Content = () => {
       <div className="space-y-2">
         <h1 className="font-semibold text-xl">async-generate-pdf-files</h1>
         <p className="text-neutral-700 text-sm">
-          Start an async-processing job that reads mock invoice rows, generates
-          one PDF per email with pdfkit, and saves files under{" "}
+          Start an async-processing job over 15 mock invoice rows (12 line items
+          each). Progress ticks are paced so generating, saving, zipping, and
+          cleanup stages stay visible in the UI. The zip is saved as{" "}
           <code className="rounded bg-neutral-200 px-1">
-            apps/nest-app/temp/async-generate-pdf/{"{timestamp}-{jobId}"}
+            apps/nest-app/temp/async-generate-pdf/{"{timestamp}-{jobId}.zip"}
           </code>
-          . Live progress comes from the core SSE endpoint at{" "}
+          . Live progress comes from{" "}
           <code className="rounded bg-neutral-200 px-1">
             /jobs/:jobId/events
           </code>
@@ -196,6 +199,7 @@ export const Content = () => {
                   <th className="px-2 py-1">Age</th>
                   <th className="px-2 py-1">Gender</th>
                   <th className="px-2 py-1">Invoice date</th>
+                  <th className="px-2 py-1">Line items</th>
                 </tr>
               </thead>
               <tbody>
@@ -206,6 +210,7 @@ export const Content = () => {
                     <td className="px-2 py-1">{row.age}</td>
                     <td className="px-2 py-1">{row.gender}</td>
                     <td className="px-2 py-1">{row.invoiceDate}</td>
+                    <td className="px-2 py-1">{row.lineItems?.length ?? 0}</td>
                   </tr>
                 ))}
               </tbody>
@@ -216,21 +221,16 @@ export const Content = () => {
 
       {outputDirName ? (
         <p className="text-neutral-500 text-xs">
-          Output folder:{" "}
-          <code>apps/nest-app/temp/async-generate-pdf/{outputDirName}</code>
+          Job output name: <code>{outputDirName}.zip</code>
         </p>
       ) : null}
 
-      {outputFiles.length > 0 ? (
+      {zipFile ? (
         <section className="space-y-2">
-          <h2 className="font-medium">Generated PDF files</h2>
-          <ul className="list-disc space-y-1 pl-5 text-sm">
-            {outputFiles.map((file) => (
-              <li key={file.name}>
-                {file.name} ({file.sizeBytes.toLocaleString()} bytes)
-              </li>
-            ))}
-          </ul>
+          <h2 className="font-medium">Generated zip</h2>
+          <p className="text-sm">
+            {zipFile.name} ({zipFile.sizeBytes.toLocaleString()} bytes)
+          </p>
         </section>
       ) : null}
     </main>

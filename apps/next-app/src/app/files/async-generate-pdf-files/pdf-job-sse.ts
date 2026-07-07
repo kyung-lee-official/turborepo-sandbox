@@ -19,8 +19,14 @@ export function describePdfDomainStage(progress: unknown): PdfDomainStage {
   const record = progress as Record<string, unknown>;
   const phase = typeof record.phase === "string" ? record.phase : "unknown";
   const email = typeof record.email === "string" ? record.email : undefined;
+  const explicitDetail =
+    typeof record.detail === "string" ? record.detail : undefined;
   const label = phase.replaceAll("_", " ");
-  const detail = email ? `for ${email}` : undefined;
+  const detail = email
+    ? `for ${email}`
+    : explicitDetail
+      ? explicitDetail
+      : undefined;
   const percent =
     typeof record.percent === "number" && Number.isFinite(record.percent)
       ? Math.min(100, Math.max(0, Math.round(record.percent)))

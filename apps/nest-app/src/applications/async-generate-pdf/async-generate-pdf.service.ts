@@ -1,4 +1,4 @@
-import { mkdir, readdir, stat } from "node:fs/promises";
+import { access, mkdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import {
   ConflictException,
@@ -13,8 +13,12 @@ import {
   type AsyncGeneratePdfInfoRow,
   MOCK_INFO_ROWS,
 } from "./async-generate-pdf.mock-data";
+import {
+  buildJobOutputFolderName,
+  buildJobOutputZipPath,
+} from "./helpers/job-output-paths";
 
-export type GeneratedPdfFile = {
+export type JobOutputFile = {
   name: string;
   sizeBytes: number;
 };
@@ -23,6 +27,7 @@ export type StartAsyncGeneratePdfJobResult = {
   jobId: string;
   manifestId: string;
   outputDirName: string;
+  zipFileName: string;
 };
 
 @Injectable()
@@ -77,9 +82,15 @@ export class AsyncGeneratePdfService {
         context: { startedAtTimestamp },
       });
 
+      const outputDirName = buildJobOutputFolderName(
+        startedAtTimestamp,
+        result.jobId,
+      );
+
       return {
         ...result,
-        outputDirName: `${startedAtTimestamp}-${result.jobId}`,
+        outputDirName,
+        zipFileName: `${outputDirName}.zip`,
       };
     } catch (error) {
       if (error instanceof ActiveJobConflictError) {
@@ -93,32 +104,35 @@ export class AsyncGeneratePdfService {
   }
 
   async listJobOutputFiles(jobId: string): Promise<{
-    outputDir: string;
-    files: GeneratedPdfFile[];
+    outputBaseDir: string;
+    zipFile: JobOutputFile | null;
   }> {
-    const outputDir = await this.resolveOutputDirForJob(jobId);
-    await mkdir(outputDir, { recursive: true });
-
-    const entries = await readdir(outputDir, { withFileTypes: true });
-    const pdfEntries = entries.filter(
-      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".pdf"),
+    const { startedAtTimestamp } = await this.readJobOutputContext(jobId);
+    const zipFilePath = buildJobOutputZipPath(
+      this.outputBaseDir,
+      startedAtTimestamp,
+      jobId,
     );
 
-    const files = await Promise.all(
-      pdfEntries.map(async (entry) => {
-        const filePath = join(outputDir, entry.name);
-        const fileStat = await stat(filePath);
-        return {
-          name: entry.name,
-          sizeBytes: fileStat.size,
-        };
-      }),
-    );
+    try {
+      await access(zipFilePath);
+    } catch {
+      return { outputBaseDir: this.outputBaseDir, zipFile: null };
+    }
 
-    return { outputDir, files };
+    const zipStat = await stat(zipFilePath);
+    return {
+      outputBaseDir: this.outputBaseDir,
+      zipFile: {
+        name: `${buildJobOutputFolderName(startedAtTimestamp, jobId)}.zip`,
+        sizeBytes: zipStat.size,
+      },
+    };
   }
 
-  private async resolveOutputDirForJob(jobId: string): Promise<string> {
+  private async readJobOutputContext(jobId: string): Promise<{
+    startedAtTimestamp: number;
+  }> {
     const manifest = await this.prisma.client.processingManifest.findUnique({
       where: { jobId },
     });
@@ -139,6 +153,6 @@ export class AsyncGeneratePdfService {
       );
     }
 
-    return join(this.outputBaseDir, `${startedAtTimestamp}-${jobId}`);
+    return { startedAtTimestamp };
   }
 }
