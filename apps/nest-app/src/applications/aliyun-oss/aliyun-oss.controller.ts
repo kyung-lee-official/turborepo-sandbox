@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import {
   AliyunOssService,
+  type OssBucketObject,
   type StagingFile,
   type UploadedStagingFile,
 } from "./aliyun-oss.service";
@@ -24,6 +25,19 @@ export class AliyunOssController {
       stagingDir: this.aliyunOssService.getStagingDir(),
       files,
     }));
+  }
+
+  @Get("bucket")
+  listNestToAliyunOssObjects(): Promise<{
+    prefix: string;
+    objects: OssBucketObject[];
+  }> {
+    return this.aliyunOssService
+      .listNestToAliyunOssObjects()
+      .then((objects) => ({
+        prefix: "nest-to-aliyun-oss/",
+        objects,
+      }));
   }
 
   @Post("staging/upload")

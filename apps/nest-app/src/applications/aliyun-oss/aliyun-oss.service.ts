@@ -20,6 +20,13 @@ export type UploadedStagingFile = {
   signedDownloadUrl: string;
 };
 
+export type OssBucketObject = {
+  name: string;
+  objectKey: string;
+  sizeBytes: number;
+  lastModified: string;
+};
+
 const NEST_TO_ALIYUN_OSS_PREFIX = "nest-to-aliyun-oss";
 const SIGNED_DOWNLOAD_EXPIRES_SECONDS = 600;
 
@@ -37,7 +44,7 @@ export class AliyunOssService {
     return this.stagingDir;
   }
 
-  private createOssClient(): OSS {
+  private createOssClient(options?: { authorizationV4?: boolean }): OSS {
     const accessKeyId = this.configService.get<string>(
       "ALIYUN_OSS_ACCESS_KEY_ID",
     );
@@ -58,9 +65,33 @@ export class AliyunOssService {
       accessKeySecret,
       region,
       bucket,
-      authorizationV4: true,
+      ...(options?.authorizationV4 ? { authorizationV4: true } : {}),
       endpoint: `https://${region}.aliyuncs.com`,
     });
+  }
+
+  private createOssSigningClient(): OSS {
+    return this.createOssClient({ authorizationV4: true });
+  }
+
+  private createOssApiClient(): OSS {
+    return this.createOssClient();
+  }
+
+  private async listObjectsByPrefix(
+    client: OSS,
+    prefix: string,
+    maxKeys: number,
+    marker?: string,
+  ): Promise<OSS.ListObjectResult> {
+    const query: OSS.ListObjectsQuery = {
+      prefix,
+      "max-keys": maxKeys,
+    };
+    if (marker) {
+      query.marker = marker;
+    }
+    return client.list(query, {});
   }
 
   private nestToAliyunOssPrefix(): string {
@@ -82,7 +113,7 @@ export class AliyunOssService {
 
   async getSignedDownloadUrl(objectKey: string): Promise<string> {
     this.assertSignableObjectKey(objectKey);
-    const client = this.createOssClient();
+    const client = this.createOssSigningClient();
     return client.signatureUrlV4(
       "GET",
       SIGNED_DOWNLOAD_EXPIRES_SECONDS,
@@ -94,13 +125,7 @@ export class AliyunOssService {
   /** OSS has no real folders; ensure a zero-byte prefix marker exists when empty. */
   private async ensureNestToAliyunOssPrefix(client: OSS): Promise<void> {
     const prefix = this.nestToAliyunOssPrefix();
-    const listResult = await client.list(
-      {
-        prefix,
-        "max-keys": 1,
-      },
-      {},
-    );
+    const listResult = await this.listObjectsByPrefix(client, prefix, 1);
 
     const hasObjects =
       Array.isArray(listResult.objects) && listResult.objects.length > 0;
@@ -137,6 +162,46 @@ export class AliyunOssService {
     return files.sort((a, b) => a.name.localeCompare(b.name));
   }
 
+  /** Direct children of `nest-to-aliyun-oss/` only (no nested keys). */
+  async listNestToAliyunOssObjects(): Promise<OssBucketObject[]> {
+    const client = this.createOssApiClient();
+    const prefix = this.nestToAliyunOssPrefix();
+    const objects: OssBucketObject[] = [];
+    let marker: string | undefined;
+
+    do {
+      const listResult = await this.listObjectsByPrefix(
+        client,
+        prefix,
+        1000,
+        marker,
+      );
+
+      for (const object of listResult.objects ?? []) {
+        const objectKey = object.name;
+        if (!objectKey || objectKey === prefix) {
+          continue;
+        }
+
+        const nameFromPrefix = objectKey.slice(prefix.length);
+        if (!nameFromPrefix || nameFromPrefix.includes("/")) {
+          continue;
+        }
+
+        objects.push({
+          name: nameFromPrefix,
+          objectKey,
+          sizeBytes: object.size,
+          lastModified: object.lastModified,
+        });
+      }
+
+      marker = listResult.isTruncated ? listResult.nextMarker : undefined;
+    } while (marker);
+
+    return objects.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   async uploadStagingFiles(): Promise<UploadedStagingFile[]> {
     const pending = await this.listStagingFiles();
     if (pending.length === 0) {
@@ -145,7 +210,7 @@ export class AliyunOssService {
       );
     }
 
-    const client = this.createOssClient();
+    const client = this.createOssApiClient();
     await this.ensureNestToAliyunOssPrefix(client);
     const uploaded: UploadedStagingFile[] = [];
 

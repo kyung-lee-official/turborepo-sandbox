@@ -19,6 +19,13 @@ type UploadedFile = {
   signedDownloadUrl: string;
 };
 
+type OssBucketObject = {
+  name: string;
+  objectKey: string;
+  sizeBytes: number;
+  lastModified: string;
+};
+
 const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
 
 async function openSignedOssDownload(objectKey: string): Promise<void> {
@@ -33,9 +40,29 @@ export const Content = () => {
   const [stagingDir, setStagingDir] = useState<string>("");
   const [files, setFiles] = useState<StagingFile[]>([]);
   const [uploaded, setUploaded] = useState<UploadedFile[] | null>(null);
+  const [ossObjects, setOssObjects] = useState<OssBucketObject[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingOss, setIsLoadingOss] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  const refreshOssObjects = useCallback(async () => {
+    setIsLoadingOss(true);
+    setError(null);
+    try {
+      const res = await axios.get<{
+        prefix: string;
+        objects: OssBucketObject[];
+      }>(`${nestBaseUrl}/aliyun-oss/bucket`);
+      setOssObjects(res.data.objects);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to list OSS objects",
+      );
+    } finally {
+      setIsLoadingOss(false);
+    }
+  }, []);
 
   const refreshStaging = useCallback(async () => {
     setIsLoading(true);
@@ -58,7 +85,8 @@ export const Content = () => {
 
   useEffect(() => {
     void refreshStaging();
-  }, [refreshStaging]);
+    void refreshOssObjects();
+  }, [refreshStaging, refreshOssObjects]);
 
   const uploadStaging = async () => {
     setIsUploading(true);
@@ -70,6 +98,7 @@ export const Content = () => {
       );
       setUploaded(res.data.uploaded);
       await refreshStaging();
+      await refreshOssObjects();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const message =
@@ -156,9 +185,17 @@ export const Content = () => {
           type="button"
           className="rounded bg-neutral-800 px-3 py-1.5 text-sm text-white disabled:opacity-50"
           onClick={() => void refreshStaging()}
-          disabled={isLoading || isUploading}
+          disabled={isLoading || isUploading || isLoadingOss}
         >
           {isLoading ? "Refreshing…" : "Refresh staging list"}
+        </button>
+        <button
+          type="button"
+          className="rounded bg-neutral-800 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+          onClick={() => void refreshOssObjects()}
+          disabled={isLoading || isUploading || isLoadingOss}
+        >
+          {isLoadingOss ? "Refreshing…" : "Refresh OSS list"}
         </button>
         <button
           type="button"
@@ -193,6 +230,35 @@ export const Content = () => {
             {files.map((file) => (
               <li key={file.name}>
                 {file.name} ({file.sizeBytes.toLocaleString()} bytes)
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-2">
+        <h2 className="font-medium">In OSS (nest-to-aliyun-oss/)</h2>
+        <p className="text-neutral-600 text-sm">
+          Direct objects under the prefix only; nested keys are omitted.
+        </p>
+        {ossObjects.length === 0 ? (
+          <p className="text-neutral-600 text-sm">No objects in this prefix.</p>
+        ) : (
+          <ul className="space-y-2 text-sm">
+            {ossObjects.map((object) => (
+              <li key={object.objectKey} className="rounded bg-neutral-100 p-3">
+                <div>{object.name}</div>
+                <div className="text-neutral-600">
+                  {object.sizeBytes.toLocaleString()} bytes ·{" "}
+                  {new Date(object.lastModified).toLocaleString()}
+                </div>
+                <button
+                  type="button"
+                  className="text-left text-blue-600 underline"
+                  onClick={() => void openSignedOssDownload(object.objectKey)}
+                >
+                  Download from OSS (signed URL)
+                </button>
               </li>
             ))}
           </ul>
