@@ -1,0 +1,18 @@
+{
+  "$schema": "https://mimo.xiaomi.com/mimocode/config.json",
+  "mcp": {
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp",
+        "--path",
+        "C:\\Data\\user-data\\projects\\typescript\\turborepo-sandbox"
+      ]
+    }
+  },
+  "instructions": {
+    "paths": [".mimocode/instructions/*.md"]
+  }
+}
