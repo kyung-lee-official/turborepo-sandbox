@@ -12,7 +12,5 @@
       ]
     }
   },
-  "instructions": {
-    "paths": [".mimocode/instructions/*.md"]
-  }
+  "instructions": [".mimocode/instructions/*.md"]
 }
