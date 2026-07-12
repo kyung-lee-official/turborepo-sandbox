@@ -9,6 +9,10 @@
 5. [Layer 4: Domain Business Layer](./04-domain-business-layer/README.md)
 6. [Support Layer: Import Plugins and Shared Import Utilities](./05-import-plugin-support-layer/README.md)
 
+## Part II — Reference Appendices
+
+A. [Prisma Data Model](./appendix-a-prisma-data-model/README.md)
+
 ## Main Control Flow
 
 ```text

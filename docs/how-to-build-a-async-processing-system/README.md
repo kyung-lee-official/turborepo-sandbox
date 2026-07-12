@@ -43,3 +43,11 @@ Each layer should speak to the next layer through a small contract:
 - Plugins return parsed rows or scoped parse errors to the domain; they do not start jobs.
 
 When a new feature is hard to place, ask: "Does this handle bytes, start a job, orchestrate a job, or perform business work?" That answer usually identifies the layer.
+
+## Reference Appendices
+
+Implementation details that would interrupt layer narratives live in appendices:
+
+| Appendix | Contents |
+| --- | --- |
+| [A. Prisma Data Model](./appendix-a-prisma-data-model/README.md) | `ProcessingJob`, `ProcessingManifest`, `ProcessingJobError` |

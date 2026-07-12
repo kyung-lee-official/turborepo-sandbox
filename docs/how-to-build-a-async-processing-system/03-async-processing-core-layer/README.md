@@ -43,6 +43,20 @@ The core never handles upload bytes and never hardcodes domain business rules.
 | `ProcessingActiveJobLock` | Redis `SET NX` lock for singleton domains |
 | `ProcessingController` | Job list, job detail, SSE, error download |
 
+## Persistence Model
+
+PostgreSQL stores durable job history. Three models form the core contract:
+
+| Model | Role |
+| --- | --- |
+| `ProcessingJob` | Lifecycle, terminal phase, outcome, aggregate counts |
+| `ProcessingManifest` | Frozen `sources` locators and optional `context` JSON |
+| `ProcessingJobError` | One row per validation failure when outcome is `validation_failed` |
+
+Live progress stays in Redis; terminal state and counts stay on `ProcessingJob`. Errors are normalized rows, not blobs on the job row.
+
+Full schema, field notes, indexes, and lifecycle mapping: [Appendix A: Prisma Data Model](../appendix-a-prisma-data-model/README.md).
+
 ## Job and Manifest
 
 The manifest is a frozen snapshot of the sources and context for the worker.
