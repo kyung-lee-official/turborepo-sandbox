@@ -138,7 +138,7 @@ Typical XLSX flow:
 
 1. Get `source = sources.get("salesData")`.
 2. `stream = await io.openStream(source)`.
-3. Use `import-plugin-tabular-xlsx` helpers to load workbook and parse sheet rows.
+3. Use `import/plugins/tabular-xlsx` helpers to load workbook and parse sheet rows.
 4. In `onRow`, apply business validation and persistence.
 5. Scope parse and business errors with shared import utilities.
 6. Return `success` or `validation_failed`.
@@ -147,7 +147,7 @@ Typical JSONL flow:
 
 1. Get `source = sources.get("productDescriptions")`.
 2. `stream = await io.openStream(source)`.
-3. Use `import-plugin-jsonl` helpers to parse line-delimited JSON.
+3. Use `import/plugins/jsonl` helpers to parse line-delimited JSON.
 4. In `onLine`, apply business validation and persistence.
 5. Return collected errors if any.
 

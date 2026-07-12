@@ -1,6 +1,6 @@
 # How to Build an Async Processing System
 
-This book documents the async-processing system as a set of strictly separated layers. It translates the Cursor skills in `.cursor/skills` from agent instructions into human-readable architecture notes.
+This book documents the async-processing system as a set of strictly separated layers. Each chapter explains one layer's responsibilities, boundaries, and invariants.
 
 The most important boundary is `startProcessing`.
 

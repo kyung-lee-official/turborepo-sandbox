@@ -4,8 +4,6 @@ This appendix is the canonical reference for the async-processing persistence la
 
 Place these models in your API application's Prisma schema (for example a shared `packages/database` package). Domain-specific result tables are out of scope here; they belong in the domain business layer and may reference `ProcessingJob.id` as a foreign key.
 
-Related skill: `.cursor/skills/async-processing/SKILL.md`
-
 ## What PostgreSQL Owns
 
 | Model | Role |

@@ -2,8 +2,6 @@
 
 The async-processing core begins at `ProcessingOrchestratorService.startProcessing`. It owns job lifecycle, manifest persistence, admission locks, queueing, worker execution, source verification, progress publication, terminal signaling, and error persistence.
 
-Related skill: `.cursor/skills/async-processing/SKILL.md`
-
 ## Boundary
 
 ```text
@@ -167,7 +165,7 @@ Recommended API:
 GET /applications/async-processing/jobs/:jobId/errors
 ```
 
-The Cursor skill recommends NDJSON for persisted job errors. Optional XLSX exports can be built with shared import utilities, but the worker should persist structured errors, not blobs.
+Serve persisted job errors as NDJSON (`application/x-ndjson`). Optional XLSX exports can be built with shared import utilities, but the worker should persist structured errors, not blobs.
 
 ## Core Invariants
 

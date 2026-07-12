@@ -4,12 +4,6 @@ The import plugins are not a trigger layer and not the async core. They are busi
 
 The shared import utilities define common error and progress types that plugins, domains, and the async core can agree on.
 
-Related skills:
-
-- `.cursor/skills/import-plugin-tabular-xlsx/SKILL.md`
-- `.cursor/skills/import-plugin-jsonl/SKILL.md`
-- `.cursor/skills/import-shared/SKILL.md`
-
 ## Where This Fits
 
 ```text
@@ -54,8 +48,6 @@ apps/nest-app/src/import/shared/
 
 ## Tabular XLSX Plugin
 
-Related skill: `import-plugin-tabular-xlsx`
-
 The tabular XLSX plugin owns workbook and worksheet parsing. It is business-agnostic.
 
 It owns:
@@ -87,8 +79,6 @@ type TabularSheetSpec = {
 The domain receives rows and decides what they mean.
 
 ## JSONL Plugin
-
-Related skill: `import-plugin-jsonl`
 
 The JSONL plugin owns line-delimited JSON parsing. It is business-agnostic.
 

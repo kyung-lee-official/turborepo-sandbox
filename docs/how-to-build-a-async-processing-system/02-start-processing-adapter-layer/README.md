@@ -2,8 +2,6 @@
 
 The adapter layer is the trigger boundary for async processing. It converts trusted server-side upload/session/event data into `StartProcessingInput`, then calls `ProcessingOrchestratorService.startProcessing`.
 
-Related skill: `.cursor/skills/start-processing-adapters/SKILL.md`
-
 ## Boundary
 
 ```text

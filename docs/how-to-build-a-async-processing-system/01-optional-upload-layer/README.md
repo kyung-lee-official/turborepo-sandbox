@@ -17,8 +17,6 @@ The upload layer stops before `startProcessing`.
 
 ## Local Multipart Upload
 
-Related skill: `.cursor/skills/upload-local-multipart/SKILL.md`
-
 Use local multipart upload when a browser or API client posts files to NestJS with `multipart/form-data`.
 
 The server should:
@@ -104,8 +102,6 @@ This keeps failed uploads from leaking into the async system.
 
 ## Future Stub: Amazon S3 Direct Upload
 
-Related skill: `.cursor/skills/upload-s3-direct/SKILL.md`
-
 Target model:
 
 1. `POST /applications/:domainKind/upload/s3/initiate`
@@ -119,8 +115,6 @@ Target model:
 Complete must not call `HeadObject`. The worker verifies object locators later.
 
 ## Future Stub: Tencent COS Direct Upload
-
-Related skill: `.cursor/skills/upload-cos-direct/SKILL.md`
 
 Target model:
 
