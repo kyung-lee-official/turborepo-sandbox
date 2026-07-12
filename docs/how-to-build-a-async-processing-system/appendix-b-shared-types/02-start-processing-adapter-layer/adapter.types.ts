@@ -1,9 +1,12 @@
 /**
- * Appendix B — start adapter boundary types.
+ * Appendix B — Layer 2: Start Processing Adapter Layer
  */
 
-import type { SourceLocator } from "./source-locator.types";
-import type { UploadSession, UploadSessionSources } from "./upload.types";
+import type {
+  UploadSession,
+  UploadSessionSources,
+} from "../01-optional-upload-layer/upload.types";
+import type { SourceLocator } from "../shared/source-locator.types";
 
 export interface UploadSessionStore {
   save(session: UploadSession): Promise<void>;

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Import 207 Error XLSX"
-  short_description: "Return XLSX reports for partial imports."
-  default_prompt: "Use $import-207-error-xlsx to implement an XLSX import that returns JSON on success or a 207 error workbook on partial success."

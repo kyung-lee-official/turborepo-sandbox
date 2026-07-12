@@ -1,8 +1,8 @@
 /**
- * Appendix B — upload layer session and API response types.
+ * Appendix B — Layer 1: Optional Upload Layer
  */
 
-import type { SourceLocator } from "./source-locator.types";
+import type { SourceLocator } from "../shared/source-locator.types";
 
 export type LocalUploadSession = {
   domainKind: string;

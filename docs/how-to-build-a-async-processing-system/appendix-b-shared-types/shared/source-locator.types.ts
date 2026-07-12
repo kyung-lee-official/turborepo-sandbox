@@ -1,5 +1,5 @@
 /**
- * Appendix B — shared locators for upload, adapters, manifest, and worker verification.
+ * Appendix B — cross-layer source locators (upload ingest through manifest JSON).
  */
 
 export type SourceLocator =
@@ -11,8 +11,3 @@ export type SourceLocator =
       key: string;
       declaredSizeBytes?: number;
     };
-
-export type VerifiedSourceLocator = SourceLocator & {
-  sizeBytes: number;
-  etag?: string;
-};

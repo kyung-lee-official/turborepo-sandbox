@@ -1,5 +1,5 @@
 /**
- * Appendix B — tabular XLSX format plugin types.
+ * Appendix B — Support Layer: tabular XLSX format plugin
  */
 
 export type TabularPluginPhase = "parsing_workbook";

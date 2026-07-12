@@ -1,16 +1,19 @@
 /**
- * Appendix B — async processing core types (orchestrator, worker, registry).
+ * Appendix B — Layer 3: Async Processing Core Layer
  */
 
-import type { Readable } from "node:stream";
-
-import type { ProcessingSource } from "./adapter.types";
-import type { ErrorDetail } from "./import-shared.types";
-import type { VerifiedSourceLocator } from "./source-locator.types";
+import type { ProcessingSource } from "../02-start-processing-adapter-layer/adapter.types";
+import type { DomainRunner } from "../04-domain-business-layer/domain-runner.types";
+import type { SourceLocator } from "../shared/source-locator.types";
 
 export type ProcessingPhase = "queued" | "processing" | "complete" | "failed";
 
 export type ProcessingOutcome = "success" | "validation_failed" | "failed";
+
+export type VerifiedSourceLocator = SourceLocator & {
+  sizeBytes: number;
+  etag?: string;
+};
 
 export type VerifiedProcessingSource = ProcessingSource & {
   verifiedLocator: VerifiedSourceLocator;
@@ -44,30 +47,6 @@ export type ProcessingLockPolicy =
 export type DomainUploadPolicy = {
   allowedMimeBySourceId?: Record<string, readonly string[]>;
   defaultAllowedMimeTypes?: readonly string[];
-};
-
-export type DomainRunnerIo = {
-  openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
-  onProgress: (detail: unknown) => Promise<void>;
-  context?: Record<string, unknown>;
-};
-
-export type DomainRunResult =
-  | { outcome: "success"; processedCount: number; errorCount: 0 }
-  | {
-      outcome: "validation_failed";
-      processedCount: number;
-      errorCount: number;
-      errors: readonly ErrorDetail[];
-    };
-
-export type DomainRunner = {
-  domainKind: string;
-  run(
-    jobId: string,
-    sources: Map<string, VerifiedProcessingSource>,
-    io: DomainRunnerIo,
-  ): Promise<DomainRunResult>;
 };
 
 export type DomainKindRegistration = {

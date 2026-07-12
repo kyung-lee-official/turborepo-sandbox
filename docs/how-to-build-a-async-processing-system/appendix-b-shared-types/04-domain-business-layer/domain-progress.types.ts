@@ -1,22 +1,6 @@
 /**
- * Appendix B — cross-format import utilities.
+ * Appendix B — Layer 4: Domain Business Layer — progress payloads
  */
-
-export type ErrorDetail = {
-  message: string;
-  sourceId?: string;
-  originalName?: string;
-  worksheetName?: string;
-  rowNumber?: number;
-  rawData?: string;
-};
-
-export type ProcessingJobErrorsHeader = {
-  kind: "header";
-  jobId: string;
-  domainKind: string;
-  errorCount: number;
-};
 
 export type DomainProcessingPhase =
   | "loading_source"

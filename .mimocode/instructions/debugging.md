@@ -2,7 +2,7 @@
 
 ## Package runs and scripts
 
-- Prefer **`bun`** and **`bunx`** over **`npm`**, **`pnpm`**, **`yarn`**, or other package managers when installing deps, running scripts, or invoking local CLIs.
+- Prefer **`bun`** and **`bunx`** over **npm**, **pnpm**, **yarn**, or other package managers when installing deps, running scripts, or invoking local CLIs.
 - Fall back to another manager only if the task explicitly requires it or Bun is unavailable.
 
 ## Shell commands (Windows)

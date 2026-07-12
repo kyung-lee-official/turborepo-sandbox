@@ -1,5 +1,5 @@
 /**
- * Appendix B — JSONL format plugin types.
+ * Appendix B — Support Layer: JSONL format plugin
  */
 
 export type JsonlPluginPhase = "parsing_lines";
