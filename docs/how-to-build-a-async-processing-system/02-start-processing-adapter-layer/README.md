@@ -85,6 +85,8 @@ On active global singleton conflict:
 
 Recommended policy: consume the session after successful start. If clients need retry-after-lost-response behavior, use `startedJobId` and `startedManifestId` idempotency instead.
 
+Session TTL and event names: [Appendix C: Constants and Redis Keys](../appendix-c-constants/README.md).
+
 ## Event Auto-Start
 
 Auto-start is an in-process path. The upload layer emits `processing.start-requested` with a `ProcessingStartRequestedPayload` (see [Appendix B](../appendix-b-shared-types/README.md)). The event subscriber forwards the payload to an event adapter. The event adapter validates and maps it, then calls `startProcessing`.

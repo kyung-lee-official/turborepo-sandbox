@@ -57,7 +57,7 @@ Deferred is the default and safest model. The client never receives locators.
 
 The upload layer builds `UploadSession` and `UploadSessionSources`. See [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
 
-`context` contains non-file form fields such as `yearMonth` or `timezone`. It must not contain file locators supplied by the client. Local uploads use `SourceLocator` with `kind: "local"`; object-store uploads add `kind: "object"` with `provider`, `bucket`, and `key`.
+`context` contains non-file form fields such as `yearMonth` or `timezone`. Reserved form keys (`autoStart`, `uploadSessionId`) are listed in [Appendix C](../appendix-c-constants/README.md). Local uploads use `SourceLocator` with `kind: "local"`; object-store uploads add `kind: "object"` with `provider`, `bucket`, and `key`.
 
 The upload layer sets `declaredSizeBytes` from Multer metadata. The async worker verifies the file later with `stat`.
 

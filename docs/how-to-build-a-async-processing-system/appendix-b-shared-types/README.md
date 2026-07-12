@@ -236,5 +236,5 @@ Clients discriminate live progress by `progress.phase`.
 | ------------------------------------------------ | ------------------------------------------------------- |
 | Prisma models and DB enums                       | [Appendix A](../appendix-a-prisma-data-model/README.md) |
 | Zod schemas for start API and events             | Layer 2 (future appendix)                               |
-| Default TTLs, queue name, Redis channel prefixes | Future constants appendix                               |
+| Default TTLs, queue name, Redis channel prefixes | [Appendix C](../appendix-c-constants/README.md) |
 | Repository and worker implementation patterns    | Layer 3                                                 |

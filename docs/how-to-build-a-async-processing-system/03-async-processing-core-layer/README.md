@@ -57,6 +57,8 @@ Full schema, field notes, indexes, and lifecycle mapping: [Appendix A: Prisma Da
 
 Cross-layer DTOs and progress types: [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
 
+Constants, Redis keys, and tunables: [Appendix C: Constants and Redis Keys](../appendix-c-constants/README.md).
+
 ## Job and Manifest
 
 The manifest is a frozen snapshot of the sources and context for the worker. BullMQ carries an `AsyncProcessingJobPayload` with references only (see [Appendix B](../appendix-b-shared-types/README.md)). Do not put sources, bytes, buffers, or large context into the queue payload.
@@ -80,11 +82,7 @@ Validation failures are successful job completion with collected non-critical er
 
 ## Active Job Lock
 
-The active lock is per `domainKind`:
-
-```text
-async-processing:active:{domainKind} -> {jobId}
-```
+The active lock is per `domainKind`. Redis key: `activeJobLockKey(domainKind)` (see [Appendix C](../appendix-c-constants/README.md)). Value is the active `jobId`.
 
 Use it when a domain can only run one active job at a time.
 
@@ -136,8 +134,7 @@ Domain runners receive `VerifiedProcessingSource` and should not re-verify locat
 Progress is live data, not job history.
 
 - Worker calls `io.onProgress`.
-- Core publishes to `async-processing:progress:{jobId}`.
-- Terminal events publish to `async-processing:terminal:{jobId}`.
+- Core publishes to `progressChannel(jobId)` and terminal events to `terminalChannel(jobId)` (see [Appendix C](../appendix-c-constants/README.md)).
 - SSE sends an initial DB snapshot.
 - SSE forwards progress events.
 - SSE reloads a final DB snapshot on terminal event and closes.

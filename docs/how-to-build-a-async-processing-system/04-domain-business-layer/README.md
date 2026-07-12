@@ -68,7 +68,7 @@ Collect `ErrorDetail` values in memory during the domain run and return them wit
 
 Domain progress uses `DomainProcessingPhase` values (`loading_source`, `validating_rows`, `saving_database`). See [Appendix B](../appendix-b-shared-types/README.md).
 
-Use immediate progress for source loading and throttled progress for row validation or database writes.
+Use immediate progress for source loading and throttled progress for row validation or database writes. Throttle interval: [Appendix C](../appendix-c-constants/README.md).
 
 Example progress payload:
 
