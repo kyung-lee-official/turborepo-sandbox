@@ -4,6 +4,8 @@ The import plugins are not a trigger layer and not the async core. They are busi
 
 The shared import utilities define common error and progress types that plugins, domains, and the async core can agree on.
 
+`ErrorDetail`, domain progress, and plugin progress types: [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
+
 ## Where This Fits
 
 ```text
@@ -62,16 +64,7 @@ It does not own:
 - BullMQ, Redis, jobs, manifests, locks, or SSE.
 - Error XLSX export.
 
-The domain supplies:
-
-```ts
-type TabularSheetSpec = {
-  sheetName: string;
-  headers: readonly string[];
-};
-```
-
-The domain receives rows and decides what they mean.
+The domain supplies `TabularSheetSpec` per sheet (see [Appendix B](../appendix-b-shared-types/README.md)). The domain receives rows and decides what they mean.
 
 ## JSONL Plugin
 
@@ -99,17 +92,7 @@ It does not own:
 
 For JSONL, `rowNumber` means the 1-based physical line number.
 
-## Plugin Progress vs Domain Progress
-
-| Progress phase     | Emitted by   | Meaning                             |
-| ------------------ | ------------ | ----------------------------------- |
-| `parsing_workbook` | XLSX plugin  | Workbook/sheet parsing progress     |
-| `parsing_lines`    | JSONL plugin | JSONL line parsing progress         |
-| `loading_source`   | Domain       | Domain is preparing a source        |
-| `validating_rows`  | Domain       | Domain business validation progress |
-| `saving_database`  | Domain       | Domain persistence progress         |
-
-Clients should discriminate progress events by `phase`.
+Progress phases for plugins and domains are listed in [Appendix B](../appendix-b-shared-types/README.md). Clients should discriminate progress events by `phase`.
 
 ## Error Responsibilities
 

@@ -33,22 +33,7 @@ Only adapters call `startProcessing`.
 
 ## Canonical Input to the Core
 
-```ts
-type StartProcessingInput = {
-  domainKind: string;
-  sources: Record<string, ProcessingSource>;
-  context?: Record<string, unknown>;
-};
-
-type ProcessingSource = {
-  sourceId: string;
-  label?: string;
-  mimeType?: string;
-  locator: SourceLocator;
-};
-```
-
-The adapter receives upload-oriented `UploadSessionSources` and maps them to processing-oriented `ProcessingSource`.
+Adapters output `StartProcessingInput` with `ProcessingSource` entries mapped from `UploadSessionSources`. See [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
 
 ## Deferred Start API
 
@@ -102,17 +87,7 @@ Recommended policy: consume the session after successful start. If clients need 
 
 ## Event Auto-Start
 
-Auto-start is an in-process path:
-
-```ts
-{
-  domainKind: string;
-  sources: UploadSessionSources;
-  context?: Record<string, unknown>;
-}
-```
-
-The upload layer emits `processing.start-requested`. The event subscriber forwards the payload to an event adapter. The event adapter validates and maps it, then calls `startProcessing`.
+Auto-start is an in-process path. The upload layer emits `processing.start-requested` with a `ProcessingStartRequestedPayload` (see [Appendix B](../appendix-b-shared-types/README.md)). The event subscriber forwards the payload to an event adapter. The event adapter validates and maps it, then calls `startProcessing`.
 
 If `ActiveJobConflictError` occurs in auto-start mode, the default behavior is to log a warning and skip. There is no HTTP client to receive a `409`.
 

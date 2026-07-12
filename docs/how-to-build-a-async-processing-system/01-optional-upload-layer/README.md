@@ -55,36 +55,9 @@ Deferred is the default and safest model. The client never receives locators.
 
 ## Upload Session Shape
 
-The upload layer does not need to know job internals. It builds and stores session data:
+The upload layer builds `UploadSession` and `UploadSessionSources`. See [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
 
-```ts
-type UploadSession = {
-  uploadSessionId: string;
-  domainKind: string;
-  sources: UploadSessionSources;
-  expiresAt: Date;
-  context?: Record<string, unknown>;
-};
-
-type UploadSessionSources = Record<string, {
-  sourceId: string;
-  originalName: string;
-  mimeType?: string;
-  locator: SourceLocator;
-}>;
-```
-
-`context` contains non-file form fields such as `yearMonth` or `timezone`. It must not contain file locators supplied by the client.
-
-## Local Locator
-
-```ts
-type SourceLocator = {
-  kind: "local";
-  path: string;
-  declaredSizeBytes?: number;
-};
-```
+`context` contains non-file form fields such as `yearMonth` or `timezone`. It must not contain file locators supplied by the client. Local uploads use `SourceLocator` with `kind: "local"`; object-store uploads add `kind: "object"` with `provider`, `bucket`, and `key`.
 
 The upload layer sets `declaredSizeBytes` from Multer metadata. The async worker verifies the file later with `stat`.
 

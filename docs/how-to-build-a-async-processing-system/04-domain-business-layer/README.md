@@ -54,64 +54,19 @@ Registration is the domain's public contract:
 
 ## Domain Runner Contract
 
-```ts
-type DomainRunner = {
-  domainKind: string;
-  run(
-    jobId: string,
-    sources: Map<string, VerifiedProcessingSource>,
-    io: DomainRunnerIo,
-  ): Promise<DomainRunResult>;
-};
-
-type DomainRunnerIo = {
-  openStream: (source: VerifiedProcessingSource) => Promise<Readable>;
-  onProgress: (detail: unknown) => Promise<void>;
-  context?: Record<string, unknown>;
-};
-```
-
-The core owns `openStream` because the core owns verified locators. The domain calls it.
+The core invokes a registered `DomainRunner` with `DomainRunnerIo`. The core owns `openStream` because the core owns verified locators. See [Appendix B](../appendix-b-shared-types/README.md).
 
 ## Domain Result
 
-```ts
-type DomainRunResult =
-  | { outcome: "success"; processedCount: number; errorCount: 0 }
-  | {
-      outcome: "validation_failed";
-      processedCount: number;
-      errorCount: number;
-      errors: readonly ErrorDetail[];
-    };
-```
-
-Use `validation_failed` for row-level or record-level non-critical errors where valid records were still processed. Throw only for critical failures that should mark the whole job as failed.
+Return `DomainRunResult` with `success` or `validation_failed`. Use `validation_failed` for row-level or record-level non-critical errors where valid records were still processed. Throw only for critical failures that should mark the whole job as failed.
 
 ## Business Error Collection
 
-Use the shared `ErrorDetail` shape:
-
-```ts
-type ErrorDetail = {
-  message: string;
-  sourceId?: string;
-  originalName?: string;
-  worksheetName?: string;
-  rowNumber?: number;
-  rawData?: string;
-};
-```
-
-Collect errors in memory during the domain run and return them with `validation_failed`. The worker persists them after the runner returns.
+Collect `ErrorDetail` values in memory during the domain run and return them with `validation_failed`. The worker persists them after the runner returns.
 
 ## Domain Progress
 
-Domain-specific phases:
-
-- `loading_source`
-- `validating_rows`
-- `saving_database`
+Domain progress uses `DomainProcessingPhase` values (`loading_source`, `validating_rows`, `saving_database`). See [Appendix B](../appendix-b-shared-types/README.md).
 
 Use immediate progress for source loading and throttled progress for row validation or database writes.
 

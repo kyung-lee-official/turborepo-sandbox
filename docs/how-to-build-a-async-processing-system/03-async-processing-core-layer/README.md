@@ -55,19 +55,11 @@ Live progress stays in Redis; terminal state and counts stay on `ProcessingJob`.
 
 Full schema, field notes, indexes, and lifecycle mapping: [Appendix A: Prisma Data Model](../appendix-a-prisma-data-model/README.md).
 
+Cross-layer DTOs and progress types: [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
+
 ## Job and Manifest
 
-The manifest is a frozen snapshot of the sources and context for the worker.
-
-```ts
-type AsyncProcessingJobPayload = {
-  jobId: string;
-  domainKind: string;
-  manifestId: string;
-};
-```
-
-BullMQ payloads carry references only. Do not put sources, bytes, buffers, or large context into the queue payload.
+The manifest is a frozen snapshot of the sources and context for the worker. BullMQ carries an `AsyncProcessingJobPayload` with references only (see [Appendix B](../appendix-b-shared-types/README.md)). Do not put sources, bytes, buffers, or large context into the queue payload.
 
 ## Orchestrator Flow
 
@@ -82,11 +74,7 @@ BullMQ payloads carry references only. Do not put sources, bytes, buffers, or la
 
 ## Processing Job Phases
 
-| Domain result or failure         | DB phase   | DB outcome          |
-| -------------------------------- | ---------- | ------------------- |
-| Domain returns success           | `complete` | `success`           |
-| Domain returns validation errors | `complete` | `validation_failed` |
-| Uncaught failure                 | `failed`   | `failed`            |
+`DomainRunResult.outcome` maps to DB `phase` and `outcome` as defined in [Appendix B](../appendix-b-shared-types/README.md).
 
 Validation failures are successful job completion with collected non-critical errors.
 
