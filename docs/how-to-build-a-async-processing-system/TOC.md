@@ -12,6 +12,7 @@
 ## Part II — Reference Appendices
 
 A. [Prisma Data Model](./appendix-a-prisma-data-model/README.md)
+B. [Shared Types](./appendix-b-shared-types/README.md)
 
 ## Main Control Flow
 

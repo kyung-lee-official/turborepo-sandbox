@@ -24,13 +24,13 @@ flowchart TD
 
 ## Responsibilities at a Glance
 
-| Layer | Owns | Must not own |
-| --- | --- | --- |
-| Optional upload | Receiving files, storing bytes, creating server-side locators, saving upload sessions | Jobs, locks, queues, domain work |
-| Start adapters | Converting trusted upload/session/event input into `StartProcessingInput` | Upload byte handling, worker orchestration, business parsing |
-| Async processing core | Job lifecycle, manifest, BullMQ, Redis lock, worker, source verification, SSE | Upload routes, domain-specific validation, file format parsing |
-| Domain business | Actual business rules, persistence, domain progress, non-critical error collection | Upload sessions, queue admission, worker control flow |
-| Import plugin support | Format parsing and shared import utilities used by domains | Domain rules, job orchestration, upload/session trust |
+| Layer                 | Owns                                                                                  | Must not own                                                   |
+| --------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Optional upload       | Receiving files, storing bytes, creating server-side locators, saving upload sessions | Jobs, locks, queues, domain work                               |
+| Start adapters        | Converting trusted upload/session/event input into `StartProcessingInput`             | Upload byte handling, worker orchestration, business parsing   |
+| Async processing core | Job lifecycle, manifest, BullMQ, Redis lock, worker, source verification, SSE         | Upload routes, domain-specific validation, file format parsing |
+| Domain business       | Actual business rules, persistence, domain progress, non-critical error collection    | Upload sessions, queue admission, worker control flow          |
+| Import plugin support | Format parsing and shared import utilities used by domains                            | Domain rules, job orchestration, upload/session trust          |
 
 ## Core Principle
 
@@ -48,6 +48,7 @@ When a new feature is hard to place, ask: "Does this handle bytes, start a job, 
 
 Implementation details that would interrupt layer narratives live in appendices:
 
-| Appendix | Contents |
-| --- | --- |
+| Appendix                                                         | Contents                                                    |
+| ---------------------------------------------------------------- | ----------------------------------------------------------- |
 | [A. Prisma Data Model](./appendix-a-prisma-data-model/README.md) | `ProcessingJob`, `ProcessingManifest`, `ProcessingJobError` |
+| [B. Shared Types](./appendix-b-shared-types/README.md)           | Cross-layer DTOs, locators, progress, `DomainRunResult`     |
