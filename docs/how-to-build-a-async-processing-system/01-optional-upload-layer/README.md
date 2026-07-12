@@ -33,7 +33,7 @@ The server should:
 Recommended route shape:
 
 ```text
-POST /applications/async-processing/:domainKind/upload
+POST /app/async-processing/:domainKind/upload
 ```
 
 Recommended local storage shape:
@@ -48,7 +48,7 @@ The upload folder uses `uploadSessionId`, not `jobId`, because the upload layer 
 
 | Mode | Upload success behavior | Next step |
 | --- | --- | --- |
-| Deferred | Save `UploadSession`, return `{ uploadSessionId }` only | Client calls `POST .../start` |
+| Deferred | Save `UploadSession`, return `{ uploadSessionId }` only | Client calls `POST /app/async-processing/start` |
 | Auto-start | Emit `processing.start-requested` with trusted in-process sources | Event adapter calls `startProcessing` |
 
 Deferred is the default and safest model. The client never receives locators.
@@ -104,13 +104,13 @@ This keeps failed uploads from leaking into the async system.
 
 Target model:
 
-1. `POST /applications/:domainKind/upload/s3/initiate`
+1. `POST /app/:domainKind/upload/s3/initiate`
 2. Server validates `sourceId` and MIME policy.
 3. Server generates S3 object keys and presigned PUT URLs.
 4. Client uploads directly to S3.
-5. `POST /applications/:domainKind/upload/s3/complete`
+5. `POST /app/:domainKind/upload/s3/complete`
 6. Server saves `UploadSession` with object locators.
-7. Client calls `POST .../start` with `uploadSessionId`.
+7. Client calls `POST /app/async-processing/start` with `uploadSessionId`.
 
 Complete must not call `HeadObject`. The worker verifies object locators later.
 
@@ -118,16 +118,16 @@ Complete must not call `HeadObject`. The worker verifies object locators later.
 
 Target model:
 
-1. `POST /applications/:domainKind/upload/cos/initiate`
+1. `POST /app/:domainKind/upload/cos/initiate`
 2. Server validates `sourceId` and MIME policy.
 3. Server generates COS keys.
 4. Server issues scoped STS credentials for only the session prefix.
 5. Client uploads directly to COS.
-6. `POST /applications/:domainKind/upload/cos/complete`
+6. `POST /app/:domainKind/upload/cos/complete`
 7. Server saves `UploadSession` with COS object locators.
-8. Client calls `POST .../start` with `uploadSessionId`.
+8. Client calls `POST /app/async-processing/start` with `uploadSessionId`.
 
-Do not extend legacy generic COS upload APIs into this flow. Reuse only the credential patterns if useful.
+Implement this as a dedicated flow. Do not bolt object-store completion onto unrelated upload endpoints.
 
 ## Upload Layer Invariants
 

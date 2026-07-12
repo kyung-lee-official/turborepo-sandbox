@@ -55,10 +55,10 @@ The adapter receives upload-oriented `UploadSessionSources` and maps them to pro
 Recommended request:
 
 ```http
-POST /applications/async-processing/start
+POST /app/async-processing/start
 Content-Type: application/json
 
-{ "uploadSessionId": "sess_abc", "domainKind": "sales-report" }
+{ "uploadSessionId": "sess_abc", "domainKind": "invoice-import" }
 ```
 
 The body must be strict:
@@ -84,7 +84,7 @@ On active global singleton conflict:
 
 {
   "code": "PROCESSING_ACTIVE_JOB",
-  "message": "A processing job is already active for domainKind sales-report"
+  "message": "A processing job is already active for domainKind invoice-import"
 }
 ```
 
@@ -93,7 +93,7 @@ On active global singleton conflict:
 | Step | Behavior |
 | --- | --- |
 | Upload success | Save pending `UploadSession` |
-| `POST .../start` | Load session by `uploadSessionId` |
+| `POST /app/async-processing/start` | Load session by `uploadSessionId` |
 | `startProcessing` succeeds | Consume session, or store started ids for idempotent replay |
 | `startProcessing` fails | Keep session so the client can retry |
 | Session expired or missing | Return `404` |
@@ -126,7 +126,8 @@ function mapUploadSessionToStartInput(session: UploadSession): StartProcessingIn
     sources: Object.fromEntries(
       Object.entries(session.sources).map(([key, entry]) => {
         if (key !== entry.sourceId) {
-          throw new BadRequestException(`sourceId mismatch: ${key} vs ${entry.sourceId}`);
+          // Reject request — map keys must match entry.sourceId
+          throw new Error(`sourceId mismatch: ${key} vs ${entry.sourceId}`);
         }
 
         return [

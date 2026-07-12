@@ -1,6 +1,6 @@
 # How to Build an Async Processing System
 
-This book documents the async-processing system as a set of strictly separated layers. Each chapter explains one layer's responsibilities, boundaries, and invariants.
+This book documents a layered async processing architecture for a TypeScript server stack. Each chapter explains one layer's responsibilities, boundaries, and invariants.
 
 The most important boundary is `startProcessing`.
 

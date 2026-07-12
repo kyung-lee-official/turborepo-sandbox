@@ -18,37 +18,37 @@ The core never handles upload bytes and never hardcodes domain business rules.
 
 ## Core Storage
 
-| Store | Role |
-| --- | --- |
-| PostgreSQL | `ProcessingJob`, `ProcessingManifest`, `ProcessingJobError` |
-| Redis with BullMQ | Queue |
-| Redis pub/sub | Live progress and terminal events |
-| Redis lock | `global_singleton` admission per `domainKind` |
+| Store             | Role                                                                   |
+| ----------------- | ---------------------------------------------------------------------- |
+| PostgreSQL        | `ProcessingJob`, `ProcessingManifest`, `ProcessingJobError`            |
+| Redis with BullMQ | Queue                                                                  |
+| Redis pub/sub     | Live progress and terminal events                                      |
+| Redis lock        | `global_singleton` admission per `domainKind`                          |
 | Disk/object store | Input blobs produced by upload layer; worker deletes them in `finally` |
 
 ## Main Components
 
-| Component | Role |
-| --- | --- |
-| `ProcessingOrchestratorService` | Implements `startProcessing` |
-| `ProcessingJobRepository` | Creates jobs and manifests, claims/finalizes jobs |
-| `ProcessingJobErrorRepository` | Persists validation errors from domain results |
-| `DomainRegistry` | Maps `domainKind` to runner, source specs, lock policy, upload policy |
-| `ProcessingSourceReader` | Verifies, opens, and deletes locators |
-| `ProcessingProcessor` | BullMQ worker |
-| `ProcessingProgressPublisher` | Publishes progress and terminal events to Redis |
-| `ProcessingProgressSseService` | Streams job progress to clients |
-| `ProcessingActiveJobLock` | Redis `SET NX` lock for singleton domains |
+| Component                       | Role                                                                  |
+| ------------------------------- | --------------------------------------------------------------------- |
+| `ProcessingOrchestratorService` | Implements `startProcessing`                                          |
+| `ProcessingJobRepository`       | Creates jobs and manifests, claims/finalizes jobs                     |
+| `ProcessingJobErrorRepository`  | Persists validation errors from domain results                        |
+| `DomainRegistry`                | Maps `domainKind` to runner, source specs, lock policy, upload policy |
+| `ProcessingSourceReader`        | Verifies, opens, and deletes locators                                 |
+| `ProcessingProcessor`           | BullMQ worker                                                         |
+| `ProcessingProgressPublisher`   | Publishes progress and terminal events to Redis                       |
+| `ProcessingProgressSseService`  | Streams job progress to clients                                       |
+| `ProcessingActiveJobLock`       | Redis `SET NX` lock for singleton domains                             |
 | `ProcessingController` | Job list, job detail, SSE, error download |
 
 ## Persistence Model
 
 PostgreSQL stores durable job history. Three models form the core contract:
 
-| Model | Role |
-| --- | --- |
-| `ProcessingJob` | Lifecycle, terminal phase, outcome, aggregate counts |
-| `ProcessingManifest` | Frozen `sources` locators and optional `context` JSON |
+| Model                | Role                                                               |
+| -------------------- | ------------------------------------------------------------------ |
+| `ProcessingJob`      | Lifecycle, terminal phase, outcome, aggregate counts               |
+| `ProcessingManifest` | Frozen `sources` locators and optional `context` JSON              |
 | `ProcessingJobError` | One row per validation failure when outcome is `validation_failed` |
 
 Live progress stays in Redis; terminal state and counts stay on `ProcessingJob`. Errors are normalized rows, not blobs on the job row.
@@ -82,11 +82,11 @@ BullMQ payloads carry references only. Do not put sources, bytes, buffers, or la
 
 ## Processing Job Phases
 
-| Domain result or failure | DB phase | DB outcome |
-| --- | --- | --- |
-| Domain returns success | `complete` | `success` |
+| Domain result or failure         | DB phase   | DB outcome          |
+| -------------------------------- | ---------- | ------------------- |
+| Domain returns success           | `complete` | `success`           |
 | Domain returns validation errors | `complete` | `validation_failed` |
-| Uncaught failure | `failed` | `failed` |
+| Uncaught failure                 | `failed`   | `failed`            |
 
 Validation failures are successful job completion with collected non-critical errors.
 
@@ -162,7 +162,7 @@ When a domain returns `validation_failed`, the worker persists `ErrorDetail[]` t
 Recommended API:
 
 ```text
-GET /applications/async-processing/jobs/:jobId/errors
+GET /app/async-processing/jobs/:jobId/errors
 ```
 
 Serve persisted job errors as NDJSON (`application/x-ndjson`). Optional XLSX exports can be built with shared import utilities, but the worker should persist structured errors, not blobs.
@@ -173,7 +173,7 @@ Serve persisted job errors as NDJSON (`application/x-ndjson`). Optional XLSX exp
 - Core does not know upload session details.
 - Job history lives in the database, not only Redis.
 - Manifest locators are frozen before enqueue.
-- Queue payload carries references only.
+- BullMQ payload carries references only.
 - Worker claims jobs with a single-winner conditional update.
 - Worker verifies locators before domain run.
 - Domain run and finalize are not wrapped in one broad catch.

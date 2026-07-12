@@ -17,11 +17,11 @@ async processing core
 
 Plugins do not call `startProcessing`. Plugins do not know `domainKind`. Plugins do not persist jobs.
 
-## Import Shared
+## Shared Import Utilities
 
-`import-shared` is the common vocabulary for imports.
+Shared import utilities are the common vocabulary for imports.
 
-It owns:
+They own:
 
 - `ErrorDetail`
 - Domain progress types and helpers
@@ -30,21 +30,16 @@ It owns:
 - Processing job error NDJSON builder
 - Common exported sheet formatting helpers
 
-Recommended location:
+Keep shared utilities cross-format. They should not contain XLSX-only or JSONL-only parser behavior.
 
-```text
-apps/nest-app/src/import/shared/
-  import-error.types.ts
-  domain-processing.types.ts
-  report-domain-progress.ts
-  create-throttled-domain-progress.ts
-  percent-from-counts.ts
-  build-validation-error-xlsx.ts
-  build-processing-job-errors-jsonl.ts
-  apply-exported-sheet-view.ts
-```
+Typical responsibilities to split into small modules:
 
-`import-shared` is cross-format. It should not contain XLSX-only or JSONL-only parser behavior.
+| Module concern           | Examples                                                |
+| ------------------------ | ------------------------------------------------------- |
+| Error and progress types | `ErrorDetail`, domain progress payloads                 |
+| Progress helpers         | throttled callbacks, percent-from-counts                |
+| Error export             | validation error XLSX builder, job error NDJSON builder |
+| Sheet export defaults    | freeze header row, enable auto-filter on export sheets  |
 
 ## Tabular XLSX Plugin
 
@@ -88,7 +83,7 @@ It owns:
 - Splitting lines.
 - Handling CRLF and UTF-8 BOM.
 - Skipping blank lines.
-- `JSON.parse` per line.
+- Parsing one JSON value per line.
 - Rejecting non-object lines.
 - Trimming top-level string values.
 - Parse-time `ErrorDetail` creation.
@@ -106,38 +101,40 @@ For JSONL, `rowNumber` means the 1-based physical line number.
 
 ## Plugin Progress vs Domain Progress
 
-| Progress phase | Emitted by | Meaning |
-| --- | --- | --- |
-| `parsing_workbook` | XLSX plugin | Workbook/sheet parsing progress |
-| `parsing_lines` | JSONL plugin | JSONL line parsing progress |
-| `loading_source` | Domain | Domain is preparing a source |
-| `validating_rows` | Domain | Domain business validation progress |
-| `saving_database` | Domain | Domain persistence progress |
+| Progress phase     | Emitted by   | Meaning                             |
+| ------------------ | ------------ | ----------------------------------- |
+| `parsing_workbook` | XLSX plugin  | Workbook/sheet parsing progress     |
+| `parsing_lines`    | JSONL plugin | JSONL line parsing progress         |
+| `loading_source`   | Domain       | Domain is preparing a source        |
+| `validating_rows`  | Domain       | Domain business validation progress |
+| `saving_database`  | Domain       | Domain persistence progress         |
 
 Clients should discriminate progress events by `phase`.
 
 ## Error Responsibilities
 
-| Error type | Owner |
-| --- | --- |
-| Bad XLSX sheet/header/cell shape | XLSX plugin, scoped with shared `ErrorDetail` |
-| Bad JSONL syntax/non-object line | JSONL plugin, scoped with shared `ErrorDetail` |
-| Business rule failure | Domain runner |
-| Persisting errors to DB | Async-processing worker after domain returns |
-| Downloading persisted job errors | Async-processing controller |
-| Optional XLSX export of errors | `import-shared` utility, called by an API or domain-specific export path |
+| Error type                       | Owner                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| Bad XLSX sheet/header/cell shape | XLSX plugin, scoped with shared `ErrorDetail`                            |
+| Bad JSONL syntax/non-object line | JSONL plugin, scoped with shared `ErrorDetail`                           |
+| Business rule failure            | Domain runner                                                            |
+| Persisting errors to DB          | Async-processing worker after domain returns                             |
+| Downloading persisted job errors | `ProcessingController`                                                   |
+| Optional XLSX export of errors   | Shared import utilities, called by an API or domain-specific export path |
 
 ## Recommended Module Layout
 
+Organize import code into three areas:
+
 ```text
-apps/nest-app/src/import/
-  shared/
+import/
+  shared/          # cross-format types and helpers
   plugins/
-    tabular-xlsx/
-    jsonl/
+    tabular-xlsx/  # XLSX parsing only
+    jsonl/         # JSONL parsing only
 ```
 
-Avoid barrel `index.ts` exports in these plugin folders. Import concrete files so dependencies stay obvious.
+Avoid re-export barrels that hide which plugin or helper a caller depends on.
 
 ## Plugin Invariants
 
@@ -149,4 +146,4 @@ Avoid barrel `index.ts` exports in these plugin folders. Import concrete files s
 - Plugins do not know `domainKind`.
 - Plugins do not persist business data.
 - Plugins create parse errors; domains create business errors.
-- Shared import types live in `import/shared`, not inside one plugin.
+- Shared import types live in shared utilities, not inside one plugin.

@@ -2,7 +2,7 @@
 
 This appendix is the canonical reference for the async-processing persistence layer. Layer 3 describes how the core reads and writes these models; this document defines the schema.
 
-Place these models in your API application's Prisma schema (for example a shared `packages/database` package). Domain-specific result tables are out of scope here; they belong in the domain business layer and may reference `ProcessingJob.id` as a foreign key.
+Place these models in your API application's database schema. Domain-specific result tables are out of scope here; they belong in the domain business layer and may reference `ProcessingJob.id` as a foreign key.
 
 ## What PostgreSQL Owns
 
@@ -86,7 +86,7 @@ Validation failures are **completed** jobs (`phase: complete`, `outcome: validat
 
 ```prisma
 /**
- * async-processing — durable job lifecycle and input snapshot
+ * Processing jobs — durable job lifecycle and input snapshot
  * Live progress in Redis; terminal state and counts here
  */
 enum ProcessingPhase {
@@ -152,7 +152,7 @@ model ProcessingJobError {
 }
 ```
 
-After schema edits, run **`prisma generate`** so TypeScript matches the models. Create and apply migrations yourself (for example `bunx prisma migrate dev --name add_processing_models`).
+After schema edits, run **`prisma generate`** so application types match the models. Create and apply migrations yourself (for example `prisma migrate dev --name add_processing_models`).
 
 ## Field Notes
 

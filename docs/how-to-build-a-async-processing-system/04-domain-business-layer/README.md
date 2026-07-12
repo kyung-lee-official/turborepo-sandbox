@@ -21,21 +21,21 @@ The domain layer does not start jobs. It runs because the core selected its regi
 Domains register with `DomainRegistry`.
 
 ```ts
-domainRegistry.register("sales-report", {
-  domainRunner: salesReportRunner,
+domainRegistry.register("invoice-import", {
+  domainRunner: invoiceImportRunner,
   sourceSpecs: [
-    { sourceId: "salesData", required: true },
-    { sourceId: "inventory", required: true },
-    { sourceId: "productDescriptions", required: false },
+    { sourceId: "primaryData", required: true },
+    { sourceId: "referenceData", required: true },
+    { sourceId: "descriptions", required: false },
   ],
   lockPolicy: { type: "global_singleton" },
   upload: {
     allowedMimeBySourceId: {
-      salesData: [
+      primaryData: [
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/octet-stream",
       ],
-      productDescriptions: [
+      descriptions: [
         "application/x-ndjson",
         "application/json",
         "application/octet-stream",
@@ -120,8 +120,8 @@ Example progress payload:
 ```ts
 {
   phase: "validating_rows",
-  sourceId: "salesData",
-  originalName: "sales.xlsx",
+  sourceId: "primaryData",
+  originalName: "data.xlsx",
   totalCount: 10000,
   processedCount: 5200,
   validCount: 5100,
@@ -136,18 +136,18 @@ Format plugins are helpers, not orchestrators.
 
 Typical XLSX flow:
 
-1. Get `source = sources.get("salesData")`.
+1. Get `source = sources.get("primaryData")`.
 2. `stream = await io.openStream(source)`.
-3. Use `import/plugins/tabular-xlsx` helpers to load workbook and parse sheet rows.
+3. Use the tabular XLSX plugin to load the workbook and parse sheet rows.
 4. In `onRow`, apply business validation and persistence.
 5. Scope parse and business errors with shared import utilities.
 6. Return `success` or `validation_failed`.
 
 Typical JSONL flow:
 
-1. Get `source = sources.get("productDescriptions")`.
+1. Get `source = sources.get("descriptions")`.
 2. `stream = await io.openStream(source)`.
-3. Use `import/plugins/jsonl` helpers to parse line-delimited JSON.
+3. Use the JSONL plugin to parse line-delimited JSON.
 4. In `onLine`, apply business validation and persistence.
 5. Return collected errors if any.
 
@@ -162,7 +162,7 @@ The domain owns business persistence. It should:
 
 ## Domain Invariants
 
-- Domain code lives under `applications/<domain>/`.
+- Domain code lives in a dedicated module per `domainKind`.
 - Domain modules register with `DomainRegistry`.
 - Domain code does not create processing jobs.
 - Domain code does not acquire active locks.
