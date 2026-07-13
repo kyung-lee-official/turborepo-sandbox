@@ -2,7 +2,7 @@
 
 This appendix collects tunables, queue names, Redis key patterns, and HTTP sentinel values for the async processing system. Constants are grouped by the same layers as the main book.
 
-Type definitions live in [Appendix B: Shared Types](../appendix-b-shared-types/README.md). Persistence models live in [Appendix A: Prisma Data Model](../appendix-a-prisma-data-model/README.md).
+Type definitions live in [Appendix B: Shared Types](../appendix-b-shared-types/README.md). Persistence models live in [Appendix A: Prisma Data Model](../appendix-a-prisma-data-model/README.md). Zod schemas live in [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md).
 
 These files are documentation references. Copy or adapt them into your application; they are not wired into the monorepo build.
 
@@ -153,7 +153,7 @@ Constants do not define routes; Layer chapters do. Related endpoints:
 | ------------------------------------------------------------ | ------------------------------------------------------- |
 | DTOs and progress types                                      | [Appendix B](../appendix-b-shared-types/README.md)      |
 | Prisma models                                                | [Appendix A](../appendix-a-prisma-data-model/README.md) |
-| Zod validation schemas                                       | Future appendix or Layer 2                              |
+| Zod validation schemas                                       | [Appendix D](../appendix-d-validation-schemas/README.md) |
 | Implementation patterns (Lua release script, SSE subscriber) | Layer 3                                                 |
 
 ## See Also

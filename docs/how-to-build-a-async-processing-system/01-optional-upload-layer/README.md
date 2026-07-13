@@ -87,6 +87,8 @@ Target model:
 
 Complete must not call `HeadObject`. The worker verifies object locators later.
 
+Initiate and complete JSON body schemas: [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md).
+
 ## Future Stub: Tencent COS Direct Upload
 
 Target model:

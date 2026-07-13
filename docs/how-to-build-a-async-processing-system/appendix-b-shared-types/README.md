@@ -2,7 +2,7 @@
 
 This appendix is the canonical TypeScript type reference for the async processing system. Types are grouped by the same layers as the main book. Layer chapters explain behavior; the `.ts` files in each folder define that layer's DTOs and payloads.
 
-Database enums and models for `ProcessingJob` align with [Appendix A: Prisma Data Model](../appendix-a-prisma-data-model/README.md).
+Database enums and models for `ProcessingJob` align with [Appendix A: Prisma Data Model](../appendix-a-prisma-data-model/README.md). Zod validation schemas live in [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md).
 
 These files are documentation references. Copy or adapt them into your application; they are not wired into the monorepo build.
 
@@ -235,6 +235,6 @@ Clients discriminate live progress by `progress.phase`.
 | Concern                                          | Document                                                |
 | ------------------------------------------------ | ------------------------------------------------------- |
 | Prisma models and DB enums                       | [Appendix A](../appendix-a-prisma-data-model/README.md) |
-| Zod schemas for start API and events             | Layer 2 (future appendix)                               |
+| Zod schemas for HTTP, events, and domain context | [Appendix D](../appendix-d-validation-schemas/README.md)  |
 | Default TTLs, queue name, Redis channel prefixes | [Appendix C](../appendix-c-constants/README.md) |
 | Repository and worker implementation patterns    | Layer 3                                                 |

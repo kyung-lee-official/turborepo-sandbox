@@ -53,3 +53,4 @@ Implementation details that would interrupt layer narratives live in appendices:
 | [A. Prisma Data Model](./appendix-a-prisma-data-model/README.md) | `ProcessingJob`, `ProcessingManifest`, `ProcessingJobError` |
 | [B. Shared Types](./appendix-b-shared-types/README.md)           | Cross-layer DTOs, locators, progress, `DomainRunResult`     |
 | [C. Constants and Redis Keys](./appendix-c-constants/README.md) | Queue names, TTLs, Redis key patterns, BullMQ options       |
+| [D. Validation Schemas](./appendix-d-validation-schemas/README.md) | Zod schemas for HTTP bodies, queries, events, domain context |

@@ -59,6 +59,8 @@ Cross-layer DTOs and progress types: [Appendix B: Shared Types](../appendix-b-sh
 
 Constants, Redis keys, and tunables: [Appendix C: Constants and Redis Keys](../appendix-c-constants/README.md).
 
+Validation schemas for `GET /app/async-processing/jobs` query params: [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md). Orchestrator `sourceSpecs` checks stay in code, not Zod.
+
 ## Job and Manifest
 
 The manifest is a frozen snapshot of the sources and context for the worker. BullMQ carries an `AsyncProcessingJobPayload` with references only (see [Appendix B](../appendix-b-shared-types/README.md)). Do not put sources, bytes, buffers, or large context into the queue payload.

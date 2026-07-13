@@ -54,6 +54,8 @@ The body must be strict:
 - Reject client-supplied `context`.
 - Load canonical `sources` and `context` from `UploadSessionStore`.
 
+Zod schemas: [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md).
+
 On success:
 
 ```http

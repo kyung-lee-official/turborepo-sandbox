@@ -56,6 +56,8 @@ Registration is the domain's public contract:
 
 The core invokes a registered `DomainRunner` with `DomainRunnerIo`. The core owns `openStream` because the core owns verified locators. See [Appendix B](../appendix-b-shared-types/README.md).
 
+Parse `io.context` with a domain-owned Zod schema at the start of `run`. Example pattern: [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md).
+
 ## Domain Result
 
 Return `DomainRunResult` with `success` or `validation_failed`. Use `validation_failed` for row-level or record-level non-critical errors where valid records were still processed. Throw only for critical failures that should mark the whole job as failed.

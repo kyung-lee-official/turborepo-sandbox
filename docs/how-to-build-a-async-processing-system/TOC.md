@@ -14,6 +14,7 @@
 A. [Prisma Data Model](./appendix-a-prisma-data-model/README.md)
 B. [Shared Types](./appendix-b-shared-types/README.md)
 C. [Constants and Redis Keys](./appendix-c-constants/README.md)
+D. [Validation Schemas](./appendix-d-validation-schemas/README.md)
 
 ## Main Control Flow
 
