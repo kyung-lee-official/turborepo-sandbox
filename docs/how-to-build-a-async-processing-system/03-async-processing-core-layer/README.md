@@ -61,7 +61,7 @@ Cross-layer DTOs and progress types: [Appendix B: Shared Types](../appendix-b-sh
 
 Constants, Redis keys, and tunables: [Appendix C: Constants and Redis Keys](../appendix-c-constants/README.md).
 
-Validation schemas for `GET jobs` query params: [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md). Orchestrator `sourceSpecs` checks stay in code, not Zod.
+Validation schemas for `GET /app/async-processing/jobs` query params: [Appendix D: Validation Schemas](../appendix-d-validation-schemas/README.md). Orchestrator `sourceSpecs` checks stay in code, not Zod.
 
 ## Job and Manifest
 
@@ -652,7 +652,7 @@ Call this in the pre-domain try scope after `getManifestByManifestId` and before
 
 ## Progress and SSE
 
-Progress is live data, not job history. Job phase changes are **not** pub/sub events — clients rely on connect snapshot, idle DB reload, or `GET jobs/:jobId`.
+Progress is live data, not job history. Job phase changes are **not** pub/sub events — clients rely on connect snapshot, idle DB reload, or `GET /app/async-processing/jobs/:jobId`.
 
 - Worker calls `io.onProgress`.
 - Core publishes to `progressChannel(jobId)` and terminal events to `terminalChannel(jobId)` (see [Appendix C](../appendix-c-constants/README.md)).
@@ -756,16 +756,16 @@ streamJobEvents(jobId: string): Observable<MessageEvent> {
 
 | Method | Path                                       | Response                        |
 | ------ | ------------------------------------------ | ------------------------------- |
-| `GET`  | `jobs`               | Paginated list                  |
-| `GET`  | `jobs/:jobId`        | Job snapshot                    |
-| `GET`  | `jobs/:jobId/events` | SSE stream                      |
-| `GET`  | `jobs/:jobId/errors` | NDJSON when `validation_failed` |
+| `GET`  | `/app/async-processing/jobs`               | Paginated list                  |
+| `GET`  | `/app/async-processing/jobs/:jobId`        | Job snapshot                    |
+| `GET`  | `/app/async-processing/jobs/:jobId/events` | SSE stream                      |
+| `GET`  | `/app/async-processing/jobs/:jobId/errors` | NDJSON when `validation_failed` |
 
 List query validation: [Appendix D](../appendix-d-validation-schemas/README.md).
 
 ### Implementation pattern: `ProcessingController`
 
-Mount job routes with `@Controller("jobs")` at the application root (sandbox pattern). Upload and start use `@Controller("applications/async-processing")` in Layer 1 and Layer 2. Parse list query with Zod; map DB rows to a stable JSON DTO; stream SSE through `ProcessingProgressSseService`; serve errors as NDJSON attachment.
+Mount job routes with `@Controller("jobs")` under global prefix `app/async-processing`. Upload and start use `@Controller("app/async-processing")` in Layer 1 and Layer 2. Parse list query with Zod; map DB rows to a stable JSON DTO; stream SSE through `ProcessingProgressSseService`; serve errors as NDJSON attachment.
 
 ```typescript
 @Controller("jobs")
@@ -846,7 +846,9 @@ export class ProcessingController {
 Keep HTTP shapes separate from Prisma models. Expose ISO timestamps and a `hasErrors` flag for list UIs.
 
 ```typescript
-function mapProcessingJobToResponse(job: ProcessingJob): ProcessingJobResponseDto {
+function mapProcessingJobToResponse(
+  job: ProcessingJob,
+): ProcessingJobResponseDto {
   return {
     jobId: job.id,
     domainKind: job.domainKind,
@@ -973,7 +975,7 @@ export class AsyncProcessingCoreModule {}
 - [ ] buildVerifiedSources before domainRunner.run; delete locators in finally
 - [ ] finalizeSuccess persists batched errors when validation_failed
 - [ ] ProcessingController: list, detail, SSE, NDJSON errors
-- [ ] listProcessingJobsQuerySchema Zod parse on GET jobs
+- [ ] listProcessingJobsQuerySchema Zod parse on GET /app/async-processing/jobs
 - [ ] Dedicated Redis subscriber per SSE stream; idle DB reload fallback
 - [ ] BullMQ payload refs only (jobId, domainKind, manifestId)
 ```

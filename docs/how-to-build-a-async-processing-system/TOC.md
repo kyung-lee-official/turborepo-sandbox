@@ -19,6 +19,10 @@ B. [Shared Types](./appendix-b-shared-types/README.md)
 C. [Constants and Redis Keys](./appendix-c-constants/README.md)
 D. [Validation Schemas](./appendix-d-validation-schemas/README.md)
 
+## HTTP API (book convention)
+
+All illustrative routes use the `/app/async-processing` prefix. See [Appendix C — HTTP Routes](./appendix-c-constants/README.md#http-routes-reference).
+
 ## Main Control Flow
 
 ```text

@@ -25,7 +25,7 @@ appendix-d-validation-schemas/
 | -------- | ----------------------------------------------- | ----------------------------------------------- |
 | Upload   | Object-store initiate/complete JSON bodies      | Multipart files, MIME allowlists, `sourceSpecs` |
 | Adapters | `POST .../start` body, auto-start event payload | Map key equals `entry.sourceId` after parse     |
-| Core     | `GET .../jobs` query params                     | Required `sourceSpecs` in orchestrator          |
+| Core     | `GET /app/async-processing/jobs` query params   | Required `sourceSpecs` in orchestrator          |
 | Domain   | `io.context` per domain schema                  | Business rules on parsed rows/lines             |
 
 Adapters must **not** duplicate orchestrator `sourceSpecs` checks. Upload ingest must **not** call `startProcessing`.
@@ -48,10 +48,10 @@ Used by adapter event payload and object-store session building.
 
 [`01-optional-upload-layer/object-store-upload.schema.ts`](./01-optional-upload-layer/object-store-upload.schema.ts)
 
-| Schema                                | HTTP route                                                      | Role                                         |
-| ------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
-| `objectStoreUploadInitiateBodySchema` | `POST applications/async-processing/:domainKind/upload/{s3,cos,aliyun-oss}/initiate` | Client file metadata before presigned upload |
-| `objectStoreUploadCompleteBodySchema` | `POST applications/async-processing/:domainKind/upload/{s3,cos,aliyun-oss}/complete` | Confirm uploaded files and optional sizes    |
+| Schema                                | HTTP route                                                                   | Role                                         |
+| ------------------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------- |
+| `objectStoreUploadInitiateBodySchema` | `POST /app/async-processing/:domainKind/upload/{s3,cos,aliyun-oss}/initiate` | Client file metadata before presigned upload |
+| `objectStoreUploadCompleteBodySchema` | `POST /app/async-processing/:domainKind/upload/{s3,cos,aliyun-oss}/complete` | Confirm uploaded files and optional sizes    |
 
 Multipart local upload does not use a JSON body schema. File field names are `sourceId` values; non-file form fields become `context` (see [Appendix C](../appendix-c-constants/README.md) reserved keys).
 
@@ -95,7 +95,7 @@ Chapter: [Layer 2](../02-start-processing-adapter-layer/README.md)
 
 | Schema                          | HTTP route                       | Role                                                       |
 | ------------------------------- | -------------------------------- | ---------------------------------------------------------- |
-| `listProcessingJobsQuerySchema` | `GET jobs` | `phase` (comma-separated), `domainKind`, `limit`, `cursor` |
+| `listProcessingJobsQuerySchema` | `GET /app/async-processing/jobs` | `phase` (comma-separated), `domainKind`, `limit`, `cursor` |
 
 ### Orchestrator source validation (not Zod)
 
@@ -104,7 +104,7 @@ Chapter: [Layer 2](../02-start-processing-adapter-layer/README.md)
 - Every `required: true` spec must have a matching `sources[sourceId]`.
 - Each entry's `sourceId` must match its map key.
 
-`GET jobs/:jobId` and SSE have no request body schema. Job errors download returns NDJSON built from persisted rows.
+`GET /app/async-processing/jobs/:jobId` and SSE have no request body schema. Job errors download returns NDJSON built from persisted rows.
 
 Chapter: [Layer 3](../03-async-processing-core-layer/README.md)
 

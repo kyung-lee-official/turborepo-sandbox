@@ -85,7 +85,7 @@ Domain phases are separate from plugin phases (`parsing_workbook`, `parsing_line
 | `validating_rows` | Row/line validation loop  | Throttled — `createThrottledDomainProgressReporter` |
 | `saving_database` | Persistence loop          | Throttled                                           |
 
-Use `DOMAIN_PROGRESS_THROTTLE_MS` from [Appendix C](../appendix-c-constants/README.md) as the default interval (1000 ms). Sandbox exports the same value as `DOMAIN_PROGRESS_EMIT_INTERVAL_MS` from `create-throttled-domain-progress.ts`.
+Use `DOMAIN_PROGRESS_THROTTLE_MS` from [Appendix C](../appendix-c-constants/README.md) as the default interval (1000 ms). Implementations may export the same value as `DOMAIN_PROGRESS_EMIT_INTERVAL_MS` from `create-throttled-domain-progress.ts`.
 
 Throttled reporters use a **trailing timer**: when `report` is called inside the interval, schedule one deferred emit with the latest counts instead of dropping the update. Call **`flush`** at phase end to cancel any pending timer and emit final counts with `percent`.
 
@@ -121,10 +121,10 @@ async function reportDomainProgress(
 
 Use for `validating_rows` and `saving_database`.
 
-| Method   | Behavior |
-| -------- | -------- |
+| Method   | Behavior                                                                                                                                                                            |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `report` | Store latest counts. If `intervalMs` has elapsed since the last emit, emit now. Otherwise schedule a **trailing** emit so clients still receive updates without spamming every row. |
-| `flush`  | Cancel any pending trailing timer and emit immediately — call at phase end so final counts and `percent` reach clients. |
+| `flush`  | Cancel any pending trailing timer and emit immediately — call at phase end so final counts and `percent` reach clients.                                                             |
 
 Every emit includes `percent` from `percentFromCounts(processedCount, totalCount)`.
 
@@ -206,7 +206,7 @@ function percentFromCounts(processedCount: number, totalCount: number): number {
 
 ## Job Errors NDJSON
 
-Used by `ProcessingController` for `GET jobs/:jobId/errors`. The worker persists structured rows; this helper formats the HTTP response.
+Used by `ProcessingController` for `GET /app/async-processing/jobs/:jobId/errors`. The worker persists structured rows; this helper formats the HTTP response.
 
 ```typescript
 type ProcessingJobErrorsHeader = {
@@ -310,7 +310,7 @@ No `index.ts` barrel.
 - [ ] createThrottledDomainProgressReporter for validating_rows / saving_database
 - [ ] Throttled reporter: trailing timer within intervalMs; percent on every emit
 - [ ] flush throttled reporter at phase end (cancel trailing timer, final counts)
-- [ ] buildProcessingJobErrorsJsonl on GET jobs/:jobId/errors (Layer 3 controller)
+- [ ] buildProcessingJobErrorsJsonl on GET /app/async-processing/jobs/:jobId/errors (Layer 3 controller)
 - [ ] Optional error XLSX uses applyDefaultExportedSheetView
 - [ ] No index.ts barrel in import/shared
 ```

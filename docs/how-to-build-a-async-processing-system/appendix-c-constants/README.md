@@ -127,7 +127,7 @@ Chapter: [Layer 3: Async Processing Core Layer](../03-async-processing-core-laye
 | ----------------------------- | ------- | -------------------------------------------------------------------------------------------- |
 | `DOMAIN_PROGRESS_THROTTLE_MS` | 1000    | Min gap between `validating_rows` / `saving_database` emissions; trailing timer fills gaps |
 
-Sandbox implementation: `DOMAIN_PROGRESS_EMIT_INTERVAL_MS` in `import/shared/create-throttled-domain-progress.ts` (same value).
+Implementations may export the same value as `DOMAIN_PROGRESS_EMIT_INTERVAL_MS` from `create-throttled-domain-progress.ts`.
 
 Use immediate progress for `loading_source` (no throttle). Throttled reporters also schedule a deferred emit when `report` is called inside the interval — see [import-shared.md](../05-import-plugin-support-layer/import-shared.md). See progress phases in [Appendix B](../appendix-b-shared-types/README.md).
 
@@ -137,22 +137,22 @@ Chapter: [Layer 4: Domain Business Layer](../04-domain-business-layer/README.md)
 
 ## HTTP Routes (reference)
 
-Sandbox mounts upload and start on one controller prefix; job list, detail, SSE, and errors use a separate `jobs` controller.
+Book convention: upload and start share `@Controller("app/async-processing")`. Job routes use `@Controller("jobs")` under global prefix `app/async-processing`.
 
 | Method | Path |
 | ------ | ---- |
-| `POST` | `applications/async-processing/:domainKind/upload` |
-| `POST` | `applications/async-processing/:domainKind/upload/s3/initiate` |
-| `POST` | `applications/async-processing/:domainKind/upload/s3/complete` |
-| `POST` | `applications/async-processing/:domainKind/upload/cos/initiate` |
-| `POST` | `applications/async-processing/:domainKind/upload/cos/complete` |
-| `POST` | `applications/async-processing/:domainKind/upload/aliyun-oss/initiate` |
-| `POST` | `applications/async-processing/:domainKind/upload/aliyun-oss/complete` |
-| `POST` | `applications/async-processing/start` |
-| `GET`  | `jobs` |
-| `GET`  | `jobs/:jobId` |
-| `GET`  | `jobs/:jobId/events` |
-| `GET`  | `jobs/:jobId/errors` |
+| `POST` | `/app/async-processing/:domainKind/upload` |
+| `POST` | `/app/async-processing/:domainKind/upload/s3/initiate` |
+| `POST` | `/app/async-processing/:domainKind/upload/s3/complete` |
+| `POST` | `/app/async-processing/:domainKind/upload/cos/initiate` |
+| `POST` | `/app/async-processing/:domainKind/upload/cos/complete` |
+| `POST` | `/app/async-processing/:domainKind/upload/aliyun-oss/initiate` |
+| `POST` | `/app/async-processing/:domainKind/upload/aliyun-oss/complete` |
+| `POST` | `/app/async-processing/start` |
+| `GET`  | `/app/async-processing/jobs` |
+| `GET`  | `/app/async-processing/jobs/:jobId` |
+| `GET`  | `/app/async-processing/jobs/:jobId/events` |
+| `GET`  | `/app/async-processing/jobs/:jobId/errors` |
 
 ---
 

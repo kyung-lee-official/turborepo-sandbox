@@ -72,7 +72,7 @@ Chapter: [Layer 1: Optional Upload Layer](../01-optional-upload-layer/README.md)
 | `ProcessingStartRequestedPayload` | Auto-start event payload (in-process only)            |
 | `StartProcessingInput`            | Canonical input to `startProcessing`                  |
 | `ProcessingSource`                | One manifest source (`label` replaces `originalName`) |
-| `StartApiBody`                    | `POST applications/async-processing/start` body               |
+| `StartApiBody`                    | `POST /app/async-processing/start` body               |
 | `StartProcessingResult`           | `202` response (`jobId`, `manifestId`)                |
 
 ### Upload to processing field mapping
@@ -175,7 +175,7 @@ Chapter: [Layer 4: Domain Business Layer](../04-domain-business-layer/README.md)
 
 ### Error download
 
-`GET jobs/:jobId/errors` returns `application/x-ndjson`: line 1 is `ProcessingJobErrorsHeader`, lines 2..N are one `ErrorDetail` per line.
+`GET /app/async-processing/jobs/:jobId/errors` returns `application/x-ndjson`: line 1 is `ProcessingJobErrorsHeader`, lines 2..N are one `ErrorDetail` per line.
 
 Worker persists `ErrorDetail` rows on `validation_failed`. Domain returns `errors` in memory; core does not accept error blobs from the domain.
 
@@ -232,12 +232,12 @@ Clients discriminate live progress by `progress.phase`.
 
 ## What Belongs Outside This Appendix
 
-| Concern                                             | Document                                                  |
-| --------------------------------------------------- | --------------------------------------------------------- |
-| Prisma models and DB enums                          | [Appendix A](../appendix-a-prisma-data-model/README.md)   |
-| Zod schemas for HTTP, events, and domain context    | [Appendix D](../appendix-d-validation-schemas/README.md)  |
-| Default TTLs, queue name, Redis channel prefixes    | [Appendix C](../appendix-c-constants/README.md)           |
-| Adapter implementation patterns (store, adapters)   | [Layer 2](../02-start-processing-adapter-layer/README.md) |
-| Upload implementation patterns (multipart, S3, COS) | [Layer 1](../01-optional-upload-layer/README.md)          |
+| Concern                                                     | Document                                                     |
+| ----------------------------------------------------------- | ------------------------------------------------------------ |
+| Prisma models and DB enums                                  | [Appendix A](../appendix-a-prisma-data-model/README.md)      |
+| Zod schemas for HTTP, events, and domain context            | [Appendix D](../appendix-d-validation-schemas/README.md)     |
+| Default TTLs, queue name, Redis channel prefixes            | [Appendix C](../appendix-c-constants/README.md)              |
+| Adapter implementation patterns (store, adapters)           | [Layer 2](../02-start-processing-adapter-layer/README.md)    |
+| Upload implementation patterns (multipart, S3, COS)         | [Layer 1](../01-optional-upload-layer/README.md)             |
 | Plugin implementation patterns (import-shared, XLSX, JSONL) | [Support Layer](../05-import-plugin-support-layer/README.md) |
-| Repository and worker implementation patterns       | [Layer 3](../03-async-processing-core-layer/README.md)    |
+| Repository and worker implementation patterns               | [Layer 3](../03-async-processing-core-layer/README.md)       |

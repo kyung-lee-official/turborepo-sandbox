@@ -91,7 +91,7 @@ Adapters output `StartProcessingInput` with `ProcessingSource` entries mapped fr
 
 **Default (recommended): session-backed start**
 
-The client must not echo locators on `POST applications/async-processing/start`. The client sends `uploadSessionId` and optionally `domainKind` for verification. The API adapter loads `UploadSession` server-side and builds `StartProcessingInput` from stored `sources` and optional `context`.
+The client must not echo locators on `POST /app/async-processing/start`. The client sends `uploadSessionId` and optionally `domainKind` for verification. The API adapter loads `UploadSession` server-side and builds `StartProcessingInput` from stored `sources` and optional `context`.
 
 Parse with `startApiBodySchema.strict()` — reject bodies that include client `sources` or `context`.
 
@@ -102,7 +102,7 @@ Parse with `startApiBodySchema.strict()` — reject bodies that include client `
 Recommended request:
 
 ```http
-POST applications/async-processing/start
+POST /app/async-processing/start
 Content-Type: application/json
 
 { "uploadSessionId": "sess_abc", "domainKind": "invoice-import" }
@@ -134,7 +134,7 @@ Use `PROCESSING_ACTIVE_JOB_ERROR_CODE` from [Appendix C](../appendix-c-constants
 | Step                                         | Behavior                                                                                              |
 | -------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | Upload success                               | `UploadSessionStore.save` — session pending                                                           |
-| `POST applications/async-processing/start`           | `get` — must exist and `expiresAt` in future                                                          |
+| `POST /app/async-processing/start`           | `get` — must exist and `expiresAt` in future                                                          |
 | `startProcessing` succeeds                   | `consume` (recommended) **or** set `startedJobId` / `startedManifestId` and return same ids on replay |
 | `startProcessing` fails (409, enqueue error) | **Keep session** — client may retry with same `uploadSessionId`                                       |
 | Second start after `consume`                 | `get` returns null — **404**; client must re-upload                                                   |
@@ -264,7 +264,7 @@ Controllers and subscribers forward **raw** input (`unknown`). Only adapters cal
 ### Implementation pattern: API controller
 
 ```typescript
-@Controller("applications/async-processing")
+@Controller("app/async-processing")
 class StartProcessingController {
   @Post("start")
   @HttpCode(202)
@@ -381,7 +381,7 @@ Upload progress (Layer 1) is separate from job SSE ([Layer 3](../03-async-proces
 
 | Mode                       | Ingest action                                           | Start path                                |
 | -------------------------- | ------------------------------------------------------- | ----------------------------------------- |
-| Deferred (default)         | `UploadSessionStore.save`, return `{ uploadSessionId }` | Client `POST applications/async-processing/start` |
+| Deferred (default)         | `UploadSessionStore.save`, return `{ uploadSessionId }` | Client `POST /app/async-processing/start` |
 | autoStart (optional local) | Emit `{ domainKind, sources, context? }` in-process     | Event adapter                             |
 
 Object-store uploads (S3/COS) default to deferred — no `autoStart` unless explicitly designed.

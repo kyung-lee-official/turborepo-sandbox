@@ -200,15 +200,15 @@ On `validation_failed`, the worker calls `ProcessingJobErrorRepository.createMan
 
 These interfaces map directly to the schema:
 
-| Method                    | Models touched                                                    |
-| ------------------------- | ----------------------------------------------------------------- |
-| `createQueued`            | Creates `ProcessingJob` + `ProcessingManifest` in one transaction |
-| `claimProcessingPhase`    | Conditional update `queued` to `processing` (single winner)       |
-| `finalize`                | Sets terminal `phase`, `outcome`, counts, `completedAt`           |
-| `getManifestByManifestId` | Loads manifest for worker by BullMQ `manifestId`                  |
-| `createManyFromErrors`    | Inserts `ProcessingJobError` rows with `sequence`                 |
-| `listPayloadsByJobId`     | Reads errors ordered by `sequence` for `GET jobs/:jobId/errors`   |
-| `deleteById`              | Deletes job; cascade removes manifest and errors                  |
+| Method                    | Models touched                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------- |
+| `createQueued`            | Creates `ProcessingJob` + `ProcessingManifest` in one transaction                     |
+| `claimProcessingPhase`    | Conditional update `queued` to `processing` (single winner)                           |
+| `finalize`                | Sets terminal `phase`, `outcome`, counts, `completedAt`                               |
+| `getManifestByManifestId` | Loads manifest for worker by BullMQ `manifestId`                                      |
+| `createManyFromErrors`    | Inserts `ProcessingJobError` rows with `sequence`                                     |
+| `listPayloadsByJobId`     | Reads errors ordered by `sequence` for `GET /app/async-processing/jobs/:jobId/errors` |
+| `deleteById`              | Deletes job; cascade removes manifest and errors                                      |
 
 ## Indexes
 

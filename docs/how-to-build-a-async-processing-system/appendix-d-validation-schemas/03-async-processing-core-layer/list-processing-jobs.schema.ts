@@ -27,7 +27,7 @@ function parsePhaseQuery(
   return z.array(processingPhaseSchema).parse(phases);
 }
 
-/** GET jobs query params */
+/** GET /app/async-processing/jobs query params */
 export const listProcessingJobsQuerySchema = z.object({
   phase: z.string().optional().transform(parsePhaseQuery),
   domainKind: z.string().min(1).optional(),
