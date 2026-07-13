@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AliyunOssModule } from "./aliyun-oss/aliyun-oss.module";
 import { AsyncGeneratePdfModule } from "./async-generate-pdf/async-generate-pdf.module";
-import { Import207ErrorXlsxModule } from "./import-207-error-xlsx/import-207-error-xlsx.module";
 import { MockDataModule } from "./mock-data/mock-data.module";
 import { ProgramLifecycleModule } from "./program-lifecycle/program-lifecycle.module";
 import { ResendModule } from "./resend/resend.module";
@@ -15,7 +14,6 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     ResendModule,
     UploadLargeJsonModule,
     SalesDataModule,
-    Import207ErrorXlsxModule,
     AliyunOssModule,
     AsyncGeneratePdfModule,
   ],
@@ -25,7 +23,6 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     ResendModule,
     UploadLargeJsonModule,
     SalesDataModule,
-    Import207ErrorXlsxModule,
     AliyunOssModule,
     AsyncGeneratePdfModule,
   ],
