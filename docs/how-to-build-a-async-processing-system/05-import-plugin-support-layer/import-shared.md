@@ -85,7 +85,9 @@ Domain phases are separate from plugin phases (`parsing_workbook`, `parsing_line
 | `validating_rows` | Row/line validation loop  | Throttled — `createThrottledDomainProgressReporter` |
 | `saving_database` | Persistence loop          | Throttled                                           |
 
-Use `DOMAIN_PROGRESS_THROTTLE_MS` from [Appendix C](../appendix-c-constants/README.md) as the default interval.
+Use `DOMAIN_PROGRESS_THROTTLE_MS` from [Appendix C](../appendix-c-constants/README.md) as the default interval (1000 ms).
+
+Throttled reporters use a **trailing timer**: when `report` is called inside the interval, schedule one deferred emit with the latest counts instead of dropping the update. Call **`flush`** at phase end to cancel any pending timer and emit final counts with `percent`.
 
 Clients discriminate SSE events by `progress.phase` alongside plugin progress payloads.
 
@@ -117,43 +119,77 @@ async function reportDomainProgress(
 
 ### Implementation pattern: throttled progress
 
-Use for `validating_rows` and `saving_database`. Emit at most once per throttle interval while work is in progress; call `flush` at phase end for the final counts.
+Use for `validating_rows` and `saving_database`.
+
+| Method   | Behavior |
+| -------- | -------- |
+| `report` | Store latest counts. If `intervalMs` has elapsed since the last emit, emit now. Otherwise schedule a **trailing** emit so clients still receive updates without spamming every row. |
+| `flush`  | Cancel any pending trailing timer and emit immediately — call at phase end so final counts and `percent` reach clients. |
+
+Every emit includes `percent` from `percentFromCounts(processedCount, totalCount)`.
 
 ```typescript
+type PhaseProgressCounts = {
+  totalCount: number;
+  processedCount: number;
+  validCount?: number;
+  errorCount?: number;
+};
+
 function createThrottledDomainProgressReporter(
   onProgress,
   phase: "validating_rows" | "saving_database",
   sourceId: string,
-  context?: { originalName?: string; worksheetName?: string },
+  context: { originalName?: string; worksheetName?: string },
   intervalMs = DOMAIN_PROGRESS_THROTTLE_MS,
 ) {
   let lastEmitAt = 0;
+  let latestCounts: PhaseProgressCounts | null = null;
+  let trailingTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const clearTrailing = () => {
+    if (trailingTimer) {
+      clearTimeout(trailingTimer);
+      trailingTimer = null;
+    }
+  };
+
+  const emitNow = async (counts: PhaseProgressCounts) => {
+    clearTrailing();
+    latestCounts = counts;
+    lastEmitAt = Date.now();
+    await reportDomainProgress(onProgress, phase, sourceId, {
+      ...context,
+      ...counts,
+      percent: percentFromCounts(counts.processedCount, counts.totalCount),
+    });
+  };
+
+  const scheduleTrailing = () => {
+    if (trailingTimer || !latestCounts) {
+      return;
+    }
+    const delay = Math.max(0, intervalMs - (Date.now() - lastEmitAt));
+    trailingTimer = setTimeout(() => {
+      trailingTimer = null;
+      if (latestCounts) {
+        void emitNow(latestCounts);
+      }
+    }, delay);
+  };
 
   return {
-    async report(counts: {
-      processedCount: number;
-      totalCount: number;
-      validCount?: number;
-      errorCount?: number;
-    }) {
+    async report(counts: PhaseProgressCounts) {
+      latestCounts = counts;
       const now = Date.now();
-      if (
-        now - lastEmitAt < intervalMs &&
-        counts.processedCount < counts.totalCount
-      ) {
+      if (now - lastEmitAt >= intervalMs) {
+        await emitNow(counts);
         return;
       }
-      lastEmitAt = now;
-      await reportDomainProgress(onProgress, phase, sourceId, {
-        ...context,
-        ...counts,
-      });
+      scheduleTrailing();
     },
-    async flush(counts) {
-      await reportDomainProgress(onProgress, phase, sourceId, {
-        ...context,
-        ...counts,
-      });
+    async flush(counts: PhaseProgressCounts) {
+      await emitNow(counts);
     },
   };
 }
@@ -272,6 +308,8 @@ No `index.ts` barrel.
 - [ ] ErrorDetail imported by plugins and domains from import/shared
 - [ ] reportDomainProgress for loading_source (immediate)
 - [ ] createThrottledDomainProgressReporter for validating_rows / saving_database
+- [ ] Throttled reporter: trailing timer within intervalMs; percent on every emit
+- [ ] flush throttled reporter at phase end (cancel trailing timer, final counts)
 - [ ] buildProcessingJobErrorsJsonl on GET .../errors (Layer 3 controller)
 - [ ] Optional error XLSX uses applyDefaultExportedSheetView
 - [ ] No index.ts barrel in import/shared

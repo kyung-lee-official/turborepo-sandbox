@@ -131,7 +131,7 @@ Use `scopeTabularError` for XLSX sources and `scopeJsonlError` for JSONL sources
 
 Domain progress uses `DomainProcessingPhase` values (`loading_source`, `validating_rows`, `saving_database`). See [Appendix B](../appendix-b-shared-types/README.md).
 
-Use immediate progress for source loading and throttled progress for row validation or database writes. Helpers: [import-shared.md](../05-import-plugin-support-layer/import-shared.md). Throttle interval: `DOMAIN_PROGRESS_THROTTLE_MS` in [Appendix C](../appendix-c-constants/README.md).
+Use immediate progress for source loading and throttled progress for row validation or database writes. Helpers: [import-shared.md](../05-import-plugin-support-layer/import-shared.md). Throttle interval: `DOMAIN_PROGRESS_THROTTLE_MS` in [Appendix C](../appendix-c-constants/README.md). Inside the interval, the reporter schedules a trailing emit with the latest counts instead of dropping updates.
 
 Example progress payload:
 
@@ -528,7 +528,7 @@ In the `catalog-import` pattern above, valid rows are collected during parse, th
 - [ ] Plugin call sites only — loadWorkbookFromStream / parseSheetRows / parseJsonlLines
 - [ ] Scope errors with scopeTabularError or scopeJsonlError
 - [ ] Throttled progress for saving_database (or validating_rows when split from parse)
-- [ ] flush throttled reporter at phase end
+- [ ] flush throttled reporter at phase end (trailing timer cancelled, final percent)
 - [ ] Return success vs validation_failed DomainRunResult
 - [ ] Throw only for critical failures
 - [ ] Runner injects domain deps only — not orchestrator or registry

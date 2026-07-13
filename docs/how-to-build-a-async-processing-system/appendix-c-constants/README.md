@@ -123,11 +123,11 @@ Chapter: [Layer 3: Async Processing Core Layer](../03-async-processing-core-laye
 
 [`04-domain-business-layer/domain.constants.ts`](./04-domain-business-layer/domain.constants.ts)
 
-| Constant                      | Default | Role                                                            |
-| ----------------------------- | ------- | --------------------------------------------------------------- |
-| `DOMAIN_PROGRESS_THROTTLE_MS` | 1000    | Min gap between `validating_rows` / `saving_database` emissions |
+| Constant                      | Default | Role                                                                                         |
+| ----------------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `DOMAIN_PROGRESS_THROTTLE_MS` | 1000    | Min gap between `validating_rows` / `saving_database` emissions; trailing timer fills gaps |
 
-Use immediate progress for `loading_source` (no throttle). See progress phases in [Appendix B](../appendix-b-shared-types/README.md).
+Use immediate progress for `loading_source` (no throttle). Throttled reporters also schedule a deferred emit when `report` is called inside the interval — see [import-shared.md](../05-import-plugin-support-layer/import-shared.md). See progress phases in [Appendix B](../appendix-b-shared-types/README.md).
 
 Chapter: [Layer 4: Domain Business Layer](../04-domain-business-layer/README.md)
 
