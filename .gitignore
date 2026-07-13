@@ -35,6 +35,9 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# Cursor (project-local IDE state)
+/.cursor/
+
 # ENV
 # Real environment files (should never be committed)
 .env
