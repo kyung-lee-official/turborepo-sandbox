@@ -70,7 +70,7 @@ Collect `ErrorDetail` values in memory during the domain run and return them wit
 
 Domain progress uses `DomainProcessingPhase` values (`loading_source`, `validating_rows`, `saving_database`). See [Appendix B](../appendix-b-shared-types/README.md).
 
-Use immediate progress for source loading and throttled progress for row validation or database writes. Throttle interval: [Appendix C](../appendix-c-constants/README.md).
+Use immediate progress for source loading and throttled progress for row validation or database writes. Helpers: [import-shared.md](../05-import-plugin-support-layer/import-shared.md). Throttle interval: [Appendix C](../appendix-c-constants/README.md).
 
 Example progress payload:
 
@@ -89,24 +89,31 @@ Example progress payload:
 
 ## Using Plugins Inside the Domain
 
-Format plugins are helpers, not orchestrators.
+Format plugins are helpers, not orchestrators. They are documented separately. Cross-format helpers (`ErrorDetail`, domain progress, error export): [import-shared.md](../05-import-plugin-support-layer/import-shared.md).
+
+| Format           | Guide                                                                  |
+| ---------------- | ---------------------------------------------------------------------- |
+| Tabular XLSX     | [xlsx.md](../05-import-plugin-support-layer/xlsx.md)                   |
+| JSONL            | [jsonl.md](../05-import-plugin-support-layer/jsonl.md)                 |
+| Shared utilities | [import-shared.md](../05-import-plugin-support-layer/import-shared.md) |
 
 Typical XLSX flow:
 
 1. Get `source = sources.get("primaryData")`.
 2. `stream = await io.openStream(source)`.
-3. Use the tabular XLSX plugin to load the workbook and parse sheet rows.
+3. Use the [tabular XLSX plugin](../05-import-plugin-support-layer/xlsx.md) to load the workbook and parse sheet rows.
 4. In `onRow`, apply business validation and persistence.
-5. Scope parse and business errors with shared import utilities.
+5. Scope business errors with `scopeTabularError` into the shared `errors[]` array.
 6. Return `success` or `validation_failed`.
 
 Typical JSONL flow:
 
 1. Get `source = sources.get("descriptions")`.
 2. `stream = await io.openStream(source)`.
-3. Use the JSONL plugin to parse line-delimited JSON.
+3. Use the [JSONL plugin](../05-import-plugin-support-layer/jsonl.md) to parse line-delimited JSON.
 4. In `onLine`, apply business validation and persistence.
-5. Return collected errors if any.
+5. Scope business errors with `scopeJsonlError` into `errors[]`.
+6. Return collected errors if any.
 
 ## Persistence Strategy
 

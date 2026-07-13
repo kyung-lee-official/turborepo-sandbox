@@ -7,7 +7,10 @@
 3. [Layer 2: Start Processing Adapter Layer](./02-start-processing-adapter-layer/README.md)
 4. [Layer 3: Async Processing Core Layer](./03-async-processing-core-layer/README.md)
 5. [Layer 4: Domain Business Layer](./04-domain-business-layer/README.md)
-6. [Support Layer: Import Plugins and Shared Import Utilities](./05-import-plugin-support-layer/README.md)
+6. [Support Layer: Import Plugins](./05-import-plugin-support-layer/README.md)
+   - [Import shared utilities](./05-import-plugin-support-layer/import-shared.md)
+   - [XLSX plugin](./05-import-plugin-support-layer/xlsx.md)
+   - [JSONL plugin](./05-import-plugin-support-layer/jsonl.md)
 
 ## Part II — Reference Appendices
 

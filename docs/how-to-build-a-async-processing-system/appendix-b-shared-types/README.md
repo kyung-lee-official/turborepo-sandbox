@@ -181,7 +181,7 @@ Worker persists `ErrorDetail` rows on `validation_failed`. Domain returns `error
 
 For JSONL, `ErrorDetail.rowNumber` is the 1-based physical line number. Omit `worksheetName`.
 
-Chapter: [Support Layer: Import Plugins](../05-import-plugin-support-layer/README.md)
+Implementation guides: [import-shared.md](../05-import-plugin-support-layer/import-shared.md), [xlsx.md](../05-import-plugin-support-layer/xlsx.md), [jsonl.md](../05-import-plugin-support-layer/jsonl.md). Hub: [Support Layer](../05-import-plugin-support-layer/README.md).
 
 ---
 
@@ -239,4 +239,5 @@ Clients discriminate live progress by `progress.phase`.
 | Default TTLs, queue name, Redis channel prefixes    | [Appendix C](../appendix-c-constants/README.md)           |
 | Adapter implementation patterns (store, adapters)   | [Layer 2](../02-start-processing-adapter-layer/README.md) |
 | Upload implementation patterns (multipart, S3, COS) | [Layer 1](../01-optional-upload-layer/README.md)          |
+| Plugin implementation patterns (import-shared, XLSX, JSONL) | [Support Layer](../05-import-plugin-support-layer/README.md) |
 | Repository and worker implementation patterns       | [Layer 3](../03-async-processing-core-layer/README.md)    |
