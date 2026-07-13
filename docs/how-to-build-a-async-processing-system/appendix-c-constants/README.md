@@ -39,13 +39,14 @@ Chapter: [Layer 3](../03-async-processing-core-layer/README.md) (lock, SSE), [La
 
 [`01-optional-upload-layer/upload.constants.ts`](./01-optional-upload-layer/upload.constants.ts)
 
-| Constant                             | Default                        | Role                                               |
-| ------------------------------------ | ------------------------------ | -------------------------------------------------- |
-| `UPLOAD_FORM_RESERVED_KEYS`          | `autoStart`, `uploadSessionId` | Excluded from `UploadSession.context`              |
-| `DEFAULT_UPLOAD_MAX_BYTES`           | 200 MiB                        | Multer size limit when env unset                   |
-| `PROCESSING_UPLOAD_BASE_DIR_ENV`     | env name                       | Local disk root for multipart files                |
-| `PROCESSING_UPLOAD_MAX_BYTES_ENV`    | env name                       | Override max upload bytes                          |
-| `DEFAULT_PENDING_UPLOAD_TTL_SECONDS` | 86400                          | S3/COS pending state between initiate and complete |
+| Constant                             | Default                        | Role                                                   |
+| ------------------------------------ | ------------------------------ | ------------------------------------------------------ |
+| `UPLOAD_FORM_RESERVED_KEYS`          | `autoStart`, `uploadSessionId` | Excluded from `UploadSession.context`                  |
+| `DEFAULT_TABULAR_XLSX_MIMES`         | XLSX + octet-stream            | Default MIME allowlist when domain omits upload policy |
+| `DEFAULT_UPLOAD_MAX_BYTES`           | 200 MiB                        | Multer size limit when env unset                       |
+| `PROCESSING_UPLOAD_BASE_DIR_ENV`     | env name                       | Local disk root for multipart files                    |
+| `PROCESSING_UPLOAD_MAX_BYTES_ENV`    | env name                       | Override max upload bytes                              |
+| `DEFAULT_PENDING_UPLOAD_TTL_SECONDS` | 86400                          | S3/COS pending state between initiate and complete     |
 
 Local storage path shape (from Layer 1):
 
@@ -139,6 +140,10 @@ Constants do not define routes; Layer chapters do. Related endpoints:
 | Method | Path                                       |
 | ------ | ------------------------------------------ |
 | `POST` | `/app/async-processing/:domainKind/upload` |
+| `POST` | `/app/:domainKind/upload/s3/initiate`      |
+| `POST` | `/app/:domainKind/upload/s3/complete`      |
+| `POST` | `/app/:domainKind/upload/cos/initiate`     |
+| `POST` | `/app/:domainKind/upload/cos/complete`     |
 | `POST` | `/app/async-processing/start`              |
 | `GET`  | `/app/async-processing/jobs`               |
 | `GET`  | `/app/async-processing/jobs/:jobId`        |

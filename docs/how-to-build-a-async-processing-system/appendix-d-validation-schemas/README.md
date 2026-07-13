@@ -57,6 +57,8 @@ Multipart local upload does not use a JSON body schema. File field names are `so
 
 After Zod parse, the server still validates each `sourceId` against `DomainKindRegistration.sourceSpecs` and MIME allowlists.
 
+Local multipart, S3, and COS implementation patterns: [Layer 1](../01-optional-upload-layer/README.md).
+
 Chapter: [Layer 1](../01-optional-upload-layer/README.md)
 
 ---

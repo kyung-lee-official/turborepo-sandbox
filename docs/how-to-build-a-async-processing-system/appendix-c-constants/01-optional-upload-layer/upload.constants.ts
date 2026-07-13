@@ -8,6 +8,12 @@ export const UPLOAD_FORM_RESERVED_KEYS = [
   "uploadSessionId",
 ] as const;
 
+/** Default MIME allowlist for tabular XLSX sources when domain omits upload policy */
+export const DEFAULT_TABULAR_XLSX_MIMES = [
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/octet-stream",
+] as const;
+
 /**
  * Default max upload size when env is unset (200 MiB).
  * Override with PROCESSING_UPLOAD_MAX_BYTES.
