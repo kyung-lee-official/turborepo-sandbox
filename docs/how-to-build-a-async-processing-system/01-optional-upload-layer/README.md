@@ -457,6 +457,27 @@ Same steps as S3 complete. Build locators with `provider: "cos"`. Set worker `RE
 
 ---
 
+## Aliyun OSS Direct Upload
+
+Same deferred pattern as S3: server-generated `objectKey`, presigned **PUT** via `signatureUrlV4`, pending Redis state, complete saves `UploadSession` with `provider: "aliyun"`.
+
+### Routes
+
+```text
+POST /app/:domainKind/upload/aliyun-oss/initiate
+POST /app/:domainKind/upload/aliyun-oss/complete
+```
+
+Initiate and complete bodies use the same Zod schemas as S3/COS ([Appendix D](../appendix-d-validation-schemas/README.md)). Response on initiate matches S3 (`uploadSessionId` + per-`sourceId` `presignedPutUrl`).
+
+### Env
+
+`ALIYUN_OSS_ACCESS_KEY_ID`, `ALIYUN_OSS_ACCESS_SECRET`, `ALIYUN_OSS_REGION`, `ALIYUN_OSS_BUCKET`, optional `ALIYUN_OSS_UPLOAD_PREFIX`.
+
+Worker reads use the same env vars in `ProcessingSourceReader` (`head`, `getStream`, `delete`).
+
+---
+
 ## Upload Session Shape
 
 The upload layer builds `UploadSession` and `UploadSessionSources`. Persist via `UploadSessionStore` ([Layer 2](../02-start-processing-adapter-layer/README.md)).
@@ -474,7 +495,7 @@ Example object locator entry:
   mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   locator: {
     kind: "object",
-    provider: "s3", // or "cos"
+    provider: "s3", // or "cos" or "aliyun"
     bucket: string,
     key: string,
     declaredSizeBytes?: number,
@@ -508,18 +529,14 @@ upload/
     build-upload-session-sources.ts
     build-upload-session-context.ts
     rollback-saved-paths.ts
-  s3-direct/
-    s3-direct-upload.controller.ts
-    s3-direct-upload.service.ts
+  object-store/
+    object-store-upload.controller.ts
+    object-store-upload.service.ts
+    pending-object-upload.store.ts
     s3-presigned-put.service.ts
-    s3-pending-upload.store.ts
-    build-s3-upload-session-sources.ts
-  cos-direct/
-    cos-direct-upload.controller.ts
-    cos-direct-upload.service.ts
-    cos-sts-grant.service.ts
-    cos-pending-upload.store.ts
-    build-cos-upload-session-sources.ts
+    cos-scoped-sts.service.ts
+    aliyun-oss-presigned-put.service.ts
+    build-object-session-sources.ts
 
 start-processing-adapters/          # Layer 2 — UploadSessionStore shared by all paths
 ```

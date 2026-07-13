@@ -11,6 +11,7 @@ import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import COS = require("cos-nodejs-sdk-v5");
+import OSS = require("ali-oss");
 
 import type {
   SourceLocator,
@@ -54,30 +55,45 @@ export class ProcessingSourceReader {
         };
       }
       case "object": {
-        if (locator.provider === "s3") {
-          const head = await this.s3Client.send(
-            new HeadObjectCommand({
-              Bucket: locator.bucket,
-              Key: locator.key,
-            }),
-          );
-          return {
-            ...locator,
-            sizeBytes: head.ContentLength ?? 0,
-            etag: head.ETag,
-          };
+        switch (locator.provider) {
+          case "s3": {
+            const head = await this.s3Client.send(
+              new HeadObjectCommand({
+                Bucket: locator.bucket,
+                Key: locator.key,
+              }),
+            );
+            return {
+              ...locator,
+              sizeBytes: head.ContentLength ?? 0,
+              etag: head.ETag,
+            };
+          }
+          case "cos": {
+            const head = await this.headCosObject(
+              locator.bucket,
+              locator.key,
+              this.getCosRegion(),
+            );
+            return {
+              ...locator,
+              sizeBytes: head.contentLength,
+              etag: head.etag,
+            };
+          }
+          case "aliyun": {
+            const head = await this.headAliyunObject(locator.key);
+            return {
+              ...locator,
+              sizeBytes: head.contentLength,
+              etag: head.etag,
+            };
+          }
+          default: {
+            const _exhaustive: never = locator.provider;
+            return _exhaustive;
+          }
         }
-
-        const head = await this.headCosObject(
-          locator.bucket,
-          locator.key,
-          this.getCosRegion(),
-        );
-        return {
-          ...locator,
-          sizeBytes: head.contentLength,
-          etag: head.etag,
-        };
       }
       default: {
         const _exhaustive: never = locator;
@@ -91,24 +107,32 @@ export class ProcessingSourceReader {
       case "local":
         return createReadStream(locator.path);
       case "object": {
-        if (locator.provider === "s3") {
-          const response = await this.s3Client.send(
-            new GetObjectCommand({
-              Bucket: locator.bucket,
-              Key: locator.key,
-            }),
-          );
-          if (!response.Body) {
-            throw new Error(`S3 object body missing: ${locator.key}`);
+        switch (locator.provider) {
+          case "s3": {
+            const response = await this.s3Client.send(
+              new GetObjectCommand({
+                Bucket: locator.bucket,
+                Key: locator.key,
+              }),
+            );
+            if (!response.Body) {
+              throw new Error(`S3 object body missing: ${locator.key}`);
+            }
+            return response.Body as Readable;
           }
-          return response.Body as Readable;
+          case "cos":
+            return this.getCosReadStream(
+              locator.bucket,
+              locator.key,
+              this.getCosRegion(),
+            );
+          case "aliyun":
+            return this.getAliyunReadStream(locator.key);
+          default: {
+            const _exhaustive: never = locator.provider;
+            return _exhaustive;
+          }
         }
-
-        return this.getCosReadStream(
-          locator.bucket,
-          locator.key,
-          this.getCosRegion(),
-        );
       }
       default: {
         const _exhaustive: never = locator;
@@ -123,22 +147,30 @@ export class ProcessingSourceReader {
         await fs.unlink(locator.path);
         return;
       case "object": {
-        if (locator.provider === "s3") {
-          await this.s3Client.send(
-            new DeleteObjectCommand({
-              Bucket: locator.bucket,
-              Key: locator.key,
-            }),
-          );
-          return;
+        switch (locator.provider) {
+          case "s3":
+            await this.s3Client.send(
+              new DeleteObjectCommand({
+                Bucket: locator.bucket,
+                Key: locator.key,
+              }),
+            );
+            return;
+          case "cos":
+            await this.deleteCosObject(
+              locator.bucket,
+              locator.key,
+              this.getCosRegion(),
+            );
+            return;
+          case "aliyun":
+            await this.deleteAliyunObject(locator.key);
+            return;
+          default: {
+            const _exhaustive: never = locator.provider;
+            return _exhaustive;
+          }
         }
-
-        await this.deleteCosObject(
-          locator.bucket,
-          locator.key,
-          this.getCosRegion(),
-        );
-        return;
       }
       default: {
         const _exhaustive: never = locator;
@@ -225,5 +257,56 @@ export class ProcessingSourceReader {
         },
       );
     });
+  }
+
+  private createAliyunClient(): OSS {
+    const accessKeyId = this.configService.get<string>(
+      "ALIYUN_OSS_ACCESS_KEY_ID",
+    );
+    const accessKeySecret = this.configService.get<string>(
+      "ALIYUN_OSS_ACCESS_SECRET",
+    );
+    const region = this.configService.get<string>("ALIYUN_OSS_REGION");
+    const bucket = this.configService.get<string>("ALIYUN_OSS_BUCKET");
+
+    if (!accessKeyId || !accessKeySecret || !region || !bucket) {
+      throw new InternalServerErrorException(
+        "ALIYUN_OSS_ACCESS_KEY_ID, ALIYUN_OSS_ACCESS_SECRET, ALIYUN_OSS_REGION, and ALIYUN_OSS_BUCKET are required for Aliyun OSS source reads",
+      );
+    }
+
+    return new OSS({
+      accessKeyId,
+      accessKeySecret,
+      region,
+      bucket,
+      authorizationV4: true,
+      endpoint: `https://${region}.aliyuncs.com`,
+    });
+  }
+
+  private async headAliyunObject(
+    key: string,
+  ): Promise<{ contentLength: number; etag?: string }> {
+    const client = this.createAliyunClient();
+    const result = await client.head(key);
+    const headers = result.res.headers as Record<string, string | undefined>;
+    return {
+      contentLength: headers["content-length"]
+        ? Number(headers["content-length"])
+        : 0,
+      etag: headers.etag,
+    };
+  }
+
+  private async getAliyunReadStream(key: string): Promise<Readable> {
+    const client = this.createAliyunClient();
+    const result = await client.getStream(key);
+    return result.stream;
+  }
+
+  private async deleteAliyunObject(key: string): Promise<void> {
+    const client = this.createAliyunClient();
+    await client.delete(key);
   }
 }

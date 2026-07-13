@@ -13,7 +13,7 @@ Client uploads **directly to COS** with **scoped STS** credentials and a server-
 
 **Upload progress:** browser / COS SDK — **not** job SSE.
 
-**Not implemented yet** under `async-processing/upload/cos-direct/`. Existing **`tencent-cos-objects`** module is **legacy** (generic STS + deprecated proxy upload) — do **not** treat it as this skill’s initiate/complete flow. Reuse STS patterns only; implement session-backed upload per this skill.
+**Implemented** under `import/upload/object-store/` — shared initiate/complete flow with scoped STS (session prefix only, not `allowPrefix: "*"`).
 
 ---
 

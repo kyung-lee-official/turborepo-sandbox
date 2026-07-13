@@ -13,7 +13,7 @@ Client uploads **directly to S3** with a server-generated **`objectKey`**. Serve
 
 **Upload progress:** browser / AWS SDK — **not** job SSE.
 
-**Not implemented yet** under `async-processing/upload/s3-direct/` — this skill is the target contract.
+**Implemented** under `import/upload/object-store/` — shared initiate/complete flow with S3 presigned PUT.
 
 ---
 

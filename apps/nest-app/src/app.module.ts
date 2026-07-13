@@ -16,6 +16,7 @@ import { MembersModule } from "./cerbos-authorization/members/members.module";
 import { PerformancesModule } from "./cerbos-authorization/performances/performances.module";
 import { RolesModule } from "./cerbos-authorization/roles/roles.module";
 import { LocalMultipartUploadModule } from "./import/upload/local-multipart/local-multipart-upload.module";
+import { ObjectStoreUploadModule } from "./import/upload/object-store/object-store-upload.module";
 import { TestMiddleware } from "./overview/middleware/test.middleware";
 import { OverviewModule } from "./overview/overview.module";
 import { PrismaModule } from "./recipes/prisma/prisma.module";
@@ -43,6 +44,7 @@ import { WebsocketsModule } from "./websockets/websockets.module";
     EventEmitterModule.forRoot(),
     AsyncProcessingModule,
     LocalMultipartUploadModule,
+    ObjectStoreUploadModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

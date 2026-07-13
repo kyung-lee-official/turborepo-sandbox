@@ -10,7 +10,7 @@ Business logic for merging three upload sources into **`SalesImportMergedLine`**
 | JSONL parse | `import/plugins/jsonl/` | Lines to JSON objects |
 | Shared | `import/shared/` | `ErrorDetail`, domain progress, error export helpers |
 | Job orchestration | `async-processing/` | Worker, `DomainRegistry`, SSE |
-| Upload + start | `import/upload/local-multipart/`, `async-processing/start-processing-adapters/` | Multipart disk, session, `POST .../start` |
+| Upload + start | `import/upload/local-multipart/`, `import/upload/object-store/`, `async-processing/start-processing-adapters/` | Multipart disk, S3/COS/Aliyun OSS direct, session, `POST .../start` |
 | Test fixtures | `sales-import-fixtures/` | Local bundle generator |
 
 Skills for reusable layers: `.cursor/skills/`. **This folder uses this README only.**
@@ -26,7 +26,14 @@ Skills for reusable layers: `.cursor/skills/`. **This folder uses this README on
 | **`lockPolicy`** | `global_singleton` |
 | **`upload`** | MIME allowlists per `sourceId` — **`salesImportUploadPolicy`** |
 
-Upload route: **`POST applications/async-processing/sales-report/upload`** (generic controller; no upload code in this folder).
+Upload routes (generic controllers; no upload code in this folder):
+
+- **`POST applications/async-processing/sales-report/upload`** — local multipart disk
+- **`POST applications/async-processing/sales-report/upload/s3/initiate|complete`** — S3 presigned PUT
+- **`POST applications/async-processing/sales-report/upload/cos/initiate|complete`** — Tencent COS scoped STS
+- **`POST applications/async-processing/sales-report/upload/aliyun-oss/initiate|complete`** — Aliyun OSS presigned PUT
+
+All object-store paths return **`{ uploadSessionId }`** on complete; client calls **`POST applications/async-processing/start`**.
 
 **`DomainRunner.run(jobId, sources, io)`** — worker passes **`jobId`** for **`SalesImportMergedLine.processingJobId`**.
 
