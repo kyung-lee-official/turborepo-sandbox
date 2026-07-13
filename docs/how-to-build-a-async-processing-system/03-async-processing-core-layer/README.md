@@ -95,7 +95,12 @@ interface ProcessingJobRepository {
   ): Promise<void>;
 
   findById(jobId: string): Promise<ProcessingJob | null>;
-  findMany(...): Promise<{ jobs: ProcessingJob[]; nextCursor: string | null }>;
+  findMany(input: {
+    phases?: ProcessingPhase[];
+    domainKind?: string;
+    limit: number;
+    cursor?: string;
+  }): Promise<{ jobs: ProcessingJob[]; nextCursor: string | null }>;
   deleteById(jobId: string): Promise<void>;
 
   getManifestByManifestId(manifestId: string): Promise<{
@@ -160,6 +165,88 @@ async createManyFromErrors(jobId: string, errors: readonly ErrorDetail[]) {
   }
 }
 ```
+
+### Implementation pattern: cursor pagination (`findMany`)
+
+List jobs newest-first. Use `createdAt` plus `id` as a stable tie-breaker. Request `limit + 1` rows; when an overflow row exists, expose its `id` as `nextCursor`.
+
+```typescript
+async findMany(input: {
+  phases?: ProcessingPhase[];
+  domainKind?: string;
+  limit: number;
+  cursor?: string;
+}): Promise<{ jobs: ProcessingJob[]; nextCursor: string | null }> {
+  const where: ProcessingJobWhereInput = {};
+
+  if (input.phases?.length) {
+    where.phase = { in: input.phases };
+  }
+  if (input.domainKind) {
+    where.domainKind = input.domainKind;
+  }
+
+  if (input.cursor) {
+    const cursorJob = await this.findById(input.cursor);
+    if (cursorJob) {
+      where.AND = [
+        {
+          OR: [
+            { createdAt: { lt: cursorJob.createdAt } },
+            {
+              createdAt: cursorJob.createdAt,
+              id: { lt: cursorJob.id },
+            },
+          ],
+        },
+      ];
+    }
+  }
+
+  const rows = await prisma.processingJob.findMany({
+    where,
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: input.limit + 1,
+  });
+
+  let nextCursor: string | null = null;
+  if (rows.length > input.limit) {
+    const overflow = rows.pop();
+    nextCursor = overflow?.id ?? null;
+  }
+
+  return { jobs: rows, nextCursor };
+}
+```
+
+Query params: `listProcessingJobsQuerySchema` in [Appendix D](../appendix-d-validation-schemas/README.md) (`phase` comma-separated, `domainKind`, `limit`, `cursor`).
+
+## DomainRegistry
+
+`DomainRegistry` is an in-memory map populated at bootstrap. The orchestrator and worker resolve `domainKind` through `getByDomainKind`; domain modules call `register` in `onModuleInit`.
+
+### Implementation pattern: `DomainRegistry`
+
+```typescript
+@Injectable()
+export class DomainRegistry {
+  private readonly registrations = new Map<string, DomainKindRegistration>();
+
+  register(domainKind: string, registration: DomainKindRegistration): void {
+    this.registrations.set(domainKind, registration);
+  }
+
+  getByDomainKind(domainKind: string): DomainKindRegistration {
+    const registration = this.registrations.get(domainKind);
+    if (!registration) {
+      throw new NotFoundException(`Unknown domainKind: ${domainKind}`);
+    }
+    return registration;
+  }
+}
+```
+
+`DomainKindRegistration` carries `domainRunner`, `sourceSpecs`, `lockPolicy`, and optional `upload` MIME policy. Domain modules inject `DomainRegistry` only — see [Layer 4](../04-domain-business-layer/README.md).
 
 ## Orchestrator Flow
 
@@ -281,8 +368,40 @@ async tryAcquire(domainKind: string, jobId: string, allowStaleRecovery: boolean)
     throw new ActiveJobConflictError(domainKind);
   }
 
-  // Stale recovery: read activeJobId from key, load DB row, DEL or finalize stale job
-  // per Appendix C table, then retry tryAcquire(domainKind, jobId, false)
+  const activeJobId = await redis.get(key);
+  if (!activeJobId) {
+    await tryAcquire(domainKind, jobId, false);
+    return;
+  }
+
+  const activeJob = await jobRepository.findById(activeJobId);
+  if (!activeJob) {
+    await redis.del(key);
+    await tryAcquire(domainKind, jobId, false);
+    return;
+  }
+
+  if (activeJob.phase === "complete" || activeJob.phase === "failed") {
+    await redis.del(key);
+    await tryAcquire(domainKind, jobId, false);
+    return;
+  }
+
+  if (activeJob.phase === "processing") {
+    const staleMs = Date.now() - activeJob.updatedAt.getTime();
+    if (staleMs > STALE_PROCESSING_MS) {
+      await jobRepository.finalize(activeJobId, {
+        phase: "failed",
+        outcome: "failed",
+        completedAt: new Date(),
+      });
+      await redis.del(key);
+      await tryAcquire(domainKind, jobId, false);
+      return;
+    }
+  }
+
+  throw new ActiveJobConflictError(domainKind);
 }
 
 async release(domainKind: string, jobId: string) {
@@ -503,6 +622,34 @@ async verifyLocator(locator: SourceLocator): Promise<VerifiedSourceLocator> {
 
 COS SDK note: `cos-nodejs-sdk-v5` is a CommonJS `export =` module; use `import COS = require("cos-nodejs-sdk-v5")` in TypeScript when needed.
 
+### Implementation pattern: `buildVerifiedSources`
+
+After the worker loads the manifest, verify every manifest locator once and build the `Map` passed to `DomainRunner.run`. Push each verified source into `verifiedForCleanup` so `finally` can delete locators.
+
+```typescript
+async buildVerifiedSources(
+  sources: Record<string, ProcessingSource>,
+  verifiedForCleanup: VerifiedProcessingSource[],
+): Promise<Map<string, VerifiedProcessingSource>> {
+  const map = new Map<string, VerifiedProcessingSource>();
+
+  for (const [sourceId, source] of Object.entries(sources)) {
+    const verifiedLocator = await sourceReader.verifyLocator(source.locator);
+    const verified: VerifiedProcessingSource = {
+      ...source,
+      sourceId: source.sourceId ?? sourceId,
+      verifiedLocator,
+    };
+    map.set(sourceId, verified);
+    verifiedForCleanup.push(verified);
+  }
+
+  return map;
+}
+```
+
+Call this in the pre-domain try scope after `getManifestByManifestId` and before `domainRunner.run`.
+
 ## Progress and SSE
 
 Progress is live data, not job history. Job phase changes are **not** pub/sub events — clients rely on connect snapshot, idle DB reload, or `GET /app/async-processing/jobs/:jobId`.
@@ -616,6 +763,107 @@ streamJobEvents(jobId: string): Observable<MessageEvent> {
 
 List query validation: [Appendix D](../appendix-d-validation-schemas/README.md).
 
+### Implementation pattern: `ProcessingController`
+
+Mount under the async-processing prefix (for example `@Controller("jobs")` with global prefix `/app/async-processing`). Parse list query with Zod; map DB rows to a stable JSON DTO; stream SSE through `ProcessingProgressSseService`; serve errors as NDJSON attachment.
+
+```typescript
+@Controller("jobs")
+export class ProcessingController {
+  constructor(
+    private readonly jobRepository: ProcessingJobRepository,
+    private readonly progressSseService: ProcessingProgressSseService,
+    private readonly jobErrorRepository: ProcessingJobErrorRepository,
+  ) {}
+
+  @Get()
+  async listJobs(@Query() query: unknown) {
+    const parsed = listProcessingJobsQuerySchema.parse(query ?? {});
+    const { jobs, nextCursor } = await this.jobRepository.findMany({
+      phases: parsed.phase,
+      domainKind: parsed.domainKind,
+      limit: parsed.limit,
+      cursor: parsed.cursor,
+    });
+
+    return {
+      jobs: jobs.map(mapProcessingJobToResponse),
+      nextCursor,
+    };
+  }
+
+  @Get(":jobId")
+  async getJob(@Param("jobId") jobId: string) {
+    const job = await this.jobRepository.findById(jobId);
+    if (!job) {
+      throw new NotFoundException(`Processing job not found: ${jobId}`);
+    }
+    return mapProcessingJobToResponse(job);
+  }
+
+  @Get(":jobId/errors")
+  async getErrors(
+    @Param("jobId") jobId: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const job = await this.jobRepository.findById(jobId);
+    if (!job) {
+      throw new NotFoundException(`Processing job not found: ${jobId}`);
+    }
+    if (job.outcome !== "validation_failed" || (job.errorCount ?? 0) === 0) {
+      throw new NotFoundException(`No error report for job: ${jobId}`);
+    }
+
+    const errors = await this.jobErrorRepository.listPayloadsByJobId(jobId);
+    if (errors.length === 0) {
+      throw new NotFoundException(`No error report for job: ${jobId}`);
+    }
+
+    const body = buildProcessingJobErrorsJsonl({
+      jobId: job.id,
+      domainKind: job.domainKind,
+      errorCount: job.errorCount ?? errors.length,
+      errors,
+    });
+
+    res.set({
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Content-Disposition": `attachment; filename="validation-errors-${jobId}.jsonl"`,
+    });
+
+    return body;
+  }
+
+  @Sse(":jobId/events")
+  streamEvents(@Param("jobId") jobId: string): Observable<MessageEvent> {
+    return this.progressSseService.streamJobEvents(jobId);
+  }
+}
+```
+
+### Implementation pattern: job response mapper
+
+Keep HTTP shapes separate from Prisma models. Expose ISO timestamps and a `hasErrors` flag for list UIs.
+
+```typescript
+function mapProcessingJobToResponse(job: ProcessingJob): ProcessingJobResponseDto {
+  return {
+    jobId: job.id,
+    domainKind: job.domainKind,
+    phase: job.phase,
+    outcome: job.outcome,
+    processedCount: job.processedCount,
+    errorCount: job.errorCount,
+    hasErrors: (job.errorCount ?? 0) > 0,
+    createdAt: job.createdAt.toISOString(),
+    updatedAt: job.updatedAt.toISOString(),
+    completedAt: job.completedAt?.toISOString() ?? null,
+  };
+}
+```
+
+`buildProcessingJobErrorsJsonl`: [import-shared.md](../05-import-plugin-support-layer/import-shared.md).
+
 ## Error Download
 
 When a domain returns `validation_failed`, the worker persists `ErrorDetail[]` through `ProcessingJobErrorRepository`.
@@ -640,6 +888,8 @@ async-processing/
     processing-progress-publisher.service.ts
     processing-progress-sse.service.ts
     processing.controller.ts
+    processing-job-response.mapper.ts
+    list-processing-jobs.schema.ts
     domain-registry.service.ts
   start-processing-adapters/          # Layer 2 — separate chapter
 ```
@@ -707,3 +957,31 @@ export class AsyncProcessingCoreModule {}
 | Lock after `createQueued`                                             | Rollback target exists on acquire or enqueue failure |
 | Redis pub/sub for live progress                                       | Do not persist every progress tick to DB             |
 | No domain business code in core                                       | Domains register via `DomainRegistry` only           |
+
+## Checklist
+
+**Async processing core module:**
+
+```text
+- [ ] ProcessingJobRepository: createQueued + manifest in one transaction
+- [ ] claimProcessingPhase via conditional updateMany (single winner)
+- [ ] findMany cursor pagination (createdAt desc, id desc, limit + 1)
+- [ ] startProcessing: lock after createQueued; rollback deleteById on enqueue failure
+- [ ] DomainRegistry register/getByDomainKind
+- [ ] ActiveJobLock: SET NX, stale recovery, Lua release, refreshLease
+- [ ] Worker: three try scopes — pre-domain, domain, post-domain finalize
+- [ ] buildVerifiedSources before domainRunner.run; delete locators in finally
+- [ ] finalizeSuccess persists batched errors when validation_failed
+- [ ] ProcessingController: list, detail, SSE, NDJSON errors
+- [ ] listProcessingJobsQuerySchema Zod parse on GET jobs
+- [ ] Dedicated Redis subscriber per SSE stream; idle DB reload fallback
+- [ ] BullMQ payload refs only (jobId, domainKind, manifestId)
+```
+
+**New domainKind (cross-layer):**
+
+```text
+- [ ] Domain module registers on bootstrap (Layer 4)
+- [ ] Upload MIME policy on registration when Layer 1 ingest exists
+- [ ] Layer 2 adapters map session/event to StartProcessingInput only
+```
