@@ -149,12 +149,11 @@ Constants do not define routes; Layer chapters do. Related endpoints:
 
 ## What Belongs Outside This Appendix
 
-| Concern                                                      | Document                                                |
-| ------------------------------------------------------------ | ------------------------------------------------------- |
-| DTOs and progress types                                      | [Appendix B](../appendix-b-shared-types/README.md)      |
-| Prisma models                                                | [Appendix A](../appendix-a-prisma-data-model/README.md) |
-| Zod validation schemas                                       | [Appendix D](../appendix-d-validation-schemas/README.md) |
-| Implementation patterns (Lua release script, SSE subscriber) | Layer 3                                                 |
+| Concern                 | Document                                                 |
+| ----------------------- | -------------------------------------------------------- |
+| DTOs and progress types | [Appendix B](../appendix-b-shared-types/README.md)       |
+| Prisma models           | [Appendix A](../appendix-a-prisma-data-model/README.md)  |
+| Zod validation schemas  | [Appendix D](../appendix-d-validation-schemas/README.md) |
 
 ## See Also
 

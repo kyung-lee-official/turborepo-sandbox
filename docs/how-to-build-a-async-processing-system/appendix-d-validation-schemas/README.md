@@ -21,12 +21,12 @@ appendix-d-validation-schemas/
 
 ## Who Validates What
 
-| Layer | Validates with Zod | Validates in code (not Zod) |
-| --- | --- | --- |
-| Upload | Object-store initiate/complete JSON bodies | Multipart files, MIME allowlists, `sourceSpecs` |
-| Adapters | `POST .../start` body, auto-start event payload | Map key equals `entry.sourceId` after parse |
-| Core | `GET .../jobs` query params | Required `sourceSpecs` in orchestrator |
-| Domain | `io.context` per domain schema | Business rules on parsed rows/lines |
+| Layer    | Validates with Zod                              | Validates in code (not Zod)                     |
+| -------- | ----------------------------------------------- | ----------------------------------------------- |
+| Upload   | Object-store initiate/complete JSON bodies      | Multipart files, MIME allowlists, `sourceSpecs` |
+| Adapters | `POST .../start` body, auto-start event payload | Map key equals `entry.sourceId` after parse     |
+| Core     | `GET .../jobs` query params                     | Required `sourceSpecs` in orchestrator          |
+| Domain   | `io.context` per domain schema                  | Business rules on parsed rows/lines             |
 
 Adapters must **not** duplicate orchestrator `sourceSpecs` checks. Upload ingest must **not** call `startProcessing`.
 
@@ -36,8 +36,8 @@ Adapters must **not** duplicate orchestrator `sourceSpecs` checks. Upload ingest
 
 [`shared/source-locator.schema.ts`](./shared/source-locator.schema.ts)
 
-| Schema | Role |
-| --- | --- |
+| Schema                | Role                                                     |
+| --------------------- | -------------------------------------------------------- |
 | `sourceLocatorSchema` | Discriminated union: `local` path or `object` bucket/key |
 
 Used by adapter event payload and object-store session building.
@@ -48,10 +48,10 @@ Used by adapter event payload and object-store session building.
 
 [`01-optional-upload-layer/object-store-upload.schema.ts`](./01-optional-upload-layer/object-store-upload.schema.ts)
 
-| Schema | HTTP route | Role |
-| --- | --- | --- |
+| Schema                                | HTTP route                                                      | Role                                         |
+| ------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
 | `objectStoreUploadInitiateBodySchema` | `POST /app/:domainKind/upload/s3/initiate` (or `/cos/initiate`) | Client file metadata before presigned upload |
-| `objectStoreUploadCompleteBodySchema` | `POST /app/:domainKind/upload/s3/complete` (or `/cos/complete`) | Confirm uploaded files and optional sizes |
+| `objectStoreUploadCompleteBodySchema` | `POST /app/:domainKind/upload/s3/complete` (or `/cos/complete`) | Confirm uploaded files and optional sizes    |
 
 Multipart local upload does not use a JSON body schema. File field names are `sourceId` values; non-file form fields become `context` (see [Appendix C](../appendix-c-constants/README.md) reserved keys).
 
@@ -65,11 +65,11 @@ Chapter: [Layer 1](../01-optional-upload-layer/README.md)
 
 [`02-start-processing-adapter-layer/start-processing-input.schema.ts`](./02-start-processing-adapter-layer/start-processing-input.schema.ts)
 
-| Schema | Used by | Role |
-| --- | --- | --- |
-| `startApiBodySchema` | API adapter | `.strict()` — only `uploadSessionId` and optional `domainKind` |
-| `processingStartRequestedSchema` | Event adapter | Trusted in-process payload after upload ingest |
-| `uploadSourceEntrySchema` | Event schema helper | One source entry with `locator` |
+| Schema                           | Used by             | Role                                                           |
+| -------------------------------- | ------------------- | -------------------------------------------------------------- |
+| `startApiBodySchema`             | API adapter         | `.strict()` — only `uploadSessionId` and optional `domainKind` |
+| `processingStartRequestedSchema` | Event adapter       | Trusted in-process payload after upload ingest                 |
+| `uploadSourceEntrySchema`        | Event schema helper | One source entry with `locator`                                |
 
 ### Deferred start trust model
 
@@ -89,8 +89,8 @@ Chapter: [Layer 2](../02-start-processing-adapter-layer/README.md)
 
 [`03-async-processing-core-layer/list-processing-jobs.schema.ts`](./03-async-processing-core-layer/list-processing-jobs.schema.ts)
 
-| Schema | HTTP route | Role |
-| --- | --- | --- |
+| Schema                          | HTTP route                       | Role                                                       |
+| ------------------------------- | -------------------------------- | ---------------------------------------------------------- |
 | `listProcessingJobsQuerySchema` | `GET /app/async-processing/jobs` | `phase` (comma-separated), `domainKind`, `limit`, `cursor` |
 
 ### Orchestrator source validation (not Zod)
@@ -110,8 +110,8 @@ Chapter: [Layer 3](../03-async-processing-core-layer/README.md)
 
 [`04-domain-business-layer/domain-context.schema.example.ts`](./04-domain-business-layer/domain-context.schema.example.ts)
 
-| Schema | Role |
-| --- | --- |
+| Schema                       | Role                               |
+| ---------------------------- | ---------------------------------- |
 | `invoiceImportContextSchema` | Example — replace per `domainKind` |
 
 `ProcessingManifest.context` is optional JSON copied from upload or start adapters. Domain runners should `parse` `io.context` with a domain-owned schema at the start of `run`.
@@ -130,12 +130,12 @@ Format plugins do not define HTTP Zod schemas. Parse-time errors use `ErrorDetai
 
 ## What Belongs Outside This Appendix
 
-| Concern | Document |
-| --- | --- |
-| DTO types | [Appendix B](../appendix-b-shared-types/README.md) |
-| TTLs and Redis keys | [Appendix C](../appendix-c-constants/README.md) |
-| Prisma models | [Appendix A](../appendix-a-prisma-data-model/README.md) |
-| Adapter and worker implementation patterns | Layer 2 and Layer 3 |
+| Concern                         | Document                                                  |
+| ------------------------------- | --------------------------------------------------------- |
+| DTO types                       | [Appendix B](../appendix-b-shared-types/README.md)        |
+| TTLs and Redis keys             | [Appendix C](../appendix-c-constants/README.md)           |
+| Prisma models                   | [Appendix A](../appendix-a-prisma-data-model/README.md)   |
+| Adapter implementation patterns | [Layer 2](../02-start-processing-adapter-layer/README.md) |
 
 ## See Also
 
