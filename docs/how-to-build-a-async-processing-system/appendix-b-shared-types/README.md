@@ -72,7 +72,7 @@ Chapter: [Layer 1: Optional Upload Layer](../01-optional-upload-layer/README.md)
 | `ProcessingStartRequestedPayload` | Auto-start event payload (in-process only)            |
 | `StartProcessingInput`            | Canonical input to `startProcessing`                  |
 | `ProcessingSource`                | One manifest source (`label` replaces `originalName`) |
-| `StartApiBody`                    | `POST /app/async-processing/start` body               |
+| `StartApiBody`                    | `POST applications/async-processing/start` body               |
 | `StartProcessingResult`           | `202` response (`jobId`, `manifestId`)                |
 
 ### Upload to processing field mapping
@@ -175,7 +175,7 @@ Chapter: [Layer 4: Domain Business Layer](../04-domain-business-layer/README.md)
 
 ### Error download
 
-`GET /app/async-processing/jobs/:jobId/errors` returns `application/x-ndjson`: line 1 is `ProcessingJobErrorsHeader`, lines 2..N are one `ErrorDetail` per line.
+`GET jobs/:jobId/errors` returns `application/x-ndjson`: line 1 is `ProcessingJobErrorsHeader`, lines 2..N are one `ErrorDetail` per line.
 
 Worker persists `ErrorDetail` rows on `validation_failed`. Domain returns `errors` in memory; core does not accept error blobs from the domain.
 

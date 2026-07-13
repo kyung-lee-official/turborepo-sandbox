@@ -2,6 +2,10 @@
 
 Business logic for merging three upload sources into **`SalesImportMergedLine`** rows. Domain-only — not under `import/plugins/`.
 
+Architecture guide for reusable layers: [`docs/how-to-build-a-async-processing-system/`](../../../../../../docs/how-to-build-a-async-processing-system/README.md). **This folder uses this README only.**
+
+---
+
 ## Layer map
 
 | Layer | Path | Role |
@@ -12,8 +16,6 @@ Business logic for merging three upload sources into **`SalesImportMergedLine`**
 | Job orchestration | `async-processing/` | Worker, `DomainRegistry`, SSE |
 | Upload + start | `import/upload/local-multipart/`, `import/upload/object-store/`, `async-processing/start-processing-adapters/` | Multipart disk, S3/COS/Aliyun OSS direct, session, `POST .../start` |
 | Test fixtures | `sales-import-fixtures/` | Local bundle generator |
-
-Skills for reusable layers: `.cursor/skills/`. **This folder uses this README only.**
 
 ---
 
@@ -34,6 +36,8 @@ Upload routes (generic controllers; no upload code in this folder):
 - **`POST applications/async-processing/sales-report/upload/aliyun-oss/initiate|complete`** — Aliyun OSS presigned PUT
 
 All object-store paths return **`{ uploadSessionId }`** on complete; client calls **`POST applications/async-processing/start`**.
+
+Job API (Layer 3): **`GET jobs`**, **`GET jobs/:jobId`**, **`GET jobs/:jobId/events`**, **`GET jobs/:jobId/errors`**.
 
 **`DomainRunner.run(jobId, sources, io)`** — worker passes **`jobId`** for **`SalesImportMergedLine.processingJobId`**.
 
@@ -118,7 +122,10 @@ Shared bundle: perfect **inventory.xlsx** + **productDescriptions.jsonl**.
 
 ---
 
-## Related skills
+## Related guide chapters
 
-- `import-plugin-tabular-xlsx`, `import-plugin-jsonl`, `import-shared`
-- `upload-local-multipart`, `start-processing-adapters`, `async-processing`
+- [Layer 4 — Domain business](../../../../../../docs/how-to-build-a-async-processing-system/04-domain-business-layer/README.md)
+- [Layer 5 — import plugins](../../../../../../docs/how-to-build-a-async-processing-system/05-import-plugin-support-layer/README.md)
+- [Layer 1 — upload](../../../../../../docs/how-to-build-a-async-processing-system/01-optional-upload-layer/README.md)
+- [Layer 2 — start adapters](../../../../../../docs/how-to-build-a-async-processing-system/02-start-processing-adapter-layer/README.md)
+- [Layer 3 — async core](../../../../../../docs/how-to-build-a-async-processing-system/03-async-processing-core-layer/README.md)

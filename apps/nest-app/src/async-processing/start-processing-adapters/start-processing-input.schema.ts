@@ -8,7 +8,7 @@ export const sourceLocatorSchema = z.discriminatedUnion("kind", [
   }),
   z.object({
     kind: z.literal("object"),
-    provider: z.enum(["s3", "cos"]),
+    provider: z.enum(["s3", "cos", "aliyun"]),
     bucket: z.string().min(1),
     key: z.string().min(1),
     declaredSizeBytes: z.number().int().nonnegative().optional(),

@@ -14,7 +14,7 @@ export const uploadSourceEntrySchema = z.object({
 });
 
 /**
- * POST /app/async-processing/start — session id only.
+ * POST applications/async-processing/start — session id only.
  * .strict() rejects client-supplied sources or context.
  */
 export const startApiBodySchema = z

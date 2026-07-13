@@ -22,8 +22,8 @@ The upload layer stops before `startProcessing`.
 | This layer owns                                  | [Layer 2](../02-start-processing-adapter-layer/README.md) owns      |
 | ------------------------------------------------ | ------------------------------------------------------------------- |
 | Multipart, disk paths, rollback                  | `UploadSession` type + `UploadSessionStore`                         |
-| S3 presigned PUT / COS STS initiate and complete | Start API, adapters, deferred trust model                           |
-| Build `UploadSessionSources`                     | `mapSessionSourcesToStartInput`, `POST /app/async-processing/start` |
+| S3 presigned PUT / COS STS / Aliyun OSS presigned PUT initiate and complete | Start API, adapters, deferred trust model                           |
+| Build `UploadSessionSources`                     | `mapSessionSourcesToStartInput`, `POST applications/async-processing/start` |
 | `LocalUploadSession` form fields                 | Session consume after successful start                              |
 
 Inject `UploadSessionStore` from Layer 2 — do not duplicate session persistence in upload modules.
@@ -60,7 +60,7 @@ Use local multipart upload when a browser or API client posts files to NestJS wi
 ### Routes and disk layout
 
 ```text
-POST /app/async-processing/:domainKind/upload
+POST applications/async-processing/:domainKind/upload
 ```
 
 ```text
@@ -73,7 +73,7 @@ Use `PROCESSING_UPLOAD_BASE_DIR_ENV` and `DEFAULT_UPLOAD_MAX_BYTES` from [Append
 
 | Mode                                  | Upload success                                         | Next step                                 |
 | ------------------------------------- | ------------------------------------------------------ | ----------------------------------------- |
-| Deferred (`autoStart` false, default) | `UploadSessionStore.save` → `{ uploadSessionId }` only | Client `POST /app/async-processing/start` |
+| Deferred (`autoStart` false, default) | `UploadSessionStore.save` → `{ uploadSessionId }` only | Client `POST applications/async-processing/start` |
 | autoStart (`autoStart` true)          | Emit `processing.start-requested` in-process           | Layer 2 event adapter                     |
 
 On `global_singleton` conflict during autoStart, the event adapter logs and skips — no HTTP `409` ([Layer 2](../02-start-processing-adapter-layer/README.md)).
@@ -127,7 +127,7 @@ flowchart LR
 Resolve full `DomainKindRegistration` (not only `sourceSpecs`) — includes optional `upload` MIME policy.
 
 ```typescript
-@Controller("app/async-processing")
+@Controller("applications/async-processing")
 class LocalMultipartUploadController {
   @Post(":domainKind/upload")
   @UseInterceptors(AnyFilesInterceptor(createLocalMultipartMulterOptions()))
@@ -316,8 +316,8 @@ Client uploads directly to S3 with a server-generated `objectKey`. Server saves 
 ### Routes
 
 ```text
-POST /app/:domainKind/upload/s3/initiate
-POST /app/:domainKind/upload/s3/complete
+POST applications/async-processing/:domainKind/upload/s3/initiate
+POST applications/async-processing/:domainKind/upload/s3/complete
 ```
 
 Request bodies: `objectStoreUploadInitiateBodySchema` and `objectStoreUploadCompleteBodySchema` in [Appendix D](../appendix-d-validation-schemas/README.md).
@@ -408,15 +408,15 @@ function buildS3SessionSources(
 
 ## Tencent COS Direct Upload
 
-Parallel to S3. Client uploads with **scoped STS** credentials and a server-generated `objectKey`. Complete saves `UploadSession`; client calls `POST /app/async-processing/start`.
+Parallel to S3. Client uploads with **scoped STS** credentials and a server-generated `objectKey`. Complete saves `UploadSession`; client calls `POST applications/async-processing/start`.
 
 **Do not** issue STS with `allowPrefix: "*"`. Scope policy to `{prefix}/{uploadSessionId}/` only.
 
 ### Routes
 
 ```text
-POST /app/:domainKind/upload/cos/initiate
-POST /app/:domainKind/upload/cos/complete
+POST applications/async-processing/:domainKind/upload/cos/initiate
+POST applications/async-processing/:domainKind/upload/cos/complete
 ```
 
 Complete body matches S3 complete shape ([Appendix D](../appendix-d-validation-schemas/README.md)).
@@ -464,8 +464,8 @@ Same deferred pattern as S3: server-generated `objectKey`, presigned **PUT** via
 ### Routes
 
 ```text
-POST /app/:domainKind/upload/aliyun-oss/initiate
-POST /app/:domainKind/upload/aliyun-oss/complete
+POST applications/async-processing/:domainKind/upload/aliyun-oss/initiate
+POST applications/async-processing/:domainKind/upload/aliyun-oss/complete
 ```
 
 Initiate and complete bodies use the same Zod schemas as S3/COS ([Appendix D](../appendix-d-validation-schemas/README.md)). Response on initiate matches S3 (`uploadSessionId` + per-`sourceId` `presignedPutUrl`).
@@ -548,7 +548,22 @@ start-processing-adapters/          # Layer 2 — UploadSessionStore shared by a
   providers: [LocalMultipartUploadService],
 })
 export class LocalMultipartUploadModule {}
+
+@Module({
+  imports: [AsyncProcessingModule],
+  controllers: [ObjectStoreUploadController],
+  providers: [
+    ObjectStoreUploadService,
+    PendingObjectUploadStore,
+    S3PresignedPutService,
+    CosScopedStsService,
+    AliyunOssPresignedPutService,
+  ],
+})
+export class ObjectStoreUploadModule {}
 ```
+
+Sandbox wires both upload modules from `AppModule` alongside `AsyncProcessingModule`. Paths: `import/upload/local-multipart/`, `import/upload/object-store/`.
 
 `LocalMultipartUploadService` injects `UploadSessionStore` and `EventEmitter2` for autoStart.
 
@@ -611,4 +626,14 @@ export class LocalMultipartUploadModule {}
 - [ ] Complete saves UploadSession; locator provider: "cos"
 - [ ] No HEAD on complete
 - [ ] REGION env set for worker COS reads
+```
+
+**Aliyun OSS direct:**
+
+```text
+- [ ] Initiate validates sourceSpecs; server keys only
+- [ ] Pending upload state with TTL
+- [ ] Complete saves UploadSession; locator provider: "aliyun"
+- [ ] No HEAD on complete
+- [ ] Aliyun OSS env vars set for worker reads
 ```

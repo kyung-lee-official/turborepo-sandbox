@@ -50,8 +50,8 @@ Used by adapter event payload and object-store session building.
 
 | Schema                                | HTTP route                                                      | Role                                         |
 | ------------------------------------- | --------------------------------------------------------------- | -------------------------------------------- |
-| `objectStoreUploadInitiateBodySchema` | `POST /app/:domainKind/upload/s3/initiate` (or `/cos/initiate`) | Client file metadata before presigned upload |
-| `objectStoreUploadCompleteBodySchema` | `POST /app/:domainKind/upload/s3/complete` (or `/cos/complete`) | Confirm uploaded files and optional sizes    |
+| `objectStoreUploadInitiateBodySchema` | `POST applications/async-processing/:domainKind/upload/{s3,cos,aliyun-oss}/initiate` | Client file metadata before presigned upload |
+| `objectStoreUploadCompleteBodySchema` | `POST applications/async-processing/:domainKind/upload/{s3,cos,aliyun-oss}/complete` | Confirm uploaded files and optional sizes    |
 
 Multipart local upload does not use a JSON body schema. File field names are `sourceId` values; non-file form fields become `context` (see [Appendix C](../appendix-c-constants/README.md) reserved keys).
 
@@ -95,7 +95,7 @@ Chapter: [Layer 2](../02-start-processing-adapter-layer/README.md)
 
 | Schema                          | HTTP route                       | Role                                                       |
 | ------------------------------- | -------------------------------- | ---------------------------------------------------------- |
-| `listProcessingJobsQuerySchema` | `GET /app/async-processing/jobs` | `phase` (comma-separated), `domainKind`, `limit`, `cursor` |
+| `listProcessingJobsQuerySchema` | `GET jobs` | `phase` (comma-separated), `domainKind`, `limit`, `cursor` |
 
 ### Orchestrator source validation (not Zod)
 
@@ -104,7 +104,7 @@ Chapter: [Layer 2](../02-start-processing-adapter-layer/README.md)
 - Every `required: true` spec must have a matching `sources[sourceId]`.
 - Each entry's `sourceId` must match its map key.
 
-`GET /app/async-processing/jobs/:jobId` and SSE have no request body schema. Job errors download returns NDJSON built from persisted rows.
+`GET jobs/:jobId` and SSE have no request body schema. Job errors download returns NDJSON built from persisted rows.
 
 Chapter: [Layer 3](../03-async-processing-core-layer/README.md)
 

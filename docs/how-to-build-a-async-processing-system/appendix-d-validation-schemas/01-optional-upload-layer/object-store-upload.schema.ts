@@ -1,5 +1,5 @@
 /**
- * Appendix D — Layer 1: S3/COS direct upload request bodies (initiate and complete).
+ * Appendix D — Layer 1: object-store direct upload request bodies (S3, COS, Aliyun OSS initiate and complete).
  */
 
 import { z } from "zod";

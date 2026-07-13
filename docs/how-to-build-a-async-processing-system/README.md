@@ -32,7 +32,7 @@ flowchart TD
 
 | Layer | Chapter | Focus |
 | ----- | ------- | ----- |
-| 1 | [Optional Upload Layer](./01-optional-upload-layer/README.md) | Multipart, S3, COS ingest; `UploadSession` |
+| 1 | [Optional Upload Layer](./01-optional-upload-layer/README.md) | Multipart, S3, COS, Aliyun OSS; `UploadSession` |
 | 2 | [Start Processing Adapter Layer](./02-start-processing-adapter-layer/README.md) | Session/event adapters; HTTP `202` start |
 | 3 | [Async Processing Core Layer](./03-async-processing-core-layer/README.md) | Orchestrator, worker, lock, SSE, job API |
 | 4 | [Domain Business Layer](./04-domain-business-layer/README.md) | `DomainRunner`, business rules, `DomainRunResult` |
