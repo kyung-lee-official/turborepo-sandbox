@@ -46,16 +46,16 @@ The upload folder uses `uploadSessionId`, not `jobId`, because the upload layer 
 
 ## Deferred vs Auto-Start
 
-| Mode | Upload success behavior | Next step |
-| --- | --- | --- |
-| Deferred | Save `UploadSession`, return `{ uploadSessionId }` only | Client calls `POST /app/async-processing/start` |
-| Auto-start | Emit `processing.start-requested` with trusted in-process sources | Event adapter calls `startProcessing` |
+| Mode       | Upload success behavior                                           | Next step                                       |
+| ---------- | ----------------------------------------------------------------- | ----------------------------------------------- |
+| Deferred   | Save `UploadSession`, return `{ uploadSessionId }` only           | Client calls `POST /app/async-processing/start` |
+| Auto-start | Emit `processing.start-requested` with trusted in-process sources | Event adapter calls `startProcessing`           |
 
 Deferred is the default and safest model. The client never receives locators.
 
 ## Upload Session Shape
 
-The upload layer builds `UploadSession` and `UploadSessionSources`. See [Appendix B: Shared Types](../appendix-b-shared-types/README.md).
+The upload layer builds `UploadSession` and `UploadSessionSources`. See [Appendix B: Shared Types](../appendix-b-shared-types/README.md). Persist sessions via `UploadSessionStore` ([Layer 2](../02-start-processing-adapter-layer/README.md)).
 
 `context` contains non-file form fields such as `yearMonth` or `timezone`. Reserved form keys (`autoStart`, `uploadSessionId`) are listed in [Appendix C](../appendix-c-constants/README.md). Local uploads use `SourceLocator` with `kind: "local"`; object-store uploads add `kind: "object"` with `provider`, `bucket`, and `key`.
 

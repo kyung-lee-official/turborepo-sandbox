@@ -81,6 +81,8 @@ Chapter: [Layer 1](../01-optional-upload-layer/README.md)
 - Optional: if body includes `domainKind`, it matches session `domainKind`.
 - When mapping session to `StartProcessingInput`, each map key must equal `entry.sourceId`.
 
+Adapter implementation patterns (API/event adapters, `UploadSessionStore`, module layout): [Layer 2](../02-start-processing-adapter-layer/README.md).
+
 Chapter: [Layer 2](../02-start-processing-adapter-layer/README.md)
 
 ---

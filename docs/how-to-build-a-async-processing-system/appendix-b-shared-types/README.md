@@ -237,4 +237,5 @@ Clients discriminate live progress by `progress.phase`.
 | Prisma models and DB enums                       | [Appendix A](../appendix-a-prisma-data-model/README.md)  |
 | Zod schemas for HTTP, events, and domain context | [Appendix D](../appendix-d-validation-schemas/README.md) |
 | Default TTLs, queue name, Redis channel prefixes | [Appendix C](../appendix-c-constants/README.md)          |
+| Adapter implementation patterns (store, adapters) | [Layer 2](../02-start-processing-adapter-layer/README.md) |
 | Repository and worker implementation patterns    | [Layer 3](../03-async-processing-core-layer/README.md)   |
