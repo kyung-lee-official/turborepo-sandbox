@@ -6,6 +6,7 @@ import { ProgramLifecycleModule } from "./program-lifecycle/program-lifecycle.mo
 import { ResendModule } from "./resend/resend.module";
 import { SalesDataModule } from "./sales-data/sales-data.module";
 import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.module";
+import { WorkerModule } from "./worker/worker.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     SalesDataModule,
     AliyunOssModule,
     AsyncGeneratePdfModule,
+    WorkerModule,
   ],
   exports: [
     ProgramLifecycleModule,
@@ -25,6 +27,7 @@ import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.mod
     SalesDataModule,
     AliyunOssModule,
     AsyncGeneratePdfModule,
+    WorkerModule,
   ],
 })
 export class ApplicationsModule {}

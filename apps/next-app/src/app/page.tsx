@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { NavLinkWithTooltip } from "@/components/home/nav-link-with-tooltip";
-import { filesBlockLinks } from "./files-block-links";
 import { Airbnb } from "./chart/visx/Icons";
+import { filesBlockLinks } from "./files-block-links";
 
 const Block = ({
   title,
@@ -715,6 +715,15 @@ export default function Home() {
           {
             link: "/websocket/upload-large-json",
             text: "upload large json",
+          },
+        ]}
+      />
+      <Block
+        title="Worker"
+        list={[
+          {
+            link: "/worker/piscina",
+            text: "piscina thread pool demo",
           },
         ]}
       />
