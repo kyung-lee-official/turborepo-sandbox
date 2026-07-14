@@ -80,9 +80,5 @@ file-uploads/*
 !.reasonix/skills/
 !.reasonix/memories/
 
-# MiCode runtime state (ignore internals, track config/skills/instructions)
-.mimocode/*
-!.mimocode/mimocode.json
-!.mimocode/skills/
-!.mimocode/instructions/
-!.mimocode/agent/
+# MiCode session state
+.mimocode/
