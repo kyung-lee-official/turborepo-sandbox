@@ -81,4 +81,4 @@ file-uploads/*
 !.reasonix/memories/
 
 # MiCode session state
-.mimocode/
+.mimocode
