@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function PiscinaPage() {
   const [max, setMax] = useState(10_000_000);
@@ -41,6 +41,55 @@ export default function PiscinaPage() {
     setPingResult(`responded in ${ms}ms — ${data.at}`);
   };
 
+  // --- SSE progress demo ---
+  const [streamPercent, setStreamPercent] = useState<number | null>(null);
+  const [streamResult, setStreamResult] = useState<{
+    primes: number;
+    durationMs: number;
+  } | null>(null);
+  const [streaming, setStreaming] = useState(false);
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const doneRef = useRef(false);
+
+  const runWithProgress = () => {
+    setStreamPercent(0);
+    setStreamResult(null);
+    setStreaming(true);
+    doneRef.current = false;
+
+    const nestBaseUrl =
+      process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+    const es = new EventSource(
+      `${nestBaseUrl}/worker/piscina/count-primes/stream?max=${max}`,
+    );
+    eventSourceRef.current = es;
+
+    es.onmessage = (event) => {
+      const data = JSON.parse(event.data) as {
+        percent: number;
+        primes?: number;
+        durationMs?: number;
+      };
+      setStreamPercent(data.percent);
+      if (data.percent === 100 && data.primes != null) {
+        doneRef.current = true;
+        setStreamResult({
+          primes: data.primes,
+          durationMs: data.durationMs ?? 0,
+        });
+        setStreaming(false);
+        es.close();
+      }
+    };
+
+    es.onerror = () => {
+      if (!doneRef.current) {
+        setStreaming(false);
+      }
+      es.close();
+    };
+  };
+
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-8">
       <h1 className="font-bold text-2xl">Piscina Worker Thread Pool</h1>
@@ -57,9 +106,9 @@ export default function PiscinaPage() {
             offload CPU-heavy work to a worker thread.
           </li>
           <li>
-            <strong>Worker executes</strong> — Piscina calls the worker
-            file&apos;s <code>export default</code> function with the submitted
-            data.
+            <strong>Worker communicates</strong> — the worker calls{" "}
+            <code>parentPort.postMessage()</code> to send progress updates while
+            computing.
           </li>
           <li>
             <strong>Get result</strong> — <code>run()</code> resolves with the
@@ -92,6 +141,14 @@ export default function PiscinaPage() {
           >
             {loading ? "Running..." : "Run"}
           </button>
+          <button
+            type="button"
+            onClick={runWithProgress}
+            disabled={streaming}
+            className="rounded bg-purple-600 px-4 py-1 text-white hover:bg-purple-700 disabled:opacity-50"
+          >
+            {streaming ? "Streaming..." : "Run with progress"}
+          </button>
         </div>
         {result && (
           <div className="rounded bg-gray-100 p-3 text-sm">
@@ -100,6 +157,26 @@ export default function PiscinaPage() {
             </p>
             <p>
               Duration: <strong>{result.durationMs} ms</strong> (worker thread)
+            </p>
+          </div>
+        )}
+        {streamPercent !== null && (
+          <div className="space-y-1">
+            <div className="h-4 w-full overflow-hidden rounded bg-gray-200">
+              <div
+                className="h-full bg-purple-600 transition-all duration-300"
+                style={{ width: `${streamPercent}%` }}
+              />
+            </div>
+            <p className="text-gray-600 text-sm">
+              Progress: <strong>{streamPercent}%</strong>
+              {streamResult && (
+                <>
+                  {" — "}
+                  <strong>{streamResult.primes.toLocaleString()}</strong> primes
+                  in <strong>{streamResult.durationMs} ms</strong>
+                </>
+              )}
             </p>
           </div>
         )}
@@ -116,9 +193,9 @@ export default function PiscinaPage() {
           )}
         </div>
         <p className="text-gray-500 text-xs">
-          Tip: click <strong>Run</strong> with a large Max, then immediately
-          click <strong>Ping</strong>. If Ping responds instantly, the event
-          loop is not blocked.
+          Tip: click <strong>Run with progress</strong>, then immediately click{" "}
+          <strong>Ping</strong>. If Ping responds instantly while the bar is
+          filling, the event loop is not blocked.
         </p>
       </section>
 
