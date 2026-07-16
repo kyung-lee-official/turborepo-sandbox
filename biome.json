@@ -7,11 +7,14 @@
   },
   "files": {
     "includes": [
-      "**/*.{ts,tsx,js,jsx,json}",
+      "**/*.{ts,tsx,js,jsx,json,css}",
       "!.git",
-      "!。turbo",
+      "!.turbo",
       "!node_modules",
-      "bun.lock"
+      "!dist",
+      "!build",
+      "!.next",
+      "!bun.lock"
     ]
   },
   "formatter": {
@@ -23,11 +26,39 @@
   },
   "linter": {
     "enabled": true,
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    },
     "rules": {
       "recommended": true,
+      "nursery": {
+        "useSortedClasses": {
+          "level": "warn",
+          "fix": "safe"
+        }
+      },
       "correctness": {
         "noUnusedVariables": "off",
-        "noUnusedFunctionParameters": "off"
+        "noUnusedFunctionParameters": "off",
+        "noUnusedImports": {
+          "level": "warn",
+          "fix": "safe"
+        }
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off"
+      },
+      "a11y": {
+        "noSvgWithoutTitle": "off",
+        "useKeyWithMouseEvents": "warn",
+        "useKeyWithClickEvents": "off",
+        "noStaticElementInteractions": "off",
+        "useButtonType": "off",
+        "noLabelWithoutControl": "off"
+      },
+      "style": {
+        "useImportType": "off"
       }
     }
   },
@@ -37,6 +68,11 @@
     },
     "parser": {
       "unsafeParameterDecoratorsEnabled": true
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "assist": {
