@@ -3,6 +3,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import type { Job } from "bullmq";
 import {
   ASYNC_PROCESSING_QUEUE,
+  ASYNC_PROCESSING_WORKER_LOCK_DURATION_MS,
   type AsyncProcessingJobPayload,
   type DomainKindRegistration,
   type DomainRunResult,
@@ -19,7 +20,9 @@ import { ProcessingProgressPublisher } from "./processing-progress-publisher.ser
 import { ProcessingSourceReader } from "./processing-source.reader";
 
 @Injectable()
-@Processor(ASYNC_PROCESSING_QUEUE)
+@Processor(ASYNC_PROCESSING_QUEUE, {
+  lockDuration: ASYNC_PROCESSING_WORKER_LOCK_DURATION_MS,
+})
 export class ProcessingProcessor extends WorkerHost {
   private readonly logger = new Logger(ProcessingProcessor.name);
   private readonly lastLeaseRefreshAt = new Map<string, number>();

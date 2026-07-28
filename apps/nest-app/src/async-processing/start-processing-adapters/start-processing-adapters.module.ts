@@ -16,6 +16,6 @@ import { UploadSessionStore } from "./upload-session.store";
     EventStartProcessingAdapter,
     ProcessingStartRequestedListener,
   ],
-  exports: [UploadSessionStore],
+  exports: [UploadSessionStore, ApiStartProcessingAdapter],
 })
 export class StartProcessingAdaptersModule {}

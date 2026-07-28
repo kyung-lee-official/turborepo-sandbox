@@ -5,7 +5,10 @@ const MIME_TO_EXTENSION: Record<string, string> = {
   "application/x-ndjson": ".jsonl",
   "application/json": ".jsonl",
   "application/octet-stream": ".bin",
+  "video/mp4": ".mp4",
 };
+
+const ALLOWED_ORIGINAL_EXTENSIONS = new Set([".xlsx", ".jsonl", ".mp4"]);
 
 export function extensionFromMime(mimeType: string | undefined): string {
   if (!mimeType) {
@@ -16,7 +19,7 @@ export function extensionFromMime(mimeType: string | undefined): string {
 
 export function extensionFromOriginalName(originalName: string): string {
   const ext = extname(originalName).toLowerCase();
-  if (ext === ".xlsx" || ext === ".jsonl") {
+  if (ALLOWED_ORIGINAL_EXTENSIONS.has(ext)) {
     return ext;
   }
   return "";

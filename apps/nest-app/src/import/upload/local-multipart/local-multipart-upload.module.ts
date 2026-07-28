@@ -7,5 +7,6 @@ import { LocalMultipartUploadService } from "./local-multipart-upload.service";
   imports: [AsyncProcessingModule],
   controllers: [LocalMultipartUploadController],
   providers: [LocalMultipartUploadService],
+  exports: [LocalMultipartUploadService],
 })
 export class LocalMultipartUploadModule {}

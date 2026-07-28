@@ -21,13 +21,16 @@ export function resolveUploadBaseDir(): string {
   );
 }
 
-export function createLocalMultipartMulterOptions(): {
+export function createLocalMultipartMulterOptions(options?: {
+  maxFileSizeBytes?: number;
+}): {
   storage: ReturnType<typeof diskStorage>;
   limits: { fileSize: number };
 } {
   const uploadBaseDir = resolveUploadBaseDir();
   const maxFileSizeBytes =
-    Number(process.env.PROCESSING_UPLOAD_MAX_BYTES) || 200 * 1024 * 1024;
+    options?.maxFileSizeBytes ??
+    (Number(process.env.PROCESSING_UPLOAD_MAX_BYTES) || 200 * 1024 * 1024);
 
   return {
     limits: { fileSize: maxFileSizeBytes },

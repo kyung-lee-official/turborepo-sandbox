@@ -114,3 +114,5 @@ export const ACTIVE_JOB_TTL_SECONDS = 60 * 60 * 24;
 export const STALE_PROCESSING_MS = 2 * 60 * 60 * 1000;
 export const SSE_IDLE_TIMEOUT_MS = 60_000;
 export const LEASE_REFRESH_INTERVAL_MS = 60_000;
+/** BullMQ worker lock; renewed while domain runners execute (multi-hour jobs). */
+export const ASYNC_PROCESSING_WORKER_LOCK_DURATION_MS = 10 * 60 * 1000;

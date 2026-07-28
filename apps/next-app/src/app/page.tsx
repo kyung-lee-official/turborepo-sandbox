@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { NavLinkWithTooltip } from "@/components/home/nav-link-with-tooltip";
 import { Airbnb } from "./chart/visx/Icons";
 import { filesBlockLinks } from "./files-block-links";
+import { videoBlockLinks } from "./video-block-links";
 
 const Block = ({
   title,
@@ -275,6 +276,7 @@ export default function Home() {
         ]}
       />
       <Block title="Files" list={[...filesBlockLinks]} />
+      <Block title="Video" list={[...videoBlockLinks]} />
       <Block
         title="Javascript | React"
         list={[
