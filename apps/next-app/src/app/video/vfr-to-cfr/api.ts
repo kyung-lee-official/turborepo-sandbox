@@ -1,21 +1,47 @@
 import axios from "axios";
 
-/** No axios timeout — 20 GB uploads can take hours on slow links. */
 export const VFR_TO_CFR_UPLOAD_TIMEOUT_MS = 0;
-
-/** Allow multi-hour libx264 re-encode for large sources. */
 export const VFR_TO_CFR_JOB_WAIT_TIMEOUT_MS = 6 * 60 * 60 * 1000;
-
-/** Matches Nest default when env unset (22 GiB). */
 export const DEFAULT_VFR_TO_CFR_MAX_UPLOAD_BYTES = 22 * 1024 * 1024 * 1024;
 
-export type UploadSessionResponse = {
-  uploadSessionId: string;
+export type VideoListItem = {
+  id: string;
+  kind: "uploaded" | "output";
+  label: string;
+  sizeBytes: number;
+  sha256: string;
+  createdAt: string;
+  durationSeconds: number | null;
+  sourceUploadId?: string;
+  jobId?: string;
 };
 
-export type StartProcessingResponse = {
+export type VideoDetail = VideoListItem & {
+  metadataMarkdown: string;
+  avgFrameRate?: string | null;
+  avgFrameRateFps?: number | null;
+  suggestedTargetFps?: number | null;
+};
+
+export type ConvertUploadedOptions = {
+  targetFps?: number;
+  matchSourceAverage?: boolean;
+};
+
+export type UploadVideoResult = {
+  id: string;
+  label: string;
+  sizeBytes: number;
+  sha256: string;
+  createdAt: string;
+  durationSeconds: number | null;
+};
+
+export type ConvertVideoResult = {
   jobId: string;
-  manifestId: string;
+  outputId: string;
+  uploadId: string;
+  targetFps: number;
 };
 
 export type ProcessingJobResponse = {
@@ -34,7 +60,13 @@ export type ProcessingJobResponse = {
 export type VfrToCfrTemplateInfo = {
   maxUploadBytes: number;
   maxUploadBytesEnv: string;
+  targetFpsPresets: number[];
+  defaultTargetFps: number;
 };
+
+export const DEFAULT_VFR_TO_CFR_TARGET_FPS_PRESETS = [
+  23.976, 24, 25, 29.97, 30, 59.94, 60,
+] as const;
 
 export type UploadProgressUpdate = {
   loaded: number;
@@ -51,17 +83,45 @@ export async function fetchVfrToCfrTemplateInfo(): Promise<VfrToCfrTemplateInfo>
   return res.data;
 }
 
-export const uploadVfrVideo = async (
+export async function listUploadedVideos(): Promise<VideoListItem[]> {
+  const res = await axios.get<VideoListItem[]>("/vfr-to-cfr/uploaded", {
+    baseURL: nestBaseUrl,
+  });
+  return res.data;
+}
+
+export async function listOutputVideos(): Promise<VideoListItem[]> {
+  const res = await axios.get<VideoListItem[]>("/vfr-to-cfr/output", {
+    baseURL: nestBaseUrl,
+  });
+  return res.data;
+}
+
+export async function getUploadedVideoDetail(id: string): Promise<VideoDetail> {
+  const res = await axios.get<VideoDetail>(`/vfr-to-cfr/uploaded/${id}`, {
+    baseURL: nestBaseUrl,
+  });
+  return res.data;
+}
+
+export async function getOutputVideoDetail(id: string): Promise<VideoDetail> {
+  const res = await axios.get<VideoDetail>(`/vfr-to-cfr/output/${id}`, {
+    baseURL: nestBaseUrl,
+  });
+  return res.data;
+}
+
+export async function uploadVideoFile(
   video: File,
   options?: {
     onUploadProgress?: (update: UploadProgressUpdate) => void;
   },
-): Promise<UploadSessionResponse> => {
+): Promise<UploadVideoResult> {
   const formData = new FormData();
   formData.append("video", video);
 
-  const res = await axios.post<UploadSessionResponse>(
-    "/vfr-to-cfr/upload",
+  const res = await axios.post<UploadVideoResult>(
+    "/vfr-to-cfr/uploaded",
     formData,
     {
       baseURL: nestBaseUrl,
@@ -76,41 +136,52 @@ export const uploadVfrVideo = async (
     },
   );
   return res.data;
-};
+}
 
-export const startVfrToCfrProcessing = async (
-  uploadSessionId: string,
-): Promise<StartProcessingResponse> => {
-  const res = await axios.post<StartProcessingResponse>(
-    "/vfr-to-cfr/start",
-    {
-      uploadSessionId,
-    },
+export async function convertUploadedVideo(
+  uploadId: string,
+  options: ConvertUploadedOptions = {},
+): Promise<ConvertVideoResult> {
+  const res = await axios.post<ConvertVideoResult>(
+    `/vfr-to-cfr/uploaded/${uploadId}/convert`,
+    options,
     {
       baseURL: nestBaseUrl,
       timeout: 60_000,
     },
   );
   return res.data;
-};
+}
 
-export const getProcessingJob = async (
+export async function deleteUploadedVideo(id: string): Promise<void> {
+  await axios.delete(`/vfr-to-cfr/uploaded/${id}`, {
+    baseURL: nestBaseUrl,
+  });
+}
+
+export async function deleteOutputVideo(id: string): Promise<void> {
+  await axios.delete(`/vfr-to-cfr/output/${id}`, {
+    baseURL: nestBaseUrl,
+  });
+}
+
+export async function getProcessingJob(
   jobId: string,
-): Promise<ProcessingJobResponse> => {
+): Promise<ProcessingJobResponse> {
   const res = await axios.get<ProcessingJobResponse>(`/jobs/${jobId}`, {
     baseURL: nestBaseUrl,
   });
   return res.data;
-};
+}
 
-export function downloadConvertedVideo(jobId: string): void {
+export function downloadOutputVideo(outputId: string): void {
   if (!nestBaseUrl) {
     throw new Error("NEXT_PUBLIC_NESTJS is not configured");
   }
-  const url = `${nestBaseUrl.replace(/\/$/, "")}/vfr-to-cfr/jobs/${jobId}/download`;
+  const url = `${nestBaseUrl.replace(/\/$/, "")}/vfr-to-cfr/output/${outputId}/download`;
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `cfr-${jobId}.mp4`;
+  anchor.download = `cfr-${outputId}.mp4`;
   anchor.click();
 }
 
@@ -125,6 +196,29 @@ export function formatVideoFileSize(bytes: number): string {
     return `${(bytes / 1024).toFixed(1)} KB`;
   }
   return `${bytes.toLocaleString()} B`;
+}
+
+export function formatDuration(seconds: number | null): string {
+  if (seconds == null) {
+    return "—";
+  }
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}
+
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString();
+}
+
+export function formatTargetFps(fps: number): string {
+  if (Number.isInteger(fps)) {
+    return String(fps);
+  }
+  return fps
+    .toFixed(3)
+    .replace(/(\.\d*?)0+$/, "$1")
+    .replace(/\.$/, "");
 }
 
 export function readAxiosErrorMessage(error: unknown): string {

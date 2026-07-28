@@ -1,110 +1,83 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
   Post,
-  Req,
   StreamableFile,
-  UploadedFiles,
+  UploadedFile,
   UseFilters,
   UseInterceptors,
 } from "@nestjs/common";
-import { AnyFilesInterceptor } from "@nestjs/platform-express";
-import type { Request } from "express";
-import { DomainRegistry } from "@/async-processing/async-processing-core/domain-registry.service";
-import { ApiStartProcessingAdapter } from "@/async-processing/start-processing-adapters/api-start-processing.adapter";
-import { buildUploadSessionContextFromMultipartBody } from "@/import/upload/local-multipart/build-upload-session-context";
-import { LocalMultipartUploadService } from "@/import/upload/local-multipart/local-multipart-upload.service";
-import type { LocalUploadSession } from "@/import/upload/local-multipart/local-upload-session.types";
-import {
-  createLocalMultipartMulterOptions,
-  RESOLVED_UPLOAD_SESSION_ID,
-} from "@/import/upload/local-multipart/multer-disk-storage.factory";
-import {
-  resolveVfrToCfrMaxUploadBytes,
-  VFR_TO_CFR_DOMAIN_KIND,
-} from "./vfr-to-cfr.constants";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { createVfrToCfrUploadMulterOptions } from "./helpers/upload-multer.factory";
 import { VfrToCfrService } from "./vfr-to-cfr.service";
 import { VfrToCfrMulterExceptionFilter } from "./vfr-to-cfr-multer.exception-filter";
 
-type RequestWithSessionId = Request & {
-  [RESOLVED_UPLOAD_SESSION_ID]?: string;
-};
-
-function vfrToCfrMulterOptions() {
-  return createLocalMultipartMulterOptions({
-    maxFileSizeBytes: resolveVfrToCfrMaxUploadBytes(),
-  });
-}
-
-function groupUploadedFiles(
-  files: Express.Multer.File[] | undefined,
-): Record<string, Express.Multer.File[] | undefined> {
-  const grouped: Record<string, Express.Multer.File[]> = {};
-  for (const file of files ?? []) {
-    const bucket = grouped[file.fieldname] ?? [];
-    bucket.push(file);
-    grouped[file.fieldname] = bucket;
-  }
-  return grouped;
-}
-
 @Controller("vfr-to-cfr")
 export class VfrToCfrController {
-  constructor(
-    private readonly vfrToCfrService: VfrToCfrService,
-    private readonly domainRegistry: DomainRegistry,
-    private readonly localMultipartUploadService: LocalMultipartUploadService,
-    private readonly apiStartProcessingAdapter: ApiStartProcessingAdapter,
-  ) {}
+  constructor(private readonly vfrToCfrService: VfrToCfrService) {}
 
   @Get()
   getTemplateInfo() {
     return this.vfrToCfrService.getTemplateInfo();
   }
 
-  @Post("upload")
+  @Post("uploaded")
   @UseFilters(VfrToCfrMulterExceptionFilter)
-  @UseInterceptors(AnyFilesInterceptor(vfrToCfrMulterOptions()))
-  async upload(
-    @UploadedFiles() uploadedFiles: Express.Multer.File[] | undefined,
-    @Body() body: Record<string, string | undefined>,
-    @Req() req: RequestWithSessionId,
-  ) {
-    const registration = this.domainRegistry.getByDomainKind(
-      VFR_TO_CFR_DOMAIN_KIND,
-    );
-    const session: LocalUploadSession = {
-      domainKind: VFR_TO_CFR_DOMAIN_KIND,
-      autoStart: body.autoStart === "true",
-      uploadSessionId: body.uploadSessionId,
-      context: buildUploadSessionContextFromMultipartBody(
-        body,
-        registration.sourceSpecs.map((spec) => spec.sourceId),
-      ),
-    };
-
-    return this.localMultipartUploadService.handleUpload(
-      groupUploadedFiles(uploadedFiles),
-      session,
-      registration,
-      req,
-    );
+  @UseInterceptors(
+    FileInterceptor("video", createVfrToCfrUploadMulterOptions()),
+  )
+  async uploadVideo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Missing video file (form field "video")');
+    }
+    return this.vfrToCfrService.registerUploadedVideo(file);
   }
 
-  @Post("start")
+  @Get("uploaded")
+  listUploaded() {
+    return this.vfrToCfrService.listUploaded();
+  }
+
+  @Get("uploaded/:id")
+  getUploaded(@Param("id") id: string) {
+    return this.vfrToCfrService.getUploadedDetail(id);
+  }
+
+  @Delete("uploaded/:id")
+  @HttpCode(204)
+  async deleteUploaded(@Param("id") id: string): Promise<void> {
+    await this.vfrToCfrService.deleteUploaded(id);
+  }
+
+  @Post("uploaded/:id/convert")
   @HttpCode(202)
-  async start(@Body() body: { uploadSessionId?: string }) {
-    return this.apiStartProcessingAdapter.handle({
-      uploadSessionId: body.uploadSessionId,
-      domainKind: VFR_TO_CFR_DOMAIN_KIND,
-    });
+  convertUploaded(@Param("id") id: string, @Body() body: unknown) {
+    return this.vfrToCfrService.startConvert(id, body);
   }
 
-  @Get("jobs/:jobId/download")
-  downloadResult(@Param("jobId") jobId: string): Promise<StreamableFile> {
-    return this.vfrToCfrService.downloadResult(jobId);
+  @Get("output")
+  listOutput() {
+    return this.vfrToCfrService.listOutput();
+  }
+
+  @Get("output/:id")
+  getOutput(@Param("id") id: string) {
+    return this.vfrToCfrService.getOutputDetail(id);
+  }
+
+  @Delete("output/:id")
+  @HttpCode(204)
+  async deleteOutput(@Param("id") id: string): Promise<void> {
+    await this.vfrToCfrService.deleteOutput(id);
+  }
+
+  @Get("output/:id/download")
+  downloadOutput(@Param("id") id: string): Promise<StreamableFile> {
+    return this.vfrToCfrService.downloadOutput(id);
   }
 }

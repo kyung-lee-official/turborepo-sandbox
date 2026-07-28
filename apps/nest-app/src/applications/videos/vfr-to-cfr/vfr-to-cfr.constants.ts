@@ -9,8 +9,15 @@ export const VFR_TO_CFR_SOURCE_IDS = {
   video: "video",
 } as const;
 
-/** Demo default: force constant 30 fps. */
+/** Fallback when source average frame rate cannot be read. */
 export const VFR_TO_CFR_DEFAULT_FPS = 30;
+
+export const VFR_TO_CFR_MIN_TARGET_FPS = 1;
+export const VFR_TO_CFR_MAX_TARGET_FPS = 120;
+
+export const VFR_TO_CFR_TARGET_FPS_PRESETS = [
+  23.976, 24, 25, 29.97, 30, 59.94, 60,
+] as const;
 
 /** Env override for max multipart upload size (bytes). */
 export const VFR_TO_CFR_UPLOAD_MAX_BYTES_ENV = "VFR_TO_CFR_UPLOAD_MAX_BYTES";

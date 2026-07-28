@@ -50,48 +50,6 @@ function runProcess(
   });
 }
 
-export async function probeMediaDurationSeconds(
-  inputPath: string,
-): Promise<number | null> {
-  return new Promise((resolve) => {
-    const child = spawn(
-      "ffprobe",
-      [
-        "-v",
-        "error",
-        "-show_entries",
-        "format=duration",
-        "-of",
-        "default=noprint_wrappers=1:nokey=1",
-        inputPath,
-      ],
-      {
-        windowsHide: true,
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    );
-
-    let stdout = "";
-    child.stdout?.setEncoding("utf8");
-    child.stdout?.on("data", (chunk: string) => {
-      stdout += chunk;
-    });
-
-    child.on("error", () => {
-      resolve(null);
-    });
-
-    child.on("close", (code) => {
-      if (code !== 0) {
-        resolve(null);
-        return;
-      }
-      const duration = Number(stdout.trim());
-      resolve(Number.isFinite(duration) && duration > 0 ? duration : null);
-    });
-  });
-}
-
 export type FfmpegCfrProgress = {
   percent: number | null;
   detail: string;
