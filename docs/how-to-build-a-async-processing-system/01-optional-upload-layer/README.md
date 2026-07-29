@@ -36,7 +36,7 @@ Use local multipart upload when a browser or API client posts files to NestJS wi
 
 **Upload progress:** Nest stream metering — not job SSE ([Layer 3](../03-async-processing-core-layer/README.md)).
 
-**Input files are ephemeral:** the worker deletes local paths in `finally` after processing.
+Staging paths under `temp/processing-uploads` are often disposable **to the application**, but [Layer 3](../03-async-processing-core-layer/README.md) does **not** delete them after a job. Blob retention is app policy (TTL, GC, domain post-step, or an optional demo cleanup) — not part of the async-processing contract.
 
 ### Must not
 
@@ -574,8 +574,16 @@ export class ObjectStoreUploadModule {}
 - Upload does not acquire `ProcessingActiveJobLock`.
 - Upload does not put file buffers in Redis or BullMQ.
 - Upload progress is separate from async job progress.
-- Worker cleanup deletes local/object locators after processing.
+- This layer does not promise post-job deletion of staging blobs; callers that need bounded disk clean up themselves (TTL, GC, domain/post-job hook, or demo-only cleanup).
 - Ingest never calls `startProcessing` — Layer 2 adapters only.
+
+## Optional staging cleanup (demo)
+
+Manifest locators are readable inputs for the job. The async-processing core verifies they exist and opens streams; it does **not** create or delete those blobs when the job finishes.
+
+Applications that stage ephemeral uploads may delete them after success (or via object-store lifecycle / a periodic GC on `temp/processing-uploads`). Applications that treat sources as a durable library must not assume any automatic deletion.
+
+A sample app may call `ProcessingSourceReader.deleteLocator` (or `unlink` / object `DeleteObject`) after a successful job. That is **optional demo hygiene**, not a Layer 1–3 requirement.
 
 ## Rules and Anti-Patterns
 

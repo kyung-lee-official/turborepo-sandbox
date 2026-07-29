@@ -16,7 +16,7 @@ VerifiedProcessingSource map + DomainRunnerIo
 
 The domain layer does not start jobs. It runs because the core selected its registered `DomainRunner`.
 
-**Greenfield rule:** numbered flows in this chapter describe behavior. **Implementation pattern** blocks show the required code shape. Domains live in dedicated modules per `domainKind`; runners do not start jobs, acquire locks, verify locators, or format HTTP error downloads.
+**Greenfield rule:** numbered flows in this chapter describe behavior. **Implementation pattern** blocks show the required code shape. Domains live in dedicated modules per `domainKind`; runners do not start jobs, acquire locks, verify locators, or format HTTP error downloads. Blob retention after the job is app policy — runners neither assume nor rely on Layer 3 deleting sources.
 
 ## Domain Registration
 
@@ -495,7 +495,8 @@ In the `catalog-import` pattern above, valid rows are collected during parse, th
 | Anti-pattern                                      | Why                                                                 |
 | ------------------------------------------------- | ------------------------------------------------------------------- |
 | Runner calls `startProcessing`                    | Layer 2 adapters own job creation                                   |
-| Runner verifies locators or deletes upload blobs  | Layer 3 worker owns verification and cleanup                        |
+| Runner verifies locators                          | Layer 3 worker verifies once and passes `VerifiedProcessingSource`  |
+| Runner assumes the worker deletes staging blobs   | Blob retention is app policy; neither core nor domain is required to delete |
 | Runner acquires `ActiveJobLock`                   | Layer 3 orchestrator owns lock policy                               |
 | One transaction around the entire import          | Blocks persisting valid rows when some rows fail validation         |
 | Re-trim strings already trimmed at plugin ingest  | Breaks map lookup on stored literals                                |
@@ -511,7 +512,7 @@ In the `catalog-import` pattern above, valid rows are collected during parse, th
 - Domain code does not create processing jobs.
 - Domain code does not acquire active locks.
 - Domain code does not verify locators.
-- Domain code does not delete upload locators.
+- Domain code does not assume Layer 3 deletes source locators after the job.
 - Domain code owns business schemas and rules.
 - Domain code owns valid-data persistence.
 - Domain returns structured errors, not error files.

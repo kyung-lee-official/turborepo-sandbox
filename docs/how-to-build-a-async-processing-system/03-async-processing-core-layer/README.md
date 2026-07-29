@@ -26,7 +26,7 @@ The core never handles upload bytes and never hardcodes domain business rules.
 | Redis with BullMQ | Queue                                                                  |
 | Redis pub/sub     | Live progress and terminal events                                      |
 | Redis lock        | `global_singleton` admission per `domainKind`                          |
-| Disk/object store | Input blobs produced by upload layer; worker deletes them in `finally` |
+| Disk/object store | Input blobs produced by upload or app code; core does not delete them after the job |
 
 ## Main Components
 
@@ -36,7 +36,7 @@ The core never handles upload bytes and never hardcodes domain business rules.
 | `ProcessingJobRepository`       | Creates jobs and manifests, claims/finalizes jobs                     |
 | `ProcessingJobErrorRepository`  | Persists validation errors from domain results                        |
 | `DomainRegistry`                | Maps `domainKind` to runner, source specs, lock policy, upload policy |
-| `ProcessingSourceReader`        | Verifies, opens, and deletes locators                                 |
+| `ProcessingSourceReader`        | Verifies and opens locators (optional `deleteLocator` helper for apps) |
 | `ProcessingProcessor`           | BullMQ worker                                                         |
 | `ProcessingProgressPublisher`   | Publishes progress and terminal events to Redis                       |
 | `ProcessingProgressSseService`  | Streams job progress to clients                                       |
@@ -438,7 +438,8 @@ Required flow:
 11. Finalize job as `complete`.
 12. Publish terminal event.
 13. In `finally`, release lock only if the job is terminal and the lock is held by this job.
-14. In `finally`, best-effort delete verified locators.
+
+The worker does **not** delete source locators after the job. Blob lifecycle is app policy — see [Optional staging cleanup (demo)](../01-optional-upload-layer/README.md#optional-staging-cleanup-demo).
 
 | Failure zone | Action                                                                                                            |
 | ------------ | ----------------------------------------------------------------------------------------------------------------- |
@@ -455,7 +456,6 @@ class ProcessingProcessor extends WorkerHost {
 
   async process(job: Job<AsyncProcessingJobPayload>) {
     const { jobId, manifestId } = job.data;
-    const verifiedForCleanup: VerifiedProcessingSource[] = [];
 
     const existing = await jobRepository.findById(jobId);
     if (existing?.phase === "complete" || existing?.phase === "failed") {
@@ -512,13 +512,6 @@ class ProcessingProcessor extends WorkerHost {
         (await activeJobLock.isHeldBy(jobId, row.domainKind))
       ) {
         await activeJobLock.release(row.domainKind, jobId);
-      }
-      for (const source of verifiedForCleanup) {
-        try {
-          await sourceReader.deleteLocator(source.verifiedLocator);
-        } catch {
-          /* log */
-        }
       }
     }
   }
@@ -582,6 +575,8 @@ Verification happens once in the worker after the job is claimed and before doma
 
 Domain runners receive `VerifiedProcessingSource` and should not re-verify locators.
 
+Verification does not imply ownership of blob lifecycle. After the job finishes, Layer 3 leaves locators in place. Apps that need to reclaim staging disk or object keys do so outside the worker (see [Optional staging cleanup (demo)](../01-optional-upload-layer/README.md#optional-staging-cleanup-demo)). `ProcessingSourceReader.deleteLocator` may exist as a helper for those callers; the worker does not invoke it.
+
 ### Implementation pattern: `verifyLocator`
 
 ```typescript
@@ -624,12 +619,11 @@ COS SDK note: `cos-nodejs-sdk-v5` is a CommonJS `export =` module; use `import C
 
 ### Implementation pattern: `buildVerifiedSources`
 
-After the worker loads the manifest, verify every manifest locator once and build the `Map` passed to `DomainRunner.run`. Push each verified source into `verifiedForCleanup` so `finally` can delete locators.
+After the worker loads the manifest, verify every manifest locator once and build the `Map` passed to `DomainRunner.run`. The core does not collect sources for deletion — blob lifecycle stays outside Layer 3.
 
 ```typescript
 async buildVerifiedSources(
   sources: Record<string, ProcessingSource>,
-  verifiedForCleanup: VerifiedProcessingSource[],
 ): Promise<Map<string, VerifiedProcessingSource>> {
   const map = new Map<string, VerifiedProcessingSource>();
 
@@ -641,7 +635,6 @@ async buildVerifiedSources(
       verifiedLocator,
     };
     map.set(sourceId, verified);
-    verifiedForCleanup.push(verified);
   }
 
   return map;
@@ -952,7 +945,8 @@ export class AsyncProcessingCoreModule {}
 | `attempts: 1` plus idempotency guard                                  | No double domain runs after finalize                 |
 | `claimProcessingPhase` via conditional `updateMany`                   | Single-winner `queued` to `processing`               |
 | `global_singleton`: Redis lock plus `refreshLease`                    | BullMQ concurrency is not domain admission           |
-| `finally`: release when terminal and `isHeldBy`, then delete locators | Never release while phase is `processing`            |
+| `finally`: release when terminal and `isHeldBy`                       | Never release while phase is `processing`            |
+| Core does not delete source locators                                  | Blob lifecycle is app policy; locators are opaque inputs |
 | Separate catches: domain vs post-domain finalize                      | Broad catch overwrites successful terminal rows      |
 | Queue refs only (`manifestId`)                                        | No bytes, buffers, or full `sources` on BullMQ       |
 | `ActiveJobConflictError` in lock service                              | Layer 2 adapter maps to HTTP 409                     |
@@ -972,7 +966,8 @@ export class AsyncProcessingCoreModule {}
 - [ ] DomainRegistry register/getByDomainKind
 - [ ] ActiveJobLock: SET NX, stale recovery, Lua release, refreshLease
 - [ ] Worker: three try scopes — pre-domain, domain, post-domain finalize
-- [ ] buildVerifiedSources before domainRunner.run; delete locators in finally
+- [ ] buildVerifiedSources before domainRunner.run
+- [ ] finally releases lock only when terminal + isHeldBy
 - [ ] finalizeSuccess persists batched errors when validation_failed
 - [ ] ProcessingController: list, detail, SSE, NDJSON errors
 - [ ] listProcessingJobsQuerySchema Zod parse on GET /app/async-processing/jobs

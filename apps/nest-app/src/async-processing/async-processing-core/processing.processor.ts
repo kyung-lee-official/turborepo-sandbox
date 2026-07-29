@@ -40,7 +40,6 @@ export class ProcessingProcessor extends WorkerHost {
 
   async process(job: Job<AsyncProcessingJobPayload>): Promise<void> {
     const { jobId, manifestId } = job.data;
-    const verifiedForCleanup: VerifiedProcessingSource[] = [];
     let domainKind = job.data.domainKind;
 
     const existing = await this.jobRepository.findById(jobId);
@@ -77,7 +76,6 @@ export class ProcessingProcessor extends WorkerHost {
 
         const verifiedSources = await this.buildVerifiedSources(
           manifest.sources,
-          verifiedForCleanup,
         );
 
         await this.refreshLeaseIfNeeded(registration, domainKind, jobId, true);
@@ -141,22 +139,11 @@ export class ProcessingProcessor extends WorkerHost {
       ) {
         await this.activeJobLock.release(row.domainKind, jobId);
       }
-      for (const source of verifiedForCleanup) {
-        try {
-          await this.sourceReader.deleteLocator(source.verifiedLocator);
-        } catch (cleanupError) {
-          this.logger.warn(
-            `deleteLocator failed for job ${jobId}`,
-            cleanupError,
-          );
-        }
-      }
     }
   }
 
   private async buildVerifiedSources(
     sources: Record<string, ProcessingSource>,
-    verifiedForCleanup: VerifiedProcessingSource[],
   ): Promise<Map<string, VerifiedProcessingSource>> {
     const map = new Map<string, VerifiedProcessingSource>();
     for (const [sourceId, source] of Object.entries(sources)) {
@@ -169,7 +156,6 @@ export class ProcessingProcessor extends WorkerHost {
         verifiedLocator,
       };
       map.set(sourceId, verified);
-      verifiedForCleanup.push(verified);
     }
     return map;
   }
