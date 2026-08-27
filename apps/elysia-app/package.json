@@ -21,7 +21,9 @@
     "@elysiajs/cors": "^1.4.2",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
-    "elysia": "^1.4.29"
+    "@repo/authz": "workspace:*",
+    "elysia": "^1.4.29",
+    "jose": "^5.9.6"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
