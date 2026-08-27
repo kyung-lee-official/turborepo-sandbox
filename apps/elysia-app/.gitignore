@@ -1,0 +1,18 @@
+# ENV
+.env
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+
+# Tests
+/coverage
+
+# IDE - VSCode
+.vscode/*
+
+# turbo
+.turbo

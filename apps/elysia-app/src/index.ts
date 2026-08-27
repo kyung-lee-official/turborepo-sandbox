@@ -1,0 +1,33 @@
+import { cors } from "@elysiajs/cors";
+import { Elysia, status } from "elysia";
+import { health } from "./modules/health/index.ts";
+import { serverPort } from "./shared/config.ts";
+
+const app = new Elysia()
+  .use(
+    cors({
+      origin: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    }),
+  )
+  .onError(({ code, error }) => {
+    if (code === "PARSE") {
+      return status(400, { error: "Invalid JSON body" });
+    }
+    if (code === "NOT_FOUND") {
+      return status(404, { error: "Not found" });
+    }
+    if (code === "VALIDATION") {
+      return status(400, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  })
+  .use(health)
+  .listen(serverPort());
+
+console.log(`elysia-app listening on http://localhost:${app.server?.port}`);
+
+export type App = typeof app;
+export default app;

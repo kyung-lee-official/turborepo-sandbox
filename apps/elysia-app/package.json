@@ -1,0 +1,24 @@
+{
+  "name": "elysia-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch run src/index.ts",
+    "# Dev with domain (HTTPS)": "",
+    "dev:domain": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain run dev",
+    "# Dev with internal IP (HTTP)": "",
+    "dev:ip": "bun --env-file=../../.env.base --env-file=../../.env.prod-ip run dev",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint \"src\"",
+    "start:prod": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.2",
+    "elysia": "^1.4.29"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  }
+}
