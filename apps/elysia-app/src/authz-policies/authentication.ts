@@ -1,5 +1,7 @@
-import { principalAttrIdEqualsResourceAttrId } from "../helpers.js";
-import type { ResourcePolicyDefinition } from "../types.js";
+import {
+  principalAttrIdEqualsResourceAttrId,
+  type ResourcePolicyDefinition,
+} from "@repo/authz";
 
 export const authenticationPolicy: ResourcePolicyDefinition = {
   resource: "internal:authentication",

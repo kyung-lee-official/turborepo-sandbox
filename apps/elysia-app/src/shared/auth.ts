@@ -1,10 +1,11 @@
 import { AuthzClient } from "@repo/authz";
 import { status } from "elysia";
 import { jwtVerify } from "jose";
+import { POLICY_REGISTRY } from "../authz-policies/index.ts";
 import { getPrisma } from "./db.ts";
 
 /** Shared in-process Authz PDP (replaces Cerbos). */
-export const authz = new AuthzClient();
+export const authz = new AuthzClient(POLICY_REGISTRY);
 
 const SECRET = process.env.SECRET ?? "";
 const secretKey = new TextEncoder().encode(SECRET);

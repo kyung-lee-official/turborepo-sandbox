@@ -1,4 +1,4 @@
-import type { ResourcePolicyDefinition } from "../types.js";
+import type { ResourcePolicyDefinition } from "@repo/authz";
 
 export const serverSettingsPolicy: ResourcePolicyDefinition = {
   resource: "internal:server-settings",

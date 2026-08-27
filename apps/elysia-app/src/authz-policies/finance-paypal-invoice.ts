@@ -1,4 +1,4 @@
-import type { ResourcePolicyDefinition } from "../types.js";
+import type { ResourcePolicyDefinition } from "@repo/authz";
 
 export const financePaypalInvoicePolicy: ResourcePolicyDefinition = {
   resource: "internal:applications:finance:paypal-invoice",

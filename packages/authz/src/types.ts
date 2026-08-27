@@ -27,3 +27,6 @@ export interface ResourcePolicyDefinition {
   resource: string;
   rules: PolicyRule[];
 }
+
+/** Map of resource kind → its policy definition. Pass an instance to `AuthzClient`. */
+export type PolicyRegistry = Record<string, ResourcePolicyDefinition>;

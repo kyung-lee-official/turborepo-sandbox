@@ -1,9 +1,22 @@
 {
-  "name": "@repo/authz",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@kyung-lee/authz",
+  "version": "0.1.0",
+  "description": "In-process policy decision point (PDP): evaluate (principal, resource, action) against a registry of resource policies. Engine only — consumers bring their own policies.",
+  "keywords": [
+    "authz",
+    "authorization",
+    "policy",
+    "pdp",
+    "rbac",
+    "abac",
+    "elysia",
+    "typescript"
+  ],
+  "license": "MIT",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
@@ -13,12 +26,30 @@
       "default": "./dist/index.cjs"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20",
+    "bun": ">=1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kyung-lee-official/.opencode.git",
+    "directory": "packages/authz"
+  },
+  "homepage": "https://github.com/kyung-lee-official/.opencode/tree/main/packages/authz",
+  "bugs": {
+    "url": "https://github.com/kyung-lee-official/.opencode/issues"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json && bun run bundle:cjs",
-    "prepare": "bun run build",
     "bundle:cjs": "bun build ./src/index.ts --outfile ./dist/index.cjs --target node --format cjs --packages bundle",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build"
   },
   "devDependencies": {
     "typescript": "latest"

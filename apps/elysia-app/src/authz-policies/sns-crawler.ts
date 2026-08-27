@@ -1,4 +1,4 @@
-import type { ResourcePolicyDefinition } from "../types.js";
+import type { ResourcePolicyDefinition } from "@repo/authz";
 
 export const snsCrawlerPolicy: ResourcePolicyDefinition = {
   resource: "internal:applications:retail:sns-crawler",

@@ -1,5 +1,9 @@
-import { POLICY_REGISTRY } from "./policies/index.js";
-import type { Effect, PolicyContext, PolicyRule } from "./types.js";
+import type {
+  Effect,
+  PolicyContext,
+  PolicyRegistry,
+  PolicyRule,
+} from "./types.js";
 
 function actionMatches(
   ruleActions: readonly string[],
@@ -35,12 +39,14 @@ function ruleMatches(
   return true;
 }
 
+/** Evaluate a single action against the policy registry. */
 export function evaluateAction(
+  registry: PolicyRegistry,
   resourceKind: string,
   action: string,
   ctx: PolicyContext,
 ): Effect {
-  const policy = POLICY_REGISTRY[resourceKind];
+  const policy = registry[resourceKind];
   if (!policy) {
     return "EFFECT_DENY";
   }
@@ -62,14 +68,16 @@ export function evaluateAction(
   return hasAllow ? "EFFECT_ALLOW" : "EFFECT_DENY";
 }
 
+/** Evaluate many actions at once for the same resource kind + context. */
 export function evaluateActions(
+  registry: PolicyRegistry,
   resourceKind: string,
   actions: readonly string[],
   ctx: PolicyContext,
 ): Record<string, Effect> {
   const result: Record<string, Effect> = {};
   for (const action of actions) {
-    result[action] = evaluateAction(resourceKind, action, ctx);
+    result[action] = evaluateAction(registry, resourceKind, action, ctx);
   }
   return result;
 }

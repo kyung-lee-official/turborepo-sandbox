@@ -1,6 +1,6 @@
 import type { CheckResourceRequest, CheckResourcesRequest } from "./api.js";
 import { evaluateActions } from "./engine.js";
-import type { Effect } from "./types.js";
+import type { Effect, PolicyRegistry } from "./types.js";
 
 export class ResourceDecision {
   readonly actions: Record<string, Effect>;
@@ -37,13 +37,16 @@ function toPolicyContext(request: CheckResourceRequest) {
   };
 }
 
-/** In-process PDP used by nest-app guards and services. */
+/** In-process policy decision point: evaluates `(principal, resource, actions)` against a registry of policies. */
 export class AuthzClient {
+  constructor(private readonly registry: PolicyRegistry) {}
+
   async checkResource(
     request: CheckResourceRequest,
   ): Promise<ResourceDecision> {
     const ctx = toPolicyContext(request);
     const actions = evaluateActions(
+      this.registry,
       request.resource.kind,
       request.actions,
       ctx,
@@ -61,7 +64,12 @@ export class AuthzClient {
         actions: entry.actions,
       };
       const ctx = toPolicyContext(checkRequest);
-      const actions = evaluateActions(entry.resource.kind, entry.actions, ctx);
+      const actions = evaluateActions(
+        this.registry,
+        entry.resource.kind,
+        entry.actions,
+        ctx,
+      );
       return new ResourceDecision(actions);
     });
 
@@ -76,10 +84,19 @@ export type {
   Resource,
 } from "./api.js";
 export { evaluateAction, evaluateActions } from "./engine.js";
-export { POLICY_REGISTRY } from "./policies/index.js";
+export {
+  ownerRoleInPrincipalRoles,
+  principalAttrIdEqualsResourceAttrId,
+  principalIdEqualsResourceAttr,
+  principalIsStatOwner,
+  principalRolesExistInResourceAttr,
+  resourceAttrIncludes,
+  statOwnerUpdatingNegativeScore,
+} from "./helpers.js";
 export type {
   Effect,
   PolicyContext,
+  PolicyRegistry,
   PolicyRule,
   ResourcePolicyDefinition,
 } from "./types.js";

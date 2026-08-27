@@ -1,4 +1,4 @@
-import type { ResourcePolicyDefinition } from "../types.js";
+import type { ResourcePolicyDefinition } from "@repo/authz";
 
 export const softwareFeedbackPolicy: ResourcePolicyDefinition = {
   resource: "internal:applications:chitubox-dental:software-feedback",

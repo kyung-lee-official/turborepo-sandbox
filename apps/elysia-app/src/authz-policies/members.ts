@@ -1,8 +1,8 @@
 import {
   principalAttrIdEqualsResourceAttrId,
+  type ResourcePolicyDefinition,
   resourceAttrIncludes,
-} from "../helpers.js";
-import type { ResourcePolicyDefinition } from "../types.js";
+} from "@repo/authz";
 
 export const membersPolicy: ResourcePolicyDefinition = {
   resource: "internal:members",

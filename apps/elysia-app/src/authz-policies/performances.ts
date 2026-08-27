@@ -3,9 +3,9 @@ import {
   principalIdEqualsResourceAttr,
   principalIsStatOwner,
   principalRolesExistInResourceAttr,
+  type ResourcePolicyDefinition,
   statOwnerUpdatingNegativeScore,
-} from "../helpers.js";
-import type { ResourcePolicyDefinition } from "../types.js";
+} from "@repo/authz";
 
 export const performanceEventPolicy: ResourcePolicyDefinition = {
   resource: "internal:applications:performances:event",

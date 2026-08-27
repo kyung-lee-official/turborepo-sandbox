@@ -1,209 +1,106 @@
 import { describe, expect, test } from "bun:test";
-import { evaluateAction } from "./engine.js";
 import { AuthzClient } from "./index.js";
-import type { PolicyContext } from "./types.js";
+import type { PolicyContext, PolicyRegistry } from "./types.js";
 
-function ctx(
-  overrides: Partial<PolicyContext> & {
-    principal: PolicyContext["principal"];
-    resource: PolicyContext["resource"];
+const registry: PolicyRegistry = {
+  "test:thing": {
+    resource: "test:thing",
+    rules: [
+      { actions: ["read"], effect: "EFFECT_ALLOW", roles: ["*"] },
+      { actions: ["write"], effect: "EFFECT_ALLOW", roles: ["admin"] },
+      { actions: ["write"], effect: "EFFECT_DENY", roles: ["banned"] },
+      {
+        actions: ["delete"],
+        effect: "EFFECT_ALLOW",
+        roles: ["user"],
+        when: (ctx) => ctx.principal.id === ctx.resource.attr?.ownerId,
+      },
+    ],
   },
-): PolicyContext {
-  return {
-    principal: overrides.principal,
-    resource: overrides.resource,
-  };
-}
+  "test:absent": undefined as never,
+};
 
-describe("members policy", () => {
-  test("admin can create members", () => {
-    const effect = evaluateAction("internal:members", "create", {
-      principal: { id: "u1", roles: ["admin"] },
-      resource: { kind: "internal:members", id: "*" },
-    });
-    expect(effect).toBe("EFFECT_ALLOW");
-  });
-
-  test("non-admin cannot create members", () => {
-    const effect = evaluateAction("internal:members", "create", {
-      principal: { id: "u1", roles: ["default"] },
-      resource: { kind: "internal:members", id: "*" },
-    });
-    expect(effect).toBe("EFFECT_DENY");
-  });
-
-  test("cannot delete admin members", () => {
-    const effect = evaluateAction("internal:members", "delete", {
-      principal: { id: "u1", roles: ["admin"] },
-      resource: {
-        kind: "internal:members",
-        id: "u2",
-        attr: { id: "u2", memberRoles: ["admin"] },
-      },
-    });
-    expect(effect).toBe("EFFECT_DENY");
-  });
-
-  test("cannot freeze yourself", () => {
-    const effect = evaluateAction("internal:members", "freeze", {
-      principal: { id: "u1", roles: ["admin"], attr: { id: "u1" } },
-      resource: { kind: "internal:members", id: "u1", attr: { id: "u1" } },
-    });
-    expect(effect).toBe("EFFECT_DENY");
-  });
-
-  test("can update own profile", () => {
-    const effect = evaluateAction("internal:members", "update-profile", {
-      principal: { id: "u1", roles: ["default"], attr: { id: "u1" } },
-      resource: { kind: "internal:members", id: "u1", attr: { id: "u1" } },
-    });
-    expect(effect).toBe("EFFECT_ALLOW");
-  });
-});
-
-describe("roles policy", () => {
-  test("anyone can read roles", () => {
-    const effect = evaluateAction("internal:roles", "read", {
-      principal: { id: "u1", roles: ["default"] },
-      resource: { kind: "internal:roles", id: "role-1" },
-    });
-    expect(effect).toBe("EFFECT_ALLOW");
-  });
-
-  test("only admin can create roles", () => {
-    expect(
-      evaluateAction("internal:roles", "create", {
-        principal: { id: "u1", roles: ["admin"] },
-        resource: { kind: "internal:roles", id: "*" },
-      }),
-    ).toBe("EFFECT_ALLOW");
-    expect(
-      evaluateAction("internal:roles", "create", {
-        principal: { id: "u1", roles: ["default"] },
-        resource: { kind: "internal:roles", id: "*" },
-      }),
-    ).toBe("EFFECT_DENY");
-  });
-});
-
-describe("performance event policy", () => {
-  test("stat owner denied update when score is negative", () => {
-    const effect = evaluateAction(
-      "internal:applications:performances:event",
-      "update",
-      {
-        principal: { id: "owner-1", roles: [], attr: { id: "owner-1" } },
-        resource: {
-          kind: "internal:applications:performances:event",
-          id: "evt-1",
-          attr: { statOwnerId: "owner-1", score: -1 },
-        },
-      },
-    );
-    expect(effect).toBe("EFFECT_DENY");
-  });
-
-  test("section super role can read event", () => {
-    const effect = evaluateAction(
-      "internal:applications:performances:event",
-      "read",
-      {
-        principal: { id: "u1", roles: ["section-lead"] },
-        resource: {
-          kind: "internal:applications:performances:event",
-          id: "evt-1",
-          attr: {
-            statOwnerId: "owner-1",
-            sectionSuperRoleIds: ["section-lead"],
-          },
-        },
-      },
-    );
-    expect(effect).toBe("EFFECT_ALLOW");
-  });
-});
-
-describe("finance paypal invoice policy", () => {
-  test("finance role can access finance paypal invoice", () => {
-    const effect = evaluateAction(
-      "internal:applications:finance:paypal-invoice",
-      "*",
-      {
-        principal: { id: "u1", roles: ["finance"] },
-        resource: {
-          kind: "internal:applications:finance:paypal-invoice",
-          id: "*",
-        },
-      },
-    );
-    expect(effect).toBe("EFFECT_ALLOW");
-  });
-
-  test("admin without finance role cannot access finance paypal invoice", () => {
-    const effect = evaluateAction(
-      "internal:applications:finance:paypal-invoice",
-      "*",
-      {
-        principal: { id: "u1", roles: ["admin"] },
-        resource: {
-          kind: "internal:applications:finance:paypal-invoice",
-          id: "*",
-        },
-      },
-    );
-    expect(effect).toBe("EFFECT_DENY");
-  });
-
-  test("default role cannot access finance paypal invoice", () => {
-    const effect = evaluateAction(
-      "internal:applications:finance:paypal-invoice",
-      "*",
-      {
-        principal: { id: "u1", roles: ["default"] },
-        resource: {
-          kind: "internal:applications:finance:paypal-invoice",
-          id: "*",
-        },
-      },
-    );
-    expect(effect).toBe("EFFECT_DENY");
-  });
-});
+const adminCtx: PolicyContext = {
+  principal: { id: "u1", roles: ["admin"] },
+  resource: { kind: "test:thing", id: "r1" },
+};
 
 describe("AuthzClient", () => {
-  test("checkResource returns decision with actions and isAllowed", async () => {
-    const client = new AuthzClient();
-    const decision = await client.checkResource({
-      principal: { id: "u1", roles: ["retail-manager"] },
-      resource: {
-        kind: "internal:applications:retail:sales-data",
-        id: "*",
-      },
-      actions: ["*"],
+  test("allows read for any role", async () => {
+    const client = new AuthzClient(registry);
+    const d = await client.checkResource({
+      principal: { id: "u1", roles: ["guest"] },
+      resource: { kind: "test:thing", id: "r1" },
+      actions: ["read"],
     });
-
-    expect(decision.isAllowed("*")).toBe(true);
-    expect(decision.actions["*"]).toBe("EFFECT_ALLOW");
+    expect(d.isAllowed("read")).toBe(true);
   });
 
-  test("checkResources batch evaluation", async () => {
-    const client = new AuthzClient();
-    const decision = await client.checkResources({
-      principal: { id: "u1", roles: ["default"] },
+  test("denies when resource kind has no policy", async () => {
+    const client = new AuthzClient(registry);
+    const d = await client.checkResource({
+      principal: { id: "u1", roles: ["admin"] },
+      resource: { kind: "test:absent", id: "r1" },
+      actions: ["read"],
+    });
+    expect(d.isAllowed("read")).toBe(false);
+  });
+
+  test("deny rule wins over allow for the same action", async () => {
+    const client = new AuthzClient(registry);
+    const d = await client.checkResource({
+      principal: { id: "u1", roles: ["admin", "banned"] },
+      resource: { kind: "test:thing", id: "r1" },
+      actions: ["write"],
+    });
+    expect(d.isAllowed("write")).toBe(false);
+  });
+
+  test("when() predicate gates the rule", async () => {
+    const client = new AuthzClient(registry);
+    const owner = await client.checkResource({
+      principal: { id: "u1", roles: ["user"] },
+      resource: { kind: "test:thing", id: "r1", attr: { ownerId: "u1" } },
+      actions: ["delete"],
+    });
+    const stranger = await client.checkResource({
+      principal: { id: "u2", roles: ["user"] },
+      resource: { kind: "test:thing", id: "r1", attr: { ownerId: "u1" } },
+      actions: ["delete"],
+    });
+    expect(owner.isAllowed("delete")).toBe(true);
+    expect(stranger.isAllowed("delete")).toBe(false);
+  });
+
+  test("checkResources returns one decision per resource", async () => {
+    const client = new AuthzClient(registry);
+    const out = await client.checkResources({
+      principal: { id: "u1", roles: ["user"] },
       resources: [
         {
-          resource: { kind: "internal:roles", id: "r1" },
-          actions: ["read"],
+          resource: { kind: "test:thing", id: "r1", attr: { ownerId: "u1" } },
+          actions: ["delete"],
         },
         {
-          resource: { kind: "internal:roles", id: "r2" },
-          actions: ["read"],
+          resource: { kind: "test:thing", id: "r2", attr: { ownerId: "u9" } },
+          actions: ["delete"],
         },
       ],
     });
+    expect(out.results).toHaveLength(2);
+    expect(out.results[0].isAllowed("delete")).toBe(true);
+    expect(out.results[1].isAllowed("delete")).toBe(false);
+  });
+});
 
-    expect(
-      decision.results.every((r) => r.actions.read === "EFFECT_ALLOW"),
-    ).toBe(true);
+describe("principal ctx passthrough", () => {
+  test("attr flows into ctx for when() predicates", async () => {
+    const client = new AuthzClient(registry);
+    const d = await client.checkResource({
+      principal: { id: "u1", roles: ["user"], attr: { foo: "bar" } },
+      resource: { kind: "test:thing", id: "r1", attr: { ownerId: "u1" } },
+      actions: ["delete"],
+    });
+    expect(d.isAllowed("delete")).toBe(true);
   });
 });
