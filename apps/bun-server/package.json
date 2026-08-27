@@ -4,12 +4,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-	"dev": "bun run --hot index.ts"
+    "dev": "bun run --hot index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "latest"
   }
 }
