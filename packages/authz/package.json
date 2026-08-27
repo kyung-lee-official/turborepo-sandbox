@@ -1,0 +1,26 @@
+{
+  "name": "@repo/authz",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && bun run bundle:cjs",
+    "prepare": "bun run build",
+    "bundle:cjs": "bun build ./src/index.ts --outfile ./dist/index.cjs --target node --format cjs --packages bundle",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "typescript": "latest"
+  }
+}
