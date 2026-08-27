@@ -2,6 +2,7 @@ import { cors } from "@elysiajs/cors";
 import { Elysia, status } from "elysia";
 import { health } from "./modules/health/index.ts";
 import { serverPort } from "./shared/config.ts";
+import { closeDb } from "./shared/db.ts";
 
 const app = new Elysia()
   .use(
@@ -26,6 +27,13 @@ const app = new Elysia()
   })
   .use(health)
   .listen(serverPort());
+
+const shutdown = async () => {
+  await closeDb();
+  process.exit(0);
+};
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
 
 console.log(`elysia-app listening on http://localhost:${app.server?.port}`);
 

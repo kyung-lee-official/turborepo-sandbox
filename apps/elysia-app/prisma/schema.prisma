@@ -1,0 +1,372 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+    provider = "prisma-client"
+    output   = "../src/generated/prisma"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+/**
+ * recipes/prisma
+ */
+model User {
+    id             Int      @id @default(autoincrement())
+    email          String   @unique
+    recoveryEmails String[]
+    name           String?
+    titles         Json?
+    posts          Post[]
+    ownedGroups    Group[]  @relation("Owner")
+    groups         Group[]
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+}
+
+model Group {
+    id      Int    @id @default(autoincrement())
+    name    String @unique
+    owner   User   @relation("Owner", fields: [ownerId], references: [id])
+    ownerId Int
+    users   User[]
+}
+
+model Post {
+    id         Int        @id @default(autoincrement())
+    slug       String     @unique
+    title      String
+    content    String?
+    published  Boolean    @default(false)
+    author     User       @relation(fields: [authorId], references: [id])
+    authorId   Int
+    categories Category[]
+}
+
+model Category {
+    id    Int    @id @default(autoincrement())
+    name  String @unique
+    posts Post[]
+}
+
+model Event {
+    id      Int      @id @default(autoincrement())
+    name    String
+    startAt DateTime
+}
+
+/**
+ * Cerbos Authorization
+ */
+model Member {
+    id          String        @id
+    roles       Role[]
+    Performance Performance[]
+}
+
+model Role {
+    id          String   @id
+    superRoleId String?
+    superRole   Role?    @relation("Hierarchy", fields: [superRoleId], references: [id])
+    subRoles    Role[]   @relation("Hierarchy")
+    members     Member[]
+}
+
+model Performance {
+    id      Int    @id @default(autoincrement())
+    score   Int
+    owner   Member @relation(fields: [ownerId], references: [id])
+    ownerId String
+}
+
+model TestBigInt {
+    id    Int    @id @default(autoincrement())
+    value BigInt
+}
+
+/**
+ * lifecycle
+ */
+model Lifecycle {
+    id    Int @id @default(autoincrement())
+    value Int
+}
+
+/**
+ * test connect or create
+ */
+model TestConnectOrCreateOrder {
+    id        Int                        @id @default(autoincrement())
+    product   TestConnectOrCreateProduct @relation(fields: [productId], references: [id])
+    productId Int
+
+    @@index([productId])
+}
+
+model TestConnectOrCreateProduct {
+    id                       Int                        @id @default(autoincrement())
+    name                     String                     @unique
+    testConnectOrCreateOrder TestConnectOrCreateOrder[]
+}
+
+model RetailSalesData {
+    id                   BigInt                          @id @default(autoincrement())
+    retailSalesDataBatch RetailSalesDataBatch            @relation(fields: [batchId], references: [id])
+    batchId              Int
+    date                 DateTime
+    receiptType          RetailSalesDataReceiptType      @relation(fields: [receiptTypeId], references: [id])
+    receiptTypeId        Int
+    client               RetailSalesDataClient           @relation(fields: [clientId], references: [id])
+    clientId             Int
+    department           RetailSalesDataDepartment       @relation(fields: [departmentId], references: [id])
+    departmentId         Int
+    sku                  RetailSalesDataSku              @relation(fields: [skuId], references: [id])
+    skuId                Int
+    nameZhCn             String
+    salesVolume          Float
+    platformAddress      RetailSalesDataPlatformAddress? @relation(fields: [platformAddressId], references: [id])
+    platformAddressId    Int?
+    platformOrderId      String
+    storehouse           RetailSalesDataStorehouse       @relation(fields: [storehouseId], references: [id])
+    storehouseId         Int
+    category             RetailSalesDataCategory?        @relation(fields: [categoryId], references: [id])
+    categoryId           Int?
+    taxInclusivePriceCny Float?
+    priceCny             Float?
+    unitPriceCny         Float?
+
+    @@index([clientId])
+    @@index([departmentId])
+    @@index([skuId, nameZhCn])
+    @@index([salesVolume])
+    @@index([platformAddressId])
+    @@index([platformOrderId])
+    @@index([storehouseId])
+    @@index([categoryId])
+    @@index([taxInclusivePriceCny])
+    @@index([priceCny])
+    @@index([unitPriceCny])
+    /**
+     * indexes
+     */
+    @@index([batchId])
+    @@index([date])
+    @@index([receiptTypeId])
+}
+
+model RetailSalesDataBatch {
+    id              Int               @id @default(autoincrement())
+    createdAt       DateTime          @default(now())
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataReceiptType {
+    id              Int               @id @default(autoincrement())
+    type            String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataClient {
+    id              Int               @id @default(autoincrement())
+    client          String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataDepartment {
+    id              Int               @id @default(autoincrement())
+    department      String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataSku {
+    id              Int               @id @default(autoincrement())
+    sku             String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataPlatformAddress {
+    id              Int               @id @default(autoincrement())
+    platformAddress String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataStorehouse {
+    id              Int               @id @default(autoincrement())
+    storehouse      String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+model RetailSalesDataCategory {
+    id              Int               @id @default(autoincrement())
+    category        String            @unique
+    retailSalesData RetailSalesData[]
+}
+
+/**
+ * Test Decimal
+ */
+model TestDecimal {
+    id       Int     @id @default(autoincrement())
+    decimal  Decimal
+    rate     Decimal @db.Decimal(10, 6)
+    monetary Decimal @db.Decimal(10, 2)
+}
+
+/**
+ * Test UploadLargeXlsx
+ * Detailed progress is tracked in Redis
+ * Database only stores major lifecycle stages for durability
+ */
+enum UploadLargeXlsxTaskStatus {
+    PENDING /* Task created, not yet started processing */
+    PROCESSING /* Task is actively being processed (replaces LOADING_WORKBOOK, VALIDATING_HEADERS, VALIDATING, SAVING) */
+    COMPLETED /* Successfully finished with no errors */
+    HAS_ERRORS /* Finished but some rows had validation errors */
+    FAILED /* Critical failure, task could not complete */
+}
+
+model UploadLargeXlsxTask {
+    id            Int                       @id @default(autoincrement())
+    status        UploadLargeXlsxTaskStatus @default(PENDING)
+    /**
+     * Progress metrics moved to Redis for real-time updates
+     * These fields kept for final summary and historical queries
+     */
+    totalRows     Int                       @default(0)
+    validatedRows Int                       @default(0)
+    savedRows     Int                       @default(0)
+    errorRows     Int                       @default(0)
+    createdAt     DateTime                  @default(now())
+    updatedAt     DateTime                  @updatedAt
+    data          UploadLargeXlsxData[]
+    errors        UploadLargeXlsxError[]
+}
+
+model UploadLargeXlsxData {
+    id     Int                 @id @default(autoincrement())
+    task   UploadLargeXlsxTask @relation(fields: [taskId], references: [id])
+    taskId Int
+    name   String
+    gender String
+    bioId  String
+
+    @@index([taskId])
+}
+
+model UploadLargeXlsxError {
+    id        Int                 @id @default(autoincrement())
+    task      UploadLargeXlsxTask @relation(fields: [taskId], references: [id])
+    taskId    Int
+    rowNumber Int
+    errors    String[] /* Array of error messages for this row */
+    rowData   Json /* Store the original row data for reference */
+
+    @@index([taskId])
+}
+
+/**
+ * async-processing — durable job lifecycle and input snapshot
+ * Live progress in Redis; terminal state and counts here
+ */
+enum ProcessingPhase {
+    queued
+    processing
+    complete
+    failed
+}
+
+enum ProcessingOutcome {
+    success
+    validation_failed
+    failed
+}
+
+model ProcessingJob {
+    id              String             @id
+    domainKind      String
+    phase           ProcessingPhase    @default(queued)
+    outcome         ProcessingOutcome?
+    processedCount  Int?
+    errorCount      Int?
+    errorStorageKey String?
+    createdAt       DateTime           @default(now())
+    updatedAt       DateTime           @updatedAt
+    completedAt     DateTime?
+
+    manifest               ProcessingManifest?
+    processingJobErrors    ProcessingJobError[]
+    salesImportMergedLines SalesImportMergedLine[]
+
+    @@index([domainKind])
+    @@index([phase])
+    @@index([domainKind, phase])
+}
+
+model ProcessingManifest {
+    id         String   @id
+    jobId      String   @unique
+    domainKind String
+    sources    Json
+    context    Json?
+    createdAt  DateTime @default(now())
+
+    job ProcessingJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+    @@index([domainKind])
+}
+
+/**
+ * One validation error row per failed ingest item — domain owns `payload` shape (JSON).
+ * Deleted with the parent ProcessingJob.
+ */
+model ProcessingJobError {
+    id              String @id @default(cuid())
+    processingJobId String
+    /** Stable export / replay order within the job (1..N) */
+    sequence        Int
+    payload         Json
+
+    processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
+
+    @@unique([processingJobId, sequence])
+    @@index([processingJobId])
+}
+
+/**
+ * sales-report domain — one persisted row per LineItems sheet row after merge.
+ * Base fields from salesData.xlsx LineItems; supplement fields joined by SKU from
+ * Products (same workbook), inventory.xlsx, and productDescriptions.jsonl.
+ */
+model SalesImportMergedLine {
+    id               Int      @id @default(autoincrement())
+    processingJobId  String
+    /** 1-based Excel row in LineItems (audit / error correlation) */
+    sourceLineNumber Int
+
+    orderId   String
+    sku       String
+    quantity  Int
+    saleDate  DateTime @db.Date
+
+    productName  String?
+    category     String?
+    unitPrice    Decimal? @db.Decimal(10, 2)
+
+    inventoryQty Int?
+
+    description String?
+
+    createdAt DateTime @default(now())
+
+    processingJob ProcessingJob @relation(fields: [processingJobId], references: [id], onDelete: Cascade)
+
+    @@unique([processingJobId, sourceLineNumber])
+    @@index([processingJobId])
+    @@index([sku])
+    @@index([orderId])
+}

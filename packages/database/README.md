@@ -2,7 +2,7 @@
 
 Shared Prisma schema, migrations, and client for **nest-app** (`@repo/database` import).
 
-**Database:** `DATABASE_URL` in repo root `.env.base` (e.g. `turborepo-sandbox-nest-app`).
+**Database:** `DATABASE_URL` in repo root `.env.base` (e.g. `turborepo-sandbox-elysia-app`).
 
 ## Layout
 
@@ -17,7 +17,7 @@ Shared Prisma schema, migrations, and client for **nest-app** (`@repo/database` 
 ## Environment
 
 1. Copy `.env.base.example` → `.env.base` at the **repo root**
-2. Set `DATABASE_URL` to the Nest database (`turborepo-sandbox-nest-app`)
+2. Set `DATABASE_URL` to the Elysia database (`turborepo-sandbox-elysia-app`)
 
 Medusa uses **`MEDUSA_DATABASE_URL`** — see `apps/medusa-app` and root `db:medusa:*` scripts.
 

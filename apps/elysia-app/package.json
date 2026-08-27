@@ -10,15 +10,23 @@
     "dev:ip": "bun --env-file=../../.env.base --env-file=../../.env.prod-ip run dev",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint \"src\"",
-    "start:prod": "bun run src/index.ts"
+    "start:prod": "bun run src/index.ts",
+    "prisma": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain ./node_modules/prisma/build/index.js",
+    "prisma:generate": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain ./node_modules/prisma/build/index.js generate",
+    "prisma:migrate:dev": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain ./node_modules/prisma/build/index.js migrate dev",
+    "prisma:migrate:deploy": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain ./node_modules/prisma/build/index.js migrate deploy",
+    "prisma:studio": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain ./node_modules/prisma/build/index.js studio"
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
     "elysia": "^1.4.29"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/bun": "latest",
+    "prisma": "^7.1.0",
     "typescript": "latest"
   }
 }
