@@ -5,7 +5,6 @@ import { ResendModule } from "./resend/resend.module";
 import { SalesDataModule } from "./sales-data/sales-data.module";
 import { UploadLargeJsonModule } from "./upload-large-json/upload-large-json.module";
 import { VideosModule } from "./videos/videos.module";
-import { WorkerModule } from "./worker/worker.module";
 
 @Module({
   imports: [
@@ -15,7 +14,6 @@ import { WorkerModule } from "./worker/worker.module";
     SalesDataModule,
     AsyncGeneratePdfModule,
     VideosModule,
-    WorkerModule,
   ],
   exports: [
     ProgramLifecycleModule,
@@ -24,7 +22,6 @@ import { WorkerModule } from "./worker/worker.module";
     SalesDataModule,
     AsyncGeneratePdfModule,
     VideosModule,
-    WorkerModule,
   ],
 })
 export class ApplicationsModule {}

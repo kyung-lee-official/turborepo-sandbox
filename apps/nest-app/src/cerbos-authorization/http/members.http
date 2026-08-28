@@ -1,6 +1,0 @@
-### Find members
-GET http://localhost:3001/members
-	# ?email=KyUnG@cbd-3d.com
-	# &nickname=Kyung
-	# &roleIds=10
-Authorization: {{$dotenv AUTHORIZATION}}

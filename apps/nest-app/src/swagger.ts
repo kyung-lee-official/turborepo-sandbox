@@ -4,23 +4,10 @@ import { ProgramLifecycleModule } from "./applications/program-lifecycle/program
 import { ResendModule } from "./applications/resend/resend.module";
 import { SalesDataModule } from "./applications/sales-data/sales-data.module";
 import { UploadLargeJsonModule } from "./applications/upload-large-json/upload-large-json.module";
-import { MembersModule } from "./cerbos-authorization/members/members.module";
-import { RolesModule } from "./cerbos-authorization/roles/roles.module";
 import { OverviewModule } from "./overview/overview.module";
 import { PrismaModule } from "./recipes/prisma/prisma.module";
 
 export function setupSwagger(app: INestApplication) {
-  const authOption = new DocumentBuilder()
-    .setTitle("Cerbos Authorization")
-    .setDescription("# Cerbos Authorization")
-    .setVersion("1.0.0")
-    .addBearerAuth()
-    .build();
-  const authDocument = SwaggerModule.createDocument(app, authOption, {
-    include: [MembersModule, RolesModule],
-  });
-  SwaggerModule.setup("api/cerbos-authorization", app, authDocument);
-
   const overviewOption = new DocumentBuilder()
     .setTitle("overview")
     .setDescription("# Overview")

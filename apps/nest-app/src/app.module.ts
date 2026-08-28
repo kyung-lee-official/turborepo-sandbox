@@ -10,8 +10,6 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ApplicationsModule } from "./applications/applications.module";
 import { AsyncProcessingModule } from "./async-processing/async-processing.module";
-import { MembersModule } from "./cerbos-authorization/members/members.module";
-import { RolesModule } from "./cerbos-authorization/roles/roles.module";
 import { LocalMultipartUploadModule } from "./import/upload/local-multipart/local-multipart-upload.module";
 import { ObjectStoreUploadModule } from "./import/upload/object-store/object-store-upload.module";
 import { TestMiddleware } from "./overview/middleware/test.middleware";
@@ -28,8 +26,6 @@ import { WebsocketsModule } from "./websockets/websockets.module";
     OverviewModule,
     PrismaModule,
     WebsocketsModule,
-    MembersModule,
-    RolesModule,
     ApplicationsModule,
     EventEmitterModule.forRoot(),
     AsyncProcessingModule,
