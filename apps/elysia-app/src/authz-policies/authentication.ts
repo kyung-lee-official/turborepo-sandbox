@@ -1,7 +1,7 @@
 import {
   principalAttrIdEqualsResourceAttrId,
   type ResourcePolicyDefinition,
-} from "@repo/authz";
+} from "@kyung.lee/authz";
 
 export const authenticationPolicy: ResourcePolicyDefinition = {
   resource: "internal:authentication",

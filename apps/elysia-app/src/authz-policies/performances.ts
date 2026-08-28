@@ -5,7 +5,7 @@ import {
   principalRolesExistInResourceAttr,
   type ResourcePolicyDefinition,
   statOwnerUpdatingNegativeScore,
-} from "@repo/authz";
+} from "@kyung.lee/authz";
 
 export const performanceEventPolicy: ResourcePolicyDefinition = {
   resource: "internal:applications:performances:event",

@@ -1,4 +1,4 @@
-import type { ResourcePolicyDefinition } from "@repo/authz";
+import type { ResourcePolicyDefinition } from "@kyung.lee/authz";
 import { authenticationPolicy } from "./authentication.js";
 import { financePaypalInvoicePolicy } from "./finance-paypal-invoice.js";
 import { membersPolicy } from "./members.js";

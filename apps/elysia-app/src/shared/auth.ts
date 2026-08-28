@@ -1,4 +1,4 @@
-import { AuthzClient } from "@repo/authz";
+import { AuthzClient } from "@kyung.lee/authz";
 import { status } from "elysia";
 import { jwtVerify } from "jose";
 import { POLICY_REGISTRY } from "../authz-policies/index.ts";

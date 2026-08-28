@@ -2,7 +2,7 @@ import {
   principalAttrIdEqualsResourceAttrId,
   type ResourcePolicyDefinition,
   resourceAttrIncludes,
-} from "@repo/authz";
+} from "@kyung.lee/authz";
 
 export const membersPolicy: ResourcePolicyDefinition = {
   resource: "internal:members",

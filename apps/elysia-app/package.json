@@ -19,9 +19,9 @@
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.2",
+    "@kyung.lee/authz": "^0.1.1",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
-    "@repo/authz": "workspace:*",
     "elysia": "^1.4.29",
     "jose": "^5.9.6"
   },
