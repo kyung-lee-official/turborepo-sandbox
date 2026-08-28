@@ -214,7 +214,7 @@ export function subscribeProcessingJobEvents(
   },
 ): () => void {
   if (!nestBaseUrl) {
-    throw new Error("NEXT_PUBLIC_NESTJS is not configured");
+    throw new Error("NEXT_PUBLIC_ELYSIA is not configured");
   }
 
   const url = `${nestBaseUrl.replace(/\/$/, "")}/jobs/${jobId}/events`;

@@ -13,7 +13,7 @@ export type ListProcessingJobsResponse = {
   nextCursor: string | null;
 };
 
-const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS;
+const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
 
 export const ACTIVE_JOB_PHASES = "queued,processing" as const;
 export const HISTORY_JOB_PHASES = "complete,failed" as const;
@@ -22,7 +22,7 @@ export async function listProcessingJobs(
   params: ListProcessingJobsParams = {},
 ): Promise<ListProcessingJobsResponse> {
   const res = await axios.get<ListProcessingJobsResponse>("/jobs", {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
     params,
   });
   return res.data;

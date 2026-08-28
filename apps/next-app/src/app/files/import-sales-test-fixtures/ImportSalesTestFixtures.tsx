@@ -121,7 +121,7 @@ export const ImportSalesTestFixtures = () => {
       const { jobId } = await startSalesImportProcessing(uploadSessionId);
       const initialJob = await getProcessingJob(jobId);
 
-      await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_NESTJS, {
+      await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_ELYSIA, {
         initialSnapshot: initialJob,
         onDisplayChange: setProgressDisplay,
       });

@@ -92,10 +92,10 @@ export async function findJobs(input: {
 
   const where: Record<string, unknown> = {};
   if (input.phases?.length) {
-    where["phase"] = { in: input.phases };
+    where.phase = { in: input.phases };
   }
   if (input.domainKind) {
-    where["domainKind"] = input.domainKind;
+    where.domainKind = input.domainKind;
   }
   if (input.cursor) {
     const cursorJob = await findJobById(input.cursor);

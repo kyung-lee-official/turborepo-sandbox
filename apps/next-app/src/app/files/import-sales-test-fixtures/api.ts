@@ -40,7 +40,7 @@ export type ProcessingJobErrorsJsonlHeader = {
   errorCount: number;
 };
 
-const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS;
+const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
 
 export type UploadProgressUpdate = {
   loaded: number;
@@ -66,7 +66,7 @@ export const uploadSalesImportFiles = async (
     `/applications/async-processing/${SALES_REPORT_DOMAIN_KIND}/upload`,
     formData,
     {
-      baseURL: nestBaseUrl,
+      baseURL: apiBaseUrl,
       headers: { "Content-Type": "multipart/form-data" },
       timeout: 20 * 60 * 1000,
       onUploadProgress: (event) => {
@@ -90,7 +90,7 @@ export const startSalesImportProcessing = async (
       domainKind: SALES_REPORT_DOMAIN_KIND,
     },
     {
-      baseURL: nestBaseUrl,
+      baseURL: apiBaseUrl,
       timeout: 60_000,
     },
   );
@@ -101,7 +101,7 @@ export const getProcessingJob = async (
   jobId: string,
 ): Promise<ProcessingJobResponse> => {
   const res = await axios.get<ProcessingJobResponse>(`/jobs/${jobId}`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
   return res.data;
 };
@@ -110,7 +110,7 @@ export const fetchProcessingErrorsJsonl = async (
   jobId: string,
 ): Promise<string> => {
   const res = await axios.get<string>(`/jobs/${jobId}/errors`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
     responseType: "text",
   });
   return res.data;

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ImportJobProgressDisplay } from "../import-sales-test-fixtures/processing-job-sse";
 import { formatPdfProgressText, waitForPdfJobViaSse } from "./pdf-job-sse";
 
-const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
 
 type MockInfoRow = {
   name: string;
@@ -63,7 +63,7 @@ export const Content = () => {
     setIsLoadingInfo(true);
     setError(null);
     try {
-      const response = await fetch(`${nestBaseUrl}/async-generate-pdf/info`);
+      const response = await fetch(`${apiBaseUrl}/async-generate-pdf/info`);
       if (!response.ok) {
         throw new Error(await readNestErrorMessage(response));
       }
@@ -86,7 +86,7 @@ export const Content = () => {
 
   const refreshOutputFiles = useCallback(async (jobId: string) => {
     const response = await fetch(
-      `${nestBaseUrl}/async-generate-pdf/jobs/${jobId}/files`,
+      `${apiBaseUrl}/async-generate-pdf/jobs/${jobId}/files`,
     );
     if (!response.ok) {
       throw new Error(await readNestErrorMessage(response));
@@ -108,7 +108,7 @@ export const Content = () => {
 
     try {
       const startResponse = await fetch(
-        `${nestBaseUrl}/async-generate-pdf/jobs`,
+        `${apiBaseUrl}/async-generate-pdf/jobs`,
         {
           method: "POST",
         },
@@ -120,7 +120,7 @@ export const Content = () => {
       const started = (await startResponse.json()) as StartJobResponse;
       setOutputDirName(started.outputDirName);
 
-      const snapshot = await waitForPdfJobViaSse(started.jobId, nestBaseUrl, {
+      const snapshot = await waitForPdfJobViaSse(started.jobId, apiBaseUrl, {
         onDisplayChange: setProgressDisplay,
       });
 
