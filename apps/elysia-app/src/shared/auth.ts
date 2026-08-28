@@ -61,3 +61,27 @@ export function unauthorized() {
 export function forbidden() {
   return status(403, { error: "Forbidden" });
 }
+
+/**
+ * Evaluate `(principal, action)` against the resource policy for `kind`.
+ * `resourceId` defaults to `principal.id`; pass the target's id for delete/update on a specific resource.
+ * `resourceAttr` is forwarded to the policy context (e.g. `{ memberRoles: [...] }` for `cannot-delete-admin-members`).
+ */
+export async function isActionAllowed(
+  principal: { id: string; roles: string[] },
+  kind: string,
+  action: string,
+  resourceId?: string,
+  resourceAttr?: Record<string, unknown>,
+): Promise<boolean> {
+  const decision = await authz.checkResource({
+    principal,
+    resource: {
+      kind,
+      id: resourceId ?? principal.id,
+      attr: resourceAttr,
+    },
+    actions: [action],
+  });
+  return decision.isAllowed(action);
+}

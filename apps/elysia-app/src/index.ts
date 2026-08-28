@@ -2,6 +2,8 @@ import { cors } from "@elysiajs/cors";
 import { Elysia, status } from "elysia";
 import { authRoutes } from "./modules/auth/routes.ts";
 import { health } from "./modules/health/index.ts";
+import { memberRoutes } from "./modules/members/index.ts";
+import { roleRoutes } from "./modules/roles/index.ts";
 import { serverPort } from "./shared/config.ts";
 import { closeDb } from "./shared/db.ts";
 
@@ -28,6 +30,8 @@ const app = new Elysia()
   })
   .use(health)
   .use(authRoutes)
+  .use(memberRoutes)
+  .use(roleRoutes)
   .listen(serverPort());
 
 const shutdown = async () => {
