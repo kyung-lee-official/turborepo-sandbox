@@ -3,6 +3,7 @@ import { Elysia, status } from "elysia";
 import { authRoutes } from "./modules/auth/routes.ts";
 import { health } from "./modules/health/index.ts";
 import { memberRoutes } from "./modules/members/index.ts";
+import { mockDataRoutes } from "./modules/mock-data/index.ts";
 import { performanceRoutes } from "./modules/performances/index.ts";
 import { roleRoutes } from "./modules/roles/index.ts";
 import { serverPort } from "./shared/config.ts";
@@ -34,6 +35,7 @@ const app = new Elysia()
   .use(memberRoutes)
   .use(roleRoutes)
   .use(performanceRoutes)
+  .use(mockDataRoutes)
   .listen(serverPort());
 
 const shutdown = async () => {

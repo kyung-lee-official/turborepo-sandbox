@@ -29,7 +29,7 @@ export const Content = () => {
     const response = await axios.get(
       `/mock-data/online-dropdown/${searchTerm}`,
       {
-        baseURL: process.env.NEXT_PUBLIC_NESTJS,
+        baseURL: process.env.NEXT_PUBLIC_ELYSIA,
         headers: {
           "Content-Type": "application/json",
           // Authorization: jwt
@@ -40,10 +40,7 @@ export const Content = () => {
   }
 
   return (
-    <div
-      className="flex gap-x-5
-			bg-neutral-700"
-    >
+    <div className="flex gap-x-5 bg-neutral-700">
       <div className="min-w-[400px] p-4">
         <Dropdown<OptionType>
           placeholder="Search for an option..."
@@ -71,18 +68,14 @@ export const Content = () => {
           multiple={true}
         />
       </div>
-      <div className="flex flex-wrap gap-1.5 w-full p-4">
+      <div className="flex w-full flex-wrap gap-1.5 p-4">
         {selectedMulti &&
           (selectedMulti as OptionType[]).map((selected, i) => {
             return (
               <button
                 key={selected.id}
                 onClick={() => handleDeselect(selected)}
-                className="h-7 px-2 py-1
-								text-white text-sm truncate
-								hover:line-through
-								bg-neutral-600 hover:bg-neutral-500
-								rounded-md cursor-pointer"
+                className="h-7 cursor-pointer truncate rounded-md bg-neutral-600 px-2 py-1 text-sm text-white hover:bg-neutral-500 hover:line-through"
               >
                 {selected.name}
               </button>
