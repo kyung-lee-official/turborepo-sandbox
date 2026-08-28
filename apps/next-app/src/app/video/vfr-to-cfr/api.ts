@@ -73,11 +73,11 @@ export type UploadProgressUpdate = {
   total?: number;
 };
 
-const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS;
+const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
 
 export async function fetchVfrToCfrTemplateInfo(): Promise<VfrToCfrTemplateInfo> {
   const res = await axios.get<VfrToCfrTemplateInfo>("/vfr-to-cfr", {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
     timeout: 30_000,
   });
   return res.data;
@@ -85,28 +85,28 @@ export async function fetchVfrToCfrTemplateInfo(): Promise<VfrToCfrTemplateInfo>
 
 export async function listUploadedVideos(): Promise<VideoListItem[]> {
   const res = await axios.get<VideoListItem[]>("/vfr-to-cfr/uploaded", {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
   return res.data;
 }
 
 export async function listOutputVideos(): Promise<VideoListItem[]> {
   const res = await axios.get<VideoListItem[]>("/vfr-to-cfr/output", {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
   return res.data;
 }
 
 export async function getUploadedVideoDetail(id: string): Promise<VideoDetail> {
   const res = await axios.get<VideoDetail>(`/vfr-to-cfr/uploaded/${id}`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
   return res.data;
 }
 
 export async function getOutputVideoDetail(id: string): Promise<VideoDetail> {
   const res = await axios.get<VideoDetail>(`/vfr-to-cfr/output/${id}`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
   return res.data;
 }
@@ -124,7 +124,7 @@ export async function uploadVideoFile(
     "/vfr-to-cfr/uploaded",
     formData,
     {
-      baseURL: nestBaseUrl,
+      baseURL: apiBaseUrl,
       headers: { "Content-Type": "multipart/form-data" },
       timeout: VFR_TO_CFR_UPLOAD_TIMEOUT_MS,
       onUploadProgress: (event) => {
@@ -146,7 +146,7 @@ export async function convertUploadedVideo(
     `/vfr-to-cfr/uploaded/${uploadId}/convert`,
     options,
     {
-      baseURL: nestBaseUrl,
+      baseURL: apiBaseUrl,
       timeout: 60_000,
     },
   );
@@ -155,13 +155,13 @@ export async function convertUploadedVideo(
 
 export async function deleteUploadedVideo(id: string): Promise<void> {
   await axios.delete(`/vfr-to-cfr/uploaded/${id}`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
 }
 
 export async function deleteOutputVideo(id: string): Promise<void> {
   await axios.delete(`/vfr-to-cfr/output/${id}`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
 }
 
@@ -169,16 +169,13 @@ export async function getProcessingJob(
   jobId: string,
 ): Promise<ProcessingJobResponse> {
   const res = await axios.get<ProcessingJobResponse>(`/jobs/${jobId}`, {
-    baseURL: nestBaseUrl,
+    baseURL: apiBaseUrl,
   });
   return res.data;
 }
 
 export function downloadOutputVideo(outputId: string): void {
-  if (!nestBaseUrl) {
-    throw new Error("NEXT_PUBLIC_NESTJS is not configured");
-  }
-  const url = `${nestBaseUrl.replace(/\/$/, "")}/vfr-to-cfr/output/${outputId}/download`;
+  const url = `${apiBaseUrl.replace(/\/$/, "")}/vfr-to-cfr/output/${outputId}/download`;
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = `cfr-${outputId}.mp4`;

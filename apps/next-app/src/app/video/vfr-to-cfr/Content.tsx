@@ -229,7 +229,7 @@ export const Content = () => {
 
       const snapshot = await waitForProcessingJobViaSse(
         jobId,
-        process.env.NEXT_PUBLIC_NESTJS,
+        process.env.NEXT_PUBLIC_ELYSIA,
         {
           initialSnapshot: initialJob,
           onDisplayChange: setProgressDisplay,
