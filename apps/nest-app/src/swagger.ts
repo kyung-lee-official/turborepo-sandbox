@@ -4,10 +4,7 @@ import { ProgramLifecycleModule } from "./applications/program-lifecycle/program
 import { ResendModule } from "./applications/resend/resend.module";
 import { SalesDataModule } from "./applications/sales-data/sales-data.module";
 import { UploadLargeJsonModule } from "./applications/upload-large-json/upload-large-json.module";
-import { AssessmentsModule } from "./cerbos-authorization/assessments/assessments.module";
-import { AuthneticationModule } from "./cerbos-authorization/authnetication/authnetication.module";
 import { MembersModule } from "./cerbos-authorization/members/members.module";
-import { PerformancesModule } from "./cerbos-authorization/performances/performances.module";
 import { RolesModule } from "./cerbos-authorization/roles/roles.module";
 import { OverviewModule } from "./overview/overview.module";
 import { PrismaModule } from "./recipes/prisma/prisma.module";
@@ -21,13 +18,7 @@ export function setupSwagger(app: INestApplication) {
     .addBearerAuth()
     .build();
   const authDocument = SwaggerModule.createDocument(app, authOption, {
-    include: [
-      AuthneticationModule,
-      MembersModule,
-      RolesModule,
-      PerformancesModule,
-      AssessmentsModule,
-    ],
+    include: [MembersModule, RolesModule],
   });
   SwaggerModule.setup("api/cerbos-authorization", app, authDocument);
 

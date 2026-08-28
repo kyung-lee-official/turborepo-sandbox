@@ -3,6 +3,7 @@ import { Elysia, status } from "elysia";
 import { authRoutes } from "./modules/auth/routes.ts";
 import { health } from "./modules/health/index.ts";
 import { memberRoutes } from "./modules/members/index.ts";
+import { performanceRoutes } from "./modules/performances/index.ts";
 import { roleRoutes } from "./modules/roles/index.ts";
 import { serverPort } from "./shared/config.ts";
 import { closeDb } from "./shared/db.ts";
@@ -32,6 +33,7 @@ const app = new Elysia()
   .use(authRoutes)
   .use(memberRoutes)
   .use(roleRoutes)
+  .use(performanceRoutes)
   .listen(serverPort());
 
 const shutdown = async () => {

@@ -10,10 +10,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ApplicationsModule } from "./applications/applications.module";
 import { AsyncProcessingModule } from "./async-processing/async-processing.module";
-import { AssessmentsModule } from "./cerbos-authorization/assessments/assessments.module";
-import { AuthneticationModule } from "./cerbos-authorization/authnetication/authnetication.module";
 import { MembersModule } from "./cerbos-authorization/members/members.module";
-import { PerformancesModule } from "./cerbos-authorization/performances/performances.module";
 import { RolesModule } from "./cerbos-authorization/roles/roles.module";
 import { LocalMultipartUploadModule } from "./import/upload/local-multipart/local-multipart-upload.module";
 import { ObjectStoreUploadModule } from "./import/upload/object-store/object-store-upload.module";
@@ -36,10 +33,7 @@ import { WebsocketsModule } from "./websockets/websockets.module";
     PrismaModule,
     WebsocketsModule,
     MembersModule,
-    AuthneticationModule,
     RolesModule,
-    PerformancesModule,
-    AssessmentsModule,
     ApplicationsModule,
     EventEmitterModule.forRoot(),
     AsyncProcessingModule,
