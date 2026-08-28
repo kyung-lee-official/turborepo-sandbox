@@ -14,10 +14,10 @@ export default function PiscinaPage() {
     setLoading(true);
     setResult(null);
     try {
-      const nestBaseUrl =
-        process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+      const apiBaseUrl =
+        process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
       const res = await fetch(
-        `${nestBaseUrl}/worker/piscina/count-primes?max=${max}`,
+        `${apiBaseUrl}/worker/piscina/count-primes?max=${max}`,
       );
       if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
       const data = await res.json();
@@ -32,10 +32,10 @@ export default function PiscinaPage() {
   const [pingResult, setPingResult] = useState<string | null>(null);
 
   const ping = async () => {
-    const nestBaseUrl =
-      process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
     const start = performance.now();
-    const res = await fetch(`${nestBaseUrl}/worker/piscina/ping`);
+    const res = await fetch(`${apiBaseUrl}/worker/piscina/ping`);
     const data = await res.json();
     const ms = Math.round(performance.now() - start);
     setPingResult(`responded in ${ms}ms — ${data.at}`);
@@ -57,10 +57,10 @@ export default function PiscinaPage() {
     setStreaming(true);
     doneRef.current = false;
 
-    const nestBaseUrl =
-      process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+    const apiBaseUrl =
+      process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
     const es = new EventSource(
-      `${nestBaseUrl}/worker/piscina/count-primes/stream?max=${max}`,
+      `${apiBaseUrl}/worker/piscina/count-primes/stream?max=${max}`,
     );
     eventSourceRef.current = es;
 
@@ -121,7 +121,7 @@ export default function PiscinaPage() {
         <h2 className="font-semibold text-lg">Try It</h2>
         <p className="text-gray-600 text-sm">
           Count prime numbers up to N — a CPU-heavy task offloaded to a Piscina
-          worker thread on the NestJS backend.
+          worker thread on the Elysia backend.
         </p>
         <div className="flex items-center gap-3">
           <label className="text-sm">
@@ -200,16 +200,12 @@ export default function PiscinaPage() {
       </section>
 
       <section className="space-y-2 rounded-lg bg-white/50 p-6">
-        <h2 className="font-semibold text-lg">NestJS Module Structure</h2>
+        <h2 className="font-semibold text-lg">Elysia Module Structure</h2>
         <pre className="overflow-x-auto rounded bg-gray-900 p-4 text-gray-100 text-xs">
-          {`applications/
-  worker/              ← WorkerModule
-    worker.module.ts
-    piscina/           ← PiscinaModule (submodule)
-      piscina.module.ts
-      piscina.controller.ts
-      piscina.service.ts
-      heavy-task.worker.ts`}
+          {`modules/
+  worker-piscina/      ← workerPiscinaRoutes
+    index.ts
+    heavy-task.worker.ts`}
         </pre>
       </section>
     </div>

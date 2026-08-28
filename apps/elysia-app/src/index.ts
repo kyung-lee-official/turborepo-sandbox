@@ -9,6 +9,7 @@ import { performanceRoutes } from "./modules/performances/index.ts";
 import { roleRoutes } from "./modules/roles/index.ts";
 import { techniquesRoutes } from "./modules/techniques/index.ts";
 import { tencentCosRoutes } from "./modules/tencent-cos/index.ts";
+import { workerPiscinaRoutes } from "./modules/worker-piscina/index.ts";
 import { serverPort } from "./shared/config.ts";
 import { closeDb } from "./shared/db.ts";
 
@@ -42,6 +43,7 @@ const app = new Elysia()
   .use(aliyunOssRoutes)
   .use(techniquesRoutes)
   .use(tencentCosRoutes)
+  .use(workerPiscinaRoutes)
   .listen(serverPort());
 
 const shutdown = async () => {
