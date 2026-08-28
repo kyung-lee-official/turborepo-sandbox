@@ -2,9 +2,9 @@
 
 import axios from "axios";
 import COS from "cos-js-sdk-v5";
-import { add, log, multiply } from "mathjs";
+import { add, multiply } from "mathjs";
 import { useAnimate } from "motion/react";
-import React, { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const { NEXT_PUBLIC_BUCKET, NEXT_PUBLIC_REGION } = process.env;
 
@@ -76,9 +76,9 @@ const Content = () => {
     }
   };
 
-  const onPointerUp = (e: any) => {
+  const onPointerUp = useCallback((_e: any) => {
     setIsDragging(false);
-  };
+  }, []);
 
   const onScaleChange = (e: any) => {
     const newScale = +e.target.value;
@@ -107,7 +107,7 @@ const Content = () => {
       console.log("init");
       animate(dialogRef.current, { opacity: 0, scale: 0.9 });
     }
-  }, []);
+  }, [animate]);
 
   /* Set initial image info */
   useEffect(() => {
@@ -148,7 +148,7 @@ const Content = () => {
     return () => {
       window.removeEventListener("pointerup", onPointerUp);
     };
-  }, [imageSrc]);
+  }, [imageSrc, image, onPointerUp]);
 
   useEffect(() => {
     /* Draw canvas */
@@ -191,11 +191,11 @@ const Content = () => {
         );
       }
     }
-  }, [scale, imageTranslation]);
+  }, [scale, imageTranslation, avatarRadius, image, mappedImageSize]);
 
   return (
     <div className="flex flex-col gap-6 p-10">
-      <h1 className="text-4xl font-bold">Image Cropper</h1>
+      <h1 className="font-bold text-4xl">Image Cropper</h1>
       <div className="flex justify-start">
         <input
           ref={inputRef}
@@ -212,14 +212,14 @@ const Content = () => {
       </div>
       <div>
         <h1 className="text-xl">Preview</h1>
-        <h2 className="text-base w-[600px]">
+        <h2 className="w-[600px] text-base">
           The preview can be abnormal if the image is scaled and the
           &quot;Cancel&quot; button is clicked. This is because the
           &quot;Cancel&quot; button reset scale to 1. In production environment,
           you don&apos;t need this preview canvas and all operations are done
           before the dialog is closed so you can ignore this issue.
         </h2>
-        <div className="w-[400px] h-[400px] bg-slate-500">
+        <div className="h-[400px] w-[400px] bg-slate-500">
           <canvas
             ref={canvasRef}
             width={canvasSize[0]}
@@ -231,10 +231,7 @@ const Content = () => {
       </div>
       <dialog
         ref={dialogRef}
-        className="w-[600px] p-4
-				bg-white/30
-				shadow-lg rounded-md
-				backdrop:bg-black/50 backdrop:[backdrop-filter:blur(1px)]"
+        className="w-[600px] rounded-md bg-white/30 p-4 shadow-lg backdrop:bg-black/50 backdrop:[backdrop-filter:blur(1px)]"
         onClose={() => {
           setScale(1);
           if (dialogRef.current) {
@@ -242,15 +239,11 @@ const Content = () => {
           }
         }}
       >
-        <div className="flex flex-col gap-8 ">
-          <div
-            className="relative flex justify-center items-center w-full h-[400px] 
-						bg-slate-500
-						rounded-md cursor-grab"
-          >
+        <div className="flex flex-col gap-8">
+          <div className="relative flex h-[400px] w-full cursor-grab items-center justify-center rounded-md bg-slate-500">
             {/* The width of mappedImageSize can be larger than the draggable
 						area, need an overflow-hidden container to hide the image outside the draggable area */}
-            <div className="w-full h-full overflow-hidden rounded-md">
+            <div className="h-full w-full overflow-hidden rounded-md">
               <div
                 className="rounded-md"
                 style={{
@@ -283,7 +276,7 @@ const Content = () => {
                 />
               </div>
             </div>
-            <div className="absolute top-0 right-0 bottom-0 left-0 pointer-events-none select-none">
+            <div className="pointer-events-none absolute top-0 right-0 bottom-0 left-0 select-none">
               <svg
                 viewBox="0 0 568 400"
                 xmlns="http://www.w3.org/2000/svg"
@@ -310,14 +303,14 @@ const Content = () => {
               </svg>
             </div>
             <div
-              className="absolute rounded-full border-4 border-gray-100 pointer-events-none"
+              className="pointer-events-none absolute rounded-full border-4 border-gray-100"
               style={{
                 width: `${avatarRadius * 2}px`,
                 height: `${avatarRadius * 2}px`,
               }}
             ></div>
           </div>
-          <div className="flex justify-between items-center gap-6">
+          <div className="flex items-center justify-between gap-6">
             <svg
               viewBox="0 0 24 24"
               height="24"
@@ -364,7 +357,7 @@ const Content = () => {
           </div>
           <div className="flex justify-between gap-4">
             <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+              className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
               onClick={() => {
                 setImageTranslation([0, 0]);
                 setScale(1);
@@ -373,7 +366,7 @@ const Content = () => {
               Reset
             </button>
             <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+              className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
               onClick={() => {
                 if (canvasRef.current) {
                   const link = document.createElement("a");
@@ -386,10 +379,12 @@ const Content = () => {
               Save to Local
             </button>
             <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+              className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
               onClick={async () => {
                 const res = await axios.get(
-                  `http://localhost:3001/auth/tencentCosTempCredential`,
+                  `${
+                    process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002"
+                  }/tencent-cos-objects/temporary-credential`,
                 );
                 const { tmpSecretId, tmpSecretKey, sessionToken } =
                   res.data.credentials;
@@ -421,7 +416,7 @@ const Content = () => {
               Upload to Tencent COS
             </button>
             <button
-              className="bg-white/30 hover:bg-white/20 px-4 py-2 rounded-md"
+              className="rounded-md bg-white/30 px-4 py-2 hover:bg-white/20"
               onClick={() => {
                 if (dialogRef.current) {
                   dialogRef.current.close();

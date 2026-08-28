@@ -17,8 +17,6 @@ import { ObjectStoreUploadModule } from "./import/upload/object-store/object-sto
 import { TestMiddleware } from "./overview/middleware/test.middleware";
 import { OverviewModule } from "./overview/overview.module";
 import { PrismaModule } from "./recipes/prisma/prisma.module";
-import { TechniquesModule } from "./techniques/techniques.module";
-import { TencentCosObjectsModule } from "./tencent-cos-objects/tencent-cos-objects.module";
 import { WebsocketsModule } from "./websockets/websockets.module";
 
 @Module({
@@ -28,8 +26,6 @@ import { WebsocketsModule } from "./websockets/websockets.module";
       envFilePath: ".env",
     }),
     OverviewModule,
-    TechniquesModule,
-    TencentCosObjectsModule,
     PrismaModule,
     WebsocketsModule,
     MembersModule,

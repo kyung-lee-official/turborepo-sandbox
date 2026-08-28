@@ -8,7 +8,6 @@ import { MembersModule } from "./cerbos-authorization/members/members.module";
 import { RolesModule } from "./cerbos-authorization/roles/roles.module";
 import { OverviewModule } from "./overview/overview.module";
 import { PrismaModule } from "./recipes/prisma/prisma.module";
-import { TechniquesModule } from "./techniques/techniques.module";
 
 export function setupSwagger(app: INestApplication) {
   const authOption = new DocumentBuilder()
@@ -32,21 +31,6 @@ export function setupSwagger(app: INestApplication) {
     include: [OverviewModule],
   });
   SwaggerModule.setup("api/overview", app, overviewDocument);
-
-  const techniquesOption = new DocumentBuilder()
-    .setTitle("techniques")
-    .setDescription("# Techniques")
-    .setVersion("1.0.0")
-    .addBearerAuth()
-    .build();
-  const techniquesDocument = SwaggerModule.createDocument(
-    app,
-    techniquesOption,
-    {
-      include: [TechniquesModule],
-    },
-  );
-  SwaggerModule.setup("api/techniques", app, techniquesDocument);
 
   const applicationOption = new DocumentBuilder()
     .setTitle("Applications")

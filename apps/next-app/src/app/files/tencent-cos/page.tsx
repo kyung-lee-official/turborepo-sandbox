@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { useState } from "react";
 
 const { VITE_BUCKET, VITE_REGION } = process.env;
+const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
 
 const UploadToCos = () => {
   const [progress, setProgress] = useState<string>("0%");
@@ -20,7 +21,7 @@ const UploadToCos = () => {
         onSubmit={async (e: any) => {
           e.preventDefault();
           const res = await axios.get(
-            `http://localhost:3001/auth/tencentCosTempCredential`,
+            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
           );
           console.log(res.data);
           const { tmpSecretId, tmpSecretKey, sessionToken } =
@@ -50,7 +51,7 @@ const UploadToCos = () => {
       >
         <input type="file" name="file" />
         <div>{progress}</div>
-        <button type="submit" className="p-2 text-gray-50 bg-blue-500 rounded">
+        <button type="submit" className="rounded bg-blue-500 p-2 text-gray-50">
           Upload
         </button>
       </form>
@@ -81,7 +82,7 @@ const ServerForward = () => {
           console.log(file);
           try {
             const res = await axios.put(
-              `http://localhost:3001/tencent-cos-objects/upload`,
+              `${apiBaseUrl}/tencent-cos-objects/uploadFileToCos`,
               { file: file },
               {
                 headers: {
@@ -108,7 +109,7 @@ const ServerForward = () => {
       >
         <input type="file" name="file" />
         <div>{progress}</div>
-        <button type="submit" className="p-2 text-gray-50 bg-blue-500 rounded">
+        <button type="submit" className="rounded bg-blue-500 p-2 text-gray-50">
           Upload
         </button>
       </form>
@@ -126,10 +127,10 @@ const ListCosObjects = () => {
         list all objects in the bucket.
       </h3>
       <button
-        className="p-2 text-gray-50 bg-blue-500 rounded"
+        className="rounded bg-blue-500 p-2 text-gray-50"
         onClick={async () => {
           const res = await axios.get(
-            `http://localhost:3001/auth/tencentCosTempCredential`,
+            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
           );
           console.log(res.data);
           const { tmpSecretId, tmpSecretKey, sessionToken } =
@@ -171,10 +172,10 @@ const DownloadFromCos = () => {
       </h3>
       <div>{progress}</div>
       <button
-        className="p-2 text-gray-50 bg-blue-500 rounded"
+        className="rounded bg-blue-500 p-2 text-gray-50"
         onClick={async () => {
           const res = await axios.get(
-            `http://localhost:3001/auth/tencentCosTempCredential`,
+            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
           );
           console.log(res.data);
           const { tmpSecretId, tmpSecretKey, sessionToken } =
@@ -221,10 +222,10 @@ const DeleteCosObject = () => {
         delete an object in the bucket.
       </h3>
       <button
-        className="p-2 text-gray-50 bg-blue-500 rounded"
+        className="rounded bg-blue-500 p-2 text-gray-50"
         onClick={async () => {
           const res = await axios.get(
-            `http://localhost:3001/auth/tencentCosTempCredential`,
+            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
           );
           console.log(res.data);
           const { tmpSecretId, tmpSecretKey, sessionToken } =
@@ -248,10 +249,10 @@ const DeleteCosObject = () => {
         {objects.map((object) => (
           <li key={object.Key}>
             <button
-              className="p-2 text-gray-50 bg-red-500 rounded"
+              className="rounded bg-red-500 p-2 text-gray-50"
               onClick={async () => {
                 const res = await axios.get(
-                  `http://localhost:3001/auth/tencentCosTempCredential`,
+                  `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
                 );
                 console.log(res.data);
                 const { tmpSecretId, tmpSecretKey, sessionToken } =

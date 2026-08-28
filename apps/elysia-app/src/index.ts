@@ -8,6 +8,7 @@ import { mockDataRoutes } from "./modules/mock-data/index.ts";
 import { performanceRoutes } from "./modules/performances/index.ts";
 import { roleRoutes } from "./modules/roles/index.ts";
 import { techniquesRoutes } from "./modules/techniques/index.ts";
+import { tencentCosRoutes } from "./modules/tencent-cos/index.ts";
 import { serverPort } from "./shared/config.ts";
 import { closeDb } from "./shared/db.ts";
 
@@ -40,6 +41,7 @@ const app = new Elysia()
   .use(mockDataRoutes)
   .use(aliyunOssRoutes)
   .use(techniquesRoutes)
+  .use(tencentCosRoutes)
   .listen(serverPort());
 
 const shutdown = async () => {
