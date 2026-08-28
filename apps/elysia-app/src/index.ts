@@ -1,6 +1,7 @@
 import { cors } from "@elysiajs/cors";
 import { Elysia, status } from "elysia";
 import { aliyunOssRoutes } from "./modules/aliyun-oss/index.ts";
+import { asyncProcessingRoutes } from "./modules/async-processing/index.ts";
 import { authRoutes } from "./modules/auth/routes.ts";
 import { health } from "./modules/health/index.ts";
 import { memberRoutes } from "./modules/members/index.ts";
@@ -46,6 +47,7 @@ const app = new Elysia()
   .use(tencentCosRoutes)
   .use(workerPiscinaRoutes)
   .use(vfrToCfrRoutes)
+  .use(asyncProcessingRoutes)
   .listen(serverPort());
 
 const shutdown = async () => {
