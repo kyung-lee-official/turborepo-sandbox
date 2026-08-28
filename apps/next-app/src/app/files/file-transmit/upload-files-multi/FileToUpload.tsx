@@ -22,7 +22,7 @@ export const FileToUpload = (props: {
       const data = new FormData();
       data.append("file", file);
       const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_NESTJS}/techniques/file-upload`,
+        `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-upload`,
         data,
         {
           headers: {
@@ -62,7 +62,7 @@ export const FileToUpload = (props: {
       setUrl(URL.createObjectURL(file));
       mutation.mutate();
     }
-  }, [file]);
+  }, [file, mutation.mutate]);
 
   return (
     <div>
@@ -73,25 +73,24 @@ export const FileToUpload = (props: {
               <img
                 src={url}
                 alt={file.name}
-                className={`object-cover w-full h-full
-						${progress === 1 ? "opacity-100" : "opacity-50"}`}
+                className={`w-full object-cover h-full${progress === 1 ? "opacity-100" : "opacity-50"}`}
               />
             ) : isVideoType(filetype) ? (
               <video
                 src={url}
-                className={`object-cover w-full h-full
-						${progress === 1 ? "opacity-100" : "opacity-50"}`}
-              />
+                className={`w-full object-cover h-full${progress === 1 ? "opacity-100" : "opacity-50"}`}
+              >
+                <track kind="captions" />
+              </video>
             ) : (
               /* unknown file type */
               <div className={progress === 1 ? "opacity-100" : "opacity-50"}>
                 <UnknownFileTypeIcon title={file.name} size={100} />
               </div>
             )}
-            <div className="absolute left-0 right-0 bottom-0 h-1">
+            <div className="absolute right-0 bottom-0 left-0 h-1">
               <div
-                className={`h-full 
-								bg-sky-400 ${progress === 1 && "hidden"}`}
+                className={`h-full bg-sky-400 ${progress === 1 && "hidden"}`}
                 style={{
                   width: `${progress * 100}%`,
                 }}
@@ -104,9 +103,7 @@ export const FileToUpload = (props: {
       </Square>
       <div
         title={file.name}
-        className="text-white/50 text-sm
-				overflow-hidden whitespace-nowrap text-ellipsis
-				cursor-default"
+        className="cursor-default overflow-hidden text-ellipsis whitespace-nowrap text-sm text-white/50"
       >
         {file.name}
       </div>

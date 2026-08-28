@@ -24,7 +24,7 @@ export const FileToPreview = (props: { preview: Preview }) => {
 
   async function onDelete() {
     await axios.delete(
-      `${process.env.NEXT_PUBLIC_NESTJS}/techniques/delete-file/${name}`,
+      `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/delete-file/${name}`,
     );
     queryClient.invalidateQueries({
       queryKey: [UploadFilesQK.GET_PREVIEW_FILELIST],

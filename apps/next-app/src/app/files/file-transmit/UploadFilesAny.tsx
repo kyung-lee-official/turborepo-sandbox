@@ -17,7 +17,7 @@ export const UploadFilesAny = () => {
       data.append("files", files[i]!);
     }
     const res = await axios.put(
-      `${process.env.NEXT_PUBLIC_NESTJS}/techniques/files-upload-any`,
+      `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/files-upload-any`,
       data,
       {
         headers: {
@@ -34,7 +34,7 @@ export const UploadFilesAny = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center items-start gap-2">
+    <div className="flex flex-col items-start justify-center gap-2">
       <h1 className="text-lg">
         <Link
           href={"https://docs.nestjs.com/techniques/file-upload#any-files"}
@@ -52,10 +52,7 @@ export const UploadFilesAny = () => {
       </p>
       <button
         type="button"
-        className="py-2 px-4
-				text-white font-bold
-				bg-blue-500 hover:bg-blue-700
-				rounded"
+        className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
         onClick={() => {
           /* clear the input field */
           inputRef.current!.value = "";

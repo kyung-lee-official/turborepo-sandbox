@@ -1,7 +1,7 @@
 "use client";
 
 import axios from "axios";
-import React, { useState } from "react";
+import { useState } from "react";
 import { UploadFilesAny } from "./UploadFilesAny";
 import { UploadFilesArray } from "./UploadFilesArray";
 
@@ -9,14 +9,14 @@ const DownloadBlob = () => {
   const [progress, setProgress] = useState<string>("0%");
   const [image, setImage] = useState<string>();
   return (
-    <div className="flex flex-col justify-center items-start gap-2">
+    <div className="flex flex-col items-start justify-center gap-2">
       <h1 className="text-lg">Download Blob</h1>
       <p>Throttle down your network in the dev tools to test this feature.</p>
       <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
         onClick={async () => {
           const blob = await axios.get(
-            `${process.env.NEXT_PUBLIC_NESTJS}/techniques/file-download`,
+            `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-download`,
             {
               responseType: "blob",
               onDownloadProgress: (progressEvent) => {
@@ -41,7 +41,7 @@ const DownloadBlob = () => {
 const UploadFile = () => {
   const [progress, setProgress] = useState<string>("0%");
   return (
-    <div className="flex flex-col justify-center items-start gap-2">
+    <div className="flex flex-col items-start justify-center gap-2">
       <h1 className="text-lg">Upload File</h1>
       <p>The file is uploaded in multipart/form-data format.</p>
       <p>
@@ -56,7 +56,7 @@ const UploadFile = () => {
           const file = e.target.file.files[0];
           console.log(file);
           axios.put(
-            `${process.env.NEXT_PUBLIC_NESTJS}/techniques/file-upload`,
+            `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-upload`,
             { file: file },
             {
               headers: {
@@ -74,7 +74,7 @@ const UploadFile = () => {
       >
         <input type="file" name="file" />
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
           type="submit"
         >
           Upload
@@ -88,7 +88,7 @@ const UploadFile = () => {
 const UploadBlob = () => {
   const [progress, setProgress] = useState<string>("0%");
   return (
-    <div className="flex flex-col justify-center items-start gap-2">
+    <div className="flex flex-col items-start justify-center gap-2">
       <h1 className="text-lg">Upload Blob</h1>
       <p>The blob is uploaded in multipart/form-data format.</p>
       <p>
@@ -112,7 +112,7 @@ const UploadBlob = () => {
           const blob = new Blob([file]);
           const fileFromBlob = new File([blob], file.name);
           axios.put(
-            `${process.env.NEXT_PUBLIC_NESTJS}/techniques/file-upload`,
+            `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-upload`,
             { file: fileFromBlob },
             {
               headers: {
@@ -130,7 +130,7 @@ const UploadBlob = () => {
       >
         <input type="file" name="file" />
         <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
           type="submit"
         >
           Upload
@@ -143,7 +143,7 @@ const UploadBlob = () => {
 
 const Content = () => {
   return (
-    <div className="flex flex-col gap-10 p-10 w-1/2">
+    <div className="flex w-1/2 flex-col gap-10 p-10">
       <DownloadBlob />
       <hr />
       <UploadFile />

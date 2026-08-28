@@ -53,7 +53,7 @@ export const Content = () => {
         "techniques/upload-compressed-single-blob-single-input",
         uploadData,
         {
-          baseURL: process.env.NEXT_PUBLIC_NESTJS,
+          baseURL: process.env.NEXT_PUBLIC_ELYSIA,
         },
       );
       if (res.status !== 201) {
@@ -71,23 +71,23 @@ export const Content = () => {
   };
 
   return (
-    <div className="flex flex-col gap-1 m-6">
+    <div className="m-6 flex flex-col gap-1">
       <h1 className="text-lg">Upload Multiple Excel Files in a Single Input</h1>
       <h3>
         use a single input for multiple files, identified using specific
         strings, compress to a single blob for uploading
       </h3>
-      <form className="flex flex-col w-60 gap-2" onSubmit={handleSubmit}>
+      <form className="flex w-60 flex-col gap-2" onSubmit={handleSubmit}>
         <input
           type="file"
           name="multiple_files"
           accept=".xlsx"
           multiple
-          className="border border-gray-300 p-2 rounded"
+          className="rounded border border-gray-300 p-2"
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white py-2 px-4 rounded"
+          className="rounded bg-blue-500 px-4 py-2 text-white"
         >
           Submit
         </button>

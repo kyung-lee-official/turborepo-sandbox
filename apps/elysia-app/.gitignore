@@ -16,3 +16,10 @@ logs
 
 # turbo
 .turbo
+
+# file-downloads (keep the bundled sample)
+file-downloads/*
+!/file-downloads/download-example.png
+
+# file-uploads
+file-uploads/*

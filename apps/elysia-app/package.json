@@ -24,12 +24,15 @@
     "@prisma/client": "^7.1.0",
     "ali-oss": "^6.23.0",
     "elysia": "^1.4.29",
-    "jose": "^5.9.6"
+    "exceljs": "^4.4.0",
+    "jose": "^5.9.6",
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/ali-oss": "^6.23.3",
     "@types/bun": "latest",
+    "@types/pako": "^2.0.4",
     "prisma": "^7.1.0",
     "typescript": "latest"
   }
