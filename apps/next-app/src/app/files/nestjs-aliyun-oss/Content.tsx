@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-const STAGING_PATH = "apps/nest-app/temp/upload-to-aliyun-oss";
+const STAGING_PATH = "apps/elysia-app/temp/upload-to-aliyun-oss";
 
 /** Keep in sync with `SIGNED_DOWNLOAD_EXPIRES_SECONDS` in nest `aliyun-oss.service.ts`. */
 const SIGNED_DOWNLOAD_EXPIRES_SECONDS = 600;
@@ -25,16 +25,16 @@ type OssBucketObject = {
   lastModified: string;
 };
 
-const nestBaseUrl = process.env.NEXT_PUBLIC_NESTJS ?? "http://localhost:3001";
+const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
 
-async function readNestErrorMessage(response: Response): Promise<string> {
+async function readApiErrorMessage(response: Response): Promise<string> {
   try {
-    const body = (await response.json()) as { message?: string | string[] };
-    if (typeof body.message === "string") {
-      return body.message;
+    const body = (await response.json()) as { error?: string | string[] };
+    if (typeof body.error === "string") {
+      return body.error;
     }
-    if (Array.isArray(body.message)) {
-      return body.message.join(", ");
+    if (Array.isArray(body.error)) {
+      return body.error.join(", ");
     }
   } catch {
     // Response body is not JSON.
@@ -42,10 +42,10 @@ async function readNestErrorMessage(response: Response): Promise<string> {
   return response.statusText || "Request failed";
 }
 
-async function fetchNestJson<T>(input: string, init?: RequestInit): Promise<T> {
+async function fetchApiJson<T>(input: string, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init);
   if (!response.ok) {
-    throw new Error(await readNestErrorMessage(response));
+    throw new Error(await readApiErrorMessage(response));
   }
   return response.json() as Promise<T>;
 }
@@ -54,8 +54,8 @@ async function downloadFromOss(
   objectKey: string,
   fileName: string,
 ): Promise<void> {
-  const { url } = await fetchNestJson<{ url: string }>(
-    `${nestBaseUrl}/aliyun-oss/download-signed-url`,
+  const { url } = await fetchApiJson<{ url: string }>(
+    `${apiBaseUrl}/aliyun-oss/download-signed-url`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -72,13 +72,13 @@ async function downloadFromOss(
 }
 
 async function deleteOssObject(objectKey: string): Promise<void> {
-  const response = await fetch(`${nestBaseUrl}/aliyun-oss/bucket/object`, {
+  const response = await fetch(`${apiBaseUrl}/aliyun-oss/bucket/object`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ objectKey }),
   });
   if (!response.ok) {
-    throw new Error(await readNestErrorMessage(response));
+    throw new Error(await readApiErrorMessage(response));
   }
 }
 
@@ -103,10 +103,10 @@ export const Content = () => {
     setIsLoadingOss(true);
     setError(null);
     try {
-      const data = await fetchNestJson<{
+      const data = await fetchApiJson<{
         prefix: string;
         objects: OssBucketObject[];
-      }>(`${nestBaseUrl}/aliyun-oss/bucket`);
+      }>(`${apiBaseUrl}/aliyun-oss/bucket`);
       setOssObjects(data.objects);
     } catch (err) {
       setError(
@@ -121,10 +121,10 @@ export const Content = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchNestJson<{
+      const data = await fetchApiJson<{
         stagingDir: string;
         files: StagingFile[];
-      }>(`${nestBaseUrl}/aliyun-oss/staging`);
+      }>(`${apiBaseUrl}/aliyun-oss/staging`);
       setStagingDir(data.stagingDir);
       setFiles(data.files);
     } catch (err) {
@@ -146,8 +146,8 @@ export const Content = () => {
     setError(null);
     setUploaded(null);
     try {
-      const data = await fetchNestJson<{ uploaded: UploadedFile[] }>(
-        `${nestBaseUrl}/aliyun-oss/staging/upload`,
+      const data = await fetchApiJson<{ uploaded: UploadedFile[] }>(
+        `${apiBaseUrl}/aliyun-oss/staging/upload`,
         { method: "POST" },
       );
       setUploaded(data.uploaded);
@@ -180,11 +180,11 @@ export const Content = () => {
   return (
     <main className="max-w-2xl space-y-6 p-12">
       <div className="space-y-2">
-        <h1 className="font-semibold text-xl">nestjs upload to aliyun oss</h1>
+        <h1 className="font-semibold text-xl">elysia upload to aliyun oss</h1>
         <p className="text-neutral-700 text-sm">
-          This demo uploads files from a local NestJS staging folder to Aliyun
-          OSS. Nest uploads and signs download URLs; the browser follows each
-          signed URL to OSS (no Nest relay, no cross-origin fetch from this
+          This demo uploads files from a local Elysia staging folder to Aliyun
+          OSS. Elysia uploads and signs download URLs; the browser follows each
+          signed URL to OSS (no Elysia relay, no cross-origin fetch from this
           page).
         </p>
       </div>
@@ -193,8 +193,8 @@ export const Content = () => {
         <li>
           Place one or more files in{" "}
           <code className="rounded bg-neutral-200 px-1">{STAGING_PATH}</code>{" "}
-          (relative to the repo root). Nest creates the folder on first request
-          if it is missing.
+          (relative to the repo root). Elysia creates the folder on first
+          request if it is missing.
         </li>
         <li>Click Refresh to list pending files from that folder.</li>
         <li>
@@ -207,7 +207,7 @@ export const Content = () => {
       </ol>
 
       <p className="text-neutral-600 text-sm">
-        Nest needs{" "}
+        Elysia needs{" "}
         <code className="rounded bg-neutral-200 px-1">
           ALIYUN_OSS_ACCESS_KEY_ID
         </code>
@@ -218,7 +218,7 @@ export const Content = () => {
         , <code className="rounded bg-neutral-200 px-1">ALIYUN_OSS_REGION</code>
         , and{" "}
         <code className="rounded bg-neutral-200 px-1">ALIYUN_OSS_BUCKET</code>{" "}
-        in the env files used when starting nest-app.
+        in the env files used when starting elysia-app.
       </p>
 
       <section className="space-y-2 rounded border border-neutral-200 bg-neutral-50 p-4 text-neutral-700 text-sm">
@@ -229,13 +229,14 @@ export const Content = () => {
           </code>{" "}
           ({SIGNED_DOWNLOAD_EXPIRES_SECONDS}s,{" "}
           {SIGNED_DOWNLOAD_EXPIRES_SECONDS / 60} minutes) is how long each
-          presigned GET URL stays valid. After that, OSS rejects the link. Nest
-          only signs; the browser follows the signed URL straight to OSS and
-          saves the file (no Nest relay, no cross-origin fetch from this page).
+          presigned GET URL stays valid. After that, OSS rejects the link.
+          Elysia only signs; the browser follows the signed URL straight to OSS
+          and saves the file (no Elysia relay, no cross-origin fetch from this
+          page).
         </p>
         <p>
           <strong>Download from OSS</strong> is a button, not a plain link,
-          because the bucket is private. Each click calls Nest to mint a fresh
+          because the bucket is private. Each click calls Elysia to mint a fresh
           signed URL (with{" "}
           <code className="rounded bg-neutral-200 px-1">
             Content-Disposition: attachment
