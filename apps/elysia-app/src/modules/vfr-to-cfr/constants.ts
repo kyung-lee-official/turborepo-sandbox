@@ -1,5 +1,9 @@
 export const VFR_TO_CFR_DOMAIN_KIND = "vfr-to-cfr" as const;
 
+export const VFR_TO_CFR_SOURCE_IDS = {
+  video: "video",
+} as const;
+
 export const VFR_TO_CFR_DEFAULT_FPS = 30;
 
 export const VFR_TO_CFR_TARGET_FPS_PRESETS = [

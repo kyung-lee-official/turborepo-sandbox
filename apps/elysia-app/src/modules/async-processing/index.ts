@@ -1,4 +1,7 @@
 import { Elysia, t } from "elysia";
+import { VFR_TO_CFR_DOMAIN_KIND } from "../vfr-to-cfr/constants.ts";
+import { domainRegistry } from "./domain-registry.ts";
+import { asyncGeneratePdfDomainRunner } from "./domain-runners/async-generate-pdf.ts";
 import {
   getErrorsJsonl,
   getJob,
@@ -7,6 +10,12 @@ import {
 } from "./service.ts";
 import { streamJobEventsOrThrow } from "./sse.ts";
 import type { StartProcessingInput } from "./types.ts";
+
+domainRegistry.register(VFR_TO_CFR_DOMAIN_KIND, {
+  domainRunner: asyncGeneratePdfDomainRunner,
+  sourceSpecs: [{ sourceId: "video", required: true }],
+  lockPolicy: { type: "none" },
+});
 
 export const asyncProcessingRoutes = new Elysia()
   .get(

@@ -136,6 +136,39 @@ export async function deleteJobById(jobId: string): Promise<void> {
   await prisma.processingJob.delete({ where: { id: jobId } });
 }
 
+export async function markFailed(jobId: string): Promise<void> {
+  const prisma = getPrisma();
+  await prisma.processingJob.update({
+    where: { id: jobId },
+    data: {
+      phase: "failed",
+      outcome: "failed",
+      completedAt: new Date(),
+    },
+  });
+}
+
+export async function markComplete(
+  jobId: string,
+  result: {
+    outcome: "success" | "validation_failed";
+    processedCount: number;
+    errorCount: number;
+  },
+): Promise<void> {
+  const prisma = getPrisma();
+  await prisma.processingJob.update({
+    where: { id: jobId },
+    data: {
+      phase: "complete",
+      outcome: result.outcome,
+      processedCount: result.processedCount,
+      errorCount: result.errorCount,
+      completedAt: new Date(),
+    },
+  });
+}
+
 export async function getManifestByManifestId(manifestId: string): Promise<{
   manifestId: string;
   jobId: string;

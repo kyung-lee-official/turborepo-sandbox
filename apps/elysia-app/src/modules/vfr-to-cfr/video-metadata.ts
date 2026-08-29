@@ -82,6 +82,51 @@ export function buildUploadedMetadataMarkdown(
 `;
 }
 
+export type OutputVideoMetadataFields = {
+  kind: "output";
+  id: string;
+  sourceUploadId: string;
+  jobId: string;
+  targetFps: number;
+  sha256: string;
+  sizeBytes: number;
+  createdAt: string;
+  probe: VideoProbeInfo;
+};
+
+export function buildOutputMetadataMarkdown(
+  fields: OutputVideoMetadataFields,
+): string {
+  const { probe } = fields;
+  return `# CFR output \`${fields.id}\`
+
+## Digest
+
+- **SHA-256:** \`${fields.sha256}\`
+
+## Source
+
+- **Upload id:** \`${fields.sourceUploadId}\`
+- **Processing job id:** \`${fields.jobId}\`
+- **Target FPS:** ${fields.targetFps}
+
+## File
+
+- **Size bytes:** ${fields.sizeBytes}
+- **Created at:** ${fields.createdAt}
+
+## Media (ffprobe)
+
+- **Duration (s):** ${probe.durationSeconds ?? "unknown"}
+- **Format:** ${probe.formatName ?? "unknown"}
+- **Video codec:** ${probe.videoCodec ?? "unknown"}
+- **Resolution:** ${formatResolution(probe)}
+- **Average frame rate:** ${formatFrameRateForDisplay(probe.avgFrameRate)}
+- **Audio codec:** ${probe.audioCodec ?? "none"}
+- **Bit rate:** ${probe.bitRate ?? "unknown"}
+`;
+}
+
 export async function writeMetadataMarkdown(
   metadataPath: string,
   markdown: string,

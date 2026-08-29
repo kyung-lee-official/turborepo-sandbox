@@ -1,6 +1,7 @@
 import { access, mkdir, readdir, stat, unlink } from "node:fs/promises";
 import { Elysia, status, t } from "elysia";
 import { nanoid } from "nanoid";
+import { startProcessing } from "../async-processing/service.ts";
 import {
   resolveVfrToCfrMaxUploadBytes,
   VFR_TO_CFR_DEFAULT_FPS,
@@ -252,11 +253,40 @@ export const vfrToCfrRoutes = new Elysia({ prefix: "/vfr-to-cfr" })
     await deleteVideoPair(params.id, "uploaded");
     set.status = 204;
   })
-  .post("/uploaded/:id/convert", () => {
-    throw status(501, {
-      error:
-        "vfr-to-cfr convert is pending async-processing port. Use nest-app /vfr-to-cfr/uploaded/:id/convert in the meantime.",
+  .post("/uploaded/:id/convert", async ({ params, body }) => {
+    const id = params.id;
+    const convertOptions = body as {
+      targetFps?: number;
+      matchSourceAverage?: boolean;
+    };
+    const fps =
+      convertOptions.targetFps ??
+      (Number.isFinite(convertOptions.targetFps)
+        ? convertOptions.targetFps
+        : 60);
+    const outputId = crypto.randomUUID();
+    const result = await startProcessing({
+      domainKind: "vfr-to-cfr",
+      sources: {
+        video: {
+          sourceId: "video",
+          label: id,
+          mimeType: "video/mp4",
+          locator: { kind: "local", path: buildUploadedVideoPath(id) },
+        },
+      },
+      context: {
+        uploadId: id,
+        outputId,
+        targetFps: Number.isFinite(fps) ? fps : 60,
+      },
     });
+    return {
+      jobId: result.jobId,
+      outputId,
+      uploadId: id,
+      targetFps: Number.isFinite(fps) ? fps : 60,
+    };
   })
   .get("/output", async () => {
     await ensureStorageDirs();

@@ -124,3 +124,10 @@ export async function probeVideoInfo(
     });
   });
 }
+
+export async function probeMediaDurationSeconds(
+  inputPath: string,
+): Promise<number | null> {
+  const info = await probeVideoInfo(inputPath);
+  return info.durationSeconds;
+}
