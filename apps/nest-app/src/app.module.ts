@@ -9,9 +9,6 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { ApplicationsModule } from "./applications/applications.module";
-import { AsyncProcessingModule } from "./async-processing/async-processing.module";
-import { LocalMultipartUploadModule } from "./import/upload/local-multipart/local-multipart-upload.module";
-import { ObjectStoreUploadModule } from "./import/upload/object-store/object-store-upload.module";
 import { TestMiddleware } from "./overview/middleware/test.middleware";
 import { OverviewModule } from "./overview/overview.module";
 import { PrismaModule } from "./recipes/prisma/prisma.module";
@@ -28,9 +25,6 @@ import { WebsocketsModule } from "./websockets/websockets.module";
     WebsocketsModule,
     ApplicationsModule,
     EventEmitterModule.forRoot(),
-    AsyncProcessingModule,
-    LocalMultipartUploadModule,
-    ObjectStoreUploadModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

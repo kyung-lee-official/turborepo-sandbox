@@ -1,8 +1,3 @@
-import type {
-  DomainUploadPolicy,
-  SourceSpec,
-} from "@/async-processing/async-processing.types";
-
 export const VFR_TO_CFR_DOMAIN_KIND = "vfr-to-cfr" as const;
 
 export const VFR_TO_CFR_SOURCE_IDS = {
@@ -32,13 +27,3 @@ export function resolveVfrToCfrMaxUploadBytes(): number {
   }
   return DEFAULT_VFR_TO_CFR_UPLOAD_MAX_BYTES;
 }
-
-export const vfrToCfrSourceSpecs: SourceSpec[] = [
-  { sourceId: VFR_TO_CFR_SOURCE_IDS.video, required: true },
-];
-
-export const vfrToCfrUploadPolicy: DomainUploadPolicy = {
-  allowedMimeBySourceId: {
-    [VFR_TO_CFR_SOURCE_IDS.video]: ["video/mp4", "application/octet-stream"],
-  },
-};

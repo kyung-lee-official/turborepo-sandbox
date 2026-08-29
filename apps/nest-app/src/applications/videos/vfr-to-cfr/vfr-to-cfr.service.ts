@@ -4,14 +4,10 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
   StreamableFile,
 } from "@nestjs/common";
-import { nanoid } from "nanoid";
-import { ProcessingOrchestratorService } from "@/async-processing/async-processing-core/processing-orchestrator.service";
-import {
-  type ConvertUploadedBody,
-  convertUploadedBodySchema,
-} from "./convert-options.schema";
+import { type ConvertUploadedBody } from "./convert-options.schema";
 import {
   parseFrameRateToFps,
   suggestTargetFpsFromAverageFrameRate,
@@ -42,7 +38,6 @@ import {
   resolveVfrToCfrMaxUploadBytes,
   VFR_TO_CFR_DEFAULT_FPS,
   VFR_TO_CFR_DOMAIN_KIND,
-  VFR_TO_CFR_SOURCE_IDS,
   VFR_TO_CFR_TARGET_FPS_PRESETS,
   VFR_TO_CFR_UPLOAD_MAX_BYTES_ENV,
 } from "./vfr-to-cfr.constants";
@@ -55,9 +50,7 @@ import type {
 
 @Injectable()
 export class VfrToCfrService {
-  constructor(
-    private readonly processingOrchestrator: ProcessingOrchestratorService,
-  ) {}
+  constructor() {}
 
   async ensureStorageDirs(): Promise<void> {
     await mkdir(getUploadedDir(), { recursive: true });
@@ -155,39 +148,11 @@ export class VfrToCfrService {
 
   async startConvert(
     uploadId: string,
-    rawOptions: unknown = {},
+    _rawOptions: unknown = {},
   ): Promise<ConvertVideoResult> {
-    const options = convertUploadedBodySchema.parse(rawOptions);
-    const videoPath = buildUploadedVideoPath(uploadId);
-    try {
-      await access(videoPath);
-    } catch {
-      throw new NotFoundException(`Uploaded video not found: ${uploadId}`);
-    }
-
-    const targetFps = await this.resolveTargetFps(videoPath, options);
-    const outputId = nanoid();
-    await mkdir(getOutputDir(), { recursive: true });
-
-    const result = await this.processingOrchestrator.startProcessing({
-      domainKind: VFR_TO_CFR_DOMAIN_KIND,
-      sources: {
-        [VFR_TO_CFR_SOURCE_IDS.video]: {
-          sourceId: VFR_TO_CFR_SOURCE_IDS.video,
-          label: uploadId,
-          mimeType: "video/mp4",
-          locator: { kind: "local", path: videoPath },
-        },
-      },
-      context: { uploadId, outputId, targetFps },
-    });
-
-    return {
-      jobId: result.jobId,
-      outputId,
-      uploadId,
-      targetFps,
-    };
+    throw new ServiceUnavailableException(
+      "vfr-to-cfr convert moved to Elysia; nest version is read-only.",
+    );
   }
 
   private async resolveTargetFps(
