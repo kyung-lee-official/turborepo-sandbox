@@ -1,4 +1,30 @@
-import { readStreamToBuffer } from "../../import/plugins/tabular-xlsx/load-workbook-from-buffer.ts";
+import { getPrisma } from "../../../shared/db.ts";
+import { parseJsonlLines } from "../../import/plugins/jsonl/parse-jsonl-lines.ts";
+import { scopeJsonlError } from "../../import/plugins/jsonl/scope-jsonl-errors.ts";
+import {
+  loadWorkbookFromBuffer,
+  readStreamToBuffer,
+} from "../../import/plugins/tabular-xlsx/load-workbook-from-buffer.ts";
+import { parseSheetRows } from "../../import/plugins/tabular-xlsx/parse-sheet-rows.ts";
+import { scopeTabularError } from "../../import/plugins/tabular-xlsx/scope-tabular-errors.ts";
+import { createThrottledDomainProgressReporter } from "../../import/shared/create-throttled-domain-progress.ts";
+import type { ErrorDetail } from "../../import/shared/import-error.types.ts";
+import { reportDomainProgress } from "../../import/shared/report-domain-progress.ts";
+import {
+  SALES_IMPORT_SHEETS,
+  SALES_IMPORT_SOURCE_IDS,
+  salesImportInventorySheetSpec,
+  salesImportLineItemsSheetSpec,
+  salesImportProductsSheetSpec,
+} from "../../sales-import/constants.ts";
+import {
+  type InventoryBySku,
+  indexInventoryRow,
+  indexProductRow,
+  type MergedLineInsert,
+  mergeLineItemRow,
+  type ProductBySku,
+} from "../../sales-import/validation.ts";
 import type {
   DomainRunner,
   DomainRunnerIo,
@@ -6,95 +32,312 @@ import type {
   VerifiedProcessingSource,
 } from "../types.ts";
 
-export const SALES_REPORT_DOMAIN_KIND = "sales-report" as const;
+const INSERT_BATCH_SIZE = 5000;
 
-export const SALES_REPORT_SOURCE_IDS = {
-  salesData: "salesData",
-  inventory: "inventory",
-  productDescriptions: "productDescriptions",
-} as const;
-
-export const salesReportSourceSpecs = [
-  { sourceId: SALES_REPORT_SOURCE_IDS.salesData, required: true },
-  { sourceId: SALES_REPORT_SOURCE_IDS.inventory, required: true },
-  { sourceId: SALES_REPORT_SOURCE_IDS.productDescriptions, required: true },
-] as const;
-
-/**
- * Demo runner for the `sales-report` domain.
- *
- * The nest version (`apps/nest-app/src/applications/sales-data/sales-import/`)
- * implemented full business logic: read 3 xlsx sheets, parse row cells,
- * validate via `mergeLineItemRow` / `indexInventoryRow` / `indexProductRow`,
- * then batch-insert merged rows into the Prisma `Member` table.
- *
- * That business logic + the validation helpers + the Prisma Member writes
- * are not ported yet. This runner demonstrates that the import plugin helpers
- * (xlsx loading, JSONL parsing, error scoping, throttled progress) are
- * available on Elysia and compile cleanly together with the async-processing
- * infrastructure. It reads each source's stream into a buffer to prove the
- * path works end-to-end, then returns `processedCount: 0`.
- *
- * To restore real business logic: port the validation helpers and the Prisma
- * Member writes, then replace this runner's body with the real logic.
- */
 export const salesReportDomainRunner: DomainRunner = {
-  domainKind: SALES_REPORT_DOMAIN_KIND,
+  domainKind: "sales-report",
 
   async run(
     jobId: string,
     sources: Map<string, VerifiedProcessingSource>,
     io: DomainRunnerIo,
   ): Promise<DomainRunResult> {
-    const required = [
-      SALES_REPORT_SOURCE_IDS.salesData,
-      SALES_REPORT_SOURCE_IDS.inventory,
-      SALES_REPORT_SOURCE_IDS.productDescriptions,
-    ];
-    for (const sourceId of required) {
-      if (!sources.has(sourceId)) {
-        throw new Error(`Missing required source: ${sourceId}`);
-      }
-      const source = sources.get(sourceId)!;
-      if (source.verifiedLocator.kind !== "local") {
-        throw new Error(
-          `sales-report demo only supports local sources (got ${source.verifiedLocator.kind})`,
-        );
-      }
+    const salesData = sources.get(SALES_IMPORT_SOURCE_IDS.salesData);
+    const inventory = sources.get(SALES_IMPORT_SOURCE_IDS.inventory);
+    const productDescriptions = sources.get(
+      SALES_IMPORT_SOURCE_IDS.productDescriptions,
+    );
+
+    if (!salesData || !inventory || !productDescriptions) {
+      throw new Error("Missing required upload sources for sales-report");
     }
 
-    await io.onProgress({
-      phase: "loading_source",
-      detail: "reading source streams",
-      percent: 10,
-    });
+    const errors: ErrorDetail[] = [];
 
-    for (const sourceId of required) {
-      const source = sources.get(sourceId)!;
-      const locator = source.verifiedLocator;
-      if (locator.kind !== "local") continue;
-      const stream = (await io.openStream(source)) as unknown as Parameters<
+    await reportDomainProgress(
+      io.onProgress,
+      "loading_source",
+      salesData.sourceId,
+      { originalName: salesData.label },
+    );
+    const salesBuffer = await readStreamToBuffer(
+      (await io.openStream(salesData)) as unknown as Parameters<
         typeof readStreamToBuffer
-      >[0];
-      await readStreamToBuffer(stream);
+      >[0],
+    );
+    const salesWorkbook = await loadWorkbookFromBuffer(salesBuffer);
+
+    if (!salesWorkbook.getWorksheet(SALES_IMPORT_SHEETS.products)) {
+      throw new Error(`Worksheet not found: ${SALES_IMPORT_SHEETS.products}`);
     }
 
-    await io.onProgress({
-      phase: "validating_rows",
-      detail: "stub: would merge line items with products + inventory here",
-      percent: 75,
+    if (!salesWorkbook.getWorksheet(SALES_IMPORT_SHEETS.lineItems)) {
+      throw new Error(`Worksheet not found: ${SALES_IMPORT_SHEETS.lineItems}`);
+    }
+
+    const productsBySku = new Map<string, ProductBySku>();
+    const salesCtx = {
+      sourceId: salesData.sourceId,
+      label: salesData.label,
+    };
+
+    await parseSheetRows(
+      salesWorkbook,
+      salesImportProductsSheetSpec,
+      salesCtx,
+      {
+        onRow: ({ cells }) => {
+          const product = indexProductRow(cells);
+          if (product) {
+            productsBySku.set(cells.SKU!, product);
+          }
+        },
+        pushError: (error) => {
+          errors.push(
+            scopeTabularError(error, {
+              sourceId: salesData.sourceId,
+              originalName: salesData.label,
+              worksheetName: salesImportProductsSheetSpec.sheetName,
+            }),
+          );
+        },
+      },
+    );
+
+    const inventoryBySku = new Map<string, InventoryBySku>();
+    await reportDomainProgress(
+      io.onProgress,
+      "loading_source",
+      inventory.sourceId,
+      { originalName: inventory.label },
+    );
+    const inventoryBuffer = await readStreamToBuffer(
+      (await io.openStream(inventory)) as unknown as Parameters<
+        typeof readStreamToBuffer
+      >[0],
+    );
+    const inventoryWorkbook = await loadWorkbookFromBuffer(inventoryBuffer);
+    const inventoryCtx = {
+      sourceId: inventory.sourceId,
+      label: inventory.label,
+    };
+
+    await parseSheetRows(
+      inventoryWorkbook,
+      salesImportInventorySheetSpec,
+      inventoryCtx,
+      {
+        onRow: ({ cells }) => {
+          const row = indexInventoryRow(cells);
+          if (row) {
+            inventoryBySku.set(cells.SKU!, row);
+          }
+        },
+        pushError: (error) => {
+          errors.push(
+            scopeTabularError(error, {
+              sourceId: inventory.sourceId,
+              originalName: inventory.label,
+              worksheetName: salesImportInventorySheetSpec.sheetName,
+            }),
+          );
+        },
+      },
+    );
+
+    const descriptionsBySku = new Map<string, string>();
+    await reportDomainProgress(
+      io.onProgress,
+      "loading_source",
+      productDescriptions.sourceId,
+      { originalName: productDescriptions.label },
+    );
+    const jsonlBuffer = await readStreamToBuffer(
+      (await io.openStream(productDescriptions)) as unknown as Parameters<
+        typeof readStreamToBuffer
+      >[0],
+    );
+    const jsonlStream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array(jsonlBuffer));
+        controller.close();
+      },
+    });
+    const jsonlCtx = {
+      sourceId: productDescriptions.sourceId,
+      label: productDescriptions.label,
+    };
+
+    await parseJsonlLines(
+      jsonlStream as unknown as Parameters<typeof parseJsonlLines>[0],
+      jsonlCtx,
+      {
+        onLine: ({ record }) => {
+          const sku = record.sku;
+          if (typeof sku !== "string" || !sku) {
+            return;
+          }
+          const description =
+            typeof record.description === "string" ? record.description : "";
+          descriptionsBySku.set(sku, description);
+        },
+        pushError: (error) => {
+          errors.push(
+            scopeJsonlError(error, {
+              sourceId: productDescriptions.sourceId,
+              originalName: productDescriptions.label,
+            }),
+          );
+        },
+      },
+    );
+
+    const validRows: MergedLineInsert[] = [];
+    const validatingProgress = createThrottledDomainProgressReporter(
+      io.onProgress,
+      "validating_rows",
+      salesData.sourceId,
+      {
+        originalName: salesData.label,
+        worksheetName: salesImportLineItemsSheetSpec.sheetName,
+      },
+    );
+
+    let validCount = 0;
+    let lineItemErrorCount = 0;
+    let lastValidatedTotal = 0;
+    let lastValidatedProcessed = 0;
+
+    await parseSheetRows(
+      salesWorkbook,
+      salesImportLineItemsSheetSpec,
+      salesCtx,
+      {
+        onProgress: async ({ processedCount, totalCount }) => {
+          lastValidatedTotal = totalCount;
+          lastValidatedProcessed = processedCount;
+          await validatingProgress.report({
+            totalCount,
+            processedCount,
+            validCount,
+            errorCount: lineItemErrorCount,
+          });
+        },
+        onRow: ({ rowNumber, cells }) => {
+          const result = mergeLineItemRow(
+            rowNumber,
+            cells,
+            productsBySku,
+            inventoryBySku,
+            descriptionsBySku,
+          );
+          if (!result.ok) {
+            lineItemErrorCount++;
+            errors.push(
+              scopeTabularError(result.error, {
+                sourceId: salesData.sourceId,
+                originalName: salesData.label,
+                worksheetName: salesImportLineItemsSheetSpec.sheetName,
+              }),
+            );
+            return;
+          }
+          validCount++;
+          validRows.push(result.row);
+        },
+        pushError: (error) => {
+          errors.push(
+            scopeTabularError(error, {
+              sourceId: salesData.sourceId,
+              originalName: salesData.label,
+              worksheetName: salesImportLineItemsSheetSpec.sheetName,
+            }),
+          );
+        },
+      },
+    );
+
+    await validatingProgress.flush({
+      totalCount: lastValidatedTotal,
+      processedCount: lastValidatedProcessed,
+      validCount,
+      errorCount: lineItemErrorCount,
     });
 
-    await io.onProgress({
-      phase: "saving_database",
-      detail: "stub: would batch-insert into Member table here",
-      percent: 100,
+    const savingProgress = createThrottledDomainProgressReporter(
+      io.onProgress,
+      "saving_database",
+      salesData.sourceId,
+      {
+        originalName: salesData.label,
+      },
+    );
+
+    const totalToSave = validRows.length;
+    await savingProgress.flush({
+      totalCount: totalToSave,
+      processedCount: 0,
+      validCount: 0,
     });
+
+    await insertMergedLines(jobId, validRows, async (insertedCount) => {
+      await savingProgress.report({
+        totalCount: totalToSave,
+        processedCount: insertedCount,
+        validCount: insertedCount,
+      });
+    });
+
+    await savingProgress.flush({
+      totalCount: totalToSave,
+      processedCount: totalToSave,
+      validCount: totalToSave,
+    });
+
+    if (errors.length > 0) {
+      return {
+        outcome: "validation_failed",
+        processedCount: validRows.length,
+        errorCount: errors.length,
+        errors,
+      };
+    }
 
     return {
       outcome: "success",
-      processedCount: 0,
+      processedCount: validRows.length,
       errorCount: 0,
     };
   },
 };
+
+async function insertMergedLines(
+  jobId: string,
+  rows: readonly MergedLineInsert[],
+  onBatchInserted?: (insertedCount: number) => Promise<void>,
+): Promise<void> {
+  let insertedCount = 0;
+  const prisma = getPrisma();
+  for (let offset = 0; offset < rows.length; offset += INSERT_BATCH_SIZE) {
+    const batch = rows.slice(offset, offset + INSERT_BATCH_SIZE);
+    await prisma.salesImportMergedLine.createMany({
+      data: batch.map((row) => ({
+        processingJobId: jobId,
+        sourceLineNumber: row.sourceLineNumber,
+        orderId: row.orderId,
+        sku: row.sku,
+        quantity: row.quantity,
+        saleDate: row.saleDate,
+        productName: row.productName,
+        category: row.category,
+        unitPrice: row.unitPrice,
+        inventoryQty: row.inventoryQty,
+        description: row.description,
+      })),
+    });
+    insertedCount += batch.length;
+    await onBatchInserted?.(insertedCount);
+  }
+}
+
+void {} as never;

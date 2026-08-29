@@ -1,12 +1,12 @@
 import { Elysia, t } from "elysia";
+import {
+  SALES_IMPORT_DOMAIN_KIND,
+  salesImportSourceSpecs,
+} from "../sales-import/constants.ts";
 import { VFR_TO_CFR_DOMAIN_KIND } from "../vfr-to-cfr/constants.ts";
 import { domainRegistry } from "./domain-registry.ts";
 import { asyncGeneratePdfDomainRunner } from "./domain-runners/async-generate-pdf.ts";
-import {
-  SALES_REPORT_DOMAIN_KIND,
-  salesReportDomainRunner,
-  salesReportSourceSpecs,
-} from "./domain-runners/sales-report.ts";
+import { salesReportDomainRunner } from "./domain-runners/sales-report.ts";
 import {
   getErrorsJsonl,
   getJob,
@@ -22,9 +22,9 @@ domainRegistry.register(VFR_TO_CFR_DOMAIN_KIND, {
   lockPolicy: { type: "none" },
 });
 
-domainRegistry.register(SALES_REPORT_DOMAIN_KIND, {
+domainRegistry.register(SALES_IMPORT_DOMAIN_KIND, {
   domainRunner: salesReportDomainRunner,
-  sourceSpecs: [...salesReportSourceSpecs],
+  sourceSpecs: [...salesImportSourceSpecs],
   lockPolicy: { type: "none" },
 });
 
