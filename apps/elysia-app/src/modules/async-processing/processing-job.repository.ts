@@ -100,7 +100,7 @@ export async function findJobs(input: {
   if (input.cursor) {
     const cursorJob = await findJobById(input.cursor);
     if (cursorJob) {
-      where["AND"] = [
+      where.AND = [
         {
           OR: [
             { createdAt: { lt: cursorJob.createdAt } },

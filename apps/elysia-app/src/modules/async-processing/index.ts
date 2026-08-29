@@ -5,6 +5,7 @@ import {
   listJobs,
   startProcessing,
 } from "./service.ts";
+import { streamJobEventsOrThrow } from "./sse.ts";
 import type { StartProcessingInput } from "./types.ts";
 
 export const asyncProcessingRoutes = new Elysia()
@@ -30,6 +31,9 @@ export const asyncProcessingRoutes = new Elysia()
   )
   .get("/jobs/:jobId", async ({ params }) => {
     return await getJob(params.jobId);
+  })
+  .get("/jobs/:jobId/events", async ({ params }) => {
+    return await streamJobEventsOrThrow(params.jobId);
   })
   .get("/jobs/:jobId/errors", async ({ params, set }) => {
     const body = await getErrorsJsonl(params.jobId);
