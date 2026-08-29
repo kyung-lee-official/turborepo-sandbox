@@ -19,20 +19,6 @@
       "cache": false,
       "persistent": true
     },
-    "db:nest:generate": {
-      "cache": true,
-      "outputs": ["src/generated/**"]
-    },
-    "db:nest:migrate:dev": {
-      "cache": false
-    },
-    "db:nest:migrate:deploy": {
-      "cache": false
-    },
-    "db:nest:studio": {
-      "cache": false,
-      "persistent": true
-    },
     "db:medusa:migrate": {
       "cache": false
     },

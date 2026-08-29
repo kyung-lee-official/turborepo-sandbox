@@ -7,9 +7,9 @@ export const filesBlockLinks = [
   },
   {
     link: "/files/nestjs-aliyun-oss",
-    text: "nestjs upload to aliyun oss",
+    text: "elysia upload to aliyun oss",
     description:
-      "Place files in apps/nest-app/temp/upload-to-aliyun-oss, then upload to Aliyun OSS from NestJS disk staging.",
+      "Place files in apps/elysia-app/temp/upload-to-aliyun-oss, then upload to Aliyun OSS from Elysia disk staging.",
   },
   {
     link: "/files/conditionally-download-json-or-buffer",

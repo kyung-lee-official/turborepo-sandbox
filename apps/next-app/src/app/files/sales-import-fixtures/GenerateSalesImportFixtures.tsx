@@ -150,7 +150,9 @@ export const GenerateSalesImportFixtures = () => {
         <div className="ml-3 space-y-2 text-blue-700 text-sm">
           <p>
             <strong>File location:</strong> Bundle is saved under{" "}
-            <code>apps/nest-app/temp/sales-import-&#123;timestamp&#125;/</code>
+            <code>
+              apps/elysia-app/temp/sales-import-&#123;timestamp&#125;/
+            </code>
           </p>
           <p>
             <strong>Upload slots:</strong> Use multipart field names{" "}

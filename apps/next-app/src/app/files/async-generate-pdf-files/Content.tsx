@@ -152,7 +152,7 @@ export const Content = () => {
           . Progress reflects real pdfkit work per file, then archiver zips the
           output folder. The zip is saved as{" "}
           <code className="rounded bg-neutral-200 px-1">
-            apps/nest-app/temp/async-generate-pdf/{"{timestamp}-{jobId}.zip"}
+            apps/elysia-app/temp/async-generate-pdf/{"{timestamp}-{jobId}.zip"}
           </code>
           . Live progress comes from{" "}
           <code className="rounded bg-neutral-200 px-1">
