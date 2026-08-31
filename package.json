@@ -38,7 +38,7 @@
     "@biomejs/biome": "2.3.8",
     "lefthook": "^2.1.6",
     "turbo": "^2.6.3",
-    "typescript": "latest"
+    "typescript": "~5.9.2"
   },
   "dependencies": {
     "motion": "^12.25.0"
