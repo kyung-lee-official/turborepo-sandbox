@@ -4,21 +4,18 @@ import { motion } from "motion/react";
 
 const Content = () => {
   return (
-    <div className="flex flex-col h-screen justify-center items-center gap-20">
+    <div className="flex h-screen flex-col items-center justify-center gap-20">
       <a
         href="https://css-tricks.com/gooey-effect/"
         className="text-4xl underline"
       >
         The Gooey Effect
       </a>
-      <div
-        className="flex flex-col justify-center items-center
-				text-xl gap-20"
-      >
-        <div className="flex flex-col justify-center items-center">
+      <div className="flex flex-col items-center justify-center gap-20 text-xl">
+        <div className="flex flex-col items-center justify-center">
           <h1>Blur</h1>
           <div className="[filter:url(#blur)]">
-            <div className="w-20 h-20 bg-blue-500"></div>
+            <div className="h-20 w-20 bg-blue-500"></div>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" version="1.1" className="h-0">
             <defs>
@@ -29,10 +26,10 @@ const Content = () => {
           </svg>
         </div>
 
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-col items-center justify-center">
           <h1>Drop Shadow</h1>
           <div className="[filter:url(#drop-shadow)]">
-            <div className="w-20 h-20 bg-blue-500"></div>
+            <div className="h-20 w-20 bg-blue-500"></div>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" version="1.1" className="h-0">
             <defs>
@@ -55,15 +52,15 @@ const Content = () => {
           </svg>
         </div>
 
-        <div className="flex flex-col justify-center items-center">
+        <div className="flex flex-col items-center justify-center">
           <h1>Gooey</h1>
           <div>
-            <div className="relative flex justify-center items-center w-full h-40 [filter:url(#goo)]">
-              <div className="w-10 h-10 bg-blue-500 rounded-full"></div>
+            <div className="relative flex h-40 w-full items-center justify-center [filter:url(#goo)]">
+              <div className="h-10 w-10 rounded-full bg-blue-500"></div>
               <motion.div
                 animate={{ x: [0, 240, 0] }}
                 transition={{ repeat: Infinity, duration: 3 }}
-                className="absolute w-16 h-16 bg-blue-500 rounded-full left-4"
+                className="absolute left-4 h-16 w-16 rounded-full bg-blue-500"
               ></motion.div>
             </div>
             <svg
@@ -91,16 +88,16 @@ const Content = () => {
           </div>
         </div>
       </div>
-      <div className="flex flex-col w-96">
+      <div className="flex w-96 flex-col">
         <a
           href="https://developer.mozilla.org/en-US/docs/Web/SVG/Element/feColorMatrix"
-          className="flex justify-center items-center w-full bg-sky-300 text-xl underline"
+          className="flex w-full items-center justify-center bg-sky-300 text-xl underline"
         >
           &lt;feColorMatrix&gt;
         </a>
         <a
           href="https://codepen.io/nicolasjesenberger/pen/xxmbvxL"
-          className="flex justify-center items-center w-full bg-sky-300 text-xl underline"
+          className="flex w-full items-center justify-center bg-sky-300 text-xl underline"
         >
           Gooey Toggle Switch
         </a>

@@ -14,7 +14,7 @@ const ScrollContainer = forwardRef(function ScrollContainer(
   ref: any,
 ) {
   return (
-    <div ref={ref} className="flex w-full h-[200rem]">
+    <div ref={ref} className="flex h-[200rem] w-full">
       {children}
     </div>
   );
@@ -22,7 +22,7 @@ const ScrollContainer = forwardRef(function ScrollContainer(
 
 const Background = forwardRef(function Background({ children }: any, ref: any) {
   return (
-    <div ref={ref} className="relative flex w-[60rem] m-auto">
+    <div ref={ref} className="relative m-auto flex w-[60rem]">
       {children}
     </div>
   );
@@ -86,7 +86,7 @@ const Masked = forwardRef(function Masked({ children }: any, ref: any) {
 
   return (
     <motion.div
-      className="absolute flex w-full m-auto"
+      className="absolute m-auto flex w-full"
       style={{
         clipPath: `polygon(${upperLeftProgressState}% 0,
 				${upperRightProgressState}% 0,
@@ -105,7 +105,7 @@ const Content = () => {
 
   return (
     <ScrollContainer ref={containerRef}>
-      <div className="text-2xl p-10 mx-auto">Scroll down ↓↓↓</div>
+      <div className="mx-auto p-10 text-2xl">Scroll down ↓↓↓</div>
       <Background ref={ref}>
         <img src="/images/clippath/dark.jpg" alt="" width={"100%"} />
         <Masked ref={ref}>

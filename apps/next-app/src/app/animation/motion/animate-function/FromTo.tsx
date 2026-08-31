@@ -6,26 +6,26 @@ import { useEffect, useRef } from "react";
 const FromTo = () => {
   const nRef = useRef<HTMLDivElement>(null);
   const cRef = useRef<HTMLDivElement>(null);
-  async function sequence() {
-    animate(0, 100, {
-      onUpdate: (latest) => {
-        if (nRef.current) {
-          nRef.current.textContent = latest.toFixed(2);
-        }
-      },
-      duration: 5,
-    });
-    await animate("#9333ea", "#06b6d4", {
-      duration: 3,
-      onUpdate: (latest) => {
-        if (cRef.current) {
-          cRef.current.style.backgroundColor = latest;
-        }
-      },
-    });
-    console.log("Color Animation complete!");
-  }
   useEffect(() => {
+    async function sequence() {
+      animate(0, 100, {
+        onUpdate: (latest) => {
+          if (nRef.current) {
+            nRef.current.textContent = latest.toFixed(2);
+          }
+        },
+        duration: 5,
+      });
+      await animate("#9333ea", "#06b6d4", {
+        duration: 3,
+        onUpdate: (latest) => {
+          if (cRef.current) {
+            cRef.current.style.backgroundColor = latest;
+          }
+        },
+      });
+      console.log("Color Animation complete!");
+    }
     sequence();
   }, []);
 
@@ -43,7 +43,7 @@ const FromTo = () => {
       </a>
       <div>Check the console</div>
       <div ref={nRef}></div>
-      <div ref={cRef} className="w-9 h-8"></div>
+      <div ref={cRef} className="h-8 w-9"></div>
     </div>
   );
 };

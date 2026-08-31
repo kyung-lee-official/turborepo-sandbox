@@ -1,14 +1,14 @@
 "use client";
 
 import { motion } from "motion/react";
-import React, { useState } from "react";
+import { useState } from "react";
 
 const Content = () => {
   const [pos, setPos] = useState<"l" | "r">("l");
 
   return (
     <div>
-      <div className="flex justify-center items-center m-6">
+      <div className="m-6 flex items-center justify-center">
         <h1 className="text-xl">
           Note: the animated elements must <strong>ALL</strong> have property
           `layout`
@@ -19,7 +19,7 @@ const Content = () => {
         style={{
           justifyContent: pos === "l" ? "flex-start" : "flex-end",
         }}
-        className="flex w-full bg-gray-200 cursor-pointer"
+        className="flex w-full cursor-pointer bg-gray-200"
         onClick={() => {
           if (pos === "l") {
             setPos("r");
@@ -30,9 +30,7 @@ const Content = () => {
       >
         <motion.div
           layout
-          className="flex justify-center items-center w-10 h-10 
-					text-red-50 text-xl
-					bg-red-500"
+          className="flex h-10 w-10 items-center justify-center bg-red-500 text-red-50 text-xl"
           transition={{
             duration: 1,
           }}

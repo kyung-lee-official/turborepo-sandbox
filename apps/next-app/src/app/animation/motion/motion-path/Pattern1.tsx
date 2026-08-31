@@ -11,7 +11,7 @@ const Pattern1 = () => {
     if (!path) return;
     const pathLength = path.getTotalLength();
     path.style.strokeDasharray = pathLength.toString();
-  }, [pathRef]);
+  }, []);
 
   return (
     <motion.svg width={400} viewBox="0 0 256 112">

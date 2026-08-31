@@ -4,33 +4,37 @@ import { useControls } from "leva";
 import { motion, useMotionValue } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
 
+const POINT_X_TO_CENTER_OFFSET = 20;
+const POINT_Y_TO_CENTER_OFFSET = 10;
+
+function r2d(number: number) {
+  return number * (180 / Math.PI);
+}
+
 const Pattern4 = () => {
-  let pathLength = 1;
+  // pathLength is mutated in the effect and read by getAngleAtLength; use a
+  // ref so the value can be updated without retriggering the effect, and so
+  // getAngleAtLength can stay a stable useCallback with [] deps.
+  const pathLengthRef = useRef<number>(1);
   const motionValue = useMotionValue(0);
   const motionPointX = useMotionValue(0);
   const motionPointY = useMotionValue(0);
-  const motionPointXtoCenterOffset = 20;
-  const motionPointYtoCenterOffset = 10;
   const motionAngle = useMotionValue(0);
-
   const pathRef = useRef<SVGPathElement>(null);
-
-  function r2d(number: number) {
-    return number * (180 / Math.PI);
-  }
 
   /**
    * Get the angle in radians at a certain length along the path.
    */
   const getAngleAtLength = useCallback(
     (path: SVGPathElement, length: number, sampleSegmentLength: number) => {
+      const pathLength = pathLengthRef.current;
       const p1 = path.getPointAtLength(length);
       const p2 = path.getPointAtLength(
         (length + sampleSegmentLength) % pathLength, // pathLength cannot be 0
       );
       return Math.atan2(p2.y - p1.y, p2.x - p1.x);
     },
-    [pathRef],
+    [],
   );
 
   const { levaValue } = useControls({
@@ -40,19 +44,27 @@ const Pattern4 = () => {
   useEffect(() => {
     const path = pathRef.current;
     if (!path) return;
-    pathLength = path.getTotalLength();
+    const pathLength = path.getTotalLength();
+    pathLengthRef.current = pathLength;
 
     if (pathLength) {
       motionValue.set(levaValue);
       motionPointX.set(
-        path.getPointAtLength(levaValue).x - motionPointXtoCenterOffset,
+        path.getPointAtLength(levaValue).x - POINT_X_TO_CENTER_OFFSET,
       );
       motionPointY.set(
-        path.getPointAtLength(levaValue).y - motionPointYtoCenterOffset,
+        path.getPointAtLength(levaValue).y - POINT_Y_TO_CENTER_OFFSET,
       );
       motionAngle.set(r2d(getAngleAtLength(path, levaValue, 1)));
     }
-  }, [pathRef, levaValue]);
+  }, [
+    levaValue,
+    getAngleAtLength,
+    motionValue.set,
+    motionPointX.set,
+    motionPointY.set,
+    motionAngle.set,
+  ]);
 
   return (
     <div>

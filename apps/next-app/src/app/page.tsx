@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { NavLinkWithTooltip } from "@/components/home/nav-link-with-tooltip";
 import { Airbnb } from "./chart/visx/Icons";
@@ -64,92 +63,55 @@ export default function Home() {
         ]}
       />
       <Block
-        title="Animation | AnimeJS"
+        title="Animation | Motion"
         list={[
           {
-            link: "/animation/animejs/anime-basic",
-            text: "anime basic",
-          },
-          {
-            link: "/animation/animejs/chitubox-logo-stroke-dashoffset",
-            text: "chitubox-logo-stroke-dashoffset",
-          },
-          {
-            link: "/animation/animejs/hover",
-            text: "hover",
-          },
-          {
-            link: "/animation/animejs/lemon-drop",
-            text: "lemon drop",
-          },
-          {
-            link: "/animation/animejs/line-drawing",
-            text: "line drawing",
-          },
-          {
-            link: "/animation/animejs/requestanimationframe",
-            text: "requestanimationframe",
-          },
-          {
-            link: "/animation/animejs/stroke-dashoffset",
-            text: "stroke-dashoffset",
-          },
-          {
-            link: "/animation/animejs/svg-sphere",
-            text: "svg sphere",
-          },
-          {
-            link: "/animation/animejs/timeline",
-            text: "timeline",
-          },
-        ]}
-      />
-      <Block
-        title="Animation | Framer Motion"
-        list={[
-          {
-            link: "/animation/framer-motion/animate-function",
+            link: "/animation/motion/animate-function",
             text: "animate function",
           },
           {
-            link: "/animation/framer-motion/animatepresence",
+            link: "/animation/motion/animatepresence",
             text: "AnimatePresence",
           },
           {
-            link: "/animation/framer-motion/animatepresence-bug",
+            link: "/animation/motion/animatepresence-bug",
             text: "AnimatePresence bug",
           },
           {
-            link: "/animation/framer-motion/animation",
+            link: "/animation/motion/animation",
             text: "animation",
           },
           {
-            link: "/animation/framer-motion/buttons",
+            link: "/animation/motion/buttons",
             text: "buttons",
           },
           {
-            link: "/animation/framer-motion/chitubox-drop",
+            link: "/animation/motion/chitubox-drop",
             text: "chitubox-drop",
           },
           {
-            link: "/animation/framer-motion/clippath",
+            link: "/animation/motion/clippath",
             text: "clippath",
           },
           {
-            link: "/animation/framer-motion/gooey-effect",
+            link: "/animation/motion/gooey-effect",
             text: "gooey-effect",
           },
           {
-            link: "/animation/framer-motion/layout-animation",
+            link: "/animation/motion/layout-animation",
             text: "layout animation",
           },
           {
-            link: "/animation/framer-motion/motion-path",
+            link: "/animation/motion/motion-path",
             text: "motion path",
           },
           {
-            link: "/animation/framer-motion/theme-switch",
+            link: "/animation/motion/theme-switch",
             text: "theme switch",
+          },
+          {
+            link: "/animation/motion/use-in-view",
+            text: "useInView",
           },
           {
             link: "/animation/motion/use-scroll",
@@ -160,12 +122,8 @@ export default function Home() {
             text: "useScroll page",
           },
           {
-            link: "/animation/framer-motion/variants",
+            link: "/animation/motion/variants",
             text: "variants",
-          },
-          {
-            link: "/animation/motion/use-in-view",
-            text: "useInView",
           },
         ]}
       />
@@ -191,38 +149,6 @@ export default function Home() {
           },
         ]}
       />
-      <Block
-        title={<del>Animation | React Spring</del>}
-        list={[
-          {
-            link: "/animation/react-spring/basic-spring",
-            text: "basic spring",
-          },
-          {
-            link: "/animation/react-spring/usetransition",
-            text: "useTransition",
-          },
-          {
-            link: "/animation/react-spring/declaretive-vs-imperative",
-            text: "declaretive vs imperative",
-          },
-          {
-            link: "/animation/react-spring/chain",
-            text: "chain",
-          },
-          {
-            link: "/animation/react-spring/trail",
-            text: "trail",
-          },
-        ]}
-      >
-        <Link
-          href={"https://github.com/pmndrs/react-spring/issues/2146"}
-          className={"underline"}
-        >
-          Bug #2146
-        </Link>
-      </Block>
       <Block
         title="Auth | Google OAuth2"
         list={[{ link: "/auth/google-oauth-2/vanilla", text: "vanilla" }]}

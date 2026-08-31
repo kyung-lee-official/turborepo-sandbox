@@ -1,44 +1,49 @@
 "use client";
 
-import { animate, motion, motionValue, useMotionValue } from "motion/react";
+import { animate, motion, useMotionValue } from "motion/react";
 import { useCallback, useEffect, useRef } from "react";
 
+const SEGMENT_LENGTH = 50;
+const POINT_X_TO_CENTER_OFFSET = 20;
+const POINT_Y_TO_CENTER_OFFSET = 15;
+
+function r2d(number: number) {
+  return number * (180 / Math.PI);
+}
+
 const Pattern3 = () => {
-  let pathLength = 1;
+  // pathLength is mutated in the effect and read by getAngleAtLength; use a
+  // ref so the value can be updated without retriggering the effect, and so
+  // getAngleAtLength can stay a stable useCallback with [] deps.
+  const pathLengthRef = useRef<number>(1);
   const motionStrokeDashOffset = useMotionValue(0);
   const motionPointX = useMotionValue(0);
   const motionPointY = useMotionValue(0);
-  const motionPointXtoCenterOffset = 20;
-  const motionPointYtoCenterOffset = 15;
   const motionAngle = useMotionValue(0);
-
-  const segmentLength = 50;
   const pathRef = useRef<SVGPathElement>(null);
-
-  function r2d(number: number) {
-    return number * (180 / Math.PI);
-  }
 
   /**
    * Get the angle in radians at a certain length along the path.
    */
   const getAngleAtLength = useCallback(
     (path: SVGPathElement, length: number, sampleSegmentLength: number) => {
+      const pathLength = pathLengthRef.current;
       const p1 = path.getPointAtLength(length);
       const p2 = path.getPointAtLength(
         (length + sampleSegmentLength) % pathLength, // pathLength cannot be 0
       );
       return Math.atan2(p2.y - p1.y, p2.x - p1.x);
     },
-    [pathRef],
+    [],
   );
 
   useEffect(() => {
     const path = pathRef.current;
     if (!path) return;
-    pathLength = path.getTotalLength();
-    path.style.strokeDasharray = `${segmentLength} ${
-      pathLength - segmentLength
+    const pathLength = path.getTotalLength();
+    pathLengthRef.current = pathLength;
+    path.style.strokeDasharray = `${SEGMENT_LENGTH} ${
+      pathLength - SEGMENT_LENGTH
     }`;
     if (pathLength) {
       motionStrokeDashOffset.set(pathLength);
@@ -47,25 +52,33 @@ const Pattern3 = () => {
         ease: "linear",
         repeat: Infinity,
         onUpdate(latest) {
-          const iconLength = (pathLength - latest + segmentLength) % pathLength;
+          const iconLength =
+            (pathLength - latest + SEGMENT_LENGTH) % pathLength;
           motionPointX.set(
-            path.getPointAtLength(iconLength).x - motionPointXtoCenterOffset,
+            path.getPointAtLength(iconLength).x - POINT_X_TO_CENTER_OFFSET,
           );
           motionPointY.set(
-            path.getPointAtLength(iconLength).y - motionPointYtoCenterOffset,
+            path.getPointAtLength(iconLength).y - POINT_Y_TO_CENTER_OFFSET,
           );
           motionAngle.set(r2d(getAngleAtLength(path, iconLength, 1)));
         },
       });
     }
-  }, [pathRef]);
+  }, [
+    getAngleAtLength,
+    motionStrokeDashOffset,
+    motionStrokeDashOffset.set,
+    motionPointX.set,
+    motionPointY.set,
+    motionAngle.set,
+  ]);
 
   return (
     <div>
       <motion.svg width={400} viewBox="0 0 256 112">
         <motion.path
           ref={pathRef}
-          strokeDasharray={`${segmentLength} ${pathLength - segmentLength}`}
+          strokeDasharray={`${SEGMENT_LENGTH} ${pathLengthRef.current - SEGMENT_LENGTH}`}
           style={{
             strokeDashoffset: motionStrokeDashOffset,
           }}

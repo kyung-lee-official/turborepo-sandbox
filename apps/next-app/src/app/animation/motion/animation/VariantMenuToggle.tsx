@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-import * as React from "react";
 import styled from "styled-components";
 
 const StyledButton = styled.button`

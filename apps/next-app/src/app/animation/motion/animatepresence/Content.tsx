@@ -26,7 +26,6 @@ const MyComponent = ({ incremental }: any) => {
           <del>{`Pitfall Slider ${incremental}`}</del>
         </motion.h1>
       );
-      break;
     case 1:
       return (
         <motion.h1
@@ -42,7 +41,6 @@ const MyComponent = ({ incremental }: any) => {
           <del>{`Pitfall Slider ${incremental}`}</del>
         </motion.h1>
       );
-      break;
     case 2:
       return (
         <motion.h1
@@ -58,7 +56,6 @@ const MyComponent = ({ incremental }: any) => {
           <del>{`Pitfall Slider ${incremental}`}</del>
         </motion.h1>
       );
-      break;
     default:
       return (
         <motion.h1
@@ -74,7 +71,6 @@ const MyComponent = ({ incremental }: any) => {
           <del>{`Pitfall Slider Null`}</del>
         </motion.h1>
       );
-      break;
   }
 };
 
@@ -82,16 +78,12 @@ const SwitchSlider = ({ incremental }: any) => {
   switch (incremental) {
     case 0:
       return <motion.h1>{`Switch Slider ${incremental}`}</motion.h1>;
-      break;
     case 1:
       return <motion.h1>{`Switch Slider ${incremental}`}</motion.h1>;
-      break;
     case 2:
       return <motion.h1>{`Switch Slider ${incremental}`}</motion.h1>;
-      break;
     default:
       return <motion.h1>{`Switch Slider Null`}</motion.h1>;
-      break;
   }
 };
 
@@ -110,7 +102,6 @@ const SaclComponentWrapper = (props: any) => {
           <h1>1</h1>
         </motion.div>
       );
-      break;
     case "isSignedInQuery.isLoading":
       return (
         <motion.div
@@ -122,7 +113,6 @@ const SaclComponentWrapper = (props: any) => {
           <h1>2</h1>
         </motion.div>
       );
-      break;
     case "isSignedInQuery.unauthorized":
       return (
         <motion.div
@@ -134,7 +124,6 @@ const SaclComponentWrapper = (props: any) => {
           <h1>3</h1>
         </motion.div>
       );
-      break;
     default:
       return (
         <motion.div
@@ -146,7 +135,6 @@ const SaclComponentWrapper = (props: any) => {
           {null}
         </motion.div>
       );
-      break;
   }
 };
 

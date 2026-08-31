@@ -1,6 +1,6 @@
 import { animate, motion } from "motion/react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const shapes = [
   /* Sun */
@@ -17,11 +17,16 @@ export const ThemeSwitch: React.FC<any> = ({ isDark }) => {
   const lightThemeColor: string = "#000";
   const darkThemeColor: string = "#fff";
   const [isComponentDark, setIsComponentDark] = useState<boolean>(isDark);
+  // Mirror the latest value of isComponentDark into a ref so the effect can
+  // read the current value at call time without needing it in the dep array
+  // (which would re-trigger the effect and cause an infinite render loop).
+  const isComponentDarkRef = useRef<boolean>(isDark);
+  isComponentDarkRef.current = isComponentDark;
 
   useEffect(() => {
     const morph = document.getElementById("morph") as HTMLElement;
     const ray = document.getElementsByClassName("ray") as any;
-    if (isDark !== isComponentDark) {
+    if (isDark !== isComponentDarkRef.current) {
       if (isDark) {
         /* Light to dark */
         animate(

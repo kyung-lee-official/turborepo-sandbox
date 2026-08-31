@@ -84,7 +84,11 @@ const Content: React.FC<any> = () => {
       },
     }),
   };
-  const items3 = ["x", "x", "x"];
+  const items3: { id: string; color: string }[] = [
+    { id: "x-0", color: "#ff0000" },
+    { id: "x-1", color: "#00ff00" },
+    { id: "x-2", color: "#0000ff" },
+  ];
 
   return (
     <div>
@@ -115,30 +119,14 @@ const Content: React.FC<any> = () => {
         <motion.li variants={item3}>item</motion.li>
         <motion.li variants={item3}>item</motion.li>
         <motion.li variants={item3}>item</motion.li>
-        {items3.map((item: any, i: any) => {
-          let color: string = "";
-          // console.log(i);
-
-          switch (i) {
-            case 0:
-              color = "#ff0000";
-              break;
-            case 1:
-              color = "#00ff00";
-              break;
-            case 2:
-              color = "#0000ff";
-              break;
-            default:
-              break;
-          }
+        {items3.map((item, i) => {
           return (
             <motion.li
-              key={i}
+              key={item.id}
               custom={i}
               animate="fn3"
               variants={item3}
-              style={{ color: color }}
+              style={{ color: item.color }}
             >
               item
             </motion.li>

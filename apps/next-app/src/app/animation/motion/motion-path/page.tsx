@@ -5,11 +5,7 @@ import Pattern4 from "./Pattern4";
 
 const Block = ({ children }: any) => {
   return (
-    <div
-      className="flex flex-col w-fit p-4 gap-2
-			bg-neutral-100
-			rounded-lg"
-    >
+    <div className="flex w-fit flex-col gap-2 rounded-lg bg-neutral-100 p-4">
       {children}
     </div>
   );
@@ -17,7 +13,7 @@ const Block = ({ children }: any) => {
 
 const Page = () => {
   return (
-    <div className="flex flex-col p-4 gap-4">
+    <div className="flex flex-col gap-4 p-4">
       <Block>
         <h1>Basic Motion Path</h1>
         <a
