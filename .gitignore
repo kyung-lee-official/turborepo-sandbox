@@ -82,3 +82,6 @@ file-uploads/*
 
 # MiCode session state
 .mimocode
+
+# opencode session state
+.opencode
