@@ -2,8 +2,11 @@
 
 import axios from "axios";
 import { useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import { UploadFilesAny } from "./UploadFilesAny";
 import { UploadFilesArray } from "./UploadFilesArray";
+
+const apiBaseUrl = elysiaBaseUrl();
 
 const DownloadBlob = () => {
   const [progress, setProgress] = useState<string>("0%");
@@ -16,7 +19,7 @@ const DownloadBlob = () => {
         className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
         onClick={async () => {
           const blob = await axios.get(
-            `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-download`,
+            `${apiBaseUrl}/techniques/file-download`,
             {
               responseType: "blob",
               onDownloadProgress: (progressEvent) => {
@@ -56,7 +59,7 @@ const UploadFile = () => {
           const file = e.target.file.files[0];
           console.log(file);
           axios.put(
-            `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-upload`,
+            `${apiBaseUrl}/techniques/file-upload`,
             { file: file },
             {
               headers: {
@@ -112,7 +115,7 @@ const UploadBlob = () => {
           const blob = new Blob([file]);
           const fileFromBlob = new File([blob], file.name);
           axios.put(
-            `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-upload`,
+            `${apiBaseUrl}/techniques/file-upload`,
             { file: fileFromBlob },
             {
               headers: {

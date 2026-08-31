@@ -1,8 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 
 export default function PiscinaPage() {
+  const apiBaseUrl = elysiaBaseUrl();
   const [max, setMax] = useState(10_000_000);
   const [result, setResult] = useState<{
     primes: number;
@@ -14,8 +16,6 @@ export default function PiscinaPage() {
     setLoading(true);
     setResult(null);
     try {
-      const apiBaseUrl =
-        process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
       const res = await fetch(
         `${apiBaseUrl}/worker/piscina/count-primes?max=${max}`,
       );
@@ -32,8 +32,6 @@ export default function PiscinaPage() {
   const [pingResult, setPingResult] = useState<string | null>(null);
 
   const ping = async () => {
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
     const start = performance.now();
     const res = await fetch(`${apiBaseUrl}/worker/piscina/ping`);
     const data = await res.json();
@@ -57,8 +55,6 @@ export default function PiscinaPage() {
     setStreaming(true);
     doneRef.current = false;
 
-    const apiBaseUrl =
-      process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
     const es = new EventSource(
       `${apiBaseUrl}/worker/piscina/count-primes/stream?max=${max}`,
     );

@@ -4,9 +4,10 @@ import axios from "axios";
 import COS from "cos-js-sdk-v5";
 import { nanoid } from "nanoid";
 import { useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 
 const { VITE_BUCKET, VITE_REGION } = process.env;
-const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
+const apiBaseUrl = elysiaBaseUrl();
 
 const UploadToCos = () => {
   const [progress, setProgress] = useState<string>("0%");

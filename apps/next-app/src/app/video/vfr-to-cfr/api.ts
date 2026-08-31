@@ -1,4 +1,5 @@
 import axios from "axios";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 
 export const VFR_TO_CFR_UPLOAD_TIMEOUT_MS = 0;
 export const VFR_TO_CFR_JOB_WAIT_TIMEOUT_MS = 6 * 60 * 60 * 1000;
@@ -73,7 +74,7 @@ export type UploadProgressUpdate = {
   total?: number;
 };
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
+const apiBaseUrl = elysiaBaseUrl();
 
 export async function fetchVfrToCfrTemplateInfo(): Promise<VfrToCfrTemplateInfo> {
   const res = await axios.get<VfrToCfrTemplateInfo>("/vfr-to-cfr", {

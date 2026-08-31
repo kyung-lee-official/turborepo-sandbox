@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import { SalesDataNav } from "../sales-data/SalesDataNav";
 import {
   fetchProcessingErrorsJsonl,
@@ -121,7 +122,7 @@ export const ImportSalesTestFixtures = () => {
       const { jobId } = await startSalesImportProcessing(uploadSessionId);
       const initialJob = await getProcessingJob(jobId);
 
-      await waitForProcessingJobViaSse(jobId, process.env.NEXT_PUBLIC_ELYSIA, {
+      await waitForProcessingJobViaSse(jobId, elysiaBaseUrl(), {
         initialSnapshot: initialJob,
         onDisplayChange: setProgressDisplay,
       });

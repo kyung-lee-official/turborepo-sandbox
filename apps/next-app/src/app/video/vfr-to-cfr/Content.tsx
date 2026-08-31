@@ -8,6 +8,7 @@ import {
   uploadOnlyProgressDisplay,
   waitForProcessingJobViaSse,
 } from "@/app/files/import-sales-test-fixtures/processing-job-sse";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import {
   convertUploadedVideo,
   DEFAULT_VFR_TO_CFR_MAX_UPLOAD_BYTES,
@@ -229,7 +230,7 @@ export const Content = () => {
 
       const snapshot = await waitForProcessingJobViaSse(
         jobId,
-        process.env.NEXT_PUBLIC_ELYSIA,
+        elysiaBaseUrl(),
         {
           initialSnapshot: initialJob,
           onDisplayChange: setProgressDisplay,

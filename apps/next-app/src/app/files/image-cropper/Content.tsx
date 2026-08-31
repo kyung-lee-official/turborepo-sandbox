@@ -5,8 +5,10 @@ import COS from "cos-js-sdk-v5";
 import { add, multiply } from "mathjs";
 import { useAnimate } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 
 const { NEXT_PUBLIC_BUCKET, NEXT_PUBLIC_REGION } = process.env;
+const apiBaseUrl = elysiaBaseUrl();
 
 const Content = () => {
   const draggableAreaSize: number[] = [568, 400];
@@ -382,9 +384,7 @@ const Content = () => {
               className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
               onClick={async () => {
                 const res = await axios.get(
-                  `${
-                    process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002"
-                  }/tencent-cos-objects/temporary-credential`,
+                  `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
                 );
                 const { tmpSecretId, tmpSecretKey, sessionToken } =
                   res.data.credentials;

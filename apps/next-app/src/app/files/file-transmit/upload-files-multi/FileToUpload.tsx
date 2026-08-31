@@ -2,10 +2,13 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import { UploadFilesQK } from "./api";
 import { ItemLoading, UnknownFileTypeIcon } from "./file-to-preview/Icons";
 import { Square } from "./Square";
 import { isImageType, isVideoType } from "./types";
+
+const apiBaseUrl = elysiaBaseUrl();
 
 export const FileToUpload = (props: {
   file: File;
@@ -22,7 +25,7 @@ export const FileToUpload = (props: {
       const data = new FormData();
       data.append("file", file);
       const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/file-upload`,
+        `${apiBaseUrl}/techniques/file-upload`,
         data,
         {
           headers: {

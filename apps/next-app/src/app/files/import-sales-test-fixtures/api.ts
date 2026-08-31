@@ -1,4 +1,5 @@
 import axios from "axios";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 
 export const SALES_REPORT_DOMAIN_KIND = "sales-report" as const;
 
@@ -40,7 +41,7 @@ export type ProcessingJobErrorsJsonlHeader = {
   errorCount: number;
 };
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
+const apiBaseUrl = elysiaBaseUrl();
 
 export type UploadProgressUpdate = {
   loaded: number;

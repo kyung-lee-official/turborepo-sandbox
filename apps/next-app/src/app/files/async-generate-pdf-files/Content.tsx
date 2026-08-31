@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import type { ImportJobProgressDisplay } from "../import-sales-test-fixtures/processing-job-sse";
 import { formatPdfProgressText, waitForPdfJobViaSse } from "./pdf-job-sse";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
+const apiBaseUrl = elysiaBaseUrl();
 
 type MockInfoRow = {
   name: string;

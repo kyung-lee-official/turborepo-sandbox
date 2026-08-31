@@ -1,6 +1,9 @@
 import axios from "axios";
 import Link from "next/link";
 import { type ChangeEvent, useRef, useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
+
+const apiBaseUrl = elysiaBaseUrl();
 
 export const UploadFilesAny = () => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -17,7 +20,7 @@ export const UploadFilesAny = () => {
       data.append("files", files[i]!);
     }
     const res = await axios.put(
-      `${process.env.NEXT_PUBLIC_ELYSIA}/techniques/files-upload-any`,
+      `${apiBaseUrl}/techniques/files-upload-any`,
       data,
       {
         headers: {

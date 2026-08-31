@@ -3,6 +3,9 @@
 import axios from "axios";
 import pako from "pako";
 import type { FormEvent } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
+
+const apiBaseUrl = elysiaBaseUrl();
 
 type ArchiveFile = {
   purpose: string;
@@ -53,7 +56,7 @@ export const Content = () => {
         "techniques/upload-compressed-single-blob-single-input",
         uploadData,
         {
-          baseURL: process.env.NEXT_PUBLIC_ELYSIA,
+          baseURL: apiBaseUrl,
         },
       );
       if (res.status !== 201) {

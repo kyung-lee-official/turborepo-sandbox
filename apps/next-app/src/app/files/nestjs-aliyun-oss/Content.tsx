@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 
 const STAGING_PATH = "apps/elysia-app/temp/upload-to-aliyun-oss";
 
@@ -25,7 +26,7 @@ type OssBucketObject = {
   lastModified: string;
 };
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
+const apiBaseUrl = elysiaBaseUrl();
 
 async function readApiErrorMessage(response: Response): Promise<string> {
   try {

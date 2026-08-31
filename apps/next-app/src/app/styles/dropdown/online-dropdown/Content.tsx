@@ -2,6 +2,7 @@
 
 import axios from "axios";
 import { useState } from "react";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import { Dropdown } from "./dropdown/Dropdown";
 
 type OptionType = {
@@ -29,7 +30,7 @@ export const Content = () => {
     const response = await axios.get(
       `/mock-data/online-dropdown/${searchTerm}`,
       {
-        baseURL: process.env.NEXT_PUBLIC_ELYSIA,
+        baseURL: elysiaBaseUrl(),
         headers: {
           "Content-Type": "application/json",
           // Authorization: jwt

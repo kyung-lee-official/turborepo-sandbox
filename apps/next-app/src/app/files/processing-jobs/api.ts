@@ -1,4 +1,5 @@
 import axios from "axios";
+import { elysiaBaseUrl } from "@/lib/api-base-url";
 import type { ProcessingJobResponse } from "../import-sales-test-fixtures/api";
 
 export type ListProcessingJobsParams = {
@@ -13,7 +14,7 @@ export type ListProcessingJobsResponse = {
   nextCursor: string | null;
 };
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_ELYSIA ?? "http://localhost:3002";
+const apiBaseUrl = elysiaBaseUrl();
 
 export const ACTIVE_JOB_PHASES = "queued,processing" as const;
 export const HISTORY_JOB_PHASES = "complete,failed" as const;
