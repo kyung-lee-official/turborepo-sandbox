@@ -1,14 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import axios, { type AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { post } from "@/lib/fetcher";
 import { Input } from "./Input";
 
 const signIn = async (body: { email: string }): Promise<any> => {
-  const res = await axios.post("/api/form-and-input", body, {});
-  return res.data;
+  return post<any>("/api/form-and-input", body);
 };
 
 const schema = z.object({
@@ -40,7 +39,7 @@ export const Form = () => {
     console.log("error");
   }
 
-  const mutation = useMutation<any, AxiosError, FormInput>({
+  const mutation = useMutation<any, Error, FormInput>({
     mutationFn: (data: FormInput) => {
       return signIn(data);
     },
@@ -48,13 +47,8 @@ export const Form = () => {
 
   return (
     <div>
-      <h1
-        className="text-2xl
-				mb-8"
-      >
-        Sign Up
-      </h1>
-      <form className="flex flex-col gap-4 w-full">
+      <h1 className="mb-8 text-2xl">Sign Up</h1>
+      <form className="flex w-full flex-col gap-4">
         <Input
           title={"Email"}
           isError={!!formState.errors.email}
@@ -68,9 +62,7 @@ export const Form = () => {
           })}
         />
         <button
-          className="p-1
-					text-sm text-white
-					bg-blue-500"
+          className="bg-blue-500 p-1 text-sm text-white"
           onClick={(e) => {
             e.preventDefault();
             handleSubmit(onSubmit, onError)();

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { get, post } from "@/lib/fetcher";
 
 export enum PayPalOrderQK {
   GET_ORDER_BY_ID = "get_order_by_id",
@@ -16,8 +16,9 @@ export interface PayPalTokenResponse {
 export const generatePayPalAccessToken =
   async (): Promise<PayPalTokenResponse> => {
     try {
-      const res = await axios.post("/api/payment/paypal/v2/get-access-token");
-      return res.data;
+      return await post<PayPalTokenResponse>(
+        "/api/payment/paypal/v2/get-access-token",
+      );
     } catch (error) {
       console.error("Error generating PayPal access token:", error);
       throw error;
@@ -68,7 +69,7 @@ export const createPayPalOrder = async (
   orderData: CreateOrderRequest,
 ): Promise<PayPalOrderResponse> => {
   try {
-    const response = await axios.post(
+    return await post<PayPalOrderResponse>(
       "/api/payment/paypal/v2/create-order",
       orderData,
       {
@@ -78,7 +79,6 @@ export const createPayPalOrder = async (
         },
       },
     );
-    return response.data;
   } catch (error) {
     console.error("Error creating PayPal order:", error);
     throw error;
@@ -132,8 +132,9 @@ export const getOrderById = async (
   orderId: string,
 ): Promise<PayPalOrderResponse> => {
   try {
-    const response = await axios.get(`/api/payment/paypal/v2/order/${orderId}`);
-    return response.data;
+    return await get<PayPalOrderResponse>(
+      `/api/payment/paypal/v2/order/${orderId}`,
+    );
   } catch (error) {
     console.error("Error fetching PayPal order:", error);
     throw error;
@@ -165,10 +166,9 @@ export const captureOrder = async (
   orderId: string,
 ): Promise<PayPalCaptureResponse> => {
   try {
-    const response = await axios.post(
+    return await post<PayPalCaptureResponse>(
       `/api/payment/paypal/v2/capture-order/${orderId}`,
     );
-    return response.data;
   } catch (error) {
     console.error("Error capturing PayPal order:", error);
     throw error;

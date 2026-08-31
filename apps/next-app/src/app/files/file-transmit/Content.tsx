@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import ky from "ky";
 import { useState } from "react";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
 import { UploadFilesAny } from "./UploadFilesAny";
@@ -18,19 +18,19 @@ const DownloadBlob = () => {
       <button
         className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
         onClick={async () => {
-          const blob = await axios.get(
-            `${apiBaseUrl}/techniques/file-download`,
-            {
-              responseType: "blob",
+          // ky is used here because the demo needs `onDownloadProgress`;
+          // native fetch does not expose download progress events.
+          const blob = await ky
+            .get(`${apiBaseUrl}/techniques/file-download`, {
               onDownloadProgress: (progressEvent) => {
-                const percentCompleted = progressEvent.progress
-                  ? (progressEvent.progress * 100).toFixed(2) + "%"
+                const percentCompleted = progressEvent.percent
+                  ? (progressEvent.percent * 100).toFixed(2) + "%"
                   : "0%";
                 setProgress(percentCompleted);
               },
-            },
-          );
-          setImage(URL.createObjectURL(blob.data));
+            })
+            .blob();
+          setImage(URL.createObjectURL(blob));
         }}
       >
         Download
@@ -58,21 +58,20 @@ const UploadFile = () => {
           e.preventDefault();
           const file = e.target.file.files[0];
           console.log(file);
-          axios.put(
-            `${apiBaseUrl}/techniques/file-upload`,
-            { file: file },
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-              onUploadProgress: (progressEvent) => {
-                const percentCompleted = progressEvent.progress
-                  ? (progressEvent.progress * 100).toFixed(2) + "%"
-                  : "0%";
-                setProgress(percentCompleted);
-              },
+          // Note: the original axios call passed `{ file }` as a plain object
+          // and explicitly set `Content-Type: multipart/form-data`, so axios
+          // actually JSON-stringified the body. We preserve that exact
+          // behaviour by using `ky` with a JSON body and the same header.
+          await ky.put(`${apiBaseUrl}/techniques/file-upload`, {
+            json: { file: file },
+            headers: { "Content-Type": "multipart/form-data" },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = progressEvent.percent
+                ? (progressEvent.percent * 100).toFixed(2) + "%"
+                : "0%";
+              setProgress(percentCompleted);
             },
-          );
+          });
         }}
       >
         <input type="file" name="file" />
@@ -114,21 +113,17 @@ const UploadBlob = () => {
           const file = e.target.file.files[0];
           const blob = new Blob([file]);
           const fileFromBlob = new File([blob], file.name);
-          axios.put(
-            `${apiBaseUrl}/techniques/file-upload`,
-            { file: fileFromBlob },
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-              onUploadProgress: (progressEvent) => {
-                const percentCompleted = progressEvent.progress
-                  ? (progressEvent.progress * 100).toFixed(2) + "%"
-                  : "0%";
-                setProgress(percentCompleted);
-              },
+          // See `UploadFile` for the explanation of the preserved header.
+          await ky.put(`${apiBaseUrl}/techniques/file-upload`, {
+            json: { file: fileFromBlob },
+            headers: { "Content-Type": "multipart/form-data" },
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = progressEvent.percent
+                ? (progressEvent.percent * 100).toFixed(2) + "%"
+                : "0%";
+              setProgress(percentCompleted);
             },
-          );
+          });
         }}
       >
         <input type="file" name="file" />

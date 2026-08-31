@@ -1,8 +1,5 @@
-import axios from "axios";
+import { get } from "@/lib/fetcher";
 
 export async function fetchTodo(id: number) {
-  const res = await axios.get(
-    `https://jsonplaceholder.typicode.com/todos/${id}`,
-  );
-  return res.data;
+  return get<unknown>(`https://jsonplaceholder.typicode.com/todos/${id}`);
 }

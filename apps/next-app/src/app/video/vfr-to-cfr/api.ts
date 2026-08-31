@@ -1,5 +1,6 @@
-import axios from "axios";
+import ky from "ky";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { del, get, post } from "@/lib/fetcher";
 
 export const VFR_TO_CFR_UPLOAD_TIMEOUT_MS = 0;
 export const VFR_TO_CFR_JOB_WAIT_TIMEOUT_MS = 6 * 60 * 60 * 1000;
@@ -77,39 +78,28 @@ export type UploadProgressUpdate = {
 const apiBaseUrl = elysiaBaseUrl();
 
 export async function fetchVfrToCfrTemplateInfo(): Promise<VfrToCfrTemplateInfo> {
-  const res = await axios.get<VfrToCfrTemplateInfo>("/vfr-to-cfr", {
+  return get<VfrToCfrTemplateInfo>("/vfr-to-cfr", {
     baseURL: apiBaseUrl,
     timeout: 30_000,
   });
-  return res.data;
 }
 
 export async function listUploadedVideos(): Promise<VideoListItem[]> {
-  const res = await axios.get<VideoListItem[]>("/vfr-to-cfr/uploaded", {
-    baseURL: apiBaseUrl,
-  });
-  return res.data;
+  return get<VideoListItem[]>("/vfr-to-cfr/uploaded", { baseURL: apiBaseUrl });
 }
 
 export async function listOutputVideos(): Promise<VideoListItem[]> {
-  const res = await axios.get<VideoListItem[]>("/vfr-to-cfr/output", {
-    baseURL: apiBaseUrl,
-  });
-  return res.data;
+  return get<VideoListItem[]>("/vfr-to-cfr/output", { baseURL: apiBaseUrl });
 }
 
 export async function getUploadedVideoDetail(id: string): Promise<VideoDetail> {
-  const res = await axios.get<VideoDetail>(`/vfr-to-cfr/uploaded/${id}`, {
+  return get<VideoDetail>(`/vfr-to-cfr/uploaded/${id}`, {
     baseURL: apiBaseUrl,
   });
-  return res.data;
 }
 
 export async function getOutputVideoDetail(id: string): Promise<VideoDetail> {
-  const res = await axios.get<VideoDetail>(`/vfr-to-cfr/output/${id}`, {
-    baseURL: apiBaseUrl,
-  });
-  return res.data;
+  return get<VideoDetail>(`/vfr-to-cfr/output/${id}`, { baseURL: apiBaseUrl });
 }
 
 export async function uploadVideoFile(
@@ -121,58 +111,51 @@ export async function uploadVideoFile(
   const formData = new FormData();
   formData.append("video", video);
 
-  const res = await axios.post<UploadVideoResult>(
-    "/vfr-to-cfr/uploaded",
-    formData,
-    {
-      baseURL: apiBaseUrl,
-      headers: { "Content-Type": "multipart/form-data" },
-      timeout: VFR_TO_CFR_UPLOAD_TIMEOUT_MS,
+  // ky is used here (instead of native fetch) because it is the only
+  // widely-supported client that emits `onUploadProgress` events. The other
+  // endpoints in this file don't need that and go through the native `fetcher`.
+  const api = ky.create({
+    prefixUrl: apiBaseUrl,
+    timeout: VFR_TO_CFR_UPLOAD_TIMEOUT_MS,
+  });
+  return api
+    .post("vfr-to-cfr/uploaded", {
+      body: formData,
       onUploadProgress: (event) => {
+        /* ky's Progress shape is { percent, transferredBytes, totalBytes };
+         * map it to the axios-style { loaded, total? } the caller expects. */
         options?.onUploadProgress?.({
-          loaded: event.loaded,
-          total: event.total,
+          loaded: event.transferredBytes,
+          total: event.totalBytes,
         });
       },
-    },
-  );
-  return res.data;
+    })
+    .json<UploadVideoResult>();
 }
 
 export async function convertUploadedVideo(
   uploadId: string,
   options: ConvertUploadedOptions = {},
 ): Promise<ConvertVideoResult> {
-  const res = await axios.post<ConvertVideoResult>(
+  return post<ConvertVideoResult>(
     `/vfr-to-cfr/uploaded/${uploadId}/convert`,
     options,
-    {
-      baseURL: apiBaseUrl,
-      timeout: 60_000,
-    },
+    { baseURL: apiBaseUrl, timeout: 60_000 },
   );
-  return res.data;
 }
 
 export async function deleteUploadedVideo(id: string): Promise<void> {
-  await axios.delete(`/vfr-to-cfr/uploaded/${id}`, {
-    baseURL: apiBaseUrl,
-  });
+  await del(`/vfr-to-cfr/uploaded/${id}`, { baseURL: apiBaseUrl });
 }
 
 export async function deleteOutputVideo(id: string): Promise<void> {
-  await axios.delete(`/vfr-to-cfr/output/${id}`, {
-    baseURL: apiBaseUrl,
-  });
+  await del(`/vfr-to-cfr/output/${id}`, { baseURL: apiBaseUrl });
 }
 
 export async function getProcessingJob(
   jobId: string,
 ): Promise<ProcessingJobResponse> {
-  const res = await axios.get<ProcessingJobResponse>(`/jobs/${jobId}`, {
-    baseURL: apiBaseUrl,
-  });
-  return res.data;
+  return get<ProcessingJobResponse>(`/jobs/${jobId}`, { baseURL: apiBaseUrl });
 }
 
 export function downloadOutputVideo(outputId: string): void {
@@ -188,10 +171,10 @@ export function formatVideoFileSize(bytes: number): string {
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   }
   if (bytes >= 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    return `${(bytes / 1024).toFixed(2)} MB`;
   }
   if (bytes >= 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${bytes.toLocaleString()} KB`;
   }
   return `${bytes.toLocaleString()} B`;
 }
@@ -219,23 +202,36 @@ export function formatTargetFps(fps: number): string {
     .replace(/\.$/, "");
 }
 
-export function readAxiosErrorMessage(error: unknown): string {
-  if (axios.isAxiosError(error)) {
-    const data = error.response?.data as
-      | { message?: string | string[] }
-      | undefined;
-    if (typeof data?.message === "string") {
-      return data.message;
-    }
-    if (Array.isArray(data?.message)) {
-      return data.message.join(", ");
-    }
-    if (error.message) {
-      return error.message;
+/**
+ * Read a structured error message from a fetcher / ky error.
+ *
+ * Both my custom `FetcherError` and ky's `HTTPError` expose the parsed
+ * response body — the backend follows our `{ message: string | string[] }`
+ * shape, so we read it the same way. Falls back to the error's own
+ * `message`, then to "Request failed".
+ */
+export function readRequestErrorMessage(error: unknown): string {
+  type ErrorWithBody = Error & { data?: unknown; response?: Response };
+  const err = error as ErrorWithBody | null | undefined;
+  if (!err) return "Request failed";
+
+  const candidates: unknown[] = [];
+  if (err.data !== undefined) candidates.push(err.data);
+  if (
+    err.response &&
+    typeof err.response === "object" &&
+    "data" in err.response
+  ) {
+    candidates.push((err.response as { data?: unknown }).data);
+  }
+
+  for (const candidate of candidates) {
+    if (candidate && typeof candidate === "object") {
+      const message = (candidate as { message?: string | string[] }).message;
+      if (typeof message === "string") return message;
+      if (Array.isArray(message)) return message.join(", ");
     }
   }
-  if (error instanceof Error) {
-    return error.message;
-  }
+  if (err.message) return err.message;
   return "Request failed";
 }

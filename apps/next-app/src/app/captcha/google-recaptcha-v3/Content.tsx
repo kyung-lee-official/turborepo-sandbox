@@ -1,8 +1,8 @@
 "use client";
 
-import axios from "axios";
 import Script from "next/script";
 import { useCallback, useState } from "react";
+import { post } from "@/lib/fetcher";
 
 declare global {
   interface Window {
@@ -80,21 +80,18 @@ const Content = () => {
         return;
       }
 
-      const res = await axios.post("/api/recaptcha-v3/submit", {
-        name,
-        email,
-        recaptchaToken: token,
-      });
+      const result = await post<{ message?: string }>(
+        "/api/recaptcha-v3/submit",
+        {
+          name,
+          email,
+          recaptchaToken: token,
+        },
+      );
 
-      const result = res.data;
-
-      if (res.status === 200) {
-        setMessage("Form submitted successfully!");
-        setName("");
-        setEmail("");
-      } else {
-        setMessage(result.message || "Submission failed");
-      }
+      setMessage("Form submitted successfully!");
+      setName("");
+      setEmail("");
     } catch (error) {
       console.error("Submission error:", error);
       setMessage("An error occurred. Please try again.");
@@ -104,10 +101,7 @@ const Content = () => {
   };
 
   return (
-    <main
-      className="p-12
-			bg-neutral-100"
-    >
+    <main className="bg-neutral-100 p-12">
       <Script
         src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
         strategy="afterInteractive"
@@ -119,14 +113,14 @@ const Content = () => {
           console.error("Failed to load reCAPTCHA");
         }}
       />
-      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6">Contact Form</h1>
+      <div className="mx-auto max-w-md rounded-lg bg-white p-6 shadow-md">
+        <h1 className="mb-6 font-bold text-2xl">Contact Form</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
+              className="block font-medium text-gray-700 text-sm"
             >
               Name
             </label>
@@ -136,14 +130,14 @@ const Content = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             />
           </div>
 
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
+              className="block font-medium text-gray-700 text-sm"
             >
               Email
             </label>
@@ -153,14 +147,14 @@ const Content = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading || !recaptchaLoaded}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 font-medium text-sm text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? "Submitting..." : "Submit"}
           </button>
@@ -168,7 +162,7 @@ const Content = () => {
 
         {message && (
           <div
-            className={`mt-4 p-3 rounded ${
+            className={`mt-4 rounded p-3 ${
               message.includes("successfully")
                 ? "bg-green-100 text-green-700"
                 : "bg-red-100 text-red-700"

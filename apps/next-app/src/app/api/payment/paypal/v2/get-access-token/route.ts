@@ -1,5 +1,5 @@
-import axios from "axios";
 import { type NextRequest, NextResponse } from "next/server";
+import { post } from "@/lib/fetcher";
 import { PayPalConfig } from "../utils";
 
 export async function POST(req: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     /* Get environment-appropriate PayPal API base URL */
     const paypalBaseURL = PayPalConfig.getBaseURL();
 
-    const paypalRes = await axios.post(
+    const paypalRes = await post<unknown>(
       `${paypalBaseURL}/v1/oauth2/token`,
       "grant_type=client_credentials",
       {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
       },
     );
 
-    return NextResponse.json(paypalRes.data);
+    return NextResponse.json(paypalRes);
   } catch (error) {
     console.error("Error generating PayPal access token:", error);
     return NextResponse.json(

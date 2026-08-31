@@ -1,9 +1,9 @@
 "use client";
 
-import axios from "axios";
 import pako from "pako";
 import type { FormEvent } from "react";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { post } from "@/lib/fetcher";
 
 const apiBaseUrl = elysiaBaseUrl();
 
@@ -52,17 +52,13 @@ export const Content = () => {
       const uploadData = new FormData();
       uploadData.append("compressed_archive", compressedBlob, "files.json.gz");
       uploadData.append("description", "Multiple Excel files upload");
-      const res = await axios.post(
+      const result = await post<unknown>(
         "techniques/upload-compressed-single-blob-single-input",
         uploadData,
         {
           baseURL: apiBaseUrl,
         },
       );
-      if (res.status !== 201) {
-        throw new Error("Failed to upload files");
-      }
-      const result = res.data;
       console.log("Upload successful:", result);
       console.log(
         `Uploaded ${files.length} files:`,

@@ -1,5 +1,5 @@
-import axios from "axios";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { get } from "@/lib/fetcher";
 import type { ProcessingJobResponse } from "../import-sales-test-fixtures/api";
 
 export type ListProcessingJobsParams = {
@@ -22,9 +22,8 @@ export const HISTORY_JOB_PHASES = "complete,failed" as const;
 export async function listProcessingJobs(
   params: ListProcessingJobsParams = {},
 ): Promise<ListProcessingJobsResponse> {
-  const res = await axios.get<ListProcessingJobsResponse>("/jobs", {
+  return get<ListProcessingJobsResponse>("/jobs", {
     baseURL: apiBaseUrl,
     params,
   });
-  return res.data;
 }

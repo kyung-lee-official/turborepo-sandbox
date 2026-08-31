@@ -1,5 +1,6 @@
-import axios from "axios";
+import ky from "ky";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { fetcher, get, post } from "@/lib/fetcher";
 
 export const SALES_REPORT_DOMAIN_KIND = "sales-report" as const;
 
@@ -63,59 +64,51 @@ export const uploadSalesImportFiles = async (
   formData.append("inventory", files.inventory);
   formData.append("productDescriptions", files.productDescriptions);
 
-  const res = await axios.post<UploadSessionResponse>(
-    `/applications/async-processing/${SALES_REPORT_DOMAIN_KIND}/upload`,
-    formData,
-    {
-      baseURL: apiBaseUrl,
-      headers: { "Content-Type": "multipart/form-data" },
-      timeout: 20 * 60 * 1000,
+  // ky is used here (instead of native fetch) because it is the only
+  // widely-supported client that emits `onUploadProgress` events. The other
+  // endpoints in this file don't need that and go through the native `fetcher`.
+  const api = ky.create({
+    prefixUrl: apiBaseUrl,
+    timeout: 20 * 60 * 1000,
+  });
+  return api
+    .post(`applications/async-processing/${SALES_REPORT_DOMAIN_KIND}/upload`, {
+      body: formData,
+      // ky has its own retry/timeout handling; keep semantics close to the
+      // previous axios call by forwarding the progress event.
       onUploadProgress: (event) => {
+        /* ky's Progress shape is { percent, transferredBytes, totalBytes };
+         * map it to the axios-style { loaded, total? } the caller expects. */
         options?.onUploadProgress?.({
-          loaded: event.loaded,
-          total: event.total,
+          loaded: event.transferredBytes,
+          total: event.totalBytes,
         });
       },
-    },
-  );
-  return res.data;
+    })
+    .json<UploadSessionResponse>();
 };
 
 export const startSalesImportProcessing = async (
   uploadSessionId: string,
-): Promise<StartProcessingResponse> => {
-  const res = await axios.post<StartProcessingResponse>(
+): Promise<StartProcessingResponse> =>
+  post<StartProcessingResponse>(
     "/applications/async-processing/start",
-    {
-      uploadSessionId,
-      domainKind: SALES_REPORT_DOMAIN_KIND,
-    },
-    {
-      baseURL: apiBaseUrl,
-      timeout: 60_000,
-    },
+    { uploadSessionId, domainKind: SALES_REPORT_DOMAIN_KIND },
+    { baseURL: apiBaseUrl, timeout: 60_000 },
   );
-  return res.data;
-};
 
 export const getProcessingJob = async (
   jobId: string,
-): Promise<ProcessingJobResponse> => {
-  const res = await axios.get<ProcessingJobResponse>(`/jobs/${jobId}`, {
-    baseURL: apiBaseUrl,
-  });
-  return res.data;
-};
+): Promise<ProcessingJobResponse> =>
+  get<ProcessingJobResponse>(`/jobs/${jobId}`, { baseURL: apiBaseUrl });
 
 export const fetchProcessingErrorsJsonl = async (
   jobId: string,
-): Promise<string> => {
-  const res = await axios.get<string>(`/jobs/${jobId}/errors`, {
+): Promise<string> =>
+  fetcher<string>(`/jobs/${jobId}/errors`, {
     baseURL: apiBaseUrl,
     responseType: "text",
   });
-  return res.data;
-};
 
 export function triggerValidationErrorDownload(
   jobId: string,

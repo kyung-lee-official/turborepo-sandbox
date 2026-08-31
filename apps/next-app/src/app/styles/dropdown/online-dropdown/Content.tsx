@@ -1,8 +1,8 @@
 "use client";
 
-import axios from "axios";
 import { useState } from "react";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { get } from "@/lib/fetcher";
 import { Dropdown } from "./dropdown/Dropdown";
 
 type OptionType = {
@@ -27,17 +27,13 @@ export const Content = () => {
   };
 
   async function fetchOptions(searchTerm: string) {
-    const response = await axios.get(
-      `/mock-data/online-dropdown/${searchTerm}`,
-      {
-        baseURL: elysiaBaseUrl(),
-        headers: {
-          "Content-Type": "application/json",
-          // Authorization: jwt
-        },
+    return get<OptionType[]>(`/mock-data/online-dropdown/${searchTerm}`, {
+      baseURL: elysiaBaseUrl(),
+      headers: {
+        "Content-Type": "application/json",
+        // Authorization: jwt
       },
-    );
-    return response.data;
+    });
   }
 
   return (

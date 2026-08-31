@@ -1,16 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import http from "@/app/medusa/axios-error-handling-for-medusa/axios-client";
 
 const fetchHelloWorld = async () => {
-  const res = await axios.get("/hello-world", {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return http.get<{ message: string }>("/hello-world");
 };
 
 export const Content = () => {
@@ -29,5 +23,5 @@ export const Content = () => {
 
   console.log(hwQuery.data);
 
-  return <div className="m-4">{hwQuery.data.message}</div>;
+  return <div className="m-4">{hwQuery.data?.message}</div>;
 };

@@ -1,5 +1,5 @@
-import axios from "axios";
 import { type NextRequest, NextResponse } from "next/server";
+import { post } from "@/lib/fetcher";
 
 interface RecaptchaResponse {
   success: boolean;
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     /* Verify reCAPTCHA token with Google */
-    const recaptchaRes = await axios.post(
+    const recaptchaResult = await post<RecaptchaResponse>(
       "https://www.google.com/recaptcha/api/siteverify",
       new URLSearchParams({
         secret: process.env.RECAPTCHA_SECRET_KEY!,
@@ -47,9 +47,6 @@ export async function POST(request: NextRequest) {
         },
       },
     );
-
-    const recaptchaResult: RecaptchaResponse =
-      recaptchaRes.data as RecaptchaResponse;
 
     /* Check if reCAPTCHA verification failed */
     if (!recaptchaResult.success) {

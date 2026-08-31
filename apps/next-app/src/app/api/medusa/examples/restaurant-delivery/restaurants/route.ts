@@ -1,13 +1,13 @@
-import axios from "axios";
 import { type NextRequest, NextResponse } from "next/server";
+import { get } from "@/lib/fetcher";
 
 export async function GET(request: NextRequest) {
-  const res = await axios.get("/restaurants", {
+  const data = await get("/restaurants", {
     baseURL: "http://localhost:3101",
     headers: {
       "x-publishable-api-key":
         request.headers.get("x-publishable-api-key") || "",
     },
   });
-  return NextResponse.json(res.data);
+  return NextResponse.json(data);
 }

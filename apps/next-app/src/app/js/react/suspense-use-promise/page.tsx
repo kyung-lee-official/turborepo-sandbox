@@ -1,8 +1,18 @@
 import { Suspense } from "react";
+import { get } from "@/lib/fetcher";
 import { Content } from "./Content";
-import axios from "axios";
 
 const Page = async () => {
+  /**
+   * The `Content` component consumes a Promise via React's `use()` hook and
+   * expects an object shaped like `{ data: Todo[] }` (the old axios
+   * `AxiosResponse.data` shape). We wrap `get()` so the returned promise
+   * resolves to that shape.
+   */
+  const todosPromise = get<unknown[]>(
+    "https://jsonplaceholder.typicode.com/todos/",
+  ).then((data) => ({ data }));
+
   return (
     <div className="flex flex-col gap-4 p-10">
       <h1>React `use` with Suspense and Promise</h1>
@@ -14,9 +24,7 @@ const Page = async () => {
       </p>
       <div className="w-96 bg-neutral-100">
         <Suspense fallback={<div>Loading...</div>}>
-          <Content
-            promise={axios.get("https://jsonplaceholder.typicode.com/todos/")}
-          />
+          <Content promise={todosPromise} />
         </Suspense>
       </div>
     </div>

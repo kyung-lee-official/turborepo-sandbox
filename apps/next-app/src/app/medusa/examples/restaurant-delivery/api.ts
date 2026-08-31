@@ -1,17 +1,11 @@
-import axios from "axios";
+import http from "../../axios-error-handling-for-medusa/axios-client";
 
 export const QK = {
   LIST_RESTAURANTS: "list-restaurants",
 };
 
 export const listRestaurants = async () => {
-  const res = await axios.get("/restaurants", {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return http.get<unknown>("/restaurants");
 };
 
 // export const listRestaurants = async () => {
@@ -34,11 +28,5 @@ export const createRestaurant = async (data: {
   phone: string;
   email: string;
 }) => {
-  const res = await axios.post("/restaurants", data, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return http.post<unknown>("/restaurants", data);
 };

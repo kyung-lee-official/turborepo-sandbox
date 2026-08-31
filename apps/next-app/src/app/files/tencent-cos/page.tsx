@@ -1,10 +1,11 @@
 "use client";
 
-import axios from "axios";
 import COS from "cos-js-sdk-v5";
+import ky from "ky";
 import { nanoid } from "nanoid";
 import { useState } from "react";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { get } from "@/lib/fetcher";
 
 const { VITE_BUCKET, VITE_REGION } = process.env;
 const apiBaseUrl = elysiaBaseUrl();
@@ -21,12 +22,15 @@ const UploadToCos = () => {
       <form
         onSubmit={async (e: any) => {
           e.preventDefault();
-          const res = await axios.get(
-            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
-          );
-          console.log(res.data);
-          const { tmpSecretId, tmpSecretKey, sessionToken } =
-            res.data.credentials;
+          const res = await get<{
+            credentials: {
+              tmpSecretId: string;
+              tmpSecretKey: string;
+              sessionToken: string;
+            };
+          }>(`${apiBaseUrl}/tencent-cos-objects/temporary-credential`);
+          console.log(res);
+          const { tmpSecretId, tmpSecretKey, sessionToken } = res.credentials;
           const file = e.target.file.files[0];
           console.log(file);
           const cos = new COS({
@@ -82,26 +86,22 @@ const ServerForward = () => {
           const file = e.target.file.files[0];
           console.log(file);
           try {
-            const res = await axios.put(
-              `${apiBaseUrl}/tencent-cos-objects/uploadFileToCos`,
-              { file: file },
-              {
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-                /**
-                 * Note that the progress only shows the progress of the client uploading to the server,
-                 * not the server uploading to Tencent COS
-                 */
-                onUploadProgress(progressEvent) {
-                  const percentCompleted = progressEvent.progress
-                    ? (progressEvent.progress * 100).toFixed(2) + "%"
-                    : "0%";
-                  setProgress(percentCompleted);
-                },
+            // ky is used here because the demo needs `onUploadProgress`; native
+            // fetch does not expose upload progress events.
+            // Note: the original axios call passed `{ file }` as a plain object
+            // and explicitly set `Content-Type: multipart/form-data`, so axios
+            // actually JSON-stringified the body. We preserve that exact
+            // behaviour by using `ky` with a JSON body and the same header.
+            await ky.put(`${apiBaseUrl}/tencent-cos-objects/uploadFileToCos`, {
+              json: { file: file },
+              headers: { "Content-Type": "multipart/form-data" },
+              onUploadProgress(progressEvent) {
+                const percentCompleted = progressEvent.percent
+                  ? (progressEvent.percent * 100).toFixed(2) + "%"
+                  : "0%";
+                setProgress(percentCompleted);
               },
-            );
-            console.log(res);
+            });
           } catch (error) {
             console.error(error);
           }
@@ -130,12 +130,15 @@ const ListCosObjects = () => {
       <button
         className="rounded bg-blue-500 p-2 text-gray-50"
         onClick={async () => {
-          const res = await axios.get(
-            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
-          );
-          console.log(res.data);
-          const { tmpSecretId, tmpSecretKey, sessionToken } =
-            res.data.credentials;
+          const res = await get<{
+            credentials: {
+              tmpSecretId: string;
+              tmpSecretKey: string;
+              sessionToken: string;
+            };
+          }>(`${apiBaseUrl}/tencent-cos-objects/temporary-credential`);
+          console.log(res);
+          const { tmpSecretId, tmpSecretKey, sessionToken } = res.credentials;
           const cos = new COS({
             SecretId: tmpSecretId,
             SecretKey: tmpSecretKey,
@@ -165,7 +168,7 @@ const ListCosObjects = () => {
 const DownloadFromCos = () => {
   const [progress, setProgress] = useState<string>("0%");
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="flex flex-col gap-1">
       <h1 className="text-lg">Tencent COS Download from COS directly</h1>
       <h3 className="text-sm">
         This method requests a temporary credential from our backend first, then
@@ -175,12 +178,15 @@ const DownloadFromCos = () => {
       <button
         className="rounded bg-blue-500 p-2 text-gray-50"
         onClick={async () => {
-          const res = await axios.get(
-            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
-          );
-          console.log(res.data);
-          const { tmpSecretId, tmpSecretKey, sessionToken } =
-            res.data.credentials;
+          const res = await get<{
+            credentials: {
+              tmpSecretId: string;
+              tmpSecretKey: string;
+              sessionToken: string;
+            };
+          }>(`${apiBaseUrl}/tencent-cos-objects/temporary-credential`);
+          console.log(res);
+          const { tmpSecretId, tmpSecretKey, sessionToken } = res.credentials;
           const cos = new COS({
             SecretId: tmpSecretId,
             SecretKey: tmpSecretKey,
@@ -225,12 +231,15 @@ const DeleteCosObject = () => {
       <button
         className="rounded bg-blue-500 p-2 text-gray-50"
         onClick={async () => {
-          const res = await axios.get(
-            `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
-          );
-          console.log(res.data);
-          const { tmpSecretId, tmpSecretKey, sessionToken } =
-            res.data.credentials;
+          const res = await get<{
+            credentials: {
+              tmpSecretId: string;
+              tmpSecretKey: string;
+              sessionToken: string;
+            };
+          }>(`${apiBaseUrl}/tencent-cos-objects/temporary-credential`);
+          console.log(res);
+          const { tmpSecretId, tmpSecretKey, sessionToken } = res.credentials;
           const cos = new COS({
             SecretId: tmpSecretId,
             SecretKey: tmpSecretKey,
@@ -252,12 +261,16 @@ const DeleteCosObject = () => {
             <button
               className="rounded bg-red-500 p-2 text-gray-50"
               onClick={async () => {
-                const res = await axios.get(
-                  `${apiBaseUrl}/tencent-cos-objects/temporary-credential`,
-                );
-                console.log(res.data);
+                const res = await get<{
+                  credentials: {
+                    tmpSecretId: string;
+                    tmpSecretKey: string;
+                    sessionToken: string;
+                  };
+                }>(`${apiBaseUrl}/tencent-cos-objects/temporary-credential`);
+                console.log(res);
                 const { tmpSecretId, tmpSecretKey, sessionToken } =
-                  res.data.credentials;
+                  res.credentials;
                 const cos = new COS({
                   SecretId: tmpSecretId,
                   SecretKey: tmpSecretKey,

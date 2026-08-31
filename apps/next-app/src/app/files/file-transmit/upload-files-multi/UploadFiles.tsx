@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { getAttachmentListByEventId, UploadFilesQK } from "./api";
 import { FileToUpload } from "./FileToUpload";
@@ -18,11 +17,11 @@ export const UploadFiles = () => {
   const [uploadList, setUploadList] = useState<File[]>([]);
   const [displayList, setDisplayList] = useState<Item[]>([]);
 
-  const previewQuery = useQuery<Preview[], AxiosError>({
+  const previewQuery = useQuery<Preview[], Error>({
     queryKey: [UploadFilesQK.GET_PREVIEW_FILELIST],
-    queryFn: async () => {
+    queryFn: async (): Promise<Preview[]> => {
       const data = await getAttachmentListByEventId();
-      return data;
+      return data as Preview[];
     },
     retry: false,
     refetchOnWindowFocus: false,
@@ -48,12 +47,9 @@ export const UploadFiles = () => {
   }, [serverData, uploadList]);
 
   return (
-    <div className="flex flex-col justify-center items-start gap-2">
+    <div className="flex flex-col items-start justify-center gap-2">
       <button
-        className="py-2 px-4
-				text-white font-bold
-				bg-blue-500 hover:bg-blue-700
-				rounded"
+        className="rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
         onClick={() => {
           /* clear the input field */
           inputRef.current!.value = "";
@@ -73,23 +69,19 @@ export const UploadFiles = () => {
           className="hidden"
         />
       </form>
-      <div
-        className="grid grid-cols-4 justify-items-stretch w-[536px] min-h-32 p-2 gap-6
-				bg-black
-				rounded-md"
-      >
+      <div className="grid min-h-32 w-134 grid-cols-4 justify-items-stretch gap-6 rounded-md bg-black p-2">
         {displayList.length > 0 &&
           displayList.map((file, i) => {
             if (file instanceof File) {
               return (
                 <FileToUpload
-                  key={i}
+                  key={file.name}
                   file={file}
                   setUploadList={setUploadList}
                 />
               );
             } else {
-              return <FileToPreview key={i} preview={file} />;
+              return <FileToPreview key={file.name} preview={file} />;
             }
           })}
       </div>

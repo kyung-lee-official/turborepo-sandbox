@@ -1,5 +1,5 @@
-import axios from "axios";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { get } from "@/lib/fetcher";
 
 const apiBaseUrl = elysiaBaseUrl();
 
@@ -9,16 +9,14 @@ export enum UploadFilesQK {
 }
 
 export const getAttachmentListByEventId = async () => {
-  const res = await axios.get<any>("/techniques/preview-filelist", {
+  return get<unknown[]>("/techniques/preview-filelist", {
     baseURL: apiBaseUrl,
   });
-  return res.data;
 };
 
 export const getFileBlob = async (name: string) => {
-  const res = await axios.get(`/techniques/preview-image/${name}`, {
+  return get<Blob>(`/techniques/preview-image/${name}`, {
     baseURL: apiBaseUrl,
     responseType: "blob",
   });
-  return res.data;
 };

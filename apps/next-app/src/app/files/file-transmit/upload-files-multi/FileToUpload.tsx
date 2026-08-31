@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import ky from "ky";
 import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
@@ -24,22 +24,19 @@ export const FileToUpload = (props: {
     mutationFn: async () => {
       const data = new FormData();
       data.append("file", file);
-      const res = await axios.put(
-        `${apiBaseUrl}/techniques/file-upload`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      // ky is used here because the demo needs `onUploadProgress`; native
+      // fetch does not expose upload progress events.
+      return ky
+        .put(`${apiBaseUrl}/techniques/file-upload`, {
+          body: data,
           onUploadProgress: (progressEvent) => {
-            const percentCompleted = progressEvent.progress;
+            const percentCompleted = progressEvent.percent;
             if (percentCompleted) {
               setProgress(percentCompleted);
             }
           },
-        },
-      );
-      return res.data;
+        })
+        .json<unknown>();
     },
     onSuccess: () => {
       setProgress(1);

@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
+import { post, put } from "@/lib/fetcher";
 import { AliyunOssQK } from "./query-keys";
 
 type FormValues = {
@@ -18,23 +18,23 @@ export const Upload = () => {
         return;
       }
       for (const file of files) {
-        const res = await axios.post(
+        const signedUrl = await post<string>(
           "/api/aliyun-oss/get-upload-signed-url",
           {
             fileName: file.name,
             method: "PUT", // Use PUT for uploading files
           },
           {
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
           },
         );
-        console.log(res.data);
-        const ossRes = await axios.put(res.data, file, {
-          headers: {
-            "Content-Type": "application/octet-stream",
-          },
+        console.log(signedUrl);
+        // Direct PUT to the OSS signed URL — use the raw fetcher so we can
+        // forward the binary body with the right Content-Type. The endpoint
+        // is a pre-signed URL on OSS, not our own API, so no baseURL.
+        await put(signedUrl, file, {
+          headers: { "Content-Type": "application/octet-stream" },
+          // The signed URL is absolute, so the fetcher treats it as such.
         });
       }
       return Array.from(files).map((file) => file.name);
@@ -57,10 +57,7 @@ export const Upload = () => {
   };
 
   return (
-    <form
-      className="p-6 space-y-4
-			border-b border-neutral-300"
-    >
+    <form className="space-y-4 border-neutral-300 border-b p-6">
       <input
         type="file"
         multiple
@@ -68,15 +65,11 @@ export const Upload = () => {
           register("files").ref(e);
           inputRef.current = e;
         }}
-        className="block w-fit px-2
-				bg-neutral-300"
+        className="block w-fit bg-neutral-300 px-2"
       />
       <button
         type="submit"
-        className="px-1.5
-				text-white
-				bg-blue-500
-				rounded"
+        className="rounded bg-blue-500 px-1.5 text-white"
         onClick={handleSubmit(onSubmit)}
       >
         {mutation.isPending ? "Uploading..." : "Upload"}

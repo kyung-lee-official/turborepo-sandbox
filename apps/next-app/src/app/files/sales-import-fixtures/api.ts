@@ -1,4 +1,4 @@
-import axios from "axios";
+import { post } from "@/lib/fetcher";
 
 export type ProductsSheetVariant =
   | "perfect"
@@ -35,14 +35,14 @@ export type GenerateTestFixturesResponse = {
 
 export const generateTestFixtures =
   async (): Promise<GenerateTestFixturesResponse> => {
-    const res = await axios.post<GenerateTestFixturesResponse>(
+    return post<GenerateTestFixturesResponse>(
       "/applications/sales-import-fixtures/generate-test-fixtures",
       {},
       {
         baseURL: process.env.NEXT_PUBLIC_NESTJS,
         headers: { "Content-Type": "application/json" },
+        /* 20 minutes — fixture generation can be slow on large datasets */
         timeout: 20 * 60 * 1000,
       },
     );
-    return res.data;
   };

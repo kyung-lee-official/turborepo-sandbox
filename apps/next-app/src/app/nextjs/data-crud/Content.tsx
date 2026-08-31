@@ -1,9 +1,9 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios, { type AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
+import { get, patch } from "@/lib/fetcher";
 import { UserQK, type UserResponse } from "./types/user";
 
 export const Content = () => {
@@ -25,17 +25,16 @@ export const Content = () => {
   const [name, setName] = useState<string>(oldData.name);
   const [age, setAge] = useState<number>(oldData.age);
 
-  const usersQuery = useQuery<UserResponse, AxiosError>({
+  const usersQuery = useQuery<UserResponse, Error>({
     queryKey: [UserQK.GET_ALL_USERS],
     queryFn: async () => {
-      const res = await axios.get<UserResponse>("/api/update-data");
-      return res.data;
+      return get<UserResponse>("/api/update-data");
     },
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  const mutation = useMutation({
+  const mutation = useMutation<UserResponse, Error, void>({
     mutationFn: async () => {
       /**
        * this is where you can recompose the data to match the API in case the data structure is different,
@@ -45,8 +44,7 @@ export const Content = () => {
         name: newData.name,
         age: newData.age,
       };
-      const res = await axios.patch<UserResponse>("/api/update-data", dto);
-      return res.data;
+      return patch<UserResponse>("/api/update-data", dto);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -85,7 +83,7 @@ export const Content = () => {
       name: name,
       age: age,
     });
-  }, [name, age]);
+  }, [name, age, newData.id]);
 
   if (usersQuery.isPending) {
     return <div>loading...</div>;
@@ -96,7 +94,7 @@ export const Content = () => {
   }
 
   return (
-    <div className="flex items-center p-4 gap-6">
+    <div className="flex items-center gap-6 p-4">
       <form>
         <div className="flex items-center gap-4">
           <div>{newData.id}</div>
@@ -117,7 +115,7 @@ export const Content = () => {
         </div>
       </form>
       <button
-        className="p-1 border"
+        className="border p-1"
         onClick={() => {
           mutation.mutate();
         }}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
+import { del, get, post } from "@/lib/fetcher";
 import { AliyunOssQK } from "./query-keys";
 
 export const Item = (props: any) => {
@@ -9,52 +9,42 @@ export const Item = (props: any) => {
   const signatureQuery = useQuery({
     queryKey: ["aliyun-oss-file-signature", file.name],
     queryFn: async () => {
-      const res = await axios.post(
+      return post<{ url?: string }>(
         "/api/aliyun-oss/get-download-signed-url",
         {
           fileName: file.name,
           method: "GET",
         },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         },
       );
-      return res.data;
     },
   });
 
   const downloadMutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.get(signatureQuery.data, {
-        headers: {},
-      });
-      const blob = new Blob([res.data], {
-        type: "application/octet-stream",
-      });
-      const url = window.URL.createObjectURL(blob);
+      const url = signatureQuery.data as unknown as string;
+      const blob = await get<Blob>(url, { responseType: "blob" });
+      const objectUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = objectUrl;
       a.download = file.name;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       return {
         name: file.name,
-        url: signatureQuery.data,
+        url,
       };
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
-      const res = await axios.delete("/api/aliyun-oss/delete-file", {
-        params: {
-          filename: file.name,
-        },
+      return del<unknown>("/api/aliyun-oss/delete-file", {
+        params: { filename: file.name },
       });
-      return res.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -64,18 +54,11 @@ export const Item = (props: any) => {
   });
 
   return (
-    <div
-      className="flex items-center gap-2 justify-between p-2
-			bg-neutral-200
-			rounded-md"
-    >
+    <div className="flex items-center justify-between gap-2 rounded-md bg-neutral-200 p-2">
       <div>{file.name}</div>
       <div className="flex items-center gap-2">
         <button
-          className="px-2 py-1
-					text-white
-					bg-blue-400 hover:bg-blue-500
-					rounded cursor-pointer"
+          className="cursor-pointer rounded bg-blue-400 px-2 py-1 text-white hover:bg-blue-500"
           onClick={() => {
             downloadMutation.mutate();
           }}
@@ -83,10 +66,7 @@ export const Item = (props: any) => {
           Download
         </button>
         <button
-          className="px-2 py-1
-					text-white
-					bg-red-500 hover:bg-red-600
-					rounded cursor-pointer"
+          className="cursor-pointer rounded bg-red-500 px-2 py-1 text-white hover:bg-red-600"
           onClick={() => {
             deleteMutation.mutate();
           }}

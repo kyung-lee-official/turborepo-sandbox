@@ -1,4 +1,5 @@
-import axios, { Axios, AxiosResponse } from "axios";
+import type { FetcherOptions } from "@/lib/fetcher";
+import { del, get, post, put } from "@/lib/fetcher";
 
 export enum CartQK {
   GET_CART_BY_ID = "get-cart-by-id",
@@ -8,14 +9,18 @@ export enum CartQK {
   GET_CARTS_BY_CUSTOMER_ID = "get-carts-by-customer-id",
 }
 
-export async function getCartById(cartId: string) {
-  const res = await axios.get(`/commerce-modules/cart/${cartId}`, {
+function medusaOptions(): Pick<FetcherOptions, "baseURL" | "headers"> {
+  return {
     baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
     headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+      "x-publishable-api-key":
+        process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",
     },
-  });
-  return res.data;
+  };
+}
+
+export async function getCartById(cartId: string) {
+  return get(`/commerce-modules/cart/${cartId}`, medusaOptions());
 }
 
 /**
@@ -31,67 +36,41 @@ export async function getCartByRegionIdSalesChannelIdCustomerId(
   salesChannelId: string,
   customerId: string,
 ) {
-  const res = await axios.get(
-    `/commerce-modules/cart/get-cart-by-region-sales-channel-customer?region_id=${regionId}&sales_channel_id=${salesChannelId}&customer_id=${customerId}`,
+  return get(
+    `/commerce-modules/cart/get-cart-by-region-sales-channel-customer`,
     {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+      ...medusaOptions(),
+      params: {
+        region_id: regionId,
+        sales_channel_id: salesChannelId,
+        customer_id: customerId,
       },
     },
   );
-  return res.data;
 }
 
 export async function getCartCheckoutInfoById(cartId: string) {
-  const res = await axios.get(
-    `/commerce-modules/cart/checkout-info/${cartId}`,
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
-  );
-  return res.data;
+  return get(`/commerce-modules/cart/checkout-info/${cartId}`, medusaOptions());
 }
 
 export async function getCartByPaymentCollectionId(
   paymentCollectionId: string,
 ) {
-  const res = await axios.get(
+  return get(
     `/commerce-modules/cart/get-cart-by-payment-collection-id/${paymentCollectionId}`,
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(),
   );
-  return res.data;
 }
 
 export async function getCartsByCustomerId(customerId: string) {
-  const res = await axios.get(
+  return get(
     `/commerce-modules/cart/get-carts-by-customer-id/${customerId}`,
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(),
   );
-  return res.data;
 }
 
-export async function updateCart(cartId: string, payload: any) {
-  const res = await axios.put(`/commerce-modules/cart/${cartId}`, payload, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+export async function updateCart(cartId: string, payload: unknown) {
+  return put(`/commerce-modules/cart/${cartId}`, payload, medusaOptions());
 }
 
 /* === address === */
@@ -99,19 +78,11 @@ export async function linkShippingAddressToCart(
   cartId: string,
   addressId: string,
 ) {
-  const res = await axios.post(
+  return post(
     `/commerce-modules/cart/shipping-address/${cartId}`,
-    {
-      address_id: addressId,
-    },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    { address_id: addressId },
+    medusaOptions(),
   );
-  return res.data;
 }
 
 /* === shipping === */
@@ -120,59 +91,33 @@ export async function linkShippingMethodToCart(
   cartId: string,
   shippingOptionId: string,
 ) {
-  const res = await axios.post(
+  return post(
     `/commerce-modules/cart/shipping-method/${cartId}`,
-    {
-      shippingOptionId: shippingOptionId,
-    },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    { shippingOptionId: shippingOptionId },
+    medusaOptions(),
   );
-  return res.data;
 }
 
 /* === checkout === */
 
 export async function completePaymentCollection(cartId: string) {
-  const res = await axios.post(
+  return post(
     `/commerce-modules/cart/checkout/create-payment-collection/${cartId}`,
     {},
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(),
   );
-  return res.data;
 }
 
 /* === danger zone === */
 
 export async function forceCompleteCart(cartId: string) {
-  const res = await axios.post(
+  return post(
     `/commerce-modules/cart/force-complete-cart/${cartId}`,
     {},
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(),
   );
-  return res.data;
 }
 
 export async function deleteCart(cartId: string) {
-  const res = await axios.delete(`/commerce-modules/cart/${cartId}`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return del(`/commerce-modules/cart/${cartId}`, medusaOptions());
 }

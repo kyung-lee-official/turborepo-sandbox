@@ -5,8 +5,8 @@ import jwt from "jsonwebtoken";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
-import { secureApi } from "./axios-client";
 import { signOut } from "./actions";
+import { secureApi } from "./axios-client";
 
 const Content = () => {
   const { register, handleSubmit } = useForm<{ email: string }>();
@@ -18,17 +18,19 @@ const Content = () => {
         "/security/http-only-cookies/sign-in",
         data,
       );
-      console.log(response.headers); // Log response headers to verify HTTP-only cookie is not accessible
-      return response.data;
+      // The response body itself is the proof that the request went
+      // through; the HTTP-only cookie is set by the browser and is NOT
+      // accessible from JavaScript (it's not on `document.cookie` either).
+      console.log("sign-in response:", response);
+      return response;
     },
   });
 
   const secretMutation = useMutation({
     mutationFn: async () => {
-      const response = await secureApi.get(
+      return secureApi.get<{ message: string }>(
         "/security/http-only-cookies/get-pretected-data",
       );
-      return response.data;
     },
     onError: (error: any) => {
       console.error("Error fetching protected data:", error);
@@ -80,7 +82,10 @@ const Content = () => {
       </form>
       {secretMutation.isPending && <p>Loading...</p>}
       {secretMutation.isError && (
-        <p>{secretMutation.error?.response?.data?.message}</p>
+        <p>
+          {secretMutation.error?.message ??
+            "Request failed. Check console for details."}
+        </p>
       )}
       {secretMutation.data ? (
         <p className="space-x-2 rounded bg-neutral-100 p-2">

@@ -1,4 +1,4 @@
-import axios from "axios";
+import ky from "ky";
 import Link from "next/link";
 import { type ChangeEvent, useRef, useState } from "react";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
@@ -19,21 +19,17 @@ export const UploadFilesAny = () => {
     for (let i = 0; i < files.length; i++) {
       data.append("files", files[i]!);
     }
-    const res = await axios.put(
-      `${apiBaseUrl}/techniques/files-upload-any`,
-      data,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = progressEvent.progress
-            ? (progressEvent.progress * 100).toFixed(2) + "%"
-            : "0%";
-          setProgress(percentCompleted);
-        },
+    // ky is used here because the demo needs `onUploadProgress`; native
+    // fetch does not expose upload progress events.
+    await ky.put(`${apiBaseUrl}/techniques/files-upload-any`, {
+      body: data,
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = progressEvent.percent
+          ? (progressEvent.percent * 100).toFixed(2) + "%"
+          : "0%";
+        setProgress(percentCompleted);
       },
-    );
+    });
   }
 
   return (

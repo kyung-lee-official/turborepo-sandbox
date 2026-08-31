@@ -1,7 +1,21 @@
-import axios from "axios";
+import type { FetcherOptions } from "@/lib/fetcher";
+import { del, get, post } from "@/lib/fetcher";
 
 export enum TesterQK {
   GET_TESTER_LIST = "get-tester-list",
+}
+
+function medusaOptions(
+  token?: string,
+): Pick<FetcherOptions, "baseURL" | "headers"> {
+  return {
+    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      "x-publishable-api-key":
+        process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",
+    },
+  };
 }
 
 export async function getRegistrationAuthenticationToken(
@@ -9,37 +23,15 @@ export async function getRegistrationAuthenticationToken(
   password: string,
   actor_type: string,
 ) {
-  const res = await axios.post(
+  return post(
     `/auth/${actor_type}/emailpass/register`,
-    {
-      email,
-      password,
-    },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    { email, password },
+    medusaOptions(),
   );
-  return res.data;
 }
 
 export async function loginTester(email: string, password: string) {
-  const res = await axios.post(
-    `/auth/tester/emailpass`,
-    {
-      email,
-      password,
-    },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
-  );
-  return res.data;
+  return post(`/auth/tester/emailpass`, { email, password }, medusaOptions());
 }
 
 export async function registerTester(
@@ -49,7 +41,7 @@ export async function registerTester(
   email: string,
   avatar_url?: string,
 ) {
-  const res = await axios.post(
+  return post(
     `/tester`,
     {
       first_name: firstName,
@@ -57,33 +49,14 @@ export async function registerTester(
       email: email,
       avatar_url: avatar_url,
     },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(token),
   );
-  return res.data;
 }
 
 export const getTesterList = async () => {
-  const res = await axios.get(`/tester`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return get(`/tester`, medusaOptions());
 };
 
 export const deleteTester = async (testerId: string) => {
-  const res = await axios.delete(`/tester/${testerId}`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return del(`/tester/${testerId}`, medusaOptions());
 };

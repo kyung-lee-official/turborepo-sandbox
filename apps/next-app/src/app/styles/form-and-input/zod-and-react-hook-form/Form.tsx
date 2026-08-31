@@ -1,10 +1,10 @@
 // import { DevTool } from "@hookform/devtools";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import axios, { type AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { FetcherError, post } from "@/lib/fetcher";
 import { Debug } from "./Debug";
 import { Input } from "./Input";
 
@@ -12,8 +12,7 @@ const signIn = async (body: {
   email: string;
   password: string;
 }): Promise<any> => {
-  const res = await axios.post("/api/form-and-input", body, {});
-  return res.data;
+  return post<any>("/api/form-and-input", body);
 };
 
 const schema = z.object({
@@ -65,7 +64,7 @@ export const Form = () => {
     resolver: zodResolver(schema) as any,
   });
 
-  const mutation = useMutation<any, AxiosError, FormInput>({
+  const mutation = useMutation<any, Error, FormInput>({
     mutationFn: (data: FormInput) => {
       return signIn(data);
     },
@@ -73,13 +72,8 @@ export const Form = () => {
 
   return (
     <div>
-      <h1
-        className="text-2xl
-				mb-8"
-      >
-        Sign Up
-      </h1>
-      <form className="flex flex-col gap-4 w-full">
+      <h1 className="mb-8 text-2xl">Sign Up</h1>
+      <form className="flex w-full flex-col gap-4">
         <Input
           title={"Email"}
           isError={!!formState.errors.email}
@@ -126,16 +120,16 @@ export const Form = () => {
             },
           })}
         />
-        {mutation.isError && mutation.error.response?.status === 401 && (
-          <div className="text-base text-red-400 font-bold">
-            Email or password is incorrect
-          </div>
-        )}
+        {mutation.isError &&
+          mutation.error instanceof FetcherError &&
+          mutation.error.status === 401 && (
+            <div className="font-bold text-base text-red-400">
+              Email or password is incorrect
+            </div>
+          )}
         <button
           type="submit"
-          className="p-1
-					text-sm text-white
-					bg-blue-500"
+          className="bg-blue-500 p-1 text-sm text-white"
           onClick={(e) => {
             e.preventDefault();
             mutation.mutate(newData);

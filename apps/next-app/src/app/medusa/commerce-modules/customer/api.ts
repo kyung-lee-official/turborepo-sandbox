@@ -1,8 +1,22 @@
-import axios from "axios";
+import type { FetcherOptions } from "@/lib/fetcher";
+import { del, get, post } from "@/lib/fetcher";
 
 export enum CustomerQK {
   GET_CUSTOMER_LIST = "get-customer-list",
   GET_CUSTOMER_BY_ID = "get-customer-by-id",
+}
+
+function medusaOptions(
+  token?: string,
+): Pick<FetcherOptions, "baseURL" | "headers"> {
+  return {
+    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      "x-publishable-api-key":
+        process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",
+    },
+  };
 }
 
 export async function registerCustomer(
@@ -12,7 +26,7 @@ export async function registerCustomer(
   email: string,
   avatar_url?: string,
 ) {
-  const res = await axios.post(
+  return post(
     `/commerce-modules/customer/create-customer`,
     {
       first_name: firstName,
@@ -20,91 +34,41 @@ export async function registerCustomer(
       email: email,
       avatar_url: avatar_url,
     },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(token),
   );
-  return res.data;
 }
 
 export async function loginCustomer(email: string, password: string) {
-  const res = await axios.post(
-    `/auth/customer/emailpass`,
-    {
-      email,
-      password,
-    },
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
-  );
-  return res.data;
+  return post(`/auth/customer/emailpass`, { email, password }, medusaOptions());
 }
 
 export const getCustomerList = async () => {
-  const res = await axios.get(`/commerce-modules/customer`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return get(`/commerce-modules/customer`, medusaOptions());
 };
 
 export const getCustomerById = async (customerId: string) => {
-  const res = await axios.get(`/commerce-modules/customer/${customerId}`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return get(`/commerce-modules/customer/${customerId}`, medusaOptions());
 };
 
 export const deleteCustomer = async (customerId: string) => {
-  const res = await axios.delete(`/commerce-modules/customer/${customerId}`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return del(`/commerce-modules/customer/${customerId}`, medusaOptions());
 };
 
 /* ==== addresses ==== */
 export const addAddressToCustomer = async (
   customerId: string,
-  addressData: Record<string, any>,
+  addressData: Record<string, unknown>,
 ) => {
-  const res = await axios.post(
+  return post(
     `/commerce-modules/customer/add-address-by-customer-id/${customerId}`,
     addressData,
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(),
   );
-  return res.data;
 };
 
 export const deleteAddressById = async (addressId: string) => {
-  const res = await axios.delete(
+  return del(
     `/commerce-modules/customer/delete-address-by-id/${addressId}`,
-    {
-      baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-      headers: {
-        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-      },
-    },
+    medusaOptions(),
   );
-  return res.data;
 };

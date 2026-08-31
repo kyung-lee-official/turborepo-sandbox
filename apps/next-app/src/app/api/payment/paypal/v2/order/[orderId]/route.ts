@@ -1,6 +1,6 @@
-import axios from "axios";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { get } from "@/lib/fetcher";
 import { getPayPalBaseURL } from "../../utils";
 
 export async function GET(
@@ -21,7 +21,7 @@ export async function GET(
 
     /* Fetch order details from PayPal API */
     const paypalBaseURL = getPayPalBaseURL();
-    const response = await axios.get(
+    const response = await get<unknown>(
       `${paypalBaseURL}/v2/checkout/orders/${params.orderId}`,
       {
         headers: {
@@ -31,7 +31,7 @@ export async function GET(
       },
     );
 
-    return NextResponse.json(response.data);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching PayPal order:", error);
     return NextResponse.json(

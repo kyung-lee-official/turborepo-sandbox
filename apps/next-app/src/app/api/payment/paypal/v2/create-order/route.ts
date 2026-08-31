@@ -1,6 +1,6 @@
-import axios from "axios";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { post } from "@/lib/fetcher";
 import { getPayPalBaseURL } from "../utils";
 import { createOrderSchema } from "./schemas";
 
@@ -40,34 +40,38 @@ export async function POST(req: NextRequest) {
 
     /* Call PayPal API to create order */
     const paypalBaseURL = getPayPalBaseURL();
-    const paypalRes = await axios.post(
-      `${paypalBaseURL}/v2/checkout/orders/`,
-      orderData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    );
-
-    return NextResponse.json(paypalRes.data);
-  } catch (error: any) {
-    console.error("Error creating PayPal order:", error);
-
-    /* Handle PayPal API errors */
-    if (error.response) {
-      return NextResponse.json(
+    try {
+      const paypalRes = await post<unknown>(
+        `${paypalBaseURL}/v2/checkout/orders/`,
+        orderData,
         {
-          error: "PayPal API error",
-          details: error.response.data,
-          status: error.response.status,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
         },
-        { status: error.response.status },
       );
+      return NextResponse.json(paypalRes);
+    } catch (err) {
+      // Pass PayPal API error body / status back to the caller
+      const status =
+        err instanceof Error && "status" in err
+          ? (err as { status?: number }).status
+          : undefined;
+      if (status !== undefined) {
+        return NextResponse.json(
+          {
+            error: "PayPal API error",
+            details: (err as { data?: unknown }).data,
+            status,
+          },
+          { status },
+        );
+      }
+      throw err;
     }
-
-    /* Handle other errors */
+  } catch (error) {
+    console.error("Error creating PayPal order:", error);
     return NextResponse.json(
       { error: "Failed to create PayPal order" },
       { status: 500 },

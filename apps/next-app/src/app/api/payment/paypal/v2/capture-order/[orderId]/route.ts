@@ -1,6 +1,6 @@
-import axios from "axios";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { FetcherError, get, post } from "@/lib/fetcher";
 import { getPayPalBaseURL } from "../../utils";
 
 export async function POST(
@@ -23,7 +23,7 @@ export async function POST(
     const paypalBaseURL = getPayPalBaseURL();
 
     /* First, get the order details to check its status and intent */
-    const orderResponse = await axios.get(
+    const order = await get<{ intent: string; status: string }>(
       `${paypalBaseURL}/v2/checkout/orders/${params.orderId}`,
       {
         headers: {
@@ -33,14 +33,15 @@ export async function POST(
       },
     );
 
-    const order = orderResponse.data;
-
     /* For AUTHORIZE intent orders, we need to authorize first, then capture */
     if (order.intent === "AUTHORIZE" && order.status === "APPROVED") {
       /* Step 1: Authorize the payment */
-      const authorizeResponse = await axios.post(
+      const authData = await post<{
+        purchase_units?: Array<{
+          payments?: { authorizations?: Array<{ id: string }> };
+        }>;
+      }>(
         `${paypalBaseURL}/v2/checkout/orders/${params.orderId}/authorize`,
-        /* Empty body for authorize request */
         {},
         {
           headers: {
@@ -50,15 +51,12 @@ export async function POST(
         },
       );
 
-      const authData = authorizeResponse.data;
-
       /* Step 2: Capture from the authorization */
-      if (authData.purchase_units?.[0]?.payments?.authorizations?.[0]?.id) {
-        const authId = authData.purchase_units[0].payments.authorizations[0].id;
-
-        const captureResponse = await axios.post(
+      const authId =
+        authData.purchase_units?.[0]?.payments?.authorizations?.[0]?.id;
+      if (authId) {
+        const captureResponse = await post<unknown>(
           `${paypalBaseURL}/v2/payments/authorizations/${authId}/capture`,
-          /* Empty body for capture request */
           {},
           {
             headers: {
@@ -67,21 +65,19 @@ export async function POST(
             },
           },
         );
-
-        return NextResponse.json(captureResponse.data);
-      } else {
-        return NextResponse.json(
-          {
-            error: "Authorization failed - no authorization ID found",
-          },
-          { status: 400 },
-        );
+        return NextResponse.json(captureResponse);
       }
-    } else if (order.intent === "CAPTURE") {
+      return NextResponse.json(
+        {
+          error: "Authorization failed - no authorization ID found",
+        },
+        { status: 400 },
+      );
+    }
+    if (order.intent === "CAPTURE") {
       /* For CAPTURE intent orders, direct capture */
-      const response = await axios.post(
+      const response = await post<unknown>(
         `${paypalBaseURL}/v2/checkout/orders/${params.orderId}/capture`,
-        /* Empty body for capture request */
         {},
         {
           headers: {
@@ -90,28 +86,26 @@ export async function POST(
           },
         },
       );
-
-      return NextResponse.json(response.data);
-    } else {
-      return NextResponse.json(
-        {
-          error: "Order cannot be captured",
-          details: `Order status: ${order.status}, intent: ${order.intent}`,
-        },
-        { status: 400 },
-      );
+      return NextResponse.json(response);
     }
+    return NextResponse.json(
+      {
+        error: "Order cannot be captured",
+        details: `Order status: ${order.status}, intent: ${order.intent}`,
+      },
+      { status: 400 },
+    );
   } catch (error) {
     console.error("Error capturing PayPal order:", error);
 
-    /* Handle axios errors specifically */
-    if (axios.isAxiosError(error)) {
+    /* Handle FetcherError (our wrapper) by surfacing PayPal's response body */
+    if (error instanceof FetcherError) {
       return NextResponse.json(
         {
           error: "Failed to capture order from PayPal",
-          details: error.response?.data,
+          details: error.data,
         },
-        { status: error.response?.status || 500 },
+        { status: error.status || 500 },
       );
     }
 

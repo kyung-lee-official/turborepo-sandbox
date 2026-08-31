@@ -1,9 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import pako from "pako";
 import { useMemo, useState } from "react";
 import { io } from "socket.io-client";
 import { z } from "zod";
+import { post } from "@/lib/fetcher";
 
 /* define the Zod schema for a single object */
 const itemSchema = z.object({
@@ -77,13 +77,9 @@ export const Content = () => {
     formData.append("data", blob);
 
     /* send the FormData to the backend */
-    const res = await axios.post(`applications/upload-large-json`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+    return post<unknown>(`applications/upload-large-json`, formData, {
       baseURL: process.env.NEXT_PUBLIC_NESTJS,
     });
-    return res.data;
   }
 
   const mutation = useMutation({

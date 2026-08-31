@@ -1,8 +1,8 @@
 "use client";
 
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
-import axios from "axios";
 import { ChangeEvent, useState } from "react";
+import { post } from "@/lib/fetcher";
 
 const { NEXT_PUBLIC_NESTJS } = process.env;
 
@@ -89,7 +89,7 @@ const Content = () => {
             }}
             createOrder={async (data, actions) => {
               console.log("Order created");
-              const res = await axios.post(
+              const orderId = await post<string>(
                 "/paypal",
                 {
                   intent: "CAPTURE",
@@ -102,13 +102,12 @@ const Content = () => {
                   },
                 },
               );
-              const orderId = res.data;
               console.log(orderId);
               return orderId;
             }}
             onApprove={async (data, actions) => {
               console.log("Approved by payer");
-              const res = await axios.post(
+              const res = await post<{ id: string; status: string }>(
                 "/paypal/completeOrder",
                 {
                   orderId: data.orderID,
@@ -121,8 +120,8 @@ const Content = () => {
                 },
               );
               console.log("captured");
-              setFixedId(res.data.id);
-              setFixedStatus(res.data.status);
+              setFixedId(res.id);
+              setFixedStatus(res.status);
             }}
             onCancel={() => {
               console.log("Order cancelled");

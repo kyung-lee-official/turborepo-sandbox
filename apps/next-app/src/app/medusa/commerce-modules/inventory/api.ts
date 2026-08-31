@@ -1,26 +1,25 @@
-import axios from "axios";
+import type { FetcherOptions } from "@/lib/fetcher";
+import { get } from "@/lib/fetcher";
 
 export enum InventoryQK {
   GET_INVENTORY_LIST = "get_inventory_list",
   GET_INVENTORY_BY_ID = "get_inventory_by_id",
 }
 
-export const getInventoryList = async () => {
-  const res = await axios.get(`/commerce-modules/inventory`, {
+function medusaOptions(): Pick<FetcherOptions, "baseURL" | "headers"> {
+  return {
     baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
     headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
+      "x-publishable-api-key":
+        process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY ?? "",
     },
-  });
-  return res.data;
+  };
+}
+
+export const getInventoryList = async () => {
+  return get(`/commerce-modules/inventory`, medusaOptions());
 };
 
 export const getInventoryById = async (inventoryId: string) => {
-  const res = await axios.get(`/commerce-modules/inventory/${inventoryId}`, {
-    baseURL: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL,
-    headers: {
-      "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY,
-    },
-  });
-  return res.data;
+  return get(`/commerce-modules/inventory/${inventoryId}`, medusaOptions());
 };

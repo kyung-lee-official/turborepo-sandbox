@@ -1,10 +1,17 @@
 "use client";
 
 import { QueryClientProvider, useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import queryString from "query-string";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
+import { post } from "@/lib/fetcher";
 
+/**
+ * Demo of doing data fetching with the project's native `fetch`-based
+ * `fetcher` wrapper (see `apps/next-app/src/lib/fetcher.ts`).
+ *
+ * The same axios-style ergonomics (JSON body, baseURL, params, headers)
+ * are preserved by the wrapper.
+ */
 const Example = () => {
   const mutation = useMutation({
     mutationFn: async () => {
@@ -22,7 +29,7 @@ const Example = () => {
       const serialized = queryString.stringify(complexData);
       // console.log("Serialized complex data:", serialized);
 
-      const response = await axios.post(
+      const data = await post<unknown>(
         "/api/data",
         { test: "hello" },
         {
@@ -32,15 +39,15 @@ const Example = () => {
             Authorization: `Bearer this.is.a.mock.token`,
           },
           /**
-           * axios's params options is only reccommended for simple query parameters.
-           * For complex query parameters, use https://www.npmjs.com/package/query-string
+           * `params` is the same as axios's; for complex query parameters,
+           * use https://www.npmjs.com/package/query-string
            */
           params: {
             "query-param": "value",
           },
         },
       );
-      return response.data;
+      return data;
     },
   });
   return (
@@ -48,7 +55,7 @@ const Example = () => {
       Check out the DevTools Network tab for request details{" "}
       <button
         type="button"
-        className="bg-blue-500 text-white p-2 rounded cursor-pointer"
+        className="cursor-pointer rounded bg-blue-500 p-2 text-white"
         onClick={() => mutation.mutate()}
       >
         Send Request

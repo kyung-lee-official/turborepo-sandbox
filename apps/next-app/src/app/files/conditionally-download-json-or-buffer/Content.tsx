@@ -1,7 +1,7 @@
 "use client";
 
 import { type UseMutationResult, useMutation } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
+import { FetcherError } from "@/lib/fetcher";
 import { conditionallyDownloadJsonOrBuffer } from "./api";
 import { TanStackWrapper } from "./TanStackWrapper";
 
@@ -12,14 +12,14 @@ const StatusDisplay = (props: {
   if (downloadMutation.isPending) {
     return (
       <span className="flex items-center">
-        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2"></div>
         Processing...
       </span>
     );
   }
   if (downloadMutation.isError) {
     return (
-      <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+      <div className="rounded border border-red-400 bg-red-100 p-3 text-red-700">
         <strong>Error:</strong> Request failed. Check console for details.
       </div>
     );
@@ -30,7 +30,7 @@ const StatusDisplay = (props: {
       new TextDecoder().decode(downloadMutation.data),
     );
     return (
-      <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+      <div className="rounded border border-green-400 bg-green-100 p-3 text-green-700">
         <strong>Success:</strong> Request completed successfully!
         {downloadMutation.data && (
           <pre>{JSON.stringify(jsonContent, null, 2)}</pre>
@@ -43,34 +43,31 @@ const StatusDisplay = (props: {
 
 const ConditionalDownloadContent = () => {
   const downloadMutation = useMutation({
-    mutationFn: async (requestData?: any) => {
-      return await conditionallyDownloadJsonOrBuffer();
+    mutationFn: async (_requestData?: unknown) => {
+      return conditionallyDownloadJsonOrBuffer();
     },
-    onSuccess: (data) => {},
+    onSuccess: (_data) => {},
     onError: (error) => {
-      /* Check if error is an Axios error */
-      if (isAxiosError(error)) {
-        switch (error.response?.headers["content-type"]) {
-          case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
-            /* convert arraybuffer to xlsx and download excel file */
-            const blob = new Blob([error.response.data], {
-              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "errors.xlsx";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-            break;
-          }
-          default:
-            /* unknown error */
-            console.error("Request failed with error:", error);
-            break;
-        }
+      /**
+       * The original request used `responseType: "arrayBuffer"`, so the
+       * fetcher's FetcherError carries the error body as an ArrayBuffer
+       * in `error.data`. We just check that and download it as an .xlsx
+       * — the original code distinguished via the `content-type` header
+       * but with the arraybuffer responseType that distinction is lost,
+       * so we always treat the error body as the xlsx payload.
+       */
+      if (error instanceof FetcherError && error.data instanceof ArrayBuffer) {
+        const blob = new Blob([error.data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "errors.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
       } else {
         /* unknown error */
         console.error("Request failed with error:", error);
@@ -84,32 +81,33 @@ const ConditionalDownloadContent = () => {
   };
 
   return (
-    <div className="p-3 space-y-2">
+    <div className="space-y-2 p-3">
       <h1>Conditionally Download JSON or Buffer</h1>
       <p>
         The backend randomly returns JSON or buffer. The frontend handles both
         cases.
       </p>
       <p>
-        When using axios, it is crucial to set the <b>`responseType`</b> to{" "}
-        <b>"arraybuffer"</b> to correctly handle binary data responses. For
-        normal JSON responses, you can then decode the arraybuffer back to a
-        string and parse it as JSON. For error responses that return files (like
-        Excel), you can create a Blob from the arraybuffer and trigger a
-        download in the browser.
+        When using a low-level fetch, it is crucial to set the{" "}
+        <b>`responseType`</b> to <b>"arrayBuffer"</b> to correctly handle binary
+        data responses. For normal JSON responses, you can then decode the
+        arraybuffer back to a string and parse it as JSON. For error responses
+        that return files (like Excel), the fetcher surfaces the body as
+        `error.data` (still an ArrayBuffer), which you can wrap in a Blob and
+        trigger a download in the browser.
       </p>
       <button
         onClick={handleGetResponse}
         disabled={downloadMutation.isPending}
-        className={`p-2 rounded text-white ${
+        className={`rounded p-2 text-white ${
           downloadMutation.isPending
-            ? "bg-gray-400 cursor-not-allowed"
+            ? "cursor-not-allowed bg-gray-400"
             : "bg-blue-500 hover:bg-blue-600"
         }`}
       >
         {downloadMutation.isPending ? (
           <span className="flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2"></div>
             Processing...
           </span>
         ) : (

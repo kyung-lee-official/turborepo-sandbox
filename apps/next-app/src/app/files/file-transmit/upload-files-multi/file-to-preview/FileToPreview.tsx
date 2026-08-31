@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { useState } from "react";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
 import { Item } from "@/app/files/file-transmit/upload-files-multi/Item";
 import { elysiaBaseUrl } from "@/lib/api-base-url";
+import { del } from "@/lib/fetcher";
 import { getFileBlob, UploadFilesQK } from "../api";
 import type { Preview } from "../UploadFiles";
 
@@ -26,7 +26,7 @@ export const FileToPreview = (props: { preview: Preview }) => {
   });
 
   async function onDelete() {
-    await axios.delete(`${apiBaseUrl}/techniques/delete-file/${name}`);
+    await del(`${apiBaseUrl}/techniques/delete-file/${name}`);
     queryClient.invalidateQueries({
       queryKey: [UploadFilesQK.GET_PREVIEW_FILELIST],
     });

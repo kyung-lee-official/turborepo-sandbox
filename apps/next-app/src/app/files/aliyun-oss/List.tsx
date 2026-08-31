@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { get } from "@/lib/fetcher";
 import { Item } from "./Item";
 import { AliyunOssQK } from "./query-keys";
 
@@ -7,16 +7,12 @@ export const List = () => {
   const query = useQuery({
     queryKey: [AliyunOssQK.ALIYUN_OSS_FILE_LIST_QUERY_KEY],
     queryFn: async () => {
-      const res = await axios.get("/api/aliyun-oss/get-file-list");
-      return res.data;
+      return get<unknown[]>("/api/aliyun-oss/get-file-list");
     },
   });
 
   return (
-    <div
-      className="p-6 space-y-2
-			border-b border-neutral-300"
-    >
+    <div className="space-y-2 border-neutral-300 border-b p-6">
       {query.data?.map((file: any) => (
         <Item key={file.name} file={file} />
       ))}
