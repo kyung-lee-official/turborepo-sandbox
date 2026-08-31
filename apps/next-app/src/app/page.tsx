@@ -162,7 +162,6 @@ export default function Home() {
           },
         ]}
       />
-      <Block title="Casl" list={[{ link: "/casl/basic", text: "basic" }]} />
       <Block
         title={
           <div className="flex items-center gap-2">
