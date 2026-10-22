@@ -97,6 +97,44 @@ const actors: Actor[] = [
   },
 ];
 
+const initializeExample = `{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {
+      "roots": { "listChanged": true },
+      "sampling": {}
+    },
+    "clientInfo": { "name": "claude-desktop", "version": "0.12.0" }
+  }
+}`;
+
+type LifecyclePhase = {
+  phase: string;
+  detail: string;
+};
+
+const lifecycle: LifecyclePhase[] = [
+  {
+    phase: "Spawn",
+    detail: `For a \`command\` entry the client starts the process from \`command\` and \`args\` and connects to its \`stdin\`/\`stdout\`. Only \`JSON-RPC\` may be written to \`stdout\`; logs go to \`stderr\`. For a \`url\` entry the client opens a \`Streamable HTTP\` connection instead, and carries the \`Mcp-Session-Id\` from the \`initialize\` response on later requests.`,
+  },
+  {
+    phase: "Initialize",
+    detail: `One \`initialize\` request, one result, one \`notifications/initialized\`. Both sides agree on a \`protocolVersion\` and exchange \`capabilities\`. Until the handshake completes, neither side sends requests other than \`ping\`.`,
+  },
+  {
+    phase: "Operate",
+    detail: `Discovery first: \`tools/list\`, \`resources/list\`, \`prompts/list\`, each paginated with \`cursor\`. Then calls: \`tools/call\`, \`resources/read\`, \`prompts/get\`. The server may call back into the client (\`sampling/createMessage\`, \`roots/list\`, \`elicitation/create\`) only for capabilities the client declared. Either side may \`ping\`; \`notifications/progress\` reports progress, and \`list_changed\` or \`resources/updated\` says a cached list is stale.`,
+  },
+  {
+    phase: "Shut down",
+    detail: `\`stdio\` has no shutdown message: the client closes \`stdin\` and terminates the child process. \`Streamable HTTP\` ends the session with \`DELETE\` plus \`Mcp-Session-Id\`, or the server expires it; a request with an unknown id returns \`404\`, and the client must \`initialize\` again. A restart is just spawn and initialize once more.`,
+  },
+];
+
 const steps = [
   {
     call: `\`get_issue(repo="shop", number=412)\``,
@@ -190,7 +228,54 @@ export default function McpPage() {
       </section>
 
       <section className="space-y-3 rounded-lg bg-white/50 p-6">
+        <h2 className="font-semibold text-lg">Server lifecycle</h2>
+        <p className="text-gray-700 text-sm">
+          A server process holds one session at a time, and that session has
+          four phases. The handshake is the same for every server; only the
+          tools and data differ.
+        </p>
+        <ol className="space-y-3">
+          {lifecycle.map((entry, index) => (
+            <li key={entry.phase} className="flex gap-3 text-sm">
+              <span className="shrink-0 font-mono text-gray-400">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span>
+                <strong className="font-medium text-gray-900">
+                  {entry.phase}
+                </strong>
+                <span className="text-gray-700">
+                  {" "}
+                  - {renderInline(entry.detail)}
+                </span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <CodeBlock>
+          <CodeBlockHeader>
+            <CodeBlockTitle>initialize request</CodeBlockTitle>
+            <CodeBlockActions>
+              <CodeBlockCopyButton value={initializeExample} />
+            </CodeBlockActions>
+          </CodeBlockHeader>
+          <CodeBlockContent language="json">
+            {initializeExample}
+          </CodeBlockContent>
+        </CodeBlock>
+        <p className="text-gray-700 text-sm">
+          {renderInline(
+            `The result repeats \`protocolVersion\`, adds the server's \`capabilities\` and \`serverInfo\`, and the client finishes with \`notifications/initialized\`. If the server answers with a version the client does not support, the client closes the connection instead of guessing.`,
+          )}
+        </p>
+      </section>
+
+      <section className="space-y-3 rounded-lg bg-white/50 p-6">
         <h2 className="font-semibold text-lg">In four steps</h2>
+        <p className="text-gray-700 text-sm">
+          Once the session is initialized, the model drives it through the same
+          open connection:
+        </p>
         <ol className="space-y-3">
           {steps.map((step, index) => (
             <li key={step.call} className="flex gap-3 text-sm">
