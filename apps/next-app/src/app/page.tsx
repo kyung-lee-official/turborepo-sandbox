@@ -62,6 +62,7 @@ export default function Home() {
           },
         ]}
       />
+      <Block title="AI" list={[{ link: "/ai/mcp", text: "MCP" }]} />
       <Block
         title="Animation | Motion"
         list={[
