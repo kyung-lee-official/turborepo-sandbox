@@ -70,7 +70,8 @@ function VideoRow({
           {formatDuration(item.durationSeconds)}
         </p>
         <p className="mt-0.5 font-mono text-[10px] text-gray-400">
-          {item.sha256.slice(0, 12)}â€?        </p>
+          {item.sha256.slice(0, 12)}â€¦
+        </p>
       </button>
       <button
         type="button"
@@ -183,7 +184,7 @@ export const Content = () => {
     setIsUploading(true);
     setErrorMessage(null);
     setProgressDisplay(
-      uploadOnlyProgressDisplay({ detail: "Uploadingâ€?, percent: 0 }),
+      uploadOnlyProgressDisplay({ detail: "Uploadingâ€¦", percent: 0 }),
     );
 
     try {
@@ -292,7 +293,7 @@ export const Content = () => {
     <div className="flex min-h-svh flex-col p-6">
       <header className="mb-6">
         <h1 className="font-semibold text-2xl text-gray-900">
-          VFR â†?CFR library
+          VFR â†’ CFR library
         </h1>
         <p className="mt-1 text-gray-600 text-sm">
           Upload MP4 files to{" "}
@@ -300,7 +301,7 @@ export const Content = () => {
             temp/vfr-to-cfr/uploaded
           </code>
           , convert selected uploads to CFR in{" "}
-          <code className="rounded bg-gray-100 px-1">â€?output</code>. Each video
+          <code className="rounded bg-gray-100 px-1">â€¦/output</code>. Each video
           has a sidecar <code className="text-xs">.md</code> with SHA-256 and
           ffprobe info.
         </p>
@@ -340,7 +341,7 @@ export const Content = () => {
           className="rounded-md bg-blue-600 px-4 py-2 font-medium text-sm text-white hover:bg-blue-700 disabled:opacity-50"
           onClick={() => void handleUpload()}
         >
-          {isUploading ? "Uploadingâ€? : "Upload"}
+          {isUploading ? "Uploadingâ€¦" : "Upload"}
         </button>
         <button
           type="button"
@@ -348,7 +349,7 @@ export const Content = () => {
           className="rounded-md bg-emerald-600 px-4 py-2 font-medium text-sm text-white hover:bg-emerald-700 disabled:opacity-50"
           onClick={() => void handleConvert()}
         >
-          {isConverting ? "Convertingâ€? : "Convert"}
+          {isConverting ? "Convertingâ€¦" : "Convert"}
         </button>
       </div>
 
@@ -363,7 +364,7 @@ export const Content = () => {
               <p className="mt-1 font-medium text-gray-900">
                 {detail?.avgFrameRateFps != null
                   ? `${detail.avgFrameRateFps.toFixed(3)} fps`
-                  : "â€?}
+                  : "â€”"}
               </p>
               {detail?.avgFrameRate ? (
                 <p className="mt-0.5 font-mono text-[10px] text-gray-500">
