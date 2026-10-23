@@ -7,6 +7,7 @@ import {
   CodeBlockHeader,
   CodeBlockTitle,
 } from "@/components/ui/code-block";
+import { Mermaid } from "@/components/ui/mermaid";
 
 const INLINE_CODE_CLASS =
   "rounded-sm bg-[#232a36] px-1 py-0.5 font-mono text-[0.9em] text-[#dde3ec]";
@@ -70,6 +71,33 @@ const mcpConfigExample = `{
     }
   }
 }`;
+
+const communicationChain = `flowchart TB
+  dev["Developer"]
+  client["MCP client<br/>Claude Desktop / Cursor / VS Code"]
+  model["Model API"]
+  subgraph machine["Your machine"]
+    direction LR
+    gh["GitHub MCP server"]
+    sx["Sentry MCP server"]
+    fs["Filesystem MCP server"]
+  end
+  subgraph remote["Remote services"]
+    direction LR
+    ghapi["GitHub API"]
+    sxapi["Sentry API"]
+  end
+  disk["Repository on disk"]
+
+  dev -->|"asks"| client
+  client -->|"messages, tool schemas"| model
+  model -.->|"tool call"| client
+  client -->|"JSON-RPC tools/call"| gh
+  client -->|"JSON-RPC tools/call"| sx
+  client -->|"JSON-RPC tools/call"| fs
+  gh -->|"HTTPS + GITHUB_TOKEN"| ghapi
+  sx -->|"HTTPS + SENTRY_TOKEN"| sxapi
+  fs -->|"read / write"| disk`;
 
 type Actor = {
   who: string;
@@ -233,6 +261,16 @@ export default function McpPage() {
             )}
           </p>
         </div>
+      </section>
+
+      <section className="space-y-3 rounded-lg bg-white/50 p-6">
+        <h2 className="font-semibold text-lg">The full chain</h2>
+        <Mermaid chart={communicationChain} />
+        <p className="text-gray-700 text-sm">
+          {renderInline(
+            `Solid arrows are requests; the dashed arrow is the model's reply. Every result returns along the same path, so tool output reaches the model on the next turn. No credential crosses into the model: each server holds its own token and passes only the data.`,
+          )}
+        </p>
       </section>
 
       <section className="space-y-3 rounded-lg bg-white/50 p-6">
