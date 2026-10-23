@@ -334,6 +334,14 @@ export default function McpPage() {
                 `Normally the vendor that owns the system, because it controls the auth, the rate limits, and the API changes. GitHub maintains \`github/github-mcp-server\`, shipped as the \`ghcr.io/github/github-mcp-server\` Docker image or the remote \`https://api.githubcopilot.com/mcp/\` endpoint, and Sentry maintains \`@sentry/mcp-server\`. When a vendor has not shipped one, a community server such as \`@modelcontextprotocol/server-github\` fills the gap. Internal systems usually get a small server written by their own team.`,
               )}
             </p>
+            <p className="font-medium text-[#eef2f7]">
+              Who provides the client
+            </p>
+            <p className="text-[#b6c0cd]">
+              {renderInline(
+                `The host app's vendor: Anthropic ships Claude Desktop's client, Anysphere ships Cursor's, and Microsoft ships VS Code's. Build your own host and you provide the client, usually by wrapping the official SDK's \`Client\`.`,
+              )}
+            </p>
           </div>
         </section>
 
