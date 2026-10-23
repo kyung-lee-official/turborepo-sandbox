@@ -83,6 +83,29 @@ const mcpConfigExample = `{
   }
 }`;
 
+const toolsForModel = `[
+  {
+    "name": "github__get_issue",
+    "description": "Read one issue from a GitHub repository.",
+    "input_schema": { "type": "object", "properties": { "repo": { "type": "string" }, "number": { "type": "integer" } }, "required": ["repo", "number"] }
+  },
+  {
+    "name": "github__create_pull_request",
+    "description": "Open a pull request from a head branch into a base branch.",
+    "input_schema": { "type": "object", "properties": { "head": { "type": "string" }, "base": { "type": "string" }, "title": { "type": "string" }, "body": { "type": "string" } }, "required": ["head", "base", "title"] }
+  },
+  {
+    "name": "sentry__get_event",
+    "description": "Read one Sentry event, including its stack trace.",
+    "input_schema": { "type": "object", "properties": { "eventId": { "type": "string" } }, "required": ["eventId"] }
+  },
+  {
+    "name": "filesystem__read_file",
+    "description": "Read a file below the allowed root and return its lines.",
+    "input_schema": { "type": "object", "properties": { "path": { "type": "string" } }, "required": ["path"] }
+  }
+]`;
+
 const communicationChain = `flowchart TB
   dev["Developer"]
   client["MCP client<br/>Claude Desktop / Cursor / VS Code"]
@@ -118,13 +141,13 @@ const communicationChain = `flowchart TB
 type CallFlowStep = {
   text: string;
   prompt?: string;
-  config?: string;
+  code?: { title: string; value: string; highlightLines?: number[] };
 };
 
 const callFlow: CallFlowStep[] = [
   {
     text: `The developer adds three servers to Claude Desktop's \`claude_desktop_config.json\` on macOS. Nothing else is installed.`,
-    config: mcpConfigExample,
+    code: { title: "claude_desktop_config.json", value: mcpConfigExample },
   },
   {
     text: `The developer launches Claude Desktop. Claude Desktop starts the three MCP servers named in the config and keeps an open connection to each one: Claude Desktop writes \`JSON-RPC\` requests into the server's input, and the server writes \`JSON-RPC\` replies to its output. The three servers are started with \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`.`,
@@ -141,25 +164,33 @@ const callFlow: CallFlowStep[] = [
       "Checkout fails for a small share of orders. Find out why and open a PR.",
   },
   {
-    text: `Claude Desktop sends that prompt plus the four tool definitions to the model over HTTPS.`,
+    text: `Claude Desktop merges the four tools into one list. Each entry keeps its name, description, and input schema; the name is qualified with its server, so a \`get_issue\` from Sentry would appear as \`sentry__get_issue\` and never collide with the GitHub one.`,
+    code: {
+      title: "tools sent to the model",
+      value: toolsForModel,
+      highlightLines: [2, 3, 4, 5, 6],
+    },
   },
   {
-    text: `The model answers over HTTPS with a tool call: \`get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop writes \`tools/call\` into the GitHub MCP server's input; the call only reads, so there is no approval prompt.`,
+    text: `Claude Desktop sends that list and the developer's prompt to the model over HTTPS.`,
+  },
+  {
+    text: `The model answers over HTTPS with a tool call: \`github__get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop strips the \`github__\` qualifier and writes \`tools/call\` with \`get_issue\` into the GitHub MCP server's input; the call only reads, so there is no approval prompt.`,
   },
   {
     text: `The GitHub MCP server uses \`GITHUB_PERSONAL_ACCESS_TOKEN\`, calls \`GET /repos/shop/issues/412\` on the GitHub API over HTTPS, gets the ticket text (it names Sentry event \`b3f1...\`), and writes it to its output as the tool result.`,
   },
   {
-    text: `Claude Desktop reads that result and sends it to the model over HTTPS. The model answers with \`get_event\` and \`{ "eventId": "b3f1..." }\`. Claude Desktop writes \`tools/call\` into the Sentry MCP server's input; the Sentry MCP server calls \`GET /api/0/projects/shop/events/b3f1...\` over HTTPS with \`SENTRY_AUTH_TOKEN\` and writes the stack trace to its output, top frame \`checkout.ts:142\`.`,
+    text: `Claude Desktop reads that result and sends it to the model over HTTPS. The model answers with \`sentry__get_event\` and \`{ "eventId": "b3f1..." }\`. Claude Desktop strips the qualifier and writes \`tools/call\` with \`get_event\` into the Sentry MCP server's input; the Sentry MCP server calls \`GET /api/0/projects/shop/events/b3f1...\` over HTTPS with \`SENTRY_AUTH_TOKEN\` and writes the stack trace to its output, top frame \`checkout.ts:142\`.`,
   },
   {
-    text: `The model answers with \`read_file\` and \`{ "path": "apps/api/src/orders/checkout.ts" }\`. Claude Desktop writes \`tools/call\` into the filesystem MCP server's input; that server reads the file from disk and writes lines 130-150 to its output.`,
+    text: `The model answers with \`filesystem__read_file\` and \`{ "path": "apps/api/src/orders/checkout.ts" }\`. Claude Desktop strips the qualifier and writes \`tools/call\` with \`read_file\` into the filesystem MCP server's input; that server reads the file from disk and writes lines 130-150 to its output.`,
   },
   {
-    text: `The model proposes a fix and answers with \`create_pull_request\` and \`{ "head": "fix/checkout-412", "base": "main", "title": "Fix rounding in checkout", "body": "Closes #412." }\`. This call writes, so Claude Desktop shows an approval prompt naming the tool and its arguments; the developer clicks Allow.`,
+    text: `The model proposes a fix and answers with \`github__create_pull_request\` and \`{ "head": "fix/checkout-412", "base": "main", "title": "Fix rounding in checkout", "body": "Closes #412." }\`. This call writes, so Claude Desktop shows an approval prompt naming the tool and its arguments; the developer clicks Allow.`,
   },
   {
-    text: `Claude Desktop writes \`tools/call\` into the GitHub MCP server's input; the GitHub MCP server calls \`POST /repos/shop/pulls\` over HTTPS and writes the PR URL to its output.`,
+    text: `Claude Desktop strips the qualifier and writes \`tools/call\` with \`create_pull_request\` into the GitHub MCP server's input; the GitHub MCP server calls \`POST /repos/shop/pulls\` over HTTPS and writes the PR URL to its output.`,
   },
   {
     text: `Claude Desktop reads the URL, sends it to the model one final time over HTTPS, and the model writes the answer with the link. The developer quits Claude Desktop, which closes each server's input and stops the three servers.`,
@@ -186,7 +217,7 @@ const actors: Actor[] = [
   },
   {
     who: "Model",
-    does: `Picks the next tool from the list it was given: \`get_issue\`, then \`get_event\`, then \`read_file\`, then \`create_pull_request\`. It sees only the arguments it sends and the results that come back.`,
+    does: `Picks the next tool from the list it was given: \`github__get_issue\`, then \`sentry__get_event\`, then \`filesystem__read_file\`, then \`github__create_pull_request\`. It sees only the arguments it sends and the results that come back.`,
   },
 ];
 
@@ -207,6 +238,7 @@ const initializeExample = `{
 type LifecyclePhase = {
   phase: string;
   detail: string;
+  code?: string;
 };
 
 const lifecycle: LifecyclePhase[] = [
@@ -217,6 +249,7 @@ const lifecycle: LifecyclePhase[] = [
   {
     phase: "Initialize",
     detail: `One \`initialize\` request, one result, one \`notifications/initialized\`. Both sides agree on a \`protocolVersion\` and exchange \`capabilities\`. Until the handshake completes, neither side sends requests other than \`ping\`.`,
+    code: initializeExample,
   },
   {
     phase: "Operate",
@@ -332,7 +365,7 @@ export default function McpPage() {
           <Mermaid chart={communicationChain} theme="dark" />
           <p className="text-[#b6c0cd] text-sm">
             {renderInline(
-              `Discovery runs once per session: the client writes \`tools/list\` to each server's input, and the server writes back the tools it exposes. The client and a server talk in \`JSON-RPC\` over that server's input and output; the client and the model talk over HTTPS. On every turn the client hands the model the tool definitions with the prompt; the model names a tool and its arguments; the client writes \`tools/call\` only to the server that listed that tool, and that server makes the API call. Results travel back the same way, and tokens stay in the servers.`,
+              `Discovery runs once per session: the client writes \`tools/list\` to each server's input, and the server writes back the tools it exposes. Before the first turn the client merges them into one list and qualifies each name with its server (\`github__get_issue\`), so two servers may expose the same name without colliding. The client and a server talk in \`JSON-RPC\` over that server's input and output; the client and the model talk over HTTPS. On every turn the client hands the model that list with the prompt; the model names a tool and its arguments; the client strips the qualifier and writes \`tools/call\` only to the server that listed that tool, and that server makes the API call. Results travel back the same way, and tokens stay in the servers.`,
             )}
           </p>
           <p className="text-[#b6c0cd] text-sm">
@@ -344,7 +377,7 @@ export default function McpPage() {
                 <span className="shrink-0 font-mono text-[#6b7684]">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <div className="min-w-0 space-y-1.5">
+                <div className="min-w-0 flex-1 space-y-1.5">
                   <span className="block text-[#b6c0cd]">
                     {renderInline(step.text)}
                   </span>
@@ -353,18 +386,19 @@ export default function McpPage() {
                       {step.prompt}
                     </blockquote>
                   ) : null}
-                  {step.config ? (
+                  {step.code ? (
                     <CodeBlock>
                       <CodeBlockHeader>
-                        <CodeBlockTitle>
-                          claude_desktop_config.json
-                        </CodeBlockTitle>
+                        <CodeBlockTitle>{step.code.title}</CodeBlockTitle>
                         <CodeBlockActions>
-                          <CodeBlockCopyButton value={step.config} />
+                          <CodeBlockCopyButton value={step.code.value} />
                         </CodeBlockActions>
                       </CodeBlockHeader>
-                      <CodeBlockContent language="json">
-                        {step.config}
+                      <CodeBlockContent
+                        language="json"
+                        highlightLines={step.code.highlightLines}
+                      >
+                        {step.code.value}
                       </CodeBlockContent>
                     </CodeBlock>
                   ) : null}
@@ -389,29 +423,33 @@ export default function McpPage() {
                 <span className="shrink-0 font-mono text-[#6b7684]">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span>
-                  <strong className="font-medium text-[#eef2f7]">
-                    {entry.phase}
-                  </strong>
-                  <span className="text-[#b6c0cd]">
-                    {" "}
-                    - {renderInline(entry.detail)}
+                <div className="min-w-0 flex-1">
+                  <span>
+                    <strong className="font-medium text-[#eef2f7]">
+                      {entry.phase}
+                    </strong>
+                    <span className="text-[#b6c0cd]">
+                      {" "}
+                      - {renderInline(entry.detail)}
+                    </span>
                   </span>
-                </span>
+                  {entry.code ? (
+                    <CodeBlock className="mt-2">
+                      <CodeBlockHeader>
+                        <CodeBlockTitle>initialize request</CodeBlockTitle>
+                        <CodeBlockActions>
+                          <CodeBlockCopyButton value={entry.code} />
+                        </CodeBlockActions>
+                      </CodeBlockHeader>
+                      <CodeBlockContent language="json">
+                        {entry.code}
+                      </CodeBlockContent>
+                    </CodeBlock>
+                  ) : null}
+                </div>
               </li>
             ))}
           </ol>
-          <CodeBlock>
-            <CodeBlockHeader>
-              <CodeBlockTitle>initialize request</CodeBlockTitle>
-              <CodeBlockActions>
-                <CodeBlockCopyButton value={initializeExample} />
-              </CodeBlockActions>
-            </CodeBlockHeader>
-            <CodeBlockContent language="json">
-              {initializeExample}
-            </CodeBlockContent>
-          </CodeBlock>
           <p className="text-[#b6c0cd] text-sm">
             {renderInline(
               `The result repeats \`protocolVersion\`, adds the server's \`capabilities\` and \`serverInfo\`, and the client finishes with \`notifications/initialized\`. If the server answers with a version the client does not support, the client closes the connection instead of guessing.`,

@@ -203,17 +203,21 @@ function CodeBlockContent({
   lineNumbers = false,
   startLine = 1,
   language,
+  highlightLines,
   ...props
 }: React.ComponentProps<"pre"> & {
   wrap?: boolean;
   lineNumbers?: boolean;
   startLine?: number;
   language?: CodeBlockLanguage;
+  highlightLines?: number[];
 }) {
   const code = typeof children === "string" ? children : null;
   const lines = code === null ? null : code.replace(/\n$/, "").split("\n");
   const highlighted =
     code !== null && language === "json" ? highlightJson(code) : children;
+  const perLine =
+    lines !== null && (lineNumbers || highlightLines !== undefined);
 
   return (
     <pre
@@ -230,12 +234,20 @@ function CodeBlockContent({
       {...props}
     >
       <code data-slot="code-block-code">
-        {lineNumbers && lines
+        {perLine && lines
           ? lines.map((line, index) => {
               const lineNumber = startLine + index;
               return (
-                <CodeBlockLine key={lineNumber} number={lineNumber}>
-                  {line}
+                <CodeBlockLine
+                  key={lineNumber}
+                  number={lineNumbers ? lineNumber : undefined}
+                  variant={
+                    highlightLines?.includes(lineNumber)
+                      ? "highlighted"
+                      : "default"
+                  }
+                >
+                  {language === "json" ? highlightJson(line) : line}
                 </CodeBlockLine>
               );
             })
