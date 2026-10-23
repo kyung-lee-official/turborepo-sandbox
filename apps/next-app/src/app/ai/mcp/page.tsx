@@ -175,13 +175,13 @@ const callFlow: CallFlowStep[] = [
     text: `Claude Desktop sends that list and the developer's prompt to the model over HTTPS.`,
   },
   {
-    text: `The model answers over HTTPS with a tool call: \`github__get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop strips the \`github__\` qualifier and writes \`tools/call\` with \`get_issue\` into the GitHub MCP server's input; the call only reads, so there is no approval prompt.`,
+    text: `The model answers over HTTPS with a structured tool-use block, not prose: a name, an arguments object, and an id — \`github__get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop looks the name up in its list, strips the \`github__\` qualifier, and writes \`tools/call\` with \`get_issue\` into the GitHub MCP server's input; the call only reads, so there is no approval prompt.`,
   },
   {
     text: `The GitHub MCP server uses \`GITHUB_PERSONAL_ACCESS_TOKEN\`, calls \`GET /repos/shop/issues/412\` on the GitHub API over HTTPS, gets the ticket text (it names Sentry event \`b3f1...\`), and writes it to its output as the tool result.`,
   },
   {
-    text: `Claude Desktop reads that result and sends it to the model over HTTPS. The model answers with \`sentry__get_event\` and \`{ "eventId": "b3f1..." }\`. Claude Desktop strips the qualifier and writes \`tools/call\` with \`get_event\` into the Sentry MCP server's input; the Sentry MCP server calls \`GET /api/0/projects/shop/events/b3f1...\` over HTTPS with \`SENTRY_AUTH_TOKEN\` and writes the stack trace to its output, top frame \`checkout.ts:142\`.`,
+    text: `Claude Desktop reads that result and sends it back to the model over HTTPS with the same call id, so the model knows which request it answers. The model answers with \`sentry__get_event\` and \`{ "eventId": "b3f1..." }\`. Claude Desktop strips the qualifier and writes \`tools/call\` with \`get_event\` into the Sentry MCP server's input; the Sentry MCP server calls \`GET /api/0/projects/shop/events/b3f1...\` over HTTPS with \`SENTRY_AUTH_TOKEN\` and writes the stack trace to its output, top frame \`checkout.ts:142\`.`,
   },
   {
     text: `The model answers with \`filesystem__read_file\` and \`{ "path": "apps/api/src/orders/checkout.ts" }\`. Claude Desktop strips the qualifier and writes \`tools/call\` with \`read_file\` into the filesystem MCP server's input; that server reads the file from disk and writes lines 130-150 to its output.`,
