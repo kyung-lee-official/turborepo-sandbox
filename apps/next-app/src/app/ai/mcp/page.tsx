@@ -417,6 +417,11 @@ export default function McpPage() {
             four phases. The handshake is the same for every server; only the
             tools and data differ.
           </p>
+          <p className="text-[#b6c0cd] text-sm">
+            {renderInline(
+              `Every message is \`JSON-RPC 2.0\`. For a local server the client starts the process and exchanges one JSON message per line over its input and output. For a remote server it uses \`Streamable HTTP\`: one endpoint, a \`POST\` that answers with JSON or an event stream, and an \`Mcp-Session-Id\` header that identifies the session. Remote servers usually add OAuth or a bearer token; local ones get credentials from the \`env\` block.`,
+            )}
+          </p>
           <ol className="space-y-3">
             {lifecycle.map((entry, index) => (
               <li key={entry.phase} className="flex gap-3 text-sm">
