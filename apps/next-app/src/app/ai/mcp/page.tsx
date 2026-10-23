@@ -184,7 +184,7 @@ const steps = [
 
 export default function McpPage() {
   return (
-    <main className="mx-auto max-w-3xl space-y-8 p-8">
+    <main className="mx-auto w-full max-w-7xl space-y-8 px-6 py-8">
       <header className="space-y-2">
         <h1 className="font-bold text-2xl">MCP</h1>
         <p className="text-gray-600">
