@@ -127,13 +127,13 @@ const callFlow: CallFlowStep[] = [
     config: mcpConfigExample,
   },
   {
-    text: `The developer launches Claude Desktop. Claude Desktop starts the three programs named in the config and talks to each one by sending messages to it and reading its replies: \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`.`,
+    text: `The developer launches Claude Desktop. Claude Desktop starts the three MCP servers named in the config and keeps an open connection to each one: Claude Desktop writes \`JSON-RPC\` requests into the server's input, and the server writes \`JSON-RPC\` replies to its output. The three servers are started with \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`.`,
   },
   {
-    text: `To each program Claude Desktop sends \`initialize\` with \`protocolVersion\`, its \`capabilities\`, and \`clientInfo\`; the server answers with its own version, capabilities, and \`serverInfo\`; Claude Desktop then sends \`notifications/initialized\`.`,
+    text: `Into each MCP server's input Claude Desktop writes an \`initialize\` request with \`protocolVersion\`, its \`capabilities\`, and \`clientInfo\`. The server writes its reply to its output: its own version, capabilities, and \`serverInfo\`. Claude Desktop then writes \`notifications/initialized\` into the same input.`,
   },
   {
-    text: `Claude Desktop sends \`tools/list\` to each server. GitHub answers with \`get_issue\` and \`create_pull_request\`, Sentry with \`get_event\`, and the filesystem server with \`read_file\`; four tools in total.`,
+    text: `Claude Desktop writes \`tools/list\` into the GitHub MCP server's input. The GitHub MCP server answers on its output with \`get_issue\` and \`create_pull_request\`, including each tool's arguments. The same exchange runs with the Sentry MCP server (\`get_event\`) and the filesystem MCP server (\`read_file\`); four tools in total.`,
   },
   {
     text: `The developer opens a new chat in Claude Desktop and enters this prompt, word for word:`,
@@ -144,25 +144,25 @@ const callFlow: CallFlowStep[] = [
     text: `Claude Desktop sends that prompt plus the four tool definitions to the model over HTTPS.`,
   },
   {
-    text: `The model answers with a tool call: \`get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop sends \`tools/call\` to the GitHub server; the call only reads, so there is no approval prompt.`,
+    text: `The model answers over HTTPS with a tool call: \`get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop writes \`tools/call\` into the GitHub MCP server's input; the call only reads, so there is no approval prompt.`,
   },
   {
-    text: `The GitHub server calls \`GET /repos/shop/issues/412\` with \`GITHUB_PERSONAL_ACCESS_TOKEN\`, gets the ticket text (it names Sentry event \`b3f1...\`) and returns it as the tool result.`,
+    text: `The GitHub MCP server uses \`GITHUB_PERSONAL_ACCESS_TOKEN\`, calls \`GET /repos/shop/issues/412\` on the GitHub API over HTTPS, gets the ticket text (it names Sentry event \`b3f1...\`), and writes it to its output as the tool result.`,
   },
   {
-    text: `Claude Desktop appends that result and calls the model again. The model answers with \`get_event\` and \`{ "eventId": "b3f1..." }\`; Claude Desktop routes \`tools/call\` to the Sentry server, which calls \`GET /api/0/projects/shop/events/b3f1...\` with \`SENTRY_AUTH_TOKEN\` and returns the stack trace, top frame \`checkout.ts:142\`.`,
+    text: `Claude Desktop reads that result and sends it to the model over HTTPS. The model answers with \`get_event\` and \`{ "eventId": "b3f1..." }\`. Claude Desktop writes \`tools/call\` into the Sentry MCP server's input; the Sentry MCP server calls \`GET /api/0/projects/shop/events/b3f1...\` over HTTPS with \`SENTRY_AUTH_TOKEN\` and writes the stack trace to its output, top frame \`checkout.ts:142\`.`,
   },
   {
-    text: `The model answers with \`read_file\` and \`{ "path": "apps/api/src/orders/checkout.ts" }\`; Claude Desktop routes \`tools/call\` to the filesystem server, which reads the file and returns lines 130-150.`,
+    text: `The model answers with \`read_file\` and \`{ "path": "apps/api/src/orders/checkout.ts" }\`. Claude Desktop writes \`tools/call\` into the filesystem MCP server's input; that server reads the file from disk and writes lines 130-150 to its output.`,
   },
   {
     text: `The model proposes a fix and answers with \`create_pull_request\` and \`{ "head": "fix/checkout-412", "base": "main", "title": "Fix rounding in checkout", "body": "Closes #412." }\`. This call writes, so Claude Desktop shows an approval prompt naming the tool and its arguments; the developer clicks Allow.`,
   },
   {
-    text: `Claude Desktop sends \`tools/call\` to the GitHub server, which calls \`POST /repos/shop/pulls\` and returns the PR URL.`,
+    text: `Claude Desktop writes \`tools/call\` into the GitHub MCP server's input; the GitHub MCP server calls \`POST /repos/shop/pulls\` over HTTPS and writes the PR URL to its output.`,
   },
   {
-    text: `Claude Desktop appends the URL and calls the model a final time; the model writes the answer with the link. The developer quits Claude Desktop, which ends the three programs and closes the session.`,
+    text: `Claude Desktop reads the URL, sends it to the model one final time over HTTPS, and the model writes the answer with the link. The developer quits Claude Desktop, which closes each server's input and stops the three servers.`,
   },
 ];
 
@@ -178,7 +178,7 @@ const actors: Actor[] = [
   },
   {
     who: "Claude Desktop, Cursor, VS Code Copilot Chat",
-    does: `Reads the three servers from its config and starts each one as a separate program: \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`. It sends \`initialize\`, \`tools/list\`, and every \`tools/call\` to the program and reads the replies, then stops all three when the app quits. A server with a \`url\` instead of a \`command\` is reached over HTTP, so no program is started for it.`,
+    does: `Reads the config for the three servers and starts each one as a separate local process: \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`. It sends \`initialize\`, \`tools/list\`, and every \`tools/call\` to that server and reads the replies, then stops all three when the app quits. A server with a \`url\` instead of a \`command\` is reached over HTTP, so no process is started for it.`,
   },
   {
     who: "MCP server",
@@ -212,7 +212,7 @@ type LifecyclePhase = {
 const lifecycle: LifecyclePhase[] = [
   {
     phase: "Spawn",
-    detail: `When the config gives a \`command\`, the client starts that program and talks to it through its input and output. Only \`JSON-RPC\` messages may go to the output; logs go to the error output. When the config gives a \`url\`, the client connects over \`Streamable HTTP\` instead, and sends the \`Mcp-Session-Id\` from the \`initialize\` response with later requests.`,
+    detail: `When the config gives a \`command\`, the client starts that server and talks to it through its input and output. Only \`JSON-RPC\` messages may go to the output; logs go to the error output. When the config gives a \`url\`, the client connects over \`Streamable HTTP\` instead, and sends the \`Mcp-Session-Id\` from the \`initialize\` response with later requests.`,
   },
   {
     phase: "Initialize",
@@ -224,7 +224,7 @@ const lifecycle: LifecyclePhase[] = [
   },
   {
     phase: "Shut down",
-    detail: `\`stdio\` has no shutdown message: the client closes the program's input and ends it. \`Streamable HTTP\` ends the session with \`DELETE\` plus \`Mcp-Session-Id\`, or the server expires it; a request with an unknown id returns \`404\`, and the client must \`initialize\` again. A restart is just start and initialize once more.`,
+    detail: `\`stdio\` has no shutdown message: the client closes the server's input and ends it. \`Streamable HTTP\` ends the session with \`DELETE\` plus \`Mcp-Session-Id\`, or the server expires it; a request with an unknown id returns \`404\`, and the client must \`initialize\` again. A restart is just start and initialize once more.`,
   },
 ];
 
@@ -332,7 +332,7 @@ export default function McpPage() {
           <Mermaid chart={communicationChain} theme="dark" />
           <p className="text-[#b6c0cd] text-sm">
             {renderInline(
-              `Discovery runs once per session: the client sends \`tools/list\` to every server, and each server answers with the tools it exposes. On every turn the client hands the model those tool definitions with the prompt; the model names a tool and its arguments; the client routes \`tools/call\` only to the server that listed that tool, and that server makes the API call. Results travel back the same way, and tokens stay in the servers.`,
+              `Discovery runs once per session: the client writes \`tools/list\` to each server's input, and the server writes back the tools it exposes. The client and a server talk in \`JSON-RPC\` over that server's input and output; the client and the model talk over HTTPS. On every turn the client hands the model the tool definitions with the prompt; the model names a tool and its arguments; the client writes \`tools/call\` only to the server that listed that tool, and that server makes the API call. Results travel back the same way, and tokens stay in the servers.`,
             )}
           </p>
           <p className="text-[#b6c0cd] text-sm">
