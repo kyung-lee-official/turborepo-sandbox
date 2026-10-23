@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 import { cn } from "@/lib/utils";
 
-const themeVariables = {
+const lightThemeVariables = {
   background: "#ffffff",
   primaryColor: "#f8fafc",
   primaryBorderColor: "#cbd5e1",
@@ -20,7 +20,37 @@ const themeVariables = {
   fontFamily: "ui-sans-serif, system-ui, sans-serif",
 };
 
-function Mermaid({ chart, className }: { chart: string; className?: string }) {
+const darkThemeVariables = {
+  background: "#161a21",
+  primaryColor: "#1c212a",
+  primaryBorderColor: "#2b323d",
+  primaryTextColor: "#e6eaf0",
+  secondaryColor: "#1c212a",
+  secondaryBorderColor: "#2b323d",
+  secondaryTextColor: "#e6eaf0",
+  tertiaryColor: "#161a21",
+  tertiaryBorderColor: "#2b323d",
+  tertiaryTextColor: "#e6eaf0",
+  mainBkg: "#1c212a",
+  nodeBorder: "#2b323d",
+  clusterBkg: "#12161d",
+  clusterBorder: "#2b323d",
+  edgeLabelBackground: "#161a21",
+  lineColor: "#5f6b7c",
+  textColor: "#d5dae2",
+  fontSize: "13px",
+  fontFamily: "ui-sans-serif, system-ui, sans-serif",
+};
+
+function Mermaid({
+  chart,
+  theme = "light",
+  className,
+}: {
+  chart: string;
+  theme?: "light" | "dark";
+  className?: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const renderCount = useRef(0);
   const rawId = useId();
@@ -40,7 +70,8 @@ function Mermaid({ chart, className }: { chart: string; className?: string }) {
           startOnLoad: false,
           securityLevel: "strict",
           theme: "base",
-          themeVariables,
+          themeVariables:
+            theme === "dark" ? darkThemeVariables : lightThemeVariables,
           flowchart: { curve: "basis", htmlLabels: true, padding: 12 },
         });
 
@@ -54,7 +85,7 @@ function Mermaid({ chart, className }: { chart: string; className?: string }) {
     return () => {
       cancelled = true;
     };
-  }, [chart, rawId]);
+  }, [chart, rawId, theme]);
 
   return (
     <div
