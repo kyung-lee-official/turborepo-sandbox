@@ -225,6 +225,14 @@ export default function McpPage() {
             </li>
           ))}
         </ul>
+        <div className="space-y-2 border-gray-200 border-t pt-3 text-sm">
+          <p className="font-medium text-gray-900">Who provides the server</p>
+          <p className="text-gray-700">
+            {renderInline(
+              `Normally the vendor that owns the system, because it controls the auth, the rate limits, and the API changes. GitHub maintains \`github/github-mcp-server\`, shipped as the \`ghcr.io/github/github-mcp-server\` Docker image or the remote \`https://api.githubcopilot.com/mcp/\` endpoint, and Sentry maintains \`@sentry/mcp-server\`. When a vendor has not shipped one, a community server such as \`@modelcontextprotocol/server-github\` (used above) fills the gap. Internal systems usually get a small server written by their own team.`,
+            )}
+          </p>
+        </div>
       </section>
 
       <section className="space-y-3 rounded-lg bg-white/50 p-6">
