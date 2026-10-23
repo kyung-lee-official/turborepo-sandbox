@@ -43,13 +43,13 @@ const comparison = [
   },
   {
     without:
-      "Or Claude Desktop, Cursor, and VS Code Copilot Chat each ship their own GitHub client, their own Sentry client, and their own PostgreSQL client. Three apps times three systems is nine integrations, each written and maintained separately.",
-    with: "GitHub, Sentry, and PostgreSQL each expose one MCP server. Claude Desktop, Cursor, and VS Code Copilot Chat all use the same three servers, so each system is integrated once.",
+      "Or Claude Desktop, Cursor, and VS Code Copilot Chat each ship their own GitHub client, their own Sentry client, and their own file access. Three apps times three systems is nine integrations, each written and maintained separately.",
+    with: "GitHub, Sentry, and the filesystem each expose one MCP server. Claude Desktop, Cursor, and VS Code Copilot Chat all use the same three servers, so each system is integrated once.",
   },
   {
     without:
       "You paste the stack trace into the chat. That pasted copy never changes. If the ticket gets a new comment an hour later, or someone pushes a fix, the assistant cannot see it and keeps working from the old text.",
-    with: "Every tool call reads the ticket, the code, and the database at that moment, so a new comment or a pushed fix shows up on the next call.",
+    with: "Every tool call reads the ticket, the trace, and the file at that moment, so a new comment or a local edit shows up on the next call.",
   },
 ];
 
@@ -146,17 +146,17 @@ type CallFlowStep = {
 
 const callFlow: CallFlowStep[] = [
   {
-    text: `The developer adds three servers to Claude Desktop's \`claude_desktop_config.json\` on macOS. Nothing else is installed.`,
+    text: `The developer adds three servers to Claude Desktop's \`claude_desktop_config.json\` on macOS.`,
     code: { title: "claude_desktop_config.json", value: mcpConfigExample },
   },
   {
-    text: `The developer launches Claude Desktop. Claude Desktop starts the three MCP servers named in the config and keeps an open connection to each one: Claude Desktop writes \`JSON-RPC\` requests into the server's input, and the server writes \`JSON-RPC\` replies to its output. The three servers are started with \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`.`,
+    text: `The developer launches Claude Desktop. Claude Desktop starts the three MCP servers named in the config and keeps an open connection to each one: it writes \`JSON-RPC\` requests into the server's input, and the server writes \`JSON-RPC\` replies to its output. The three servers are started with \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`.`,
   },
   {
     text: `Into each MCP server's input Claude Desktop writes an \`initialize\` request with \`protocolVersion\`, its \`capabilities\`, and \`clientInfo\`. The server writes its reply to its output: its own version, capabilities, and \`serverInfo\`. Claude Desktop then writes \`notifications/initialized\` into the same input.`,
   },
   {
-    text: `Claude Desktop writes \`tools/list\` into the GitHub MCP server's input. The GitHub MCP server answers on its output with \`get_issue\` and \`create_pull_request\`, including each tool's arguments. The same exchange runs with the Sentry MCP server (\`get_event\`) and the filesystem MCP server (\`read_file\`); four tools in total.`,
+    text: `Claude Desktop writes \`tools/list\` into the GitHub MCP server's input. The GitHub MCP server answers on its output with \`get_issue\` and \`create_pull_request\`, including each tool's description and arguments. The same exchange runs with the Sentry MCP server (\`get_event\`) and the filesystem MCP server (\`read_file\`); four tools in total.`,
   },
   {
     text: `The developer opens a new chat in Claude Desktop and enters this prompt, word for word:`,
@@ -209,11 +209,11 @@ const actors: Actor[] = [
   },
   {
     who: "Claude Desktop, Cursor, VS Code Copilot Chat",
-    does: `Reads the config for the three servers and starts each one as a separate local process: \`docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem /Users/you/code/shop\`. It sends \`initialize\`, \`tools/list\`, and every \`tools/call\` to that server and reads the replies, then stops all three when the app quits. A server with a \`url\` instead of a \`command\` is reached over HTTP, so no process is started for it.`,
+    does: `Reads the config for the three servers and starts each one as a separate local process. It sends \`initialize\`, \`tools/list\`, and every \`tools/call\` to the matching server and reads the replies, then stops all three when the app quits. A server with a \`url\` instead of a \`command\` is reached over HTTP, so no process is started for it.`,
   },
   {
     who: "MCP server",
-    does: "One separate local process per system: the GitHub server, the Sentry server, the filesystem server. Each holds a single credential and calls a single API.",
+    does: "One server per system: the GitHub server, the Sentry server, the filesystem server. Each reaches one system with its own credential or path scope.",
   },
   {
     who: "Model",
@@ -244,11 +244,11 @@ type LifecyclePhase = {
 const lifecycle: LifecyclePhase[] = [
   {
     phase: "Spawn",
-    detail: `When the config gives a \`command\`, the client starts that server and talks to it through its input and output. Only \`JSON-RPC\` messages may go to the output; logs go to the error output. When the config gives a \`url\`, the client connects over \`Streamable HTTP\` instead, and sends the \`Mcp-Session-Id\` from the \`initialize\` response with later requests.`,
+    detail: `When the config gives a \`command\`, the client starts that server and talks to it through its input and output. Only \`JSON-RPC\` messages may go to the output; logs go to the error output. When the config gives a \`url\`, the client connects over \`Streamable HTTP\` instead.`,
   },
   {
     phase: "Initialize",
-    detail: `One \`initialize\` request, one result, one \`notifications/initialized\`. Both sides agree on a \`protocolVersion\` and exchange \`capabilities\`. Until the handshake completes, neither side sends requests other than \`ping\`.`,
+    detail: `One \`initialize\` request, one result, one \`notifications/initialized\`. Both sides agree on a \`protocolVersion\` and exchange \`capabilities\`; the result adds the server's \`serverInfo\`. If the client cannot accept the server's version, it closes the connection. Until the handshake completes, neither side sends requests other than \`ping\`.`,
     code: initializeExample,
   },
   {
@@ -258,25 +258,6 @@ const lifecycle: LifecyclePhase[] = [
   {
     phase: "Shut down",
     detail: `\`stdio\` has no shutdown message: the client closes the server's input and ends it. \`Streamable HTTP\` ends the session with \`DELETE\` plus \`Mcp-Session-Id\`, or the server expires it; a request with an unknown id returns \`404\`, and the client must \`initialize\` again. A restart is just start and initialize once more.`,
-  },
-];
-
-const steps = [
-  {
-    call: `\`get_issue(repo="shop", number=412)\``,
-    result: "The ticket text, including a Sentry event id.",
-  },
-  {
-    call: `\`get_event(eventId="b3f1...")\``,
-    result: "The stack trace. Top frame: checkout.ts line 142.",
-  },
-  {
-    call: `\`read_file(path="apps/api/src/orders/checkout.ts")\``,
-    result: "The failing code.",
-  },
-  {
-    call: "`create_pull_request(...)`",
-    result: "A PR, after the developer approves it.",
   },
 ];
 
@@ -297,10 +278,8 @@ export default function McpPage() {
           <h2 className="font-semibold text-[#e6ebf2] text-lg">The scenario</h2>
           <p className="text-[#b6c0cd] text-sm">
             A support ticket says checkout fails for a small share of orders.
-            The developer asks the assistant in their editor: &quot;Find out why
-            and open a PR.&quot; To answer, the assistant needs three things it
-            cannot know on its own: the ticket, the stack trace, and the code at
-            the failing line.
+            The developer opens Claude Desktop and asks: &quot;Find out why and
+            open a PR.&quot;
           </p>
         </section>
 
@@ -365,7 +344,7 @@ export default function McpPage() {
           <Mermaid chart={communicationChain} theme="dark" />
           <p className="text-[#b6c0cd] text-sm">
             {renderInline(
-              `Discovery runs once per session: the client writes \`tools/list\` to each server's input, and the server writes back the tools it exposes. Before the first turn the client merges them into one list and qualifies each name with its server (\`github__get_issue\`), so two servers may expose the same name without colliding. The client and a server talk in \`JSON-RPC\` over that server's input and output; the client and the model talk over HTTPS. On every turn the client hands the model that list with the prompt; the model names a tool and its arguments; the client strips the qualifier and writes \`tools/call\` only to the server that listed that tool, and that server makes the API call. Results travel back the same way, and tokens stay in the servers.`,
+              `The client discovers each server's tools once per session, then on every turn sends the prompt and the qualified tool list to the model. The model picks a tool; the client routes it to the server that owns it, and that server makes the API call.`,
             )}
           </p>
           <p className="text-[#b6c0cd] text-sm">
@@ -413,13 +392,12 @@ export default function McpPage() {
             Server lifecycle
           </h2>
           <p className="text-[#b6c0cd] text-sm">
-            A server process holds one session at a time, and that session has
-            four phases. The handshake is the same for every server; only the
-            tools and data differ.
+            A session runs in four phases. The handshake is the same for every
+            server; only the tools and data differ.
           </p>
           <p className="text-[#b6c0cd] text-sm">
             {renderInline(
-              `Every message is \`JSON-RPC 2.0\`. For a local server the client starts the process and exchanges one JSON message per line over its input and output. For a remote server it uses \`Streamable HTTP\`: one endpoint, a \`POST\` that answers with JSON or an event stream, and an \`Mcp-Session-Id\` header that identifies the session. Remote servers usually add OAuth or a bearer token; local ones get credentials from the \`env\` block.`,
+              `Every message is \`JSON-RPC 2.0\`, one JSON message per line on a local connection. A remote server uses \`Streamable HTTP\`: one endpoint, a \`POST\` that answers with JSON or an event stream, and an \`Mcp-Session-Id\` header for the session. Remote servers usually add OAuth or a bearer token; local ones get credentials from the \`env\` block.`,
             )}
           </p>
           <ol className="space-y-3">
@@ -455,43 +433,15 @@ export default function McpPage() {
               </li>
             ))}
           </ol>
-          <p className="text-[#b6c0cd] text-sm">
-            {renderInline(
-              `The result repeats \`protocolVersion\`, adds the server's \`capabilities\` and \`serverInfo\`, and the client finishes with \`notifications/initialized\`. If the server answers with a version the client does not support, the client closes the connection instead of guessing.`,
-            )}
-          </p>
-        </section>
-
-        <section className="space-y-3 rounded-lg border border-[#252c37] bg-[#161a21] p-6">
-          <h2 className="font-semibold text-[#e6ebf2] text-lg">
-            In four steps
-          </h2>
-          <p className="text-[#b6c0cd] text-sm">
-            Once the session is initialized, the model drives it through the
-            same open connection:
-          </p>
-          <ol className="space-y-3">
-            {steps.map((step, index) => (
-              <li key={step.call} className="flex gap-3 text-sm">
-                <span className="shrink-0 font-mono text-[#6b7684]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <span>
-                  {renderInline(step.call)}
-                  <span className="text-[#b6c0cd]"> - {step.result}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
         </section>
 
         <section className="space-y-2 rounded-lg border border-[#252c37] bg-[#161a21] p-6">
           <h2 className="font-semibold text-[#e6ebf2] text-lg">The point</h2>
           <p className="text-[#b6c0cd] text-sm">
             The model never holds a token and never touches GitHub directly.
-            Each server holds one credential and exposes one narrow capability.
-            Write that capability once and any of these apps can use it, with
-            the developer approving whatever changes state.
+            Each server reaches one system with its own access and exposes one
+            narrow capability. Write that capability once and any of these apps
+            can use it, with the developer approving whatever changes state.
           </p>
         </section>
       </div>
