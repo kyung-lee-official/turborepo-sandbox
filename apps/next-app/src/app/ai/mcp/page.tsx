@@ -76,12 +76,14 @@ const communicationChain = `flowchart TB
   dev["Developer"]
   client["MCP client<br/>Claude Desktop / Cursor / VS Code"]
   model["Model API"]
+
   subgraph machine["Your machine"]
     direction LR
-    gh["GitHub MCP server"]
-    sx["Sentry MCP server"]
-    fs["Filesystem MCP server"]
+    gh["GitHub server<br/>lists get_issue, create_pull_request"]
+    sx["Sentry server<br/>lists get_event"]
+    fs["Filesystem server<br/>lists read_file"]
   end
+
   subgraph remote["Remote services"]
     direction LR
     ghapi["GitHub API"]
@@ -90,14 +92,33 @@ const communicationChain = `flowchart TB
   disk["Repository on disk"]
 
   dev -->|"asks"| client
-  client -->|"messages, tool schemas"| model
-  model -.->|"tool call"| client
-  client -->|"JSON-RPC tools/call"| gh
-  client -->|"JSON-RPC tools/call"| sx
-  client -->|"JSON-RPC tools/call"| fs
-  gh -->|"HTTPS + GITHUB_TOKEN"| ghapi
-  sx -->|"HTTPS + SENTRY_TOKEN"| sxapi
+  client -->|"tools/list"| gh
+  client -->|"tools/list"| sx
+  client -->|"tools/list"| fs
+  client -->|"prompt + tool schemas"| model
+  model -.->|"tools/call name + args"| client
+  client -->|"tools/call get_issue"| gh
+  client -->|"tools/call get_event"| sx
+  client -->|"tools/call read_file"| fs
+  gh -->|"REST /issues/412"| ghapi
+  sx -->|"REST /events/{id}"| sxapi
   fs -->|"read / write"| disk`;
+
+const callFlow = [
+  `The developer saves three entries in Claude Desktop's \`claude_desktop_config.json\` on macOS: \`github\`, \`sentry\`, and \`filesystem\`, each with a \`command\`, its \`args\`, and a token. Nothing else is installed.`,
+  `The developer launches Claude Desktop. It starts one child process per entry and connects to each one's \`stdin\`/\`stdout\`: \`npx -y @modelcontextprotocol/server-github\`, \`npx -y @sentry/mcp-server\`, and \`npx -y @modelcontextprotocol/server-filesystem ./\`.`,
+  `For each process Claude Desktop sends \`initialize\` with \`protocolVersion\`, its \`capabilities\`, and \`clientInfo\`; the server answers with its own version, capabilities, and \`serverInfo\`; Claude Desktop then sends \`notifications/initialized\`.`,
+  `Claude Desktop sends \`tools/list\` to each server. GitHub answers with \`get_issue\` and \`create_pull_request\`, Sentry with \`get_event\`, and the filesystem server with \`read_file\` — four schemas in total.`,
+  `The developer opens a new chat in Claude Desktop and types exactly: "Checkout fails for a small share of orders. Find out why and open a PR."`,
+  `Claude Desktop sends that prompt plus the four tool schemas to the model over HTTPS.`,
+  `The model answers with a tool call: \`get_issue\` with \`{ "repo": "shop", "number": 412 }\`. Claude Desktop sends \`tools/call\` to the GitHub server; the call only reads, so there is no approval prompt.`,
+  `The GitHub server calls \`GET /repos/shop/issues/412\` with \`GITHUB_PERSONAL_ACCESS_TOKEN\`, gets the ticket text — it names Sentry event \`b3f1...\` — and returns it as the tool result.`,
+  `Claude Desktop appends that result and calls the model again. The model answers with \`get_event\` and \`{ "eventId": "b3f1..." }\`; Claude Desktop routes \`tools/call\` to the Sentry server, which calls \`GET /api/0/projects/shop/events/b3f1...\` with \`SENTRY_AUTH_TOKEN\` and returns the stack trace, top frame \`checkout.ts:142\`.`,
+  `The model answers with \`read_file\` and \`{ "path": "apps/api/src/orders/checkout.ts" }\`; Claude Desktop routes \`tools/call\` to the filesystem server, which reads the file and returns lines 130-150.`,
+  `The model proposes a fix and answers with \`create_pull_request\` and \`{ "head": "fix/checkout-412", "base": "main", "title": "Fix rounding in checkout", "body": "Closes #412." }\`. This call writes, so Claude Desktop shows an approval prompt naming the tool and its arguments; the developer clicks Allow.`,
+  `Claude Desktop sends \`tools/call\` to the GitHub server, which calls \`POST /repos/shop/pulls\` and returns the PR URL.`,
+  `Claude Desktop appends the URL and calls the model a final time; the model writes the answer with the link. The developer quits Claude Desktop, which closes each server's \`stdin\`, terminates the three processes, and the session ends.`,
+];
 
 type Actor = {
   who: string;
@@ -108,7 +129,7 @@ type Actor = {
 const actors: Actor[] = [
   {
     who: "Developer",
-    does: `Adds three entries to the MCP config file of Claude Desktop, Cursor, or VS Code (for example \`.mcp.json\`), each with a \`command\`, its \`args\`, and a token: \`github\`, \`sentry\`, \`filesystem\`. Then asks the question and clicks Allow when the assistant wants to open the PR.`,
+    does: `Adds three entries to the client's MCP config — \`claude_desktop_config.json\` for Claude Desktop, \`.cursor/mcp.json\` for Cursor, or \`.vscode/mcp.json\` for VS Code — each with a \`command\`, its \`args\`, and a token: \`github\`, \`sentry\`, \`filesystem\`. Then asks the question and clicks Allow when the assistant wants to open the PR.`,
     config: mcpConfigExample,
   },
   {
@@ -240,7 +261,7 @@ export default function McpPage() {
               {entry.config ? (
                 <CodeBlock className="mt-2">
                   <CodeBlockHeader>
-                    <CodeBlockTitle>.mcp.json</CodeBlockTitle>
+                    <CodeBlockTitle>claude_desktop_config.json</CodeBlockTitle>
                     <CodeBlockActions>
                       <CodeBlockCopyButton value={entry.config} />
                     </CodeBlockActions>
@@ -268,9 +289,22 @@ export default function McpPage() {
         <Mermaid chart={communicationChain} />
         <p className="text-gray-700 text-sm">
           {renderInline(
-            `Solid arrows are requests; the dashed arrow is the model's reply. Every result returns along the same path, so tool output reaches the model on the next turn. No credential crosses into the model: each server holds its own token and passes only the data.`,
+            `Discovery runs once per session: the client sends \`tools/list\` to every server, and each server answers with the tools it exposes. On every turn the client hands the model those schemas with the prompt; the model names a tool and its arguments; the client routes \`tools/call\` only to the server that listed that tool, and that server makes the API call. Results travel back the same way, and tokens stay in the servers.`,
           )}
         </p>
+        <p className="text-gray-700 text-sm">
+          One concrete run in Claude Desktop, from config to shutdown:
+        </p>
+        <ol className="space-y-2 text-sm">
+          {callFlow.map((step, index) => (
+            <li key={step} className="flex gap-3">
+              <span className="shrink-0 font-mono text-gray-400">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="text-gray-700">{renderInline(step)}</span>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="space-y-3 rounded-lg bg-white/50 p-6">
