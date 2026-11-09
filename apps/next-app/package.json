@@ -72,6 +72,7 @@
     "openapi-typescript": "^7.10.1",
     "pako": "^2.1.0",
     "proxy-agent": "^6.5.0",
+    "qr-scanner": "^1.4.2",
     "query-string": "^9.3.1",
     "radash": "^12.1.1",
     "radix-ui": "^1.6.0",

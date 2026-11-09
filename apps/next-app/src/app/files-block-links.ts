@@ -30,6 +30,12 @@ export const filesBlockLinks = [
       "Pick an image, pan and zoom inside a circular crop area, then save locally or upload the cropped result to Tencent COS.",
   },
   {
+    link: "/files/qr-scanner",
+    text: "qr scanner",
+    description:
+      "Decode a QR code from an image picked from disk with qr-scanner, entirely in the browser, then copy the value or open it as a link.",
+  },
+  {
     link: "/files/file-transmit/upload-files-multi",
     text: "upload files (one by one in a loop)",
     description:
