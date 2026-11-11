@@ -77,3 +77,46 @@ assessment. On the mainland side, PIPL applies to the processing in mainland
 China. There is no Article 38 export because the data is entering the mainland,
 not leaving it. If the Hong Kong data includes mainland individuals, PIPL's
 extraterritorial scope may apply to the Hong Kong processing.
+
+## GDPR (Regulation (EU) 2016/679)
+
+> **GDPR Article 3 (English).** This Regulation applies to the processing of personal data in the context of the activities of an establishment of a controller or a processor in the Union, regardless of whether the processing takes place in the Union or not.
+>
+> This Regulation applies to the processing of personal data of data subjects who are in the Union by a controller or processor not established in the Union, where the processing activities are related to:
+> (a) the offering of goods or services, irrespective of whether a payment of the data subject is required, to such data subjects in the Union; or
+> (b) the monitoring of their behaviour as far as their behaviour takes place within the Union.
+>
+> **GDPR Article 4(11) (English).** 'consent' of the data subject means any freely given, specific, informed and unambiguous indication of the data subject's wishes by which he or she, by a statement or by a clear affirmative action, signifies agreement to the processing of personal data relating to him or her.
+>
+> **GDPR Article 6(1) (English).** Processing shall be lawful only if and to the extent that at least one of the following applies:
+> (a) the data subject has given consent to the processing of his or her personal data for one or more specific purposes;
+> (b) processing is necessary for the performance of a contract to which the data subject is party or in order to take steps at the request of the data subject prior to entering into a contract;
+> (c) processing is necessary for compliance with a legal obligation to which the controller is subject;
+> (d) processing is necessary in order to protect the vital interests of the data subject or of another natural person;
+> (e) processing is necessary for the performance of a task carried out in the public interest or in the exercise of official authority vested in the controller;
+> (f) processing is necessary for the purposes of the legitimate interests pursued by the controller or by a third party, except where such interests are overridden by the interests or fundamental rights and freedoms of the data subject which require protection of personal data, in particular where the data subject is a child.
+>
+> **GDPR Article 7(1) (English).** Where processing is based on consent, the controller shall be able to demonstrate that the data subject has consented to processing of his or her personal data.
+>
+> **GDPR Article 32(1) (English).** Taking into account the state of the art, the costs of implementation and the nature, scope, context and purposes of processing as well as the risk of varying likelihood and severity for the rights and freedoms of natural persons, the controller and the processor shall implement appropriate technical and organisational measures to ensure a level of security appropriate to the risk, including inter alia as appropriate:
+> (a) the pseudonymisation and encryption of personal data;
+> (b) the ability to ensure the ongoing confidentiality, integrity, availability and resilience of processing systems and services;
+> (c) the ability to restore the availability and access to personal data in a timely manner in the event of a physical or technical incident;
+> (d) a process for regularly testing, assessing and evaluating the effectiveness of technical and organisational measures for ensuring the security of the processing.
+>
+> **GDPR Article 35(1) (English).** Where a type of processing in particular using new technologies, and taking into account the nature, scope, context and purposes of the processing, is likely to result in a high risk to the rights and freedoms of natural persons, the controller shall, prior to the processing, carry out an assessment of the impact of the envisaged processing operations on the protection of personal data. A single assessment may address a set of similar processing operations that present similar high risks.
+>
+> **GDPR Article 44 (English).** Any transfer of personal data which are undergoing processing or are intended for processing after transfer to a third country or to an international organisation shall take place only if, subject to the other provisions of this Regulation, the conditions laid down in this Chapter are complied with by the controller and processor, including for onward transfers of personal data from the third country or an international organisation to another third country or to another international organisation. All provisions in this Chapter shall be applied in order to ensure that the level of protection of natural persons guaranteed by this Regulation is not undermined.
+>
+> **GDPR Article 45(1) (English).** A transfer of personal data to a third country or an international organisation may take place where the Commission has decided that the third country, a territory or one or more specified sectors within that third country, or the international organisation in question ensures an adequate level of protection. Such a transfer shall not require any specific authorisation.
+>
+> **GDPR Article 46(1) (English).** In the absence of a decision pursuant to Article 45(3), a controller or processor may transfer personal data to a third country or an international organisation only if the controller or processor has provided appropriate safeguards, and on condition that enforceable data subject rights and effective legal remedies for data subjects are available.
+>
+> **GDPR Article 46(2) (English).** Appropriate safeguards referred to in paragraph 1 may be provided for, without requiring any specific authorisation from a supervisory authority, by:
+> (a) a legally binding and enforceable instrument between public authorities or bodies;
+> (b) binding corporate rules in accordance with Article 47;
+> (c) standard data protection clauses adopted by the Commission in accordance with the examination procedure referred to in Article 93(2);
+> (d) standard data protection clauses adopted by a supervisory authority and approved by the Commission pursuant to the examination procedure referred to in Article 93(2).
+>
+> **GDPR Article 49(1) (English).** In the absence of an adequacy decision pursuant to Article 45(3), or of appropriate safeguards pursuant to Article 46, including binding corporate rules, a transfer or a set of transfers of personal data to a third country or an international organisation shall take place only on one of the following conditions:
+> (a) the data subject has explicitly consented to the proposed transfer, after having been informed of the possible risks of such transfers for the data subject due to the absence of an adequacy decision and appropriate safeguards;
