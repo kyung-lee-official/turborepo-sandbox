@@ -120,3 +120,26 @@ extraterritorial scope may apply to the Hong Kong processing.
 >
 > **GDPR Article 49(1) (English).** In the absence of an adequacy decision pursuant to Article 45(3), or of appropriate safeguards pursuant to Article 46, including binding corporate rules, a transfer or a set of transfers of personal data to a third country or an international organisation shall take place only on one of the following conditions:
 > (a) the data subject has explicitly consented to the proposed transfer, after having been informed of the possible risks of such transfers for the data subject due to the absence of an adequacy decision and appropriate safeguards;
+
+## CCPA/CPRA (California)
+
+> **CCPA/CPRA § 1798.140(d)(1) (English).** (1) 'Business' means:
+> (A) A sole proprietorship, partnership, limited liability company, corporation, association, or other legal entity that is organized or operated for the profit or financial benefit of its shareholders or other owners, that collects consumers' personal information, or on the behalf of which such information is collected and that alone, or jointly with others, determines the purposes and means of the processing of consumers' personal information, that does business in the State of California, and that satisfies one or more of the following thresholds:
+> (i) As of January 1 of the calendar year, had annual gross revenues in excess of twenty-five million dollars ($25,000,000) in the preceding calendar year, as adjusted pursuant to paragraph (5) of subdivision (a) of Section 1798.185.
+> (ii) Alone or in combination, annually buys, sells, or shares the personal information of 100,000 or more consumers or households.
+> (iii) Derives 50 percent or more of its annual revenues from selling or sharing consumers' personal information.
+>
+> **CCPA/CPRA § 1798.100(a) (English).** A business shall, before or at the point of collection, inform consumers as to the categories of personal information to be collected and the purposes for which the categories of personal information shall be used. A business shall not collect additional categories of personal information or use personal information collected for additional purposes without providing the consumer with notice consistent with this section.
+>
+> **CCPA/CPRA § 1798.100(c) (English).** A business' collection, use, retention, and sharing of a consumer's personal information shall be reasonably necessary and proportionate to achieve the purposes for which the personal information was collected or processed, or for another disclosed purpose that is compatible with the context in which the personal information was collected, and not further processed in a manner that is incompatible with those purposes.
+>
+> **CCPA/CPRA § 1798.120(a) (English).** A consumer shall have the right, at any time, to direct a business that sells or shares personal information about the consumer to third parties not to sell or share the consumer's personal information. This right may be referred to as the right to opt-out of sale or sharing.
+>
+> **CCPA/CPRA § 1798.121(a) (English).** A consumer shall have the right to limit the use and disclosure of their sensitive personal information to that which is necessary to perform the services or provide the goods reasonably expected by an average consumer who requests those goods or services.
+>
+> **CCPA/CPRA § 1798.150(a)(1) (English).** Any consumer whose nonencrypted and nonredacted personal information, as defined in subparagraph (A) of paragraph (1) of subdivision (d) of Section 1798.81.5, is subject to an unauthorized access and exfiltration, theft, or disclosure as a result of the business's violation of the duty to implement and maintain reasonable security procedures and practices appropriate to the nature of the information to protect the personal information may institute a civil action for any of the following damages:
+> (A) Recover damages in an amount not less than one hundred dollars ($100) and not greater than seven hundred and fifty ($750) per consumer per incident or actual damages, whichever is greater.
+> (B) Injunctive or declaratory relief.
+> (C) Any other relief the court deems proper.
+>
+> **CCPA/CPRA § 1798.155(b) (English).** Any business, service provider, contractor, or other person that violates this title shall be liable for an administrative fine of not more than two thousand five hundred dollars ($2,500) for each violation, or seven thousand five hundred dollars ($7,500) for each intentional violation and each violation involving the personal information of consumers who are less than 16 years of age, as adjusted pursuant to paragraph (5) of subdivision (a) of Section 1798.185, in an administrative enforcement action brought by the California Privacy Protection Agency.
