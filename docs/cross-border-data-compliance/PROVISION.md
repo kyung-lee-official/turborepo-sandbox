@@ -63,6 +63,8 @@ Quoted provisions for [DATA_COMPLIANCE.md](./DATA_COMPLIANCE.md).
 
 ## Exemption clarifications
 
+### Mainland China
+
 **2024 cross-border provisions.** The 2024 cross-border provisions generally
 exempt transfers of fewer than 100,000 individuals' non-sensitive personal
 information, cumulatively since January 1 of the current year, from the Article
@@ -70,13 +72,17 @@ information, cumulatively since January 1 of the current year, from the Article
 consent. The 2024 provisions also exempt certain contract-necessity,
 HR-management, and free-trade-zone scenarios.
 
+**No Article 38 export into the mainland.** There is no Article 38 export because
+the data is entering the mainland, not leaving it. PIPL applies to the processing
+in mainland China. If the Hong Kong data includes mainland individuals, PIPL's
+extraterritorial scope may apply to the Hong Kong processing.
+
+### Hong Kong
+
 **PDPO section 33.** Section 33 is not in force, so Hong Kong has no statutory
 cross-border transfer prohibition. DPP1, DPP3, and DPP4 still apply, and the
 PCPD expects due diligence, contractual safeguards, and a transfer impact
-assessment. On the mainland side, PIPL applies to the processing in mainland
-China. There is no Article 38 export because the data is entering the mainland,
-not leaving it. If the Hong Kong data includes mainland individuals, PIPL's
-extraterritorial scope may apply to the Hong Kong processing.
+assessment.
 
 ## GDPR (Regulation (EU) 2016/679)
 
@@ -207,3 +213,84 @@ extraterritorial scope may apply to the Hong Kong processing.
 > **APP 13.1 (English).** An APP entity must take such steps as are reasonable in the circumstances to ensure that the personal information it holds is accurate, up-to-date, complete, relevant and not misleading.
 >
 > **APP 13.2 (English).** If an APP entity holds personal information about an individual and the individual requests correction, the entity must take such steps as are reasonable in the circumstances to correct the information if the entity is satisfied that it is inaccurate, out-of-date, incomplete, irrelevant or misleading.
+
+## PIPA (South Korea)
+
+> **PIPA Article 3 (original Korean).** ① 개인정보처리자는 개인정보의 처리 목적을 명확하게 하여야 하고 그 목적에 필요한 범위에서 최소한의 개인정보만을 적법하고 정당하게 수집하여야 한다.
+>
+> ② 개인정보처리자는 개인정보의 처리 목적에 필요한 범위에서 적합하게 개인정보를 처리하여야 하며, 그 목적 외의 용도로 활용하여서는 아니 된다.
+>
+> ⑤ 개인정보처리자는 제30조에 따른 개인정보 처리방침 등 개인정보의 처리에 관한 사항을 공개하여야 하며, 열람청구권 등 정보주체의 권리를 보장하여야 한다.
+>
+> **PIPA Article 15(1) (original Korean).** ① 개인정보처리자는 다음 각 호의 어느 하나에 해당하는 경우에는 개인정보를 수집할 수 있으며 그 수집 목적의 범위에서 이용할 수 있다.
+> 1. 정보주체의 동의를 받은 경우
+> 2. 법률에 특별한 규정이 있거나 법령상 의무를 준수하기 위하여 불가피한 경우
+> 3. 공공기관이 법령 등에서 정하는 소관 업무의 수행을 위하여 불가피한 경우
+> 4. 정보주체와 체결한 계약을 이행하거나 계약을 체결하는 과정에서 정보주체의 요청에 따른 조치를 이행하기 위하여 필요한 경우
+> 5. 명백히 정보주체 또는 제3자의 급박한 생명, 신체, 재산의 이익을 위하여 필요하다고 인정되는 경우
+> 6. 개인정보처리자의 정당한 이익을 달성하기 위하여 필요한 경우로서 명백하게 정보주체의 권리보다 우선하는 경우. 이 경우 개인정보처리자의 정당한 이익과 상당한 관련이 있고 합리적인 범위를 초과하지 아니하는 경우에 한한다.
+> 7. 공중위생 등 공공의 안전과 안녕을 위하여 긴급히 필요한 경우
+>
+> **PIPA Article 15(2) (original Korean).** ② 개인정보처리자는 제1항제1호에 따른 동의를 받을 때에는 다음 각 호의 사항을 정보주체에게 알려야 한다. 다음 각 호의 어느 하나의 사항을 변경하는 경우에도 이를 알리고 동의를 받아야 한다.
+> 1. 개인정보의 수집ㆍ이용 목적
+> 2. 수집하려는 개인정보의 항목
+> 3. 개인정보의 보유 및 이용 기간
+> 4. 동의를 거부할 권리가 있다는 사실 및 동의 거부에 따른 불이익이 있는 경우에는 그 불이익의 내용
+>
+> **PIPA Article 17 (original Korean).** ① 개인정보처리자는 다음 각 호의 어느 하나에 해당되는 경우에는 정보주체의 개인정보를 제3자에게 제공(공유를 포함한다. 이하 같다)할 수 있다.
+> 1. 정보주체의 동의를 받은 경우
+> 2. 제15조제1항제2호, 제3호 및 제5호부터 제7호까지에 따라 개인정보를 수집한 목적 범위에서 개인정보를 제공하는 경우
+>
+> ② 개인정보처리자는 제1항제1호에 따른 동의를 받을 때에는 다음 각 호의 사항을 정보주체에게 알려야 한다. 다음 각 호의 어느 하나의 사항을 변경하는 경우에도 이를 알리고 동의를 받아야 한다.
+> 1. 개인정보를 제공받는 자
+> 2. 개인정보를 제공받는 자의 개인정보 이용 목적
+> 3. 제공하는 개인정보의 항목
+> 4. 개인정보를 제공받는 자의 개인정보 보유 및 이용 기간
+> 5. 동의를 거부할 권리가 있다는 사실 및 동의 거부에 따른 불이익이 있는 경우에는 그 불이익의 내용
+>
+> **PIPA Article 22(1) (original Korean).** ① 개인정보처리자는 이 법에 따른 개인정보의 처리에 대하여 정보주체(제22조의2제1항에 따른 법정대리인을 포함한다. 이하 이 조에서 같다)의 동의를 받을 때에는 각각의 동의 사항을 구분하여 정보주체가 이를 명확하게 인지할 수 있도록 알리고 동의를 받아야 한다. 이 경우 다음 각 호의 경우에는 동의 사항을 구분하여 각각 동의를 받아야 한다.
+> 1. 제15조제1항제1호에 따라 동의를 받는 경우
+> 2. 제17조제1항제1호에 따라 동의를 받는 경우
+> 3. 제18조제2항제1호에 따라 동의를 받는 경우
+> 4. 제19조제1호에 따라 동의를 받는 경우
+> 5. 제23조제1항제1호에 따라 동의를 받는 경우
+> 6. 제24조제1항제1호에 따라 동의를 받는 경우
+> 7. 재화나 서비스를 홍보하거나 판매를 권유하기 위하여 개인정보의 처리에 대한 동의를 받으려는 경우
+> 8. 그 밖에 정보주체를 보호하기 위하여 동의 사항을 구분하여 동의를 받아야 할 필요가 있는 경우로서 대통령령으로 정하는 경우
+>
+> **PIPA Article 23(1) (original Korean).** ① 개인정보처리자는 사상ㆍ신념, 노동조합ㆍ정당의 가입ㆍ탈퇴, 정치적 견해, 건강, 성생활 등에 관한 정보, 그 밖에 정보주체의 사생활을 현저히 침해할 우려가 있는 개인정보로서 대통령령으로 정하는 정보(이하 “민감정보”라 한다)를 처리하여서는 아니 된다. 다만, 다음 각 호의 어느 하나에 해당하는 경우에는 그러하지 아니하다.
+> 1. 정보주체에게 제15조제2항 각 호 또는 제17조제2항 각 호의 사항을 알리고 다른 개인정보의 처리에 대한 동의와 별도로 동의를 받은 경우
+> 2. 법령에서 민감정보의 처리를 요구하거나 허용하는 경우
+>
+> **PIPA Article 28-8(1) (original Korean).** ① 개인정보처리자는 개인정보를 국외로 제공(조회되는 경우를 포함한다)ㆍ처리위탁ㆍ보관(이하 이 절에서 “이전”이라 한다)하여서는 아니 된다. 다만, 다음 각 호의 어느 하나에 해당하는 경우에는 개인정보를 국외로 이전할 수 있다.
+> 1. 정보주체로부터 국외 이전에 관한 별도의 동의를 받은 경우
+> 2. 법률, 대한민국을 당사자로 하는 조약 또는 그 밖의 국제협정에 개인정보의 국외 이전에 관한 특별한 규정이 있는 경우
+> 3. 정보주체와의 계약의 체결 및 이행을 위하여 개인정보의 처리위탁ㆍ보관이 필요한 경우로서 다음 각 목의 어느 하나에 해당하는 경우
+> 가. 제2항 각 호의 사항을 제30조에 따른 개인정보 처리방침에 공개한 경우
+> 나. 전자우편 등 대통령령으로 정하는 방법에 따라 제2항 각 호의 사항을 정보주체에게 알린 경우
+> 4. 개인정보를 이전받는 자가 제32조의2에 따른 개인정보 보호 인증 등 보호위원회가 정하여 고시하는 인증을 받은 경우로서 다음 각 목의 조치를 모두 한 경우
+> 가. 개인정보 보호에 필요한 안전조치 및 정보주체 권리보장에 필요한 조치
+> 나. 인증받은 사항을 개인정보가 이전되는 국가에서 이행하기 위하여 필요한 조치
+> 5. 개인정보가 이전되는 국가 또는 국제기구의 개인정보 보호체계, 정보주체 권리보장 범위, 피해구제 절차 등이 이 법에 따른 개인정보 보호 수준과 실질적으로 동등한 수준을 갖추었다고 보호위원회가 인정하는 경우
+>
+> **PIPA Article 28-8(2) (original Korean).** ② 개인정보처리자는 제1항제1호에 따른 동의를 받을 때에는 미리 다음 각 호의 사항을 정보주체에게 알려야 한다.
+> 1. 이전되는 개인정보 항목
+> 2. 개인정보가 이전되는 국가, 시기 및 방법
+> 3. 개인정보를 이전받는 자의 성명(법인인 경우에는 그 명칭과 연락처를 말한다)
+> 4. 개인정보를 이전받는 자의 개인정보 이용목적 및 보유ㆍ이용 기간
+> 5. 개인정보의 이전을 거부하는 방법, 절차 및 거부의 효과
+>
+> **PIPA Article 29 (original Korean).** 개인정보처리자는 개인정보가 분실ㆍ도난ㆍ유출ㆍ위조ㆍ변조 또는 훼손되지 아니하도록 내부 관리계획 수립, 접속기록 보관 등 대통령령으로 정하는 바에 따라 안전성 확보에 필요한 기술적ㆍ관리적 및 물리적 조치를 하여야 한다.
+>
+> **PIPA Article 33(1) (original Korean).** ① 공공기관의 장은 대통령령으로 정하는 기준에 해당하는 개인정보파일의 운용으로 인하여 정보주체의 개인정보 침해가 우려되는 경우에는 그 위험요인의 분석과 개선 사항 도출을 위한 평가(이하 “영향평가”라 한다)를 하고 그 결과를 보호위원회에 제출하여야 한다.
+>
+> **PIPA Article 33(11) (original Korean).** ⑪ 공공기관 외의 개인정보처리자는 개인정보파일 운용으로 인하여 정보주체의 개인정보 침해가 우려되는 경우에는 영향평가를 하기 위하여 적극 노력하여야 한다.
+>
+> **PIPA Article 34(1) (original Korean).** ① 개인정보처리자는 개인정보가 분실ㆍ도난ㆍ유출(이하 이 조에서 “유출등”이라 한다)되었음을 알게 되었을 때에는 지체 없이 해당 정보주체에게 다음 각 호의 사항을 알려야 한다. 다만, 정보주체의 연락처를 알 수 없는 경우 등 정당한 사유가 있는 경우에는 대통령령으로 정하는 바에 따라 통지를 갈음하는 조치를 취할 수 있다.
+> 1. 유출등이 된 개인정보의 항목
+> 2. 유출등이 된 시점과 그 경위
+> 3. 유출등으로 인하여 발생할 수 있는 피해를 최소화하기 위하여 정보주체가 할 수 있는 방법 등에 관한 정보
+> 4. 개인정보처리자의 대응조치 및 피해 구제절차
+> 5. 정보주체에게 피해가 발생한 경우 신고 등을 접수할 수 있는 담당부서 및 연락처
+>
+> **PIPA Article 34(3) (original Korean).** ③ 개인정보처리자는 개인정보의 유출등이 있음을 알게 되었을 때에는 개인정보의 유형, 유출등의 경로 및 규모 등을 고려하여 대통령령으로 정하는 바에 따라 제1항 각 호의 사항을 지체 없이 보호위원회 또는 대통령령으로 정하는 전문기관에 신고하여야 한다. 이 경우 보호위원회 또는 대통령령으로 정하는 전문기관은 피해 확산방지, 피해 복구 등을 위한 기술을 지원할 수 있다.
