@@ -121,6 +121,15 @@ assessment.
 > **GDPR Article 49(1) (English).** In the absence of an adequacy decision pursuant to Article 45(3), or of appropriate safeguards pursuant to Article 46, including binding corporate rules, a transfer or a set of transfers of personal data to a third country or an international organisation shall take place only on one of the following conditions:
 > (a) the data subject has explicitly consented to the proposed transfer, after having been informed of the possible risks of such transfers for the data subject due to the absence of an adequacy decision and appropriate safeguards;
 
+**Exemptions.** There is no small-volume exemption. Carve-outs are material scope
+in Article 2(2) (purely personal or household activity, law enforcement, national
+security), Article 9(2) for special categories, Article 30(5) records relief for
+organisations with fewer than 250 employees (unless the processing is regular,
+risky, or covers special categories), Article 35(3)-(4) and Article 36 for impact
+assessments, and the Article 49(1) transfer derogations: explicit consent,
+contract necessity, important public interest, legal claims, vital interests,
+public registers, and a narrow compelling-legitimate-interest route.
+
 ## CCPA/CPRA (California)
 
 > **CCPA/CPRA § 1798.140(d)(1) (English).** (1) 'Business' means:
@@ -143,6 +152,13 @@ assessment.
 > (C) Any other relief the court deems proper.
 >
 > **CCPA/CPRA § 1798.155(b) (English).** Any business, service provider, contractor, or other person that violates this title shall be liable for an administrative fine of not more than two thousand five hundred dollars ($2,500) for each violation, or seven thousand five hundred dollars ($7,500) for each intentional violation and each violation involving the personal information of consumers who are less than 16 years of age, as adjusted pursuant to paragraph (5) of subdivision (a) of Section 1798.185, in an administrative enforcement action brought by the California Privacy Protection Agency.
+
+**Exemptions.** The business thresholds in § 1798.140(d)(1) exclude entities below
+$25 million revenue, under 100,000 consumers or households, and under 50 percent
+revenue from selling or sharing. Section 1798.145 exempts data covered by HIPAA,
+GLBA, FERPA, FCRA, the Driver's Privacy Protection Act, clinical trials, and
+similar regimes; deidentified and aggregate data are outside. The employee and
+business-to-business exemptions ended on January 1, 2023.
 
 ## Privacy Act 1988 (Cth) (APPs)
 
@@ -207,6 +223,14 @@ assessment.
 > **APP 13.1 (English).** An APP entity must take such steps as are reasonable in the circumstances to ensure that the personal information it holds is accurate, up-to-date, complete, relevant and not misleading.
 >
 > **APP 13.2 (English).** If an APP entity holds personal information about an individual and the individual requests correction, the entity must take such steps as are reasonable in the circumstances to correct the information if the entity is satisfied that it is inaccurate, out-of-date, incomplete, irrelevant or misleading.
+
+**Exemptions.** The small-business exemption covers organisations with annual
+turnover of AUD 3 million or less, but not health service providers, businesses
+trading in personal information, Commonwealth contractors, or credit reporting
+bodies (s 6D). The employee-records exemption covers acts and practices directly
+related to current or former employment (s 7B). Political parties and journalism
+have separate carve-outs. APP 8 itself allows the transfer exceptions quoted
+above.
 
 ## PIPA (South Korea)
 
@@ -288,3 +312,11 @@ assessment.
 > 5. 정보주체에게 피해가 발생한 경우 신고 등을 접수할 수 있는 담당부서 및 연락처
 >
 > **PIPA Article 34(3) (original Korean).** ③ 개인정보처리자는 개인정보의 유출등이 있음을 알게 되었을 때에는 개인정보의 유형, 유출등의 경로 및 규모 등을 고려하여 대통령령으로 정하는 바에 따라 제1항 각 호의 사항을 지체 없이 보호위원회 또는 대통령령으로 정하는 전문기관에 신고하여야 한다. 이 경우 보호위원회 또는 대통령령으로 정하는 전문기관은 피해 확산방지, 피해 복구 등을 위한 기술을 지원할 수 있다.
+
+**Exemptions.** There is no general volume exemption. Article 15(1) 2 through 7
+allow collection and use without consent (statute, public institution, contract,
+imminent danger, legitimate interest, public safety). Article 28-8(1) 2 through 5
+allow transfers without consent (statute or treaty, contract necessity with
+disclosure, certification, adequacy recognition). Article 28-7 disapplies certain
+provisions to pseudonymized information, and anonymized information falls outside
+the Act.
