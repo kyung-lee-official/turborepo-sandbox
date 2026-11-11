@@ -43,6 +43,18 @@ Quoted provisions for [DATA_COMPLIANCE.md](./DATA_COMPLIANCE.md).
 > （三）所采取的保护措施是否合法、有效并与风险程度相适应。
 > 个人信息保护影响评估报告和处理情况记录应当至少保存三年。
 
+**2024 cross-border provisions.** The 2024 cross-border provisions generally
+exempt transfers of fewer than 100,000 individuals' non-sensitive personal
+information, cumulatively since January 1 of the current year, from the Article
+38 mechanisms. The exemption does not remove the Article 39 notice and separate
+consent. The 2024 provisions also exempt certain contract-necessity,
+HR-management, and free-trade-zone scenarios.
+
+**No Article 38 export into the mainland.** There is no Article 38 export because
+the data is entering the mainland, not leaving it. PIPL applies to the processing
+in mainland China. If the Hong Kong data includes mainland individuals, PIPL's
+extraterritorial scope may apply to the Hong Kong processing.
+
 ## PDPO (Cap. 486)
 
 > **Personal Data (Privacy) Ordinance (Cap. 486), DPP1(1) (English).** Personal data shall not be collected unless—
@@ -61,27 +73,9 @@ Quoted provisions for [DATA_COMPLIANCE.md](./DATA_COMPLIANCE.md).
 >
 > **PDPO (Cap. 486), section 33 (English, not in force).** A data user shall not transfer personal data outside Hong Kong unless the data user has taken all reasonable precautions and exercised all due diligence to ensure that the data will not be collected, held, processed or used in a manner that contravenes the provisions of this Ordinance.
 
-## Exemption clarifications
-
-### Mainland China
-
-**2024 cross-border provisions.** The 2024 cross-border provisions generally
-exempt transfers of fewer than 100,000 individuals' non-sensitive personal
-information, cumulatively since January 1 of the current year, from the Article
-38 mechanisms. The exemption does not remove the Article 39 notice and separate
-consent. The 2024 provisions also exempt certain contract-necessity,
-HR-management, and free-trade-zone scenarios.
-
-**No Article 38 export into the mainland.** There is no Article 38 export because
-the data is entering the mainland, not leaving it. PIPL applies to the processing
-in mainland China. If the Hong Kong data includes mainland individuals, PIPL's
-extraterritorial scope may apply to the Hong Kong processing.
-
-### Hong Kong
-
-**PDPO section 33.** Section 33 is not in force, so Hong Kong has no statutory
-cross-border transfer prohibition. DPP1, DPP3, and DPP4 still apply, and the
-PCPD expects due diligence, contractual safeguards, and a transfer impact
+**Section 33 not in force.** Section 33 is not in force, so Hong Kong has no
+statutory cross-border transfer prohibition. DPP1, DPP3, and DPP4 still apply,
+and the PCPD expects due diligence, contractual safeguards, and a transfer impact
 assessment.
 
 ## GDPR (Regulation (EU) 2016/679)
