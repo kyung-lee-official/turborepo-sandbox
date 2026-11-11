@@ -143,3 +143,67 @@ extraterritorial scope may apply to the Hong Kong processing.
 > (C) Any other relief the court deems proper.
 >
 > **CCPA/CPRA § 1798.155(b) (English).** Any business, service provider, contractor, or other person that violates this title shall be liable for an administrative fine of not more than two thousand five hundred dollars ($2,500) for each violation, or seven thousand five hundred dollars ($7,500) for each intentional violation and each violation involving the personal information of consumers who are less than 16 years of age, as adjusted pursuant to paragraph (5) of subdivision (a) of Section 1798.185, in an administrative enforcement action brought by the California Privacy Protection Agency.
+
+## Privacy Act 1988 (Cth) (APPs)
+
+> **APP 1.2 (English).** An APP entity must take such steps as are reasonable in the circumstances to implement practices, procedures and systems relating to the entity's functions or activities that:
+> (a) will ensure that the entity complies with the APPs; and
+> (b) will enable the entity to deal with inquiries or complaints from individuals about the entity's compliance with the APPs.
+>
+> **APP 1.3 (English).** An APP entity must have a clearly expressed and up-to-date policy (the APP privacy policy) about the management of personal information by the entity.
+>
+> **APP 2.1 (English).** Where it is lawful and practicable in the circumstances, individuals must have the option of not identifying themselves, or of dealing under a pseudonym, when dealing with an APP entity in relation to a particular matter.
+>
+> **APP 3.1 (English).** An APP entity must not collect personal information (other than sensitive information) unless the information is reasonably necessary for one or more of the entity's functions or activities.
+>
+> **APP 3.3 (English).** An APP entity must collect personal information only by lawful and fair means.
+>
+> **APP 4.2 (English).** If an APP entity receives personal information about an individual that it did not solicit, the entity must, within a reasonable period after receiving the information, determine whether or not the entity could have collected the information under APP 3 if the entity had solicited the information.
+>
+> **APP 4.3 (English).** If the APP entity determines that it could not have collected the information under APP 3, the entity must, as soon as practicable but only if it is lawful and reasonable to do so, destroy the information or ensure that the information is de-identified.
+>
+> **APP 5.2 (English).** The matters are:
+> (a) the identity and contact details of the APP entity;
+> (b) the fact that the APP entity has collected the information and the circumstances of the collection;
+> (c) if the collection is required or authorised by law, the particular law;
+> (d) the purposes for which the APP entity collects the information;
+> (e) the main consequences for the individual if the information is not collected;
+> (f) any other APP entity, body or person to which the information is commonly disclosed;
+> (g) the fact that the APP entity is likely to disclose the information to overseas recipients and, if practicable, the countries in which those recipients are located;
+> (h) how the individual may access the information and seek correction; and
+> (i) how the individual may complain about a breach of the APPs and how the entity will deal with the complaint.
+>
+> **APP 6.1 (English).** If an APP entity holds personal information about an individual that was collected for a particular purpose (the primary purpose), the entity must not use or disclose the information for another purpose (the secondary purpose) unless:
+> (a) the individual has consented to the use or disclosure of the information; or
+> (b) the individual would reasonably expect the APP entity to use or disclose the information for the secondary purpose and the secondary purpose is:
+> (i) if the information is sensitive information, directly related to the primary purpose; or
+> (ii) if the information is not sensitive information, related to the primary purpose; or
+> (c) the use or disclosure of the information is required or authorised by or under an Australian law or a court/tribunal order.
+>
+> **APP 7.1 (English).** An organisation must not use or disclose the personal information that it holds about an individual for the purpose of direct marketing.
+>
+> **APP 8.1 (English).** Before an APP entity discloses personal information to an overseas recipient, the entity must take such steps as are reasonable in the circumstances to ensure that the overseas recipient does not breach the APPs in relation to the information.
+>
+> **APP 8.2 (English).** Subclause 8.1 does not apply if:
+> (a) the APP entity reasonably believes that:
+> (i) the overseas recipient is subject to a law, or binding scheme, that has the effect of protecting the information in a way that, overall, is at least substantially similar to the way in which the APPs protect the information; and
+> (ii) there are mechanisms that the individual can access to take action to enforce that protection of the law or binding scheme; or
+> (b) both of the following apply:
+> (i) the APP entity has informed the individual that subclause 8.1 will not apply to the disclosure; and
+> (ii) the individual has provided express consent to the disclosure.
+>
+> **APP 9.2 (English).** An organisation must not use or disclose a government related identifier of an individual unless an exception applies.
+>
+> **APP 10.1 (English).** An APP entity must take such steps as are reasonable in the circumstances to ensure that the personal information that it collects is accurate, up-to-date and complete.
+>
+> **APP 10.2 (English).** An APP entity must take such steps as are reasonable in the circumstances to ensure that the personal information that it uses or discloses is, having regard to the purpose of the use or disclosure, accurate, up-to-date, complete and relevant.
+>
+> **APP 11.1 (English).** An APP entity must take such steps as are reasonable in the circumstances to protect personal information from misuse, interference and loss, and from unauthorised access, modification or disclosure.
+>
+> **APP 11.2 (English).** If an APP entity holds personal information that is no longer needed for any purpose for which it may be used or disclosed under the APPs, the entity must take such steps as are reasonable in the circumstances to destroy the information or to ensure that the information is de-identified.
+>
+> **APP 12.1 (English).** An APP entity that holds personal information about an individual must, on request by the individual, give the individual access to the information.
+>
+> **APP 13.1 (English).** An APP entity must take such steps as are reasonable in the circumstances to ensure that the personal information it holds is accurate, up-to-date, complete, relevant and not misleading.
+>
+> **APP 13.2 (English).** If an APP entity holds personal information about an individual and the individual requests correction, the entity must take such steps as are reasonable in the circumstances to correct the information if the entity is satisfied that it is inaccurate, out-of-date, incomplete, irrelevant or misleading.
