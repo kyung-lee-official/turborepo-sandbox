@@ -7,12 +7,14 @@ import {
   GROK_TEST_PROMPT,
 } from "@/app/ai/grok-minimum-api-test/constants";
 import type { GrokMinimumApiTestResult } from "@/app/ai/grok-minimum-api-test/types";
+import { createProxyFetch } from "@/lib/proxy-fetch";
 
 export const dynamic = "force-dynamic";
 
 const requestSchema = z.object({
   token: z.string().trim().min(1, "Token is required"),
   model: z.string().trim().min(1).default(DEFAULT_GROK_MODEL),
+  proxyUrl: z.string().trim().optional(),
 });
 
 export async function POST(request: Request) {
@@ -26,11 +28,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const { token, model } = parsed.data;
+  const { token, model, proxyUrl } = parsed.data;
   const startedAt = Date.now();
 
   try {
-    const xai = createXai({ apiKey: token });
+    const xai = createXai({
+      apiKey: token,
+      fetch: createProxyFetch(proxyUrl),
+    });
     const result = await generateText({
       model: xai(model),
       prompt: GROK_TEST_PROMPT,
@@ -40,6 +45,7 @@ export async function POST(request: Request) {
     const responseBody = {
       text: result.text,
       model,
+      proxyUrl: proxyUrl || null,
       finishReason: result.finishReason,
       latencyMs: Date.now() - startedAt,
       usage: {

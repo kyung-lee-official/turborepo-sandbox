@@ -7,14 +7,15 @@ import {
   getGrokMinimumApiTestErrorMessage,
   runGrokMinimumApiTest,
 } from "./api";
-import { DEFAULT_GROK_MODEL } from "./constants";
+import { DEFAULT_GROK_MODEL, DEFAULT_PROXY_URL } from "./constants";
 
 const TestForm = () => {
   const [token, setToken] = useState("");
   const [model, setModel] = useState(DEFAULT_GROK_MODEL);
+  const [proxyUrl, setProxyUrl] = useState(DEFAULT_PROXY_URL);
 
   const mutation = useMutation({
-    mutationFn: () => runGrokMinimumApiTest({ token, model }),
+    mutationFn: () => runGrokMinimumApiTest({ token, model, proxyUrl }),
   });
 
   const canSubmit = token.trim().length > 0 && !mutation.isPending;
@@ -71,6 +72,29 @@ const TestForm = () => {
           />
         </div>
 
+        <div className="space-y-1">
+          <label
+            className="block font-medium text-neutral-200 text-sm"
+            htmlFor="grok-proxy-url"
+          >
+            Proxy URL (optional)
+          </label>
+          <input
+            autoComplete="off"
+            className="w-full rounded border border-neutral-700 bg-neutral-950 px-3 py-2 font-mono text-neutral-100 text-sm outline-none focus:border-neutral-400"
+            id="grok-proxy-url"
+            onChange={(event) => setProxyUrl(event.target.value)}
+            placeholder="http://127.0.0.1:7890"
+            spellCheck={false}
+            type="text"
+            value={proxyUrl}
+          />
+          <p className="text-neutral-500 text-xs">
+            The Next.js server uses this HTTP proxy to reach xAI. Also held in
+            React state only and cleared by a refresh.
+          </p>
+        </div>
+
         <button
           className="rounded bg-emerald-600 px-4 py-2 font-medium text-sm text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={!canSubmit}
@@ -100,6 +124,9 @@ const TestForm = () => {
             </span>
             <span className="text-emerald-200">
               {mutation.data.latencyMs} ms
+            </span>
+            <span className="text-emerald-200">
+              proxy: {mutation.data.proxyUrl ?? "direct"}
             </span>
             <span className="text-emerald-200">
               tokens: {mutation.data.usage.inputTokens ?? "?"} in /{" "}
@@ -133,7 +160,8 @@ const Page = () => {
             </code>
             . Paste an xAI token, run one prompt, and read the reply. The token
             goes to this app&apos;s own API route, which calls xAI; it is never
-            persisted.
+            persisted. The server reaches xAI through the proxy URL entered in
+            the form.
           </p>
         </header>
 
@@ -155,7 +183,8 @@ const Page = () => {
               with a single fixed prompt
             </li>
             <li>
-              Token, finish reason, latency, and token usage in the response
+              Model, proxy URL, finish reason, latency, and token usage in the
+              response
             </li>
           </ul>
         </section>
