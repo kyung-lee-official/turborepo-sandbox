@@ -50,6 +50,26 @@ export class FetcherError<TBody = unknown> extends Error {
   }
 }
 
+/**
+ * Reads the `{ error: string }` body from a `FetcherError` when present, and
+ * falls back to the underlying error message.
+ */
+export function getFetcherErrorMessage(error: unknown): string {
+  if (error instanceof FetcherError) {
+    const data = error.data;
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "error" in data &&
+      typeof data.error === "string"
+    ) {
+      return data.error;
+    }
+  }
+
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 const isPlainObject = (value: unknown): boolean =>
   typeof value === "object" &&
   value !== null &&

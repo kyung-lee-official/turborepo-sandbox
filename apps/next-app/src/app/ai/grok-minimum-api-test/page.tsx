@@ -3,10 +3,8 @@
 import { QueryClientProvider, useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { queryClient } from "@/app/data-fetching/tanstack-query/queryClient";
-import {
-  getGrokMinimumApiTestErrorMessage,
-  runGrokMinimumApiTest,
-} from "./api";
+import { getFetcherErrorMessage } from "@/lib/fetcher";
+import { runGrokMinimumApiTest } from "./api";
 import { DEFAULT_GROK_MODEL, DEFAULT_PROXY_URL } from "./constants";
 
 const TestForm = () => {
@@ -108,7 +106,7 @@ const TestForm = () => {
         <div className="rounded-lg border border-red-900 bg-red-950/50 p-6">
           <h2 className="mb-2 font-semibold text-red-300">Request failed</h2>
           <p className="break-words text-red-200 text-sm">
-            {getGrokMinimumApiTestErrorMessage(mutation.error)}
+            {getFetcherErrorMessage(mutation.error)}
           </p>
         </div>
       ) : null}

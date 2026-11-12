@@ -211,6 +211,10 @@ export default function Home() {
         ]}
       />
       <Block title="Files" list={[...filesBlockLinks]} />
+      <Block
+        title="Database"
+        list={[{ link: "/database/neon", text: "Neon" }]}
+      />
       <Block title="Video" list={[...videoBlockLinks]} />
       <Block
         title="Javascript | React"

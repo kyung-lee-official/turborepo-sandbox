@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "bun run --cwd ../../packages/neon-test-database build",
     "dev": "bun --bun next dev -p 3000",
     "# Dev with domain (HTTPS)": "",
     "dev:domain": "bun --env-file=../../.env.base --env-file=../../.env.dev-domain run dev",
@@ -12,6 +13,7 @@
     "# Production builds": "",
     "build:prod-domain": "bun --env-file=../../.env.base --env-file=../../.env.prod-domain run build",
     "build:prod-ip": "bun --env-file=../../.env.base --env-file=../../.env.prod-ip run build",
+    "prestart": "bun run --cwd ../../packages/neon-test-database build",
     "start": "bun --bun next start -p 3000",
     "start:prod": "bun --bun next start -p 3000",
     "# Production start (after build)": "",
@@ -26,6 +28,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@oramacloud/client": "^2.1.4",
     "@paypal/react-paypal-js": "^8.8.3",
+    "@repo/neon-test-database": "workspace:*",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-form": "^1.28.0",
     "@tanstack/react-query": "^5.90.20",
