@@ -62,7 +62,16 @@ export default function Home() {
           },
         ]}
       />
-      <Block title="AI" list={[{ link: "/ai/mcp", text: "MCP" }]} />
+      <Block
+        title="AI"
+        list={[
+          { link: "/ai/mcp", text: "MCP" },
+          {
+            link: "/ai/grok-minimum-api-test",
+            text: "Grok Minimum API Test",
+          },
+        ]}
+      />
       <Block
         title="Animation | Motion"
         list={[
