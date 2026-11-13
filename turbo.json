@@ -9,7 +9,6 @@
       "outputs": [".next/**", "dist/**", "build/**", ".medusa/**"]
     },
     "dev": {
-      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
     },

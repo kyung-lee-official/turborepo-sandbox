@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   allowedDevOrigins: ["*.sandbox.local"],
+  /* Bun's isolated node_modules layout breaks Turbopack's external `pg` alias;
+   * bundle it instead. */
+  transpilePackages: ["pg"],
   images: {
     dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
     remotePatterns: [
